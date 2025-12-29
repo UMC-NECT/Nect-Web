@@ -1,5 +1,17 @@
 @import 'tailwindcss';
 
+@font-face {
+	font-family: 'Pretendard';
+	src: url('./assets/fonts/PretendardVariable.woff2') format('woff2');
+	font-weight: 200 1000;
+	font-style: normal;
+	font-display: swap;
+}
+
+* {
+	font-family: 'Pretendard';
+}
+
 button {
 	cursor: pointer;
 }
@@ -37,9 +49,9 @@ button {
 	--color-semantic-600: #f64c4c;
 	--color-semantic-700: #ec2d30;
 
-	--drop-shadow-sm: 0 8px 24px 0 rgba(39, 39, 39, 0.15);
-	--drop-shadow-md: 0 16px 40px 0 rgba(39, 39, 39, 0.2);
-	--drop-shadow-brand: 0 16px 40px 0 rgba(72, 11, 153, 0.2);
+	--shadow-sm: 0 8px 24px 0 rgba(39, 39, 39, 0.15);
+	--shadow-md: 0 16px 40px 0 rgba(39, 39, 39, 0.2);
+	--shadow-brand: 0 16px 40px 0 rgba(72, 11, 153, 0.2);
 
 	--radius-10: 10px;
 	--radius-16: 16px;
