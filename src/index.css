@@ -57,6 +57,9 @@ button {
 	--radius-16: 16px;
 	--radius-100: 100px;
 	--radius-full: 100%;
+
+	--spacing-gutter: 24px;
+	--max-width-main: 1140px;
 }
 
 @layer utilities {
