@@ -4,7 +4,7 @@ import ProgressBar from './ProgressBar'
 import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
 import { calculateDateSpan } from '@/utils/dateUtils'
 
-interface MissionCardProps {
+interface MissionBlockProps {
 	isGoal?: boolean
 	missionNumber: number
 	title: string
@@ -17,7 +17,7 @@ interface MissionCardProps {
 	onClick?: () => void
 }
 
-const MissionCard = ({
+const MissionBlock= ({
 	isGoal,
 	missionNumber,
 	title,
@@ -28,7 +28,7 @@ const MissionCard = ({
 	status,
 	participants = [],
 	onClick,
-}: MissionCardProps) => {
+}: MissionBlockProps) => {
 	const colSpan = calculateDateSpan(createdAt, dueDate)
 
 	return (
@@ -81,5 +81,5 @@ const MissionCard = ({
 	)
 }
 
-export default MissionCard
+export default MissionBlock
 
