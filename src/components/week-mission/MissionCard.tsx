@@ -1,7 +1,7 @@
 import PlanTag from '@/components/common/PlanTag'
 import AvatarGroup from '@/components/common/AvatarGroup'
 import ProgressBar from './ProgressBar'
-import ChevronDownIcon from '@/assets/icons/chevron-down.svg?react'
+import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
 import { calculateDateSpan } from '@/utils/dateUtils'
 
 interface MissionCardProps {

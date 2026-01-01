@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import SegmentButton from './SegmentButton'
-import MoreIcon from '@/assets/icons/more-vertical.svg?react'
+import MoreIcon from '@/assets/icons/week-mission/more-vertical.svg?react'
 
 interface SegmentsBarProps {
 	segments: string[]
