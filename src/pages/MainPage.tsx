@@ -1,6 +1,8 @@
+import BackButton from '@/components/common/BackButton'
 import Button from '@/components/common/Button'
 import ChipButton from '@/components/common/ChipButton'
 import Input from '@/components/common/Input'
+import ProgressBar from '@/components/common/ProgressBar'
 import { useState } from 'react'
 
 const chipButtonList = ['UX', '그래픽', 'UI']
@@ -34,6 +36,9 @@ const MainPage = () => {
 				<Button>다다음</Button>
 				<Button size='lg'>다다음</Button>
 				<Button fullWidth>다다다음</Button>
+
+				<ProgressBar />
+				<BackButton />
 
 				<div className='grid grid-cols-2 gap-x-2.5 gap-y-3 w-100'>
 					{chipButtonList.map((text, index) => (
