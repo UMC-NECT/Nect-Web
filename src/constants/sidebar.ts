@@ -1,5 +1,5 @@
-import NotificationIcon from '@/assets/icons/sidebar/notification.svg?react'
-import MessageIcon from '@/assets/icons/sidebar/message.svg?react'
+import NotificationIcon from '@/assets/icons/common/notification.svg?react'
+import MessageIcon from '@/assets/icons/common/message.svg?react'
 import TeamBoardIcon from '@/assets/icons/sidebar/team-board.svg?react'
 import WeekMissionIcon from '@/assets/icons/sidebar/week-mission.svg?react'
 import WorkStatusIcon from '@/assets/icons/sidebar/work-status.svg?react'
