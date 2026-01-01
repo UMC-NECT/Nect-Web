@@ -16,6 +16,10 @@ button {
 	cursor: pointer;
 }
 
+button:disabled {
+	cursor: not-allowed
+}
+
 @theme {
 	--color-primary-50-light: #fbf8ff;
 	--color-primary-100-light: #f0e7fb;
