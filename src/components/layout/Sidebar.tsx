@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
-import { type MenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
+import { type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
 
 export const Sidebar = () => {
-	const [activeMenu, setActiveMenu] = useState<MenuId>('notification')
+	const [activeBottomMenu, setActiveBottomMenu] = useState<BottomMenuId | null>('team-board')
 
-	const handleMenuClick = (menuId: MenuId) => {
-		setActiveMenu(menuId)
+	const handleTopMenuClick = () => {}
+
+	const handleBottomMenuClick = (menuId: BottomMenuId) => {
+		setActiveBottomMenu(menuId)
 	}
 
 	return (
@@ -26,9 +28,9 @@ export const Sidebar = () => {
 							<div
 								key={menu.id}
 								className='self-stretch h-14 rounded-16 inline-flex justify-center items-center gap-2.5 overflow-hidden cursor-pointer'
-								onClick={() => handleMenuClick(menu.id)}
+								onClick={handleTopMenuClick}
 							>
-								<SidebarMenuItem icon={menu.icon} label={menu.label} isActive={activeMenu === menu.id} />
+								<SidebarMenuItem icon={menu.icon} label={menu.label} isActive={false} alwaysDark={true} />
 							</div>
 						))}
 					</div>
@@ -37,8 +39,12 @@ export const Sidebar = () => {
 
 					<div className='self-stretch flex flex-col justify-start items-start gap-2.5'>
 						{BOTTOM_MENU_ITEMS.map(menu => (
-							<div key={menu.id} className='cursor-pointer' onClick={() => handleMenuClick(menu.id)}>
-								<SidebarMenuItem icon={menu.icon} label={menu.label} isActive={activeMenu === menu.id} />
+							<div
+								key={menu.id}
+								className='cursor-pointer'
+								onClick={() => handleBottomMenuClick(menu.id as BottomMenuId)}
+							>
+								<SidebarMenuItem icon={menu.icon} label={menu.label} isActive={activeBottomMenu === menu.id} />
 							</div>
 						))}
 					</div>

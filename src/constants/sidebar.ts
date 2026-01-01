@@ -4,7 +4,9 @@ import TeamBoardIcon from '@/assets/icons/sidebar/team-board.svg?react'
 import WeekMissionIcon from '@/assets/icons/sidebar/week-mission.svg?react'
 import WorkStatusIcon from '@/assets/icons/sidebar/work-status.svg?react'
 
-export type MenuId = 'notification' | 'message' | 'team-board' | 'week-mission' | 'work-status'
+export type TopMenuId = 'notification' | 'message'
+export type BottomMenuId = 'team-board' | 'week-mission' | 'work-status'
+export type MenuId = TopMenuId | BottomMenuId
 
 export interface MenuItem {
 	id: MenuId
