@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { cn } from '@/utils/cn'
-import ArrowDownIcon from '@/assets/icons/signup/arrow-down.svg'
+import ArrowDownIcon from '@/assets/icons/signup/arrow-down.svg?react'
 
 interface IAccordion {
 	title: string
@@ -30,9 +30,7 @@ const Accordion = ({ title, children, className, defaultOpen = false }: IAccordi
 				)}
 			>
 				<span>{title}</span>
-				<img
-					src={ArrowDownIcon}
-					alt='토글 이미지'
+				<ArrowDownIcon
 					className={cn('w-4 h-4 transition-transform duration-200', isOpen ? 'rotate-180 brightness-0 invert' : '')}
 				/>
 			</button>

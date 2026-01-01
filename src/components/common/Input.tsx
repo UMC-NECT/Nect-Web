@@ -1,7 +1,6 @@
 import { forwardRef } from 'react'
 import { cn } from '@/utils/cn'
-import errorCheckIcon from '../../assets/icons/signup/error-check.svg'
-import successCheckIcon from '../../assets/icons/signup/success-check.svg'
+import CheckIcon from '@/assets/icons/signup/check-icon.svg?react'
 
 interface IInput extends React.InputHTMLAttributes<HTMLInputElement> {
 	error?: string
@@ -9,6 +8,9 @@ interface IInput extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, IInput>(({ placeholder, error, success, className, ...rest }, ref) => {
+	const message = error || success
+	const statusColor = error ? 'text-[#FF7F38]' : 'text-[#22C55E]'
+
 	return (
 		<div>
 			<input
@@ -21,21 +23,10 @@ const Input = forwardRef<HTMLInputElement, IInput>(({ placeholder, error, succes
 				{...rest}
 			/>
 
-			{(error || success) && (
-				<div className='flex gap-0.5 mt-1 ml-1.75'>
-					{error ? (
-						<>
-							<img src={errorCheckIcon} alt='error' />
-							<p className='caption-3 text-[#FF7F38]'>{error}</p>
-						</>
-					) : success ? (
-						<>
-							<img src={successCheckIcon} alt='success' />
-							<p className='caption-3 text-[#22C55E]'>{success}</p>
-						</>
-					) : (
-						<></>
-					)}
+			{message && (
+				<div className='flex gap-0.5 mt-1 ml-1.75 items-center'>
+					<CheckIcon className={cn('w-2.5 h-2.5 mr-0.5', statusColor)} />
+					<p className={cn('caption-3', statusColor)}>{message}</p>
 				</div>
 			)}
 		</div>
