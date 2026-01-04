@@ -17,11 +17,11 @@ button {
 }
 
 @theme {
-	--color-primary-50-light: #fbf8ff;
-	--color-primary-100-light: #f0e7fb;
-	--color-primary-200-light: #e8dbf9;
-	--color-primary-300-light: #d0b5f3;
-	--color-primary-400-normal: #9a5ceb;
+	--color-primary-50-light: #fbf9ff;
+	--color-primary-100-light: #f0e5fd;
+	--color-primary-200-light: #e8d8fc;
+	--color-primary-300-light: #cfaff9;
+	--color-primary-400-normal: #9955f2;
 	--color-primary-500-normal: #660fd8;
 	--color-primary-600-normal: #480b99;
 	--color-primary-700-dark: #3b097c;
