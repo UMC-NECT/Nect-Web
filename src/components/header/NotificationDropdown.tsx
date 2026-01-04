@@ -135,7 +135,7 @@ const NotificationDropdown = ({ defaultTab = 'all' }: NotificationDropdownProps)
                 </div>
             </div>
 
-            {/* 알림 리스트 - 스크롤 영역 (헤더 약 146px 제외) */}
+            {/* 알림 리스트 - 스크롤 영역 */}
             <div className="h-[500px] overflow-y-auto">
                 {filteredNotifications.map((notification) => (
                     <div
