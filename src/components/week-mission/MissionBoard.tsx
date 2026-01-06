@@ -4,7 +4,7 @@ import { parseDate, calculateDateSpan } from '@/utils/dateUtils'
 import { useVirtualizedGrid } from '@/hooks/week-mission/useVirtualizedGrid'
 import { useDragScroll } from '@/hooks/week-mission/useDragScroll'
 import { useSyncScroll } from '@/hooks/week-mission/useSyncScroll'
-import { getDate } from 'date-fns'
+import { getDate, isSameDay } from 'date-fns'
 import MissionBlock from './MissionBlock'
 
 const ITEM_WIDTH = 80 // WeekDates와 동일한 날짜 박스 너비
@@ -198,16 +198,28 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 					const date = dates[index]
 					const day = getDate(date)
 					const isSunday = date.getDay() === 0
+					const today = isSameDay(date, new Date())
+					const isTodayAndSunday = today && isSunday
 
 					return (
-						<div key={index} className='h-6 relative shrink-0 w-[80px] flex items-center justify-center'>
-							<p
-								className={`font-medium text-[13px] leading-gutter text-center ${
-									isSunday ? 'text-[#fc3333]' : 'text-[#333]'
-								}`}
-							>
-								{day}
-							</p>
+						<div key={index} className='h-6 relative shrink-0 w-[80px] flex items-center justify-center mb-2'>
+							{today ? (
+								<div
+									className={`flex items-center justify-center rounded-[12px] w-6 h-6 ${
+										isTodayAndSunday ? 'bg-semantic-600' : 'bg-primary-400-normal'
+									}`}
+								>
+									<p className='font-medium text-[13px] leading-gutter text-center text-white'>{day}</p>
+								</div>
+							) : (
+								<p
+									className={`font-medium text-[13px] leading-gutter text-center ${
+										isSunday ? 'text-[#fc3333]' : 'text-[#333]'
+									}`}
+								>
+									{day}
+								</p>
+							)}
 						</div>
 					)
 				})}
