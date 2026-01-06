@@ -3,7 +3,7 @@ import { useWeekStore } from '@/stores/weekStore'
 import { startOfWeek, addWeeks, addDays } from 'date-fns'
 
 const TOTAL_WEEKS = 104 // 2년치
-const ITEM_WIDTH = 54 // 각 날짜 박스 너비
+const ITEM_WIDTH = 80 // 각 날짜 박스 너비
 
 export const useWeekDates = (scrollRef?: React.RefObject<HTMLDivElement | null>) => {
 	const { setCurrentWeekIndex, weekOffset, setWeekOffset } = useWeekStore()
