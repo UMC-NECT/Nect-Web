@@ -87,7 +87,9 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
                     {/* 오른쪽 아이콘들 */}
                     <div className="flex items-center gap-4">
                         <button 
-                            className="flex h-10 w-10 items-center justify-center relative"
+                            className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+                                showNotifications ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+                            }`}
                             aria-label="알림"
                             onClick={() => {
                                 setShowNotifications(!showNotifications);
@@ -101,7 +103,9 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
                         </button>
 
                         <button 
-                            className="flex h-10 w-10 items-center justify-center relative"
+                            className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+                                showMessages ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+                            }`}
                             aria-label="채팅"
                             onClick={() => {
                                 setShowMessages(!showMessages);
@@ -112,7 +116,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
                         </button>
 
                         <button 
-                            className="flex h-10 w-10 items-center justify-center"
+                            className="flex w-10 h-10 items-center justify-center hover:bg-neutral-100 rounded-[14px] transition-colors"
                             aria-label="프로필"
                         >
                             <ProfileIcon className="h-6 w-6 text-neutral-700" />
@@ -150,10 +154,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
                     {/* 오른쪽 버튼들 */}
                     <div className="flex items-center gap-3">
-                        <button className="px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-150-light hover:border-primary-150-light rounded-xl transition-colors">
+                        <button className="px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors">
                             AI 프로젝트 등록
                         </button>
-                        <button className="px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-150-light hover:border-primary-150-light rounded-xl transition-colors flex items-center gap-2">
+                        <button className="px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2">
                             <PortfolioIcon className="h-[14px] w-[14px] text-primary-800-dark" />
                             My 포트폴리오
                         </button>
