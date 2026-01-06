@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LogoIcon from '@/assets/icons/header/Logo.svg?react';
 import BarIcon from '@/assets/icons/header/Bar.svg?react';
 import MessageIcon from '@/assets/icons/common/Message.svg?react';
@@ -15,6 +15,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
     const [activeSubMenu, setActiveSubMenu] = useState('프로젝트 찾기');
     const [showNotifications, setShowNotifications] = useState(false);
     const [showMessages, setShowMessages] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     // 읽지 않은 알림 개수 (더미 데이터)
     const unreadNotifications = 3;
@@ -28,10 +29,37 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
         { name: '포트폴리오 보기' },
     ];
 
+    // 스크롤 이벤트 핸들러
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+
+            if (currentScrollY > 66 && currentScrollY > lastScrollY) {
+                // 아래로 스크롤 중이고, 66px 이상 내려갔을 때
+                setIsScrolled(true);
+            } else if (currentScrollY < lastScrollY) {
+                // 위로 스크롤 중일 때
+                setIsScrolled(false);
+            }
+
+            lastScrollY = currentScrollY;
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
-        <header className="fixed top-0 left-23 right-23 w-auto bg-white z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.02)]">
+        <header className="fixed top-0 left-0 right-0 bg-white z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.02)] transition-transform duration-300"
+            style={{ transform: isScrolled ? 'translateY(-66px)' : 'translateY(0)' }}
+        >
             {/* 상단 헤더 */}
-            <div className="h-[66px]">
+            <div className="h-[66px] px-[92px]">
                 <div className="mx-auto flex h-full items-center gap-9 px-6 relative">
 
                     {/* 로고 */}
@@ -98,7 +126,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
             </div>
 
             {/* 하단 서브메뉴 */}
-            <div className="h-[66px]">
+            <div className="h-[66px] px-[92px]">
                 <div className="mx-auto flex h-full items-center px-6">
                     {/* 왼쪽 메뉴 영역 */}
                     <div className="w-[690px] flex items-center">

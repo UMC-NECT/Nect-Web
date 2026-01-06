@@ -16,6 +16,54 @@ button {
 	cursor: pointer;
 }
 
+/* 전역 스크롤바 스타일 - 6px */
+* {
+	scrollbar-width: auto; /* Firefox는 px 사이즈 직접 설정 불가하기 때문에 auto 사용 */
+	scrollbar-color: #d9d9d9 transparent; /* Firefox: thumb 색상 / track 배경색(투명) */
+}
+
+/* Chrome, Safari, Edge 스크롤바 커스터마이징 */
+*::-webkit-scrollbar {
+	width: 6px; /* 세로 스크롤바 너비 */
+	height: 6px; /* 가로 스크롤바 높이 */
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent; /* 스크롤바 트랙(배경) 투명 */
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: #d9d9d9; /* 스크롤바 thumb(움직이는 부분) 색상 */
+	border-radius: 3px; /* thumb 모서리 둥글게 */
+}
+
+*::-webkit-scrollbar-button {
+	display: none; /* 스크롤바 위아래 화살표 버튼 제거 */
+}
+
+/* 알림 스크롤바 스타일 - 3px */
+.notification-scroll::-webkit-scrollbar {
+	width: 3px;
+}
+
+.notification-scroll::-webkit-scrollbar-thumb {
+	background-color: #cccccc;
+	border-radius: 1px;
+}
+
+.notification-scroll::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.notification-scroll::-webkit-scrollbar-button {
+	display: none;
+}
+
+.notification-scroll {
+	scrollbar-width: thin;
+	scrollbar-color: #cccccc transparent;
+}
+
 @theme {
 	--color-primary-50-light: #fbf9ff;
 	--color-primary-100-light: #f0e5fd;
