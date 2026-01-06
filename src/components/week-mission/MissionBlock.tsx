@@ -1,4 +1,4 @@
-import PlanTag from '@/components/common/PlanTag'
+import StatusChip from '@/components/common/StatusChip'
 import AvatarGroup from '@/components/common/AvatarGroup'
 import ProgressBar from './ProgressBar'
 import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
@@ -13,6 +13,7 @@ interface MissionBlockProps {
 	daysRemaining: number // D-13의 13
 	status: 'planning' | 'in_progress' | 'completed'
 	participants?: string[] // 사용자 아바타 이미지 URL 배열 (선택적)
+	gridColumnSize: number
 	onClick?: () => void
 }
 
@@ -26,44 +27,50 @@ const MissionBlock = ({
 	daysRemaining,
 	status,
 	participants = [],
+	gridColumnSize,
 	onClick,
 }: MissionBlockProps) => {
 	return (
 		<div
-			className={`flex items-center justify-between pl-4 pr-[10px] py-[10px] ${isGoal ? 'bg-primary-100-light border border-primary-300-light' : 'bg-neutral-50 border border-neutral-200'} rounded-[12px] shadow-[0px_-4px_16px_0px_rgba(23,23,20,0.04)] cursor-pointer w-full`}
+			className={`flex flex-col pl-4 pr-[10px] py-[10px] ${isGoal ? 'bg-primary-100-light border border-primary-300-light mt-3' : 'bg-neutral-50 border border-neutral-200'} rounded-[12px] shadow-[0px_-4px_16px_0px_rgba(23,23,20,0.04)] cursor-pointer w-full`}
 			onClick={onClick}
 		>
-			{/* 왼쪽 섹션 */}
-			<div className='flex flex-col gap-5 items-start justify-center flex-1 min-w-0'>
-				{/* 제목 섹션 */}
-				<div className='flex flex-col gap-[5px] items-start w-full'>
-					<p className='caption-2 text-neutral-900 font-medium'>Misson {missionNumber}</p>
-					<p className='title-3 text-neutral-900 font-semibold leading-6'>{title}</p>
-				</div>
-
-				{/* 진행률 및 날짜 섹션 */}
-				<div className='flex flex-col gap-[10px] items-start w-full'>
-					<ProgressBar completed={progress} total={4} />
-					<div className='flex gap-6 items-center'>
-						<div className='flex gap-[10px] items-center caption-2 text-neutral-900 font-medium whitespace-nowrap'>
-							<p className='opacity-60'>생성일</p>
-							<p className='font-medium'>{createdAt}</p>
-						</div>
-						<div className='flex gap-[10px] items-center caption-2 text-neutral-900 font-medium whitespace-nowrap'>
-							<p className='opacity-60'>마감일</p>
-							<p className='font-medium'>{dueDate}</p>
-						</div>
-					</div>
-				</div>
+			{/* 상단: Misson 번호와 StatusChip */}
+			<div className='flex items-start justify-between w-full '>
+				<p className='caption-2 text-neutral-900 font-medium mb-[5px]'>
+					{gridColumnSize > 1 ? `Misson ${missionNumber}` : `M${missionNumber}`}
+				</p>
+				<StatusChip state={status} gridColumnSize={gridColumnSize} />
 			</div>
 
-			{/* 오른쪽 섹션 */}
-			<div className='flex flex-col gap-11 items-end justify-center shrink-0'>
-				<PlanTag state={status} />
-				<div className='flex gap-2 items-center justify-end w-full'>
+			{/* 중단: 제목과 진행률 바 */}
+			<div className='flex flex-col items-start w-full'>
+				<p className='title-3 text-neutral-900 font-semibold leading-6 line-clamp-1 mb-5'>{title}</p>
+				<ProgressBar completed={progress} total={4} />
+			</div>
+
+			{/* 하단: 날짜 정보와 D-날짜 + 아바타/드롭다운 */}
+			<div className='flex items-center justify-between w-full mt-2.5'>
+				<div className='flex gap-6 items-center'>
+					{gridColumnSize > 2 && (
+						<>
+							{gridColumnSize > 4 && (
+								<div className='flex gap-[10px] items-center caption-2 text-neutral-900 font-medium whitespace-nowrap'>
+									<p className='opacity-60'>생성일</p>
+									<p className='font-medium'>{createdAt}</p>
+								</div>
+							)}
+							<div className='flex gap-[10px] items-center caption-2 text-neutral-900 font-medium whitespace-nowrap'>
+								<p className='opacity-60'>마감일</p>
+								<p className='font-medium'>{dueDate}</p>
+							</div>
+						</>
+					)}
+				</div>
+				<div className='flex gap-2 items-center justify-end'>
 					<p className='body-3 text-primary-500-normal font-medium text-right whitespace-nowrap'>D-{daysRemaining}</p>
 					<div className='flex gap-[2px] items-center justify-end'>
-						<AvatarGroup avatars={participants} maxCount={3} />
+						{gridColumnSize < 2 && <AvatarGroup avatars={participants} maxCount={gridColumnSize < 4 ? 1 : 3} />}
 						{/* 드롭다운 아이콘 */}
 						<div className='w-[14.839px] h-[14.839px] shrink-0 flex items-center justify-center'>
 							<ChevronDownIcon className='w-full h-full text-neutral-600' />
@@ -76,4 +83,3 @@ const MissionBlock = ({
 }
 
 export default MissionBlock
-

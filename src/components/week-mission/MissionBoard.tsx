@@ -219,8 +219,6 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 				<div style={{ width: `${dateTotalWidth}px`, height: '1px', opacity: 0, pointerEvents: 'none' }} />
 			</div>
 
-			<div className='h-px bg-neutral-200 mt-2' />
-
 			{/* 그리드 영역 - 4개 섹션 */}
 			<div
 				ref={boardScrollRef}
@@ -235,7 +233,7 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 				onScroll={combinedHandleScroll}
 			>
 				<div
-					className='grid gap-0 shrink-0 relative'
+					className='grid gap-x-0 gap-y-[26px] shrink-0 relative border-t border-neutral-200'
 					style={{
 						gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
 						gridTemplateRows: `repeat(${sections.length}, minmax(100px, auto))`,
@@ -252,21 +250,21 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 						/>
 					)}
 
-					{/* 가상화: 보이는 세로선만 렌더링 */}
+					{/* 가상화: 보이는 세로선만 렌더링 (모든 섹션에 걸쳐 연속된 선) */}
 					{visibleItems.map(({ index }) => {
 						const dateIndex = index
 						if (dateIndex >= dates.length) return null
 
-						return sections.map((_, sectionIndex) => (
+						return (
 							<div
-								key={`line-${dateIndex}-${sectionIndex}`}
+								key={`line-${dateIndex}`}
 								className='border-r border-neutral-200'
 								style={{
 									gridColumn: dateIndex + 1,
-									gridRow: sectionIndex + 1,
+									gridRow: `1 / ${sections.length + 1}`,
 								}}
 							/>
-						))
+						)
 					})}
 
 					{/* MissionBlock 배치 - 가상화 범위 내의 것만 (또는 containerWidth가 0이면 모두 표시) */}
