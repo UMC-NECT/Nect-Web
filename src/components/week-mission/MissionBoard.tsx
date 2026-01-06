@@ -232,114 +232,120 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 			</div>
 
 			{/* 그리드 영역 - 4개 섹션 */}
-			<div
-				ref={boardScrollRef}
-				className='overflow-x-auto cursor-grab active:cursor-grabbing'
-				style={{
-					scrollbarWidth: 'none',
-					msOverflowStyle: 'none',
-					WebkitOverflowScrolling: 'touch',
-				}}
-				onMouseDown={boardDrag.handleMouseDown}
-				onMouseUp={boardDrag.handleMouseUp}
-				onScroll={combinedHandleScroll}
-			>
+			<div className='relative'>
 				<div
-					className='grid gap-x-0 gap-y-[26px] shrink-0 relative border-t border-neutral-200'
+					ref={boardScrollRef}
+					className='overflow-x-auto cursor-grab active:cursor-grabbing'
 					style={{
-						gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
-						gridTemplateRows: `repeat(${sections.length}, minmax(100px, auto))`,
-						width: `${totalWidth}px`,
+						scrollbarWidth: 'none',
+						msOverflowStyle: 'none',
+						WebkitOverflowScrolling: 'touch',
 					}}
+					onMouseDown={boardDrag.handleMouseDown}
+					onMouseUp={boardDrag.handleMouseUp}
+					onScroll={combinedHandleScroll}
 				>
-					{/* 가상화: 앞쪽 여백 */}
-					{beforeWidth > 0 && (
-						<div
-							style={{
-								gridColumn: `1 / ${Math.ceil(beforeWidth / ITEM_WIDTH) + 1}`,
-								gridRow: `1 / ${sections.length + 1}`,
-							}}
-						/>
-					)}
-
-					{/* 가상화: 보이는 세로선만 렌더링 (모든 섹션에 걸쳐 연속된 선) */}
-					{visibleItems.map(({ index }) => {
-						const dateIndex = index
-						if (dateIndex >= dates.length) return null
-
-						return (
+					<div
+						className='grid gap-x-0 gap-y-[26px] shrink-0 relative border-t border-neutral-200'
+						style={{
+							gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
+							gridTemplateRows: `repeat(${sections.length}, minmax(100px, auto))`,
+							width: `${totalWidth}px`,
+						}}
+					>
+						{/* 가상화: 앞쪽 여백 */}
+						{beforeWidth > 0 && (
 							<div
-								key={`line-${dateIndex}`}
-								className='border-r border-neutral-200'
 								style={{
-									gridColumn: dateIndex + 1,
+									gridColumn: `1 / ${Math.ceil(beforeWidth / ITEM_WIDTH) + 1}`,
 									gridRow: `1 / ${sections.length + 1}`,
 								}}
 							/>
-						)
-					})}
+						)}
 
-					{/* MissionBlock 배치 - 가상화 범위 내의 것만 (또는 containerWidth가 0이면 모두 표시) */}
-					{positionedMissions
-						.filter(mission => {
-							if (!mission.columnStart) {
-								return false
-							}
-							// containerWidth가 0이거나 초기 렌더링이면 모두 표시 (가상화 비활성화)
-							if (containerWidth === 0) return true
-
-							// visibleRange가 없으면 모두 표시
-							if (!visibleRange || visibleRange.startIndex === undefined) return true
-
-							const startIdx = mission.columnStart - 1
-							const endIdx = startIdx + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
-							return (
-								(startIdx >= visibleRange.startIndex && startIdx <= visibleRange.endIndex) ||
-								(endIdx >= visibleRange.startIndex && endIdx <= visibleRange.endIndex) ||
-								(startIdx < visibleRange.startIndex && endIdx > visibleRange.endIndex)
-							)
-						})
-						.map(mission => {
-							if (!mission.columnStart) return null
-
-							const colSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
+						{/* 가상화: 보이는 세로선만 렌더링 (모든 섹션에 걸쳐 연속된 선) */}
+						{visibleItems.map(({ index }) => {
+							const dateIndex = index
+							if (dateIndex >= dates.length) return null
 
 							return (
 								<div
-									key={mission.id}
+									key={`line-${dateIndex}`}
+									className='border-r border-neutral-200'
 									style={{
-										gridColumnStart: mission.columnStart,
-										gridColumnEnd: `span ${colSpan}`,
-										gridRow: mission.sectionIndex + 1,
+										gridColumn: dateIndex + 1,
+										gridRow: `1 / ${sections.length + 1}`,
 									}}
-								>
-									<MissionBlock
-										isGoal={mission.isGoal}
-										missionNumber={mission.missionNumber}
-										title={mission.title}
-										progress={mission.progress}
-										createdAt={mission.createdAt}
-										dueDate={mission.dueDate}
-										daysRemaining={mission.daysRemaining}
-										status={mission.status}
-										participants={mission.participants}
-										gridColumnSize={colSpan}
-										onClick={mission.onClick}
-									/>
-								</div>
+								/>
 							)
 						})}
 
-					{/* 가상화: 뒤쪽 여백 */}
-					{afterWidth > 0 && (
-						<div
-							style={{
-								gridColumn: `${Math.floor((totalWidth - afterWidth) / ITEM_WIDTH) + 1} / ${totalDates + 1}`,
-								gridRow: `1 / ${sections.length + 1}`,
-							}}
-						/>
-					)}
+						{/* MissionBlock 배치 - 가상화 범위 내의 것만 (또는 containerWidth가 0이면 모두 표시) */}
+						{positionedMissions
+							.filter(mission => {
+								if (!mission.columnStart) {
+									return false
+								}
+								// containerWidth가 0이거나 초기 렌더링이면 모두 표시 (가상화 비활성화)
+								if (containerWidth === 0) return true
+
+								// visibleRange가 없으면 모두 표시
+								if (!visibleRange || visibleRange.startIndex === undefined) return true
+
+								const startIdx = mission.columnStart - 1
+								const endIdx = startIdx + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
+								return (
+									(startIdx >= visibleRange.startIndex && startIdx <= visibleRange.endIndex) ||
+									(endIdx >= visibleRange.startIndex && endIdx <= visibleRange.endIndex) ||
+									(startIdx < visibleRange.startIndex && endIdx > visibleRange.endIndex)
+								)
+							})
+							.map(mission => {
+								if (!mission.columnStart) return null
+
+								const colSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
+
+								return (
+									<div
+										key={mission.id}
+										style={{
+											gridColumnStart: mission.columnStart,
+											gridColumnEnd: `span ${colSpan}`,
+											gridRow: mission.sectionIndex + 1,
+										}}
+									>
+										<MissionBlock
+											isGoal={mission.isGoal}
+											missionNumber={mission.missionNumber}
+											title={mission.title}
+											progress={mission.progress}
+											createdAt={mission.createdAt}
+											dueDate={mission.dueDate}
+											daysRemaining={mission.daysRemaining}
+											status={mission.status}
+											participants={mission.participants}
+											gridColumnSize={colSpan}
+											onClick={mission.onClick}
+										/>
+									</div>
+								)
+							})}
+
+						{/* 가상화: 뒤쪽 여백 */}
+						{afterWidth > 0 && (
+							<div
+								style={{
+									gridColumn: `${Math.floor((totalWidth - afterWidth) / ITEM_WIDTH) + 1} / ${totalDates + 1}`,
+									gridRow: `1 / ${sections.length + 1}`,
+								}}
+							/>
+						)}
+					</div>
 				</div>
+				{/* 왼쪽 그라데이션 오버레이 */}
+				<div className='absolute left-0 top-0 bottom-0 w-[72px] pointer-events-none z-10 bg-linear-to-l from-white/0 via-white/50 to-white' />
+				{/* 오른쪽 그라데이션 오버레이 */}
+				<div className='absolute right-0 top-0 bottom-0 w-[72px] pointer-events-none z-10 bg-linear-to-r from-white/0 via-white/50 to-white' />
 			</div>
 		</div>
 	)
