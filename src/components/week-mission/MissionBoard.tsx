@@ -6,6 +6,7 @@ import { useDragScroll } from '@/hooks/week-mission/useDragScroll'
 import { useSyncScroll } from '@/hooks/week-mission/useSyncScroll'
 import { getDate, isSameDay } from 'date-fns'
 import MissionBlock from './MissionBlock'
+import PlusBlock from './PlusBlock'
 
 const ITEM_WIDTH = 80 // WeekDates와 동일한 날짜 박스 너비
 
@@ -36,6 +37,7 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 	const { dates, totalDates, itemWidth, initialScrollPosition, handleScroll } = useWeekDates(weekDatesRef)
 	const [containerWidth, setContainerWidth] = useState(0)
 	const isInitializedRef = useRef(false)
+	const [hoveredCell, setHoveredCell] = useState<{ column: number; row: number } | null>(null)
 
 	// 드래그 스크롤 훅
 	const weekDatesDrag = useDragScroll({ scrollRef: weekDatesRef })
@@ -330,6 +332,49 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 									</div>
 								)
 							})}
+
+						{/* 빈 셀에 PlusBlock 표시 (호버 시) */}
+						{visibleItems.map(({ index }) => {
+							const dateIndex = index
+							if (dateIndex >= dates.length) return null
+
+							return sections.map((_, sectionIndex) => {
+								// 해당 셀에 MissionBlock이 있는지 확인
+								const hasMission = positionedMissions.some(mission => {
+									if (!mission.columnStart) return false
+									const startCol = mission.columnStart - 1
+									const endCol = startCol + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
+									return mission.sectionIndex === sectionIndex && dateIndex >= startCol && dateIndex <= endCol
+								})
+
+								if (hasMission) return null
+
+								const isHovered = hoveredCell?.column === dateIndex && hoveredCell?.row === sectionIndex
+
+								return (
+									<div
+										key={`empty-${dateIndex}-${sectionIndex}`}
+										className='relative'
+										style={{
+											gridColumn: dateIndex + 1,
+											gridRow: sectionIndex + 1,
+										}}
+										onMouseEnter={() => setHoveredCell({ column: dateIndex, row: sectionIndex })}
+										onMouseLeave={() => setHoveredCell(null)}
+									>
+										<div
+											className='absolute inset-0 flex items-center justify-center transition-opacity duration-300'
+											style={{
+												opacity: isHovered ? 1 : 0,
+												pointerEvents: isHovered ? 'auto' : 'none',
+											}}
+										>
+											<PlusBlock onClick={() => {}} />
+										</div>
+									</div>
+								)
+							})
+						})}
 
 						{/* 가상화: 뒤쪽 여백 */}
 						{afterWidth > 0 && (
