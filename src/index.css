@@ -16,6 +16,10 @@ button {
 	cursor: pointer;
 }
 
+button:disabled {
+	cursor: not-allowed
+}
+
 /* 전역 스크롤바 스타일 - 6px */
 * {
 	scrollbar-width: auto; /* Firefox는 px 사이즈 직접 설정 불가하기 때문에 auto 사용 */
