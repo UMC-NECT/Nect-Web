@@ -54,6 +54,9 @@ button:disabled {
 	--color-semantic-600: #f64c4c;
 	--color-semantic-700: #ec2d30;
 
+	--color-danger-600: #666666;
+	--color-danger-700: #EC2D30;
+
 	--shadow-sm: 0 8px 24px 0 rgba(39, 39, 39, 0.15);
 	--shadow-md: 0 16px 40px 0 rgba(39, 39, 39, 0.2);
 	--shadow-brand: 0 16px 40px 0 rgba(72, 11, 153, 0.2);
