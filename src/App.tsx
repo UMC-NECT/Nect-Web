@@ -1,8 +1,8 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { Layout } from './components/layout/Layout'
-import MainPage from './pages/MainPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import LoginPage from './pages/auth/LoginPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -20,7 +20,7 @@ const router = createBrowserRouter([
 		children: [
 			{
 				index: true,
-				element: <MainPage />,
+				element: <LoginPage />,
 			},
 		],
 	},

@@ -23,6 +23,7 @@ button:disabled {
 @theme {
 	--color-primary-50-light: #fbf8ff;
 	--color-primary-100-light: #f0e7fb;
+	--color-primary-150-light: #f0e5fd;
 	--color-primary-200-light: #e8dbf9;
 	--color-primary-300-light: #d0b5f3;
 	--color-primary-400-normal: #9a5ceb;
