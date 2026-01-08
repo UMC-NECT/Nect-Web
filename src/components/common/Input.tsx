@@ -12,7 +12,7 @@ const Input = forwardRef<HTMLInputElement, IInput>(({ placeholder, error, succes
 	const statusColor = error ? 'text-[#FF7F38]' : 'text-[#22C55E]'
 
 	return (
-		<div>
+		<div className='relative w-fit'>
 			<input
 				ref={ref}
 				className={cn(
@@ -23,12 +23,14 @@ const Input = forwardRef<HTMLInputElement, IInput>(({ placeholder, error, succes
 				{...rest}
 			/>
 
-			{message && (
-				<div className='flex gap-0.5 mt-1 ml-1.75 items-center'>
-					<CheckIcon className={cn('w-2.5 h-2.5 mr-0.5', statusColor)} />
-					<p className={cn('caption-3', statusColor)}>{message}</p>
-				</div>
-			)}
+			<div className='absolute top-full left-0 w-full'>
+				{message && (
+					<div className='flex items-center gap-1 mx-1.75 mt-1.5'>
+						<CheckIcon className={cn('w-3 h-3 mr-1', statusColor)} />
+						<p className={cn('body-3', statusColor)}>{message}</p>
+					</div>
+				)}
+			</div>
 		</div>
 	)
 })
