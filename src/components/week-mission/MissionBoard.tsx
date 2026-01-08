@@ -4,16 +4,20 @@ import { parseDate, calculateDateSpan } from '@/utils/dateUtils'
 import { useVirtualizedGrid } from '@/hooks/week-mission/useVirtualizedGrid'
 import { useDragScroll } from '@/hooks/week-mission/useDragScroll'
 import { useSyncScroll } from '@/hooks/week-mission/useSyncScroll'
-import { getDate, isSameDay } from 'date-fns'
+import { useMissionDragResize } from '@/hooks/week-mission/useMissionDragResize'
+import { useInitialScroll } from '@/hooks/week-mission/useInitialScroll'
+import { useMissionFilter } from '@/hooks/week-mission/useMissionFilter'
+import { isSameDay } from 'date-fns'
 import MissionBlock from './MissionBlock'
 import PlusBlock from './PlusBlock'
+import DateCell from './DateCell'
 import { MissonPart_Title, MissionPart_Add } from './MissonPart'
 import type { MissionStatus } from '@/types/missionStatus'
 
 const ITEM_WIDTH = 80 // WeekDates와 동일한 날짜 박스 너비
 
 export interface Mission {
-	id: string
+	id: number
 	isGoal?: boolean
 	missionNumber: number
 	title: string
@@ -27,19 +31,25 @@ export interface Mission {
 	onClick?: () => void
 }
 
-interface MissionBoardProps {
-	missions: Mission[]
-	sections?: string[] // 섹션 제목 배열 (기본: 4개)
+export interface Section {
+	id: number
+	title: string
 }
 
-const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
+interface MissionBoardProps {
+	missions: Mission[]
+	sections?: Section[] // 섹션 제목 배열 (기본: 4개)
+	onMissionUpdate?: (missionId: number, updates: { createdAt?: string; dueDate?: string; sectionIndex?: number }) => void
+}
+
+const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoardProps) => {
 	// 공유 스크롤 컨테이너 ref
 	const boardScrollRef = useRef<HTMLDivElement>(null)
 	const weekDatesRef = useRef<HTMLDivElement>(null)
 	const { dates, totalDates, itemWidth, initialScrollPosition, handleScroll } = useWeekDates(weekDatesRef)
 	const [containerWidth, setContainerWidth] = useState(0)
-	const isInitializedRef = useRef(false)
 	const [hoveredCell, setHoveredCell] = useState<{ column: number; row: number } | null>(null)
+	const gridContainerRef = useRef<HTMLDivElement>(null)
 
 	// 드래그 스크롤 훅
 	const weekDatesDrag = useDragScroll({ scrollRef: weekDatesRef })
@@ -75,32 +85,17 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 		(createdAt: string): number | null => {
 			const startDate = parseDate(createdAt)
 			const index = dates.findIndex(date => isSameDate(date, startDate))
-
-			if (index === -1) {
-				console.warn(`Date not found in dates array: ${createdAt}. Total dates: ${dates.length}`)
-				if (dates.length > 0) {
-					console.log('First date:', dates[0])
-					console.log('Last date:', dates[dates.length - 1])
-				}
-			}
-
-			return index !== -1 ? index + 1 : null // grid-column은 1부터 시작
+			return index !== -1 ? index + 1 : null
 		},
 		[dates, isSameDate]
 	)
 
 	// MissionBlock들을 grid 위치에 맞게 배치
 	const positionedMissions = useMemo(() => {
-		return missions.map(mission => {
-			const columnStart = getMissionColumnStart(mission.createdAt)
-			if (!columnStart) {
-				console.warn(`Mission ${mission.id}: Could not find date ${mission.createdAt} in dates array`)
-			}
-			return {
-				...mission,
-				columnStart,
-			}
-		})
+		return missions.map(mission => ({
+			...mission,
+			columnStart: getMissionColumnStart(mission.createdAt),
+		}))
 	}, [missions, getMissionColumnStart])
 
 	// 컨테이너 너비 업데이트
@@ -135,31 +130,53 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 	} = useVirtualizedGrid({
 		totalItems: totalDates,
 		itemWidth,
-		containerWidth: containerWidth || 1000, // 초기값 설정
 		overscan: 10,
+		scrollElementRef: boardScrollRef,
 	})
 
+	// 드래그/리사이즈 훅
+	const {
+		draggingMissionId,
+		resizingMissionId,
+		dragTempPosition,
+		resizeTempPosition,
+		getResizeStartColumn,
+		handleMissionDragStart,
+		handleMissionResizeStart,
+	} = useMissionDragResize({
+		dates,
+		sections,
+		positionedMissions,
+		gridContainerRef,
+		boardScrollRef,
+		beforeWidth,
+		onMissionUpdate,
+	})
+
+	// 오늘 날짜의 인덱스 찾기
+	const todayIndex = useMemo(() => {
+		const today = new Date()
+		return dates.findIndex(date => isSameDay(date, today))
+	}, [dates])
+
 	// 초기 스크롤 위치 설정
-	useEffect(() => {
-		if (boardScrollRef.current && !isInitializedRef.current && initialScrollPosition > 0) {
-			requestAnimationFrame(() => {
-				if (boardScrollRef.current) {
-					boardScrollRef.current.scrollLeft = initialScrollPosition
-					setVirtualScrollLeft(initialScrollPosition)
-					isInitializedRef.current = true
-				}
-			})
-		}
-	}, [initialScrollPosition, setVirtualScrollLeft])
+	useInitialScroll({
+		boardScrollRef,
+		weekDatesRef,
+		todayIndex,
+		itemWidth,
+		initialScrollPosition,
+		setVirtualScrollLeft,
+	})
 
 	// 스크롤 이벤트 핸들러 (드래그 중이 아닐 때만 weekOffset 업데이트)
-	const combinedHandleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-		handleVirtualScroll(e)
-		// 드래그 중이 아닐 때만 handleScroll 호출 (weekOffset 업데이트)
+	const combinedHandleScroll = useCallback(() => {
+		handleVirtualScroll()
 		if (!boardDrag.isDraggingRef.current && !weekDatesDrag.isDraggingRef.current) {
 			handleScroll()
 		}
-	}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [handleVirtualScroll, handleScroll])
 
 	// WeekDates용 가상화 (위에 날짜 표시용)
 	const {
@@ -171,9 +188,45 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 	} = useVirtualizedGrid({
 		totalItems: totalDates,
 		itemWidth,
-		containerWidth: containerWidth || 1000,
 		overscan: 10,
+		scrollElementRef: weekDatesRef,
 	})
+
+	// 필터링된 미션 목록
+	const visibleMissions = useMissionFilter({
+		positionedMissions,
+		visibleRange,
+		containerWidth,
+	})
+
+	// 날짜 스크롤 핸들러
+	const handleDateScroll = useCallback(() => {
+		handleDateVirtualScroll()
+		handleScroll()
+	}, [handleDateVirtualScroll, handleScroll])
+
+	// 보드 마우스 다운 핸들러
+	const handleBoardMouseDown = useCallback(
+		(e: React.MouseEvent<HTMLDivElement>) => {
+			if (!draggingMissionId && !resizingMissionId && !(e.target as HTMLElement).closest('[data-mission-block]')) {
+				boardDrag.handleMouseDown(e)
+			}
+		},
+		[draggingMissionId, resizingMissionId, boardDrag]
+	)
+
+	// 빈 셀 체크 함수
+	const checkEmptyCell = useCallback(
+		(dateIndex: number, sectionIndex: number): boolean => {
+			return positionedMissions.some(mission => {
+				if (!mission.columnStart) return false
+				const startCol = mission.columnStart - 1
+				const endCol = startCol + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
+				return mission.sectionIndex === sectionIndex && dateIndex >= startCol && dateIndex <= endCol
+			})
+		},
+		[positionedMissions]
+	)
 
 	return (
 		<div className='flex flex-col gap-0'>
@@ -191,10 +244,7 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 					}}
 					onMouseDown={weekDatesDrag.handleMouseDown}
 					onMouseUp={weekDatesDrag.handleMouseUp}
-					onScroll={e => {
-						handleDateVirtualScroll(e)
-						handleScroll()
-					}}
+					onScroll={handleDateScroll}
 				>
 					{/* 가상화: 앞쪽 여백 */}
 					{dateBeforeWidth > 0 && <div style={{ width: `${dateBeforeWidth}px`, flexShrink: 0 }} />}
@@ -202,33 +252,7 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 					{/* 가상화: 보이는 아이템만 렌더링 */}
 					{dateVisibleItems.map(({ index }) => {
 						if (index >= dates.length) return null
-						const date = dates[index]
-						const day = getDate(date)
-						const isSunday = date.getDay() === 0
-						const today = isSameDay(date, new Date())
-						const isTodayAndSunday = today && isSunday
-
-						return (
-							<div key={index} className='h-6 relative shrink-0 w-[80px] flex items-center justify-center mb-2'>
-								{today ? (
-									<div
-										className={`flex items-center justify-center rounded-[12px] w-6 h-6 ${
-											isTodayAndSunday ? 'bg-semantic-600' : 'bg-primary-400-normal'
-										}`}
-									>
-										<p className='font-medium text-[13px] leading-gutter text-center text-white'>{day}</p>
-									</div>
-								) : (
-									<p
-										className={`font-medium text-[13px] leading-gutter text-center ${
-											isSunday ? 'text-[#fc3333]' : 'text-[#333]'
-										}`}
-									>
-										{day}
-									</p>
-								)}
-							</div>
-						)
+						return <DateCell key={index} date={dates[index]} index={index} />
 					})}
 
 					{/* 가상화: 뒤쪽 여백 */}
@@ -246,8 +270,8 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 					{/* 첫 번째 줄: 위크미션 Task */}
 					<MissonPart_Title title='위크미션 Task' isGoal />
 					{/* 나머지 줄들: 섹션 제목들 */}
-					{sections.map((sectionTitle, index) => (
-						<MissonPart_Title key={index} title={sectionTitle} />
+					{sections.map((section, index) => (
+						<MissonPart_Title key={index} title={section.title} />
 					))}
 					{/* 맨 아래줄: 팀 추가 */}
 					<MissionPart_Add />
@@ -261,11 +285,12 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 							msOverflowStyle: 'none',
 							WebkitOverflowScrolling: 'touch',
 						}}
-						onMouseDown={boardDrag.handleMouseDown}
+						onMouseDown={handleBoardMouseDown}
 						onMouseUp={boardDrag.handleMouseUp}
 						onScroll={combinedHandleScroll}
 					>
 						<div
+							ref={gridContainerRef}
 							className='grid gap-x-0 gap-y-[26px] shrink-0 relative border-t border-neutral-200'
 							style={{
 								gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
@@ -300,107 +325,94 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 								)
 							})}
 
-							{/* MissionBlock 배치 - 가상화 범위 내의 것만 (또는 containerWidth가 0이면 모두 표시) */}
-							{positionedMissions
-								.filter(mission => {
-									if (!mission.columnStart) {
-										return false
-									}
-									// containerWidth가 0이거나 초기 렌더링이면 모두 표시 (가상화 비활성화)
-									if (containerWidth === 0) return true
+							{/* MissionBlock 배치 - 가상화 범위 내의 것만 */}
+							{visibleMissions.map(mission => {
+								if (!mission.columnStart) return null
 
-									// visibleRange가 없으면 모두 표시
-									if (!visibleRange || visibleRange.startIndex === undefined) return true
+								// 드래그 중이면 임시 위치 사용
+								const isDragging = draggingMissionId === mission.id
+								const tempColumnStart =
+									isDragging && dragTempPosition ? dragTempPosition.columnIndex + 1 : mission.columnStart
+								const tempSectionIndex =
+									isDragging && dragTempPosition ? dragTempPosition.sectionIndex : mission.sectionIndex
 
-									const startIdx = mission.columnStart - 1
-									const endIdx = startIdx + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
-									return (
-										(startIdx >= visibleRange.startIndex && startIdx <= visibleRange.endIndex) ||
-										(endIdx >= visibleRange.startIndex && endIdx <= visibleRange.endIndex) ||
-										(startIdx < visibleRange.startIndex && endIdx > visibleRange.endIndex)
-									)
-								})
-								.map(mission => {
-									if (!mission.columnStart) return null
+								// 리사이즈 중이면 임시 크기 사용
+								const isResizing = resizingMissionId === mission.id
+								const originalColSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
+								let tempColSpan = originalColSpan
+								if (isResizing && resizeTempPosition !== null) {
+									// 리사이즈 시작 시점의 원래 위치 사용 (드래그 중이어도 원래 위치 기준)
+									const resizeStartColumn = getResizeStartColumn(mission.id)
+									const startColumnIndex = (resizeStartColumn || mission.columnStart || 1) - 1
+									tempColSpan = resizeTempPosition - startColumnIndex + 1
+								}
 
-									const colSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
+								return (
+									<div
+										key={mission.id}
+										style={{
+											gridColumnStart: tempColumnStart,
+											gridColumnEnd: `span ${tempColSpan}`,
+											gridRow: tempSectionIndex + 1,
+										}}
+									>
+										<MissionBlock
+											isGoal={mission.isGoal}
+											missionNumber={mission.missionNumber}
+											title={mission.title}
+											progress={mission.progress}
+											createdAt={mission.createdAt}
+											dueDate={mission.dueDate}
+											daysRemaining={mission.daysRemaining}
+											status={mission.status}
+											participants={mission.participants}
+											gridColumnSize={tempColSpan}
+											onClick={mission.onClick}
+											onDragStart={e => handleMissionDragStart(mission.id, e)}
+											onResizeStart={() => handleMissionResizeStart(mission.id)}
+											isDragging={isDragging}
+											isResizing={isResizing}
+										/>
+									</div>
+								)
+							})}
+
+							{/* 빈 셀에 PlusBlock 표시 (호버 시) */}
+							{visibleItems.map(({ index }) => {
+								const dateIndex = index
+								if (dateIndex >= dates.length) return null
+
+								return [...sections, null].map((_, sectionIndex) => {
+									const hasMission = checkEmptyCell(dateIndex, sectionIndex)
+
+									if (hasMission) return null
+
+									const isHovered = hoveredCell?.column === dateIndex && hoveredCell?.row === sectionIndex
 
 									return (
 										<div
-											key={mission.id}
+											key={`empty-${dateIndex}-${sectionIndex}`}
+											className='relative'
 											style={{
-												gridColumnStart: mission.columnStart,
-												gridColumnEnd: `span ${colSpan}`,
-												gridRow: mission.sectionIndex + 1,
+												gridColumn: dateIndex + 1,
+												gridRow: sectionIndex + 1,
 											}}
+											onMouseEnter={() => setHoveredCell({ column: dateIndex, row: sectionIndex })}
+											onMouseLeave={() => setHoveredCell(null)}
 										>
-											<MissionBlock
-												isGoal={mission.isGoal}
-												missionNumber={mission.missionNumber}
-												title={mission.title}
-												progress={mission.progress}
-												createdAt={mission.createdAt}
-												dueDate={mission.dueDate}
-												daysRemaining={mission.daysRemaining}
-												status={mission.status}
-												participants={mission.participants}
-												gridColumnSize={colSpan}
-												onClick={mission.onClick}
-											/>
+											<div
+												className='absolute inset-0 flex items-center mt-3 justify-center transition-opacity duration-300'
+												style={{
+													opacity: isHovered ? 1 : 0,
+													pointerEvents: isHovered ? 'auto' : 'none',
+												}}
+											>
+												<PlusBlock onClick={() => {}} />
+											</div>
 										</div>
 									)
-								})}
-
-							{
-								/* 빈 셀에 PlusBlock 표시 (호버 시) */
-							}
-							{
-								visibleItems.map(({ index }) => {
-									const dateIndex = index
-									if (dateIndex >= dates.length) return null
-
-									return [...sections, null].map((_, sectionIndex) => {
-										// 해당 셀에 MissionBlock이 있는지 확인
-										const hasMission = positionedMissions.some(mission => {
-											if (!mission.columnStart) return false
-											const startCol = mission.columnStart - 1
-											const endCol = startCol + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
-											return (
-												mission.sectionIndex === sectionIndex &&
-												dateIndex >= startCol &&
-												dateIndex <= endCol
-											)
-										})
-
-										if (hasMission) return null
-
-										const isHovered = hoveredCell?.column === dateIndex && hoveredCell?.row === sectionIndex
-
-										return (
-											<div
-												key={`empty-${dateIndex}-${sectionIndex}`}
-												className='relative'
-												style={{
-													gridColumn: dateIndex + 1,
-													gridRow: sectionIndex + 1,
-												}}
-												onMouseEnter={() => setHoveredCell({ column: dateIndex, row: sectionIndex })}
-												onMouseLeave={() => setHoveredCell(null)}
-											>
-												<div
-													className='absolute inset-0 flex items-center mt-3 justify-center transition-opacity duration-300'
-													style={{
-														opacity: isHovered ? 1 : 0,
-														pointerEvents: isHovered ? 'auto' : 'none',
-													}}
-												>
-													<PlusBlock onClick={() => {}} />
-												</div>
-											</div>
-										)
-									})
 								})
-							}
+							})}
 
 							{/* 가상화: 뒤쪽 여백 */}
 							{afterWidth > 0 && (
@@ -424,4 +436,3 @@ const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 }
 
 export default MissionBoard
-

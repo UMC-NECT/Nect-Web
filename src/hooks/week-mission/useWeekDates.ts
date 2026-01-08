@@ -20,10 +20,11 @@ export const useWeekDates = (scrollRef?: React.RefObject<HTMLDivElement | null>)
 
 	const [initialWeekIndex] = useState(getInitialWeekIndex)
 
-	// 주차별 날짜 생성 (양쪽으로 충분히 많은 날짜)
+	// 주차별 날짜 생성 (양쪽으로 충분히 많은 날짜, 오늘 날짜가 중간 정도에 위치)
 	const generateDates = useCallback(() => {
 		const today = new Date()
 		const centerWeekStart = startOfWeek(today, { weekStartsOn: 1 })
+		// 오늘 날짜가 포함된 주를 중간으로 하여 과거와 미래 날짜 모두 생성
 		const startWeek = addWeeks(centerWeekStart, -Math.floor(TOTAL_WEEKS / 2))
 
 		const dates: Date[] = []
@@ -103,7 +104,7 @@ export const useWeekDates = (scrollRef?: React.RefObject<HTMLDivElement | null>)
 		}
 	}, [])
 
-	// 초기 스크롤 위치 계산
+	// 초기 스크롤 위치 계산 (오늘 날짜가 포함된 주의 시작 위치)
 	const initialScrollPosition = initialWeekIndex * 7 * ITEM_WIDTH
 
 	return {

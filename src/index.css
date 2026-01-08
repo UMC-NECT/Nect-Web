@@ -115,7 +115,7 @@ button:disabled {
 	--radius-full: 100%;
 
 	--spacing-gutter: 24px;
-	--max-width-main: 1140px;
+	--max-width-main: 1440px;
 }
 
 @layer utilities {
