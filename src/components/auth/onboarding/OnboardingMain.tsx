@@ -11,14 +11,14 @@ type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
 // 단계별로 유효성 검사 항목
 const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
-	1: ['nickname', 'birth', 'job'],
+	1: ['nickname', 'birth'],
 }
 
 const OnboardingMain = () => {
 	const [currentStep, setCurrentStep] = useState<STEPS>(1)
 	const [isNicknameChecked, setIsNicknameChecked] = useState<boolean>(false)
 
-	const methods = useOnboardingForm() // 온보딩 1~6단게용 커스텀 useForm
+	const methods = useOnboardingForm() // 온보딩 1~6단계용 커스텀 useForm
 
 	// 값 감시 (버튼 비활성화용)
 	const {

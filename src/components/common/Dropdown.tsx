@@ -25,6 +25,7 @@ const Dropdown = ({ options, value, placeholder, onSelect }: IDropdown) => {
 	return (
 		<div className='relative' ref={dropdownRef}>
 			<Input
+				category='onboarding'
 				placeholder={placeholder || ''}
 				readOnly
 				value={value || ''}

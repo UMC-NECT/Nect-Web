@@ -1,10 +1,11 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { Layout } from './components/layout/Layout'
-import MainPage from './pages/MainPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthLayout } from './components/layout/AuthLayout'
 import OnboardingPage from './pages/auth/OnboardingPage'
+import MainPage from './pages/MainPage'
+import LoginPage from './pages/auth/LoginPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
 	{
 		element: <AuthLayout />,
 		children: [
+			{
+				path: '/login',
+				element: <LoginPage />,
+			},
 			{
 				path: '/onboarding',
 				element: <OnboardingPage />,
