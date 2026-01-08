@@ -16,7 +16,7 @@ const Input = forwardRef<HTMLInputElement, IInput>(({ placeholder, error, succes
 			<input
 				ref={ref}
 				className={cn(
-					'w-75 h-13.5 bg-primary-50-light px-5 py-2.5 rounded-10 border-2 border-primary-400-normal focus:outline-none placeholder:body-1',
+					'w-75 h-13.5 bg-primary-50-light px-5 py-2.5 rounded-10 border-2 border-primary-200-light focus:border-primary-400-normal focus:outline-none duration-200 ease-in-out placeholder:body-1 placeholder:text-neutral-400 text-neutral-900',
 					className
 				)}
 				placeholder={placeholder}
