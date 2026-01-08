@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
-import { type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
+import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
 
 export const Sidebar = () => {
+	const [activeTopMenu, setActiveTopMenu] = useState<TopMenuId | null>(null)
 	const [activeBottomMenu, setActiveBottomMenu] = useState<BottomMenuId | null>('team-board')
 
-	const handleTopMenuClick = () => {}
+	const handleTopMenuClick = (menuId: TopMenuId) => {
+		setActiveTopMenu(menuId)
+	}
 
 	const handleBottomMenuClick = (menuId: BottomMenuId) => {
 		setActiveBottomMenu(menuId)
 	}
 
 	return (
-		<div className='w-16 h-[890px] px-1.5 py-5 bg-white shadow-[0px_-4px_16px_0px_rgba(23,23,20,0.04)] inline-flex justify-center items-start'>
+		<div className='w-16 h-[890px] px-1.5 py-5 bg-white border-r border-neutral-100 inline-flex justify-center items-start'>
 			<div className='w-14 inline-flex flex-col justify-start items-center gap-5'>
 				<div className='w-10 h-10 relative'>
 					<img
@@ -28,14 +31,21 @@ export const Sidebar = () => {
 							<div
 								key={menu.id}
 								className='self-stretch h-14 rounded-16 inline-flex justify-center items-center gap-2.5 overflow-hidden cursor-pointer'
-								onClick={handleTopMenuClick}
+								onClick={() => handleTopMenuClick(menu.id as TopMenuId)}
 							>
-								<SidebarMenuItem icon={menu.icon} label={menu.label} isActive={false} alwaysDark={true} />
+								<SidebarMenuItem
+									icon={menu.icon}
+									label={menu.label}
+									isActive={activeTopMenu === menu.id}
+									alwaysDark={true}
+									shadowType='neutral-1'
+									hasBadge={menu.id === 'notification'}
+								/>
 							</div>
 						))}
 					</div>
 
-					<div className='w-12 h-0 opacity-40 outline outline-offset-[-0.50px] outline-neutral-300' />
+					<div className='w-[50px] h-px bg-neutral-300 opacity-40' />
 
 					<div className='self-stretch flex flex-col justify-start items-start gap-2.5'>
 						{BOTTOM_MENU_ITEMS.map(menu => (
@@ -44,7 +54,12 @@ export const Sidebar = () => {
 								className='cursor-pointer'
 								onClick={() => handleBottomMenuClick(menu.id as BottomMenuId)}
 							>
-								<SidebarMenuItem icon={menu.icon} label={menu.label} isActive={activeBottomMenu === menu.id} />
+								<SidebarMenuItem
+									icon={menu.icon}
+									label={menu.label}
+									isActive={activeBottomMenu === menu.id}
+									shadowType='neutral-2'
+								/>
 							</div>
 						))}
 					</div>
