@@ -8,10 +8,11 @@ import { getDate, isSameDay } from 'date-fns'
 import MissionBlock from './MissionBlock'
 import PlusBlock from './PlusBlock'
 import { MissonPart_Title, MissionPart_Add } from './MissonPart'
+import type { MissionStatus } from '@/types/missionStatus'
 
 const ITEM_WIDTH = 80 // WeekDates와 동일한 날짜 박스 너비
 
-interface Mission {
+export interface Mission {
 	id: string
 	isGoal?: boolean
 	missionNumber: number
@@ -20,7 +21,7 @@ interface Mission {
 	createdAt: string // "2025.11.17" 형식
 	dueDate: string // "2025.11.30" 형식
 	daysRemaining: number
-	status: 'planning' | 'in_progress' | 'completed'
+	status: MissionStatus
 	sectionIndex: number // 0-3 사이의 섹션 인덱스
 	participants?: string[]
 	onClick?: () => void
