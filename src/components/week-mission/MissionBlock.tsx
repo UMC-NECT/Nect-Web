@@ -32,7 +32,7 @@ const MissionBlock = ({
 }: MissionBlockProps) => {
 	return (
 		<div
-			className={`flex flex-col pl-4 pr-[10px] py-[10px] ${isGoal ? 'bg-primary-100-light border border-primary-300-light mt-3' : 'bg-neutral-50 border border-neutral-200'} rounded-[12px] shadow-[0px_-4px_16px_0px_rgba(23,23,20,0.04)] cursor-pointer w-full`}
+			className={`flex flex-col pl-4 pr-[10px] py-[10px] max-h-[118px] mt-3 ${isGoal ? 'bg-primary-100-light border border-primary-300-light mt-3' : 'bg-neutral-50 border border-neutral-200'} rounded-[12px] shadow-[0px_-4px_16px_0px_rgba(23,23,20,0.04)] cursor-pointer w-full`}
 			onClick={onClick}
 		>
 			{/* 상단: Misson 번호와 StatusChip */}
@@ -45,7 +45,7 @@ const MissionBlock = ({
 
 			{/* 중단: 제목과 진행률 바 */}
 			<div className='flex flex-col items-start w-full'>
-				<p className='title-3 text-neutral-900 font-semibold leading-6 line-clamp-1 mb-5'>{title}</p>
+				<p className='title-3 text-neutral-900 font-semibold leading-6 line-clamp-1 mb-3'>{title}</p>
 				<ProgressBar completed={progress} total={4} />
 			</div>
 

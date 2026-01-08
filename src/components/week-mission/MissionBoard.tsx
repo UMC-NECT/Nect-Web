@@ -7,6 +7,7 @@ import { useSyncScroll } from '@/hooks/week-mission/useSyncScroll'
 import { getDate, isSameDay } from 'date-fns'
 import MissionBlock from './MissionBlock'
 import PlusBlock from './PlusBlock'
+import { MissonPart_Title, MissionPart_Add } from './MissonPart'
 
 const ITEM_WIDTH = 80 // WeekDates와 동일한 날짜 박스 너비
 
@@ -30,7 +31,7 @@ interface MissionBoardProps {
 	sections?: string[] // 섹션 제목 배열 (기본: 4개)
 }
 
-const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3', '섹션 4'] }: MissionBoardProps) => {
+const MissionBoard = ({ missions, sections = [] }: MissionBoardProps) => {
 	// 공유 스크롤 컨테이너 ref
 	const boardScrollRef = useRef<HTMLDivElement>(null)
 	const weekDatesRef = useRef<HTMLDivElement>(null)
@@ -176,221 +177,246 @@ const MissionBoard = ({ missions, sections = ['섹션 1', '섹션 2', '섹션 3'
 	return (
 		<div className='flex flex-col gap-0'>
 			{/* WeekDates 컴포넌트 */}
-			<div
-				ref={weekDatesRef}
-				className='flex items-center gap-0 overflow-x-auto cursor-grab active:cursor-grabbing'
-				style={{
-					scrollbarWidth: 'none',
-					msOverflowStyle: 'none',
-					WebkitOverflowScrolling: 'touch',
-				}}
-				onMouseDown={weekDatesDrag.handleMouseDown}
-				onMouseUp={weekDatesDrag.handleMouseUp}
-				onScroll={e => {
-					handleDateVirtualScroll(e)
-					handleScroll()
-				}}
-			>
-				{/* 가상화: 앞쪽 여백 */}
-				{dateBeforeWidth > 0 && <div style={{ width: `${dateBeforeWidth}px`, flexShrink: 0 }} />}
-
-				{/* 가상화: 보이는 아이템만 렌더링 */}
-				{dateVisibleItems.map(({ index }) => {
-					if (index >= dates.length) return null
-					const date = dates[index]
-					const day = getDate(date)
-					const isSunday = date.getDay() === 0
-					const today = isSameDay(date, new Date())
-					const isTodayAndSunday = today && isSunday
-
-					return (
-						<div key={index} className='h-6 relative shrink-0 w-[80px] flex items-center justify-center mb-2'>
-							{today ? (
-								<div
-									className={`flex items-center justify-center rounded-[12px] w-6 h-6 ${
-										isTodayAndSunday ? 'bg-semantic-600' : 'bg-primary-400-normal'
-									}`}
-								>
-									<p className='font-medium text-[13px] leading-gutter text-center text-white'>{day}</p>
-								</div>
-							) : (
-								<p
-									className={`font-medium text-[13px] leading-gutter text-center ${
-										isSunday ? 'text-[#fc3333]' : 'text-[#333]'
-									}`}
-								>
-									{day}
-								</p>
-							)}
-						</div>
-					)
-				})}
-
-				{/* 가상화: 뒤쪽 여백 */}
-				{dateAfterWidth > 0 && <div style={{ width: `${dateAfterWidth}px`, flexShrink: 0 }} />}
-
-				{/* 전체 너비를 위한 숨겨진 div */}
-				<div style={{ width: `${dateTotalWidth}px`, height: '1px', opacity: 0, pointerEvents: 'none' }} />
-			</div>
-
-			{/* 그리드 영역 - 4개 섹션 */}
-			<div className='relative'>
+			<div className='flex'>
+				{/* MissonPart 너비만큼 왼쪽 여백 */}
+				<div className='w-[72px] shrink-0' />
 				<div
-					ref={boardScrollRef}
-					className='overflow-x-auto cursor-grab active:cursor-grabbing'
+					ref={weekDatesRef}
+					className='flex-1 flex items-center gap-0 overflow-x-auto cursor-grab active:cursor-grabbing'
 					style={{
 						scrollbarWidth: 'none',
 						msOverflowStyle: 'none',
 						WebkitOverflowScrolling: 'touch',
 					}}
-					onMouseDown={boardDrag.handleMouseDown}
-					onMouseUp={boardDrag.handleMouseUp}
-					onScroll={combinedHandleScroll}
+					onMouseDown={weekDatesDrag.handleMouseDown}
+					onMouseUp={weekDatesDrag.handleMouseUp}
+					onScroll={e => {
+						handleDateVirtualScroll(e)
+						handleScroll()
+					}}
 				>
+					{/* 가상화: 앞쪽 여백 */}
+					{dateBeforeWidth > 0 && <div style={{ width: `${dateBeforeWidth}px`, flexShrink: 0 }} />}
+
+					{/* 가상화: 보이는 아이템만 렌더링 */}
+					{dateVisibleItems.map(({ index }) => {
+						if (index >= dates.length) return null
+						const date = dates[index]
+						const day = getDate(date)
+						const isSunday = date.getDay() === 0
+						const today = isSameDay(date, new Date())
+						const isTodayAndSunday = today && isSunday
+
+						return (
+							<div key={index} className='h-6 relative shrink-0 w-[80px] flex items-center justify-center mb-2'>
+								{today ? (
+									<div
+										className={`flex items-center justify-center rounded-[12px] w-6 h-6 ${
+											isTodayAndSunday ? 'bg-semantic-600' : 'bg-primary-400-normal'
+										}`}
+									>
+										<p className='font-medium text-[13px] leading-gutter text-center text-white'>{day}</p>
+									</div>
+								) : (
+									<p
+										className={`font-medium text-[13px] leading-gutter text-center ${
+											isSunday ? 'text-[#fc3333]' : 'text-[#333]'
+										}`}
+									>
+										{day}
+									</p>
+								)}
+							</div>
+						)
+					})}
+
+					{/* 가상화: 뒤쪽 여백 */}
+					{dateAfterWidth > 0 && <div style={{ width: `${dateAfterWidth}px`, flexShrink: 0 }} />}
+
+					{/* 전체 너비를 위한 숨겨진 div */}
+					<div style={{ width: `${dateTotalWidth}px`, height: '1px', opacity: 0, pointerEvents: 'none' }} />
+				</div>
+			</div>
+
+			{/* 그리드 영역 - 4개 섹션 */}
+			<div className='flex relative'>
+				{/* 왼쪽 MissonPart 컴포넌트들 - 고정 위치 */}
+				<div className='flex flex-col gap-y-[26px] pt-px shrink-0'>
+					{/* 첫 번째 줄: 위크미션 Task */}
+					<MissonPart_Title title='위크미션 Task' isGoal />
+					{/* 나머지 줄들: 섹션 제목들 */}
+					{sections.map((sectionTitle, index) => (
+						<MissonPart_Title key={index} title={sectionTitle} />
+					))}
+					{/* 맨 아래줄: 팀 추가 */}
+					<MissionPart_Add />
+				</div>
+				<div className='flex-1 relative overflow-hidden'>
 					<div
-						className='grid gap-x-0 gap-y-[26px] shrink-0 relative border-t border-neutral-200'
+						ref={boardScrollRef}
+						className='h-full overflow-x-auto cursor-grab active:cursor-grabbing'
 						style={{
-							gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
-							gridTemplateRows: `repeat(${sections.length}, minmax(100px, auto))`,
-							width: `${totalWidth}px`,
+							scrollbarWidth: 'none',
+							msOverflowStyle: 'none',
+							WebkitOverflowScrolling: 'touch',
 						}}
+						onMouseDown={boardDrag.handleMouseDown}
+						onMouseUp={boardDrag.handleMouseUp}
+						onScroll={combinedHandleScroll}
 					>
-						{/* 가상화: 앞쪽 여백 */}
-						{beforeWidth > 0 && (
-							<div
-								style={{
-									gridColumn: `1 / ${Math.ceil(beforeWidth / ITEM_WIDTH) + 1}`,
-									gridRow: `1 / ${sections.length + 1}`,
-								}}
-							/>
-						)}
-
-						{/* 가상화: 보이는 세로선만 렌더링 (모든 섹션에 걸쳐 연속된 선) */}
-						{visibleItems.map(({ index }) => {
-							const dateIndex = index
-							if (dateIndex >= dates.length) return null
-
-							return (
+						<div
+							className='grid gap-x-0 gap-y-[26px] shrink-0 relative border-t border-neutral-200'
+							style={{
+								gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
+								gridTemplateRows: `repeat(${sections.length + 1}, 130px)`,
+								width: `${totalWidth}px`,
+							}}
+						>
+							{/* 가상화: 앞쪽 여백 */}
+							{beforeWidth > 0 && (
 								<div
-									key={`line-${dateIndex}`}
-									className='border-r border-neutral-200'
 									style={{
-										gridColumn: dateIndex + 1,
-										gridRow: `1 / ${sections.length + 1}`,
+										gridColumn: `1 / ${Math.ceil(beforeWidth / ITEM_WIDTH) + 1}`,
+										gridRow: `1 / ${sections.length + 2}`,
 									}}
 								/>
-							)
-						})}
+							)}
 
-						{/* MissionBlock 배치 - 가상화 범위 내의 것만 (또는 containerWidth가 0이면 모두 표시) */}
-						{positionedMissions
-							.filter(mission => {
-								if (!mission.columnStart) {
-									return false
-								}
-								// containerWidth가 0이거나 초기 렌더링이면 모두 표시 (가상화 비활성화)
-								if (containerWidth === 0) return true
-
-								// visibleRange가 없으면 모두 표시
-								if (!visibleRange || visibleRange.startIndex === undefined) return true
-
-								const startIdx = mission.columnStart - 1
-								const endIdx = startIdx + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
-								return (
-									(startIdx >= visibleRange.startIndex && startIdx <= visibleRange.endIndex) ||
-									(endIdx >= visibleRange.startIndex && endIdx <= visibleRange.endIndex) ||
-									(startIdx < visibleRange.startIndex && endIdx > visibleRange.endIndex)
-								)
-							})
-							.map(mission => {
-								if (!mission.columnStart) return null
-
-								const colSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
+							{/* 가상화: 보이는 세로선만 렌더링 (모든 섹션에 걸쳐 연속된 선) */}
+							{visibleItems.map(({ index }) => {
+								const dateIndex = index
+								if (dateIndex >= dates.length) return null
 
 								return (
 									<div
-										key={mission.id}
+										key={`line-${dateIndex}`}
+										className='border-r border-neutral-200'
 										style={{
-											gridColumnStart: mission.columnStart,
-											gridColumnEnd: `span ${colSpan}`,
-											gridRow: mission.sectionIndex + 1,
+											gridColumn: dateIndex + 1,
+											gridRow: `1 / ${sections.length + 2}`,
 										}}
-									>
-										<MissionBlock
-											isGoal={mission.isGoal}
-											missionNumber={mission.missionNumber}
-											title={mission.title}
-											progress={mission.progress}
-											createdAt={mission.createdAt}
-											dueDate={mission.dueDate}
-											daysRemaining={mission.daysRemaining}
-											status={mission.status}
-											participants={mission.participants}
-											gridColumnSize={colSpan}
-											onClick={mission.onClick}
-										/>
-									</div>
+									/>
 								)
 							})}
 
-						{/* 빈 셀에 PlusBlock 표시 (호버 시) */}
-						{visibleItems.map(({ index }) => {
-							const dateIndex = index
-							if (dateIndex >= dates.length) return null
+							{/* MissionBlock 배치 - 가상화 범위 내의 것만 (또는 containerWidth가 0이면 모두 표시) */}
+							{positionedMissions
+								.filter(mission => {
+									if (!mission.columnStart) {
+										return false
+									}
+									// containerWidth가 0이거나 초기 렌더링이면 모두 표시 (가상화 비활성화)
+									if (containerWidth === 0) return true
 
-							return sections.map((_, sectionIndex) => {
-								// 해당 셀에 MissionBlock이 있는지 확인
-								const hasMission = positionedMissions.some(mission => {
-									if (!mission.columnStart) return false
-									const startCol = mission.columnStart - 1
-									const endCol = startCol + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
-									return mission.sectionIndex === sectionIndex && dateIndex >= startCol && dateIndex <= endCol
+									// visibleRange가 없으면 모두 표시
+									if (!visibleRange || visibleRange.startIndex === undefined) return true
+
+									const startIdx = mission.columnStart - 1
+									const endIdx = startIdx + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
+									return (
+										(startIdx >= visibleRange.startIndex && startIdx <= visibleRange.endIndex) ||
+										(endIdx >= visibleRange.startIndex && endIdx <= visibleRange.endIndex) ||
+										(startIdx < visibleRange.startIndex && endIdx > visibleRange.endIndex)
+									)
 								})
+								.map(mission => {
+									if (!mission.columnStart) return null
 
-								if (hasMission) return null
+									const colSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
 
-								const isHovered = hoveredCell?.column === dateIndex && hoveredCell?.row === sectionIndex
-
-								return (
-									<div
-										key={`empty-${dateIndex}-${sectionIndex}`}
-										className='relative'
-										style={{
-											gridColumn: dateIndex + 1,
-											gridRow: sectionIndex + 1,
-										}}
-										onMouseEnter={() => setHoveredCell({ column: dateIndex, row: sectionIndex })}
-										onMouseLeave={() => setHoveredCell(null)}
-									>
+									return (
 										<div
-											className='absolute inset-0 flex items-center justify-center transition-opacity duration-300'
+											key={mission.id}
 											style={{
-												opacity: isHovered ? 1 : 0,
-												pointerEvents: isHovered ? 'auto' : 'none',
+												gridColumnStart: mission.columnStart,
+												gridColumnEnd: `span ${colSpan}`,
+												gridRow: mission.sectionIndex + 1,
 											}}
 										>
-											<PlusBlock onClick={() => {}} />
+											<MissionBlock
+												isGoal={mission.isGoal}
+												missionNumber={mission.missionNumber}
+												title={mission.title}
+												progress={mission.progress}
+												createdAt={mission.createdAt}
+												dueDate={mission.dueDate}
+												daysRemaining={mission.daysRemaining}
+												status={mission.status}
+												participants={mission.participants}
+												gridColumnSize={colSpan}
+												onClick={mission.onClick}
+											/>
 										</div>
-									</div>
-								)
-							})
-						})}
+									)
+								})}
 
-						{/* 가상화: 뒤쪽 여백 */}
-						{afterWidth > 0 && (
-							<div
-								style={{
-									gridColumn: `${Math.floor((totalWidth - afterWidth) / ITEM_WIDTH) + 1} / ${totalDates + 1}`,
-									gridRow: `1 / ${sections.length + 1}`,
-								}}
-							/>
-						)}
+							{
+								/* 빈 셀에 PlusBlock 표시 (호버 시) */
+							}
+							{
+								visibleItems.map(({ index }) => {
+									const dateIndex = index
+									if (dateIndex >= dates.length) return null
+
+									return [...sections, null].map((_, sectionIndex) => {
+										// 해당 셀에 MissionBlock이 있는지 확인
+										const hasMission = positionedMissions.some(mission => {
+											if (!mission.columnStart) return false
+											const startCol = mission.columnStart - 1
+											const endCol = startCol + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
+											return (
+												mission.sectionIndex === sectionIndex &&
+												dateIndex >= startCol &&
+												dateIndex <= endCol
+											)
+										})
+
+										if (hasMission) return null
+
+										const isHovered = hoveredCell?.column === dateIndex && hoveredCell?.row === sectionIndex
+
+										return (
+											<div
+												key={`empty-${dateIndex}-${sectionIndex}`}
+												className='relative'
+												style={{
+													gridColumn: dateIndex + 1,
+													gridRow: sectionIndex + 1,
+												}}
+												onMouseEnter={() => setHoveredCell({ column: dateIndex, row: sectionIndex })}
+												onMouseLeave={() => setHoveredCell(null)}
+											>
+												<div
+													className='absolute inset-0 flex items-center mt-3 justify-center transition-opacity duration-300'
+													style={{
+														opacity: isHovered ? 1 : 0,
+														pointerEvents: isHovered ? 'auto' : 'none',
+													}}
+												>
+													<PlusBlock onClick={() => {}} />
+												</div>
+											</div>
+										)
+									})
+								})
+							}
+
+							{/* 가상화: 뒤쪽 여백 */}
+							{afterWidth > 0 && (
+								<div
+									style={{
+										gridColumn: `${Math.floor((totalWidth - afterWidth) / ITEM_WIDTH) + 1} / ${totalDates + 1}`,
+										gridRow: `1 / ${sections.length + 2}`,
+									}}
+								/>
+							)}
+						</div>
 					</div>
+					{/* 왼쪽 그라데이션 오버레이 */}
+					<div className='absolute left-0 top-0 bottom-0 w-[72px] pointer-events-none z-10 bg-linear-to-l from-white/0 via-white/50 to-white' />
+					{/* 오른쪽 그라데이션 오버레이 */}
+					<div className='absolute right-0 top-0 bottom-0 w-[72px] pointer-events-none z-10 bg-linear-to-r from-white/0 via-white/50 to-white' />
 				</div>
-				{/* 왼쪽 그라데이션 오버레이 */}
-				<div className='absolute left-0 top-0 bottom-0 w-[72px] pointer-events-none z-10 bg-linear-to-l from-white/0 via-white/50 to-white' />
-				{/* 오른쪽 그라데이션 오버레이 */}
-				<div className='absolute right-0 top-0 bottom-0 w-[72px] pointer-events-none z-10 bg-linear-to-r from-white/0 via-white/50 to-white' />
 			</div>
 		</div>
 	)
