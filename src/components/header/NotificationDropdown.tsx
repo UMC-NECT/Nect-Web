@@ -81,23 +81,23 @@ const NotificationDropdown = ({ defaultTab = 'all' }: NotificationDropdownProps)
 	const filteredNotifications = activeTab === 'all' ? notifications : notifications
 
 	return (
-		<div className='absolute top-[66px] right-6 w-[336px] h-[646px] bg-white rounded-2xl border border-neutral-200 z-50 overflow-hidden shadow-[0px_6px_20px_0px_rgba(228,228,228,1)]'>
+		<div className='absolute top-[66px] right-6 w-[336px] h-[646px] bg-white rounded-2xl border border-neutral-200 z-50 overflow-hidden shadow-drop-neutral-1'>
 			{/* 헤더 - 고정 영역 (프로필, 탭) */}
 			<div className='p-4 pb-3'>
 				{/* 프로필 영역 */}
 				<div className='flex items-start justify-between mb-3'>
 					<div className='flex items-center gap-3'>
 						{/* 프로필 이미지 */}
-						<ProfileImage className='w-12 h-12 rounded-full flex-shrink-0' />
+						<ProfileImage className='w-12 h-12 rounded-full shrink-0' />
 
 						{/* 프로필 정보 */}
 						<div>
 							<h3 className='text-[15px] font-semibold text-neutral-900 mb-1'>이방토</h3>
 							<div className='flex items-center gap-1.5 text-[11px]'>
 								<button className='text-primary-600-normal'>디자이너</button>
-								<BarIcon className='w-[1px] h-3' />
+								<BarIcon className='w-px h-3' />
 								<button className='text-neutral-600'>포트폴리오</button>
-								<BarIcon className='w-[1px] h-3' />
+								<BarIcon className='w-px h-3' />
 								<button className='text-neutral-600'>My Page {'>'}</button>
 							</div>
 						</div>
