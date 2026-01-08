@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import ExploreHeader from './ExploreHeader';
-import WorkspaceHeader from './WorkspaceHeader';
+import ExploreHeader from './ExploreHeader'
+import WorkspaceHeader from './WorkspaceHeader'
+import { useWorkspace } from '@/stores/useWorkspace'
 
 const Header = () => {
-    const [headerType, setHeaderType] = useState<'explore' | 'workspace'>('explore');
+	const { isWorkspace, setIsWorkspace } = useWorkspace()
 
-    if (headerType === 'workspace') {
-        return <WorkspaceHeader onNavigate={() => setHeaderType('explore')} />;
-    }
-    
-    return <ExploreHeader onNavigate={() => setHeaderType('workspace')} />;
-};
+	if (isWorkspace) {
+		return <WorkspaceHeader onNavigate={() => setIsWorkspace(false)} />
+	}
 
-export default Header;
+	return <ExploreHeader onNavigate={() => setIsWorkspace(true)} />
+}
+
+export default Header
