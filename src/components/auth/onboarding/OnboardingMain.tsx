@@ -1,5 +1,6 @@
 import BackButton from '@/components/common/BackButton'
 import ProgressBar from '@/components/common/ProgressBar'
+import Step1 from './steps/Step1'
 
 const OnboardingMain = () => {
 	return (
@@ -15,6 +16,7 @@ const OnboardingMain = () => {
 				<ProgressBar />
 
 				{/* 컨텐츠 */}
+				<Step1 />
 			</div>
 		</div>
 	)
