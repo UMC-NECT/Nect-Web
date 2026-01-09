@@ -17,7 +17,7 @@ export type LoginFormType = z.infer<typeof loginSchema>
 // 온보딩 1 스키마
 const nickname = z.string().min(1, '닉네임은 1글자 이상으로 작성해주세요.')
 const birth = z.string().length(8, '8자리').regex(/^\d+$/, '숫자만 입력하세요')
-const job = z.string().optional()
+const job = z.string()
 
 // 온보딩 스키마
 export const onboardingSchema = z.object({

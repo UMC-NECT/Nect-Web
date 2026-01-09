@@ -11,7 +11,7 @@ type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
 // 단계별로 유효성 검사 항목
 const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
-	1: ['nickname', 'birth'],
+	1: ['nickname', 'birth', 'job'],
 }
 
 const OnboardingMain = () => {
