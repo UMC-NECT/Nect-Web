@@ -2,14 +2,17 @@ import { useState, useRef } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
 import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
 import SideNotificationModal from './SideNotificationModal'
+import SideChatModal from './SideChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
 export const Sidebar = () => {
 	const [activeTopMenu, setActiveTopMenu] = useState<TopMenuId | null>(null)
 	const [activeBottomMenu, setActiveBottomMenu] = useState<BottomMenuId | null>('team-board')
 	const [showNotificationModal, setShowNotificationModal] = useState(false)
+	const [showChatModal, setShowChatModal] = useState(false)
 
 	const notificationModalRef = useRef<HTMLDivElement>(null)
+	const chatModalRef = useRef<HTMLDivElement>(null)
 
 	useClickOutside(
 		notificationModalRef,
@@ -20,13 +23,28 @@ export const Sidebar = () => {
 		showNotificationModal
 	)
 
+	useClickOutside(
+		chatModalRef,
+		() => {
+			setShowChatModal(false)
+			setActiveTopMenu(null)
+		},
+		showChatModal
+	)
+
 	const handleTopMenuClick = (menuId: TopMenuId) => {
 		if (menuId === 'notification') {
 			setShowNotificationModal(!showNotificationModal)
+			setShowChatModal(false)
 			setActiveTopMenu(showNotificationModal ? null : menuId)
+		} else if (menuId === 'message') {
+			setShowChatModal(!showChatModal)
+			setShowNotificationModal(false)
+			setActiveTopMenu(showChatModal ? null : menuId)
 		} else {
 			setActiveTopMenu(menuId)
 			setShowNotificationModal(false)
+			setShowChatModal(false)
 		}
 	}
 
@@ -90,6 +108,11 @@ export const Sidebar = () => {
 			{showNotificationModal && (
 				<div ref={notificationModalRef} className='fixed top-[148px] left-16 z-40'>
 					<SideNotificationModal />
+				</div>
+			)}
+			{showChatModal && (
+				<div ref={chatModalRef} className='fixed top-[148px] left-16 z-40'>
+					<SideChatModal />
 				</div>
 			)}
 		</>
