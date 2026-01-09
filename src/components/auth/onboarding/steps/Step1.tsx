@@ -62,7 +62,8 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 						}}
 						{...register('birth', {
 							onChange: e => {
-								e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 8)
+								const cleanedValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 8)
+								setValue('birth', cleanedValue, { shouldValidate: true })
 							},
 						})}
 					/>

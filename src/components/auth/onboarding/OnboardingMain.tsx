@@ -6,6 +6,7 @@ import { useState } from 'react'
 import Button from '@/components/common/Button'
 import type { OnboardingFormType } from '@/utils/validate'
 import { FormProvider, type Path } from 'react-hook-form'
+import Step2 from './steps/Step2'
 
 type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
@@ -65,6 +66,10 @@ const OnboardingMain = () => {
 		switch (currentStep) {
 			case 1:
 				return <Step1 setIsNicknameChecked={setIsNicknameChecked} isNicknameChecked={isNicknameChecked} />
+			case 2:
+				return <Step2 />
+			default:
+				return <></>
 		}
 	}
 
