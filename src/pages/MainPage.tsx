@@ -1,10 +1,3 @@
-import MissonPart_Title from '@/components/week-mission/MissonPart_Title'
-import SegmentsBar from '@/components/week-mission/SegmentsBar'
-import PlanTag from '@/components/common/PlanTag'
-import MissionCard from '@/components/week-mission/MissionCard'
-import WeekSelector from '@/components/week-mission/WeekSelector'
-import WeekDates from '@/components/week-mission/WeekDates'
-
 const MainPage = () => {
 	return (
 		<div>

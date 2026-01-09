@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import LogoIcon from '@/assets/icons/header/Logo.svg?react';
 import BarIcon from '@/assets/icons/header/Bar.svg?react';
-import MessageIcon from '@/assets/icons/common/Message.svg?react';
-import NotificationIcon from '@/assets/icons/common/Notification.svg?react';
+import MessageIcon from '@/assets/icons/common/message.svg?react';
+import NotificationIcon from '@/assets/icons/common/notification.svg?react';
 import ProfileIcon from '@/assets/icons/header/Profile.svg?react';
 import PortfolioIcon from '@/assets/icons/header/Portfolio.svg?react';
 import NotificationDropdown from './NotificationDropdown';
@@ -73,7 +73,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
                             프로젝트ㆍ팀원 탐색
                         </button>
                         <BarIcon />
-                        <button 
+                        <button
                             onClick={onNavigate}
                             className="text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors"
                         >
@@ -86,7 +86,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
                     {/* 오른쪽 아이콘들 */}
                     <div className="flex items-center gap-4">
-                        <button 
+                        <button
                             className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
                                 showNotifications ? 'bg-neutral-100' : 'hover:bg-neutral-100'
                             }`}
@@ -102,7 +102,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
                             )}
                         </button>
 
-                        <button 
+                        <button
                             className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
                                 showMessages ? 'bg-neutral-100' : 'hover:bg-neutral-100'
                             }`}
@@ -115,7 +115,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
                             <MessageIcon className="h-6 w-6 text-neutral-700" />
                         </button>
 
-                        <button 
+                        <button
                             className="flex w-10 h-10 items-center justify-center hover:bg-neutral-100 rounded-[14px] transition-colors"
                             aria-label="프로필"
                         >
