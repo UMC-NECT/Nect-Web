@@ -20,7 +20,10 @@ const SideNewChatModal = ({ onClose, onSelectContact }: SideNewChatModalProps) =
 			{/* 채팅 타입 선택 */}
 			<div className='p-4 flex gap-3'>
 				<button
-					onClick={() => setSelectedChatType('general')}
+					onClick={() => {
+						setSelectedChatType('general')
+						onSelectContact()
+					}}
 					className={`flex-1 h-20 border rounded-lg flex flex-col items-center justify-center gap-2 ${
 						selectedChatType === 'general' ? 'border-primary-500-normal bg-primary-50-light' : 'border-neutral-200'
 					}`}
@@ -29,7 +32,10 @@ const SideNewChatModal = ({ onClose, onSelectContact }: SideNewChatModalProps) =
 					<span className='text-sm'>일반채팅</span>
 				</button>
 				<button
-					onClick={() => setSelectedChatType('team')}
+					onClick={() => {
+						setSelectedChatType('team')
+						onSelectContact()
+					}}
 					className={`flex-1 h-20 border rounded-lg flex flex-col items-center justify-center gap-2 ${
 						selectedChatType === 'team' ? 'border-primary-500-normal bg-primary-50-light' : 'border-neutral-200'
 					}`}
@@ -38,18 +44,6 @@ const SideNewChatModal = ({ onClose, onSelectContact }: SideNewChatModalProps) =
 					<span className='text-sm'>팀채팅</span>
 				</button>
 			</div>
-
-			{/* 다음 버튼 */}
-			{selectedChatType && (
-				<div className='px-4 pb-4'>
-					<button
-						onClick={onSelectContact}
-						className='w-full h-10 bg-primary-500-normal text-white rounded-lg'
-					>
-						다음
-					</button>
-				</div>
-			)}
 		</div>
 	)
 }

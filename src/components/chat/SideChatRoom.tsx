@@ -1,4 +1,4 @@
-import { ChatRoomMessage } from '@/components/common/ChatRoomMessage'
+import { ChatRoomMessage } from './ChatRoomMessage'
 
 interface SideChatRoomProps {
 	roomName: string
@@ -72,3 +72,4 @@ const SideChatRoom = ({ roomName, onClose }: SideChatRoomProps) => {
 }
 
 export default SideChatRoom
+

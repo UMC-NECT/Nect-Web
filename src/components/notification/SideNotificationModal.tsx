@@ -1,4 +1,4 @@
-import { NotificationItem } from '@/components/common/NotificationItem'
+import { NotificationItem } from './NotificationItem'
 
 const SideNotificationModal = () => {
 	return (
@@ -70,3 +70,4 @@ const SideNotificationModal = () => {
 }
 
 export default SideNotificationModal
+

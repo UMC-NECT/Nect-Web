@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
 import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
-import SideNotificationModal from './SideNotificationModal'
-import SideChatModal from './SideChatModal'
+import SideNotificationModal from '@/components/notification/SideNotificationModal'
+import SideChatModal from '@/components/chat/SideChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
 export const Sidebar = () => {

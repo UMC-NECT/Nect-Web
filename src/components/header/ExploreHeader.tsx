@@ -5,7 +5,7 @@ import MessageIcon from '@/assets/icons/common/Message.svg?react'
 import NotificationIcon from '@/assets/icons/common/Notification.svg?react'
 import ProfileIcon from '@/assets/icons/header/Profile.svg?react'
 import PortfolioIcon from '@/assets/icons/header/Portfolio.svg?react'
-import NotificationDropdown from './NotificationDropdown'
+import NotificationDropdown from '@/components/notification/NotificationDropdown'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
 interface ExploreHeaderProps {

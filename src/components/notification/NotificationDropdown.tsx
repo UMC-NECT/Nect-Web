@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ProfileImage from '@/assets/icons/header/Image.svg?react'
 import BarIcon from '@/assets/icons/header/Bar.svg?react'
-import { NotificationItem } from '@/components/common/NotificationItem'
+import { NotificationItem } from './NotificationItem'
 import { type Notification } from '@/types/notification'
 
 interface NotificationDropdownProps {
@@ -138,3 +138,4 @@ const NotificationDropdown = ({ defaultTab = 'all' }: NotificationDropdownProps)
 }
 
 export default NotificationDropdown
+

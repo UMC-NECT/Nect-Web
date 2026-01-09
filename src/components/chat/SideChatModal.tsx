@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChatMessageItem } from '@/components/common/ChatMessageItem'
+import { ChatMessageItem } from './ChatMessageItem'
 import SideChatRoom from './SideChatRoom'
 import SideNewChatModal from './SideNewChatModal'
 import SideSelectContactModal from './SideSelectContactModal'
@@ -65,3 +65,4 @@ const SideChatModal = () => {
 }
 
 export default SideChatModal
+

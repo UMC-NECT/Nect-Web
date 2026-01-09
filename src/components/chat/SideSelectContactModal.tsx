@@ -80,3 +80,4 @@ const SideSelectContactModal = ({ onClose, onConfirm }: SideSelectContactModalPr
 }
 
 export default SideSelectContactModal
+
