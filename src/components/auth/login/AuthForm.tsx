@@ -29,7 +29,7 @@ const AuthForm = () => {
 						type='email'
 						placeholder='E-mail'
 						{...register('email')}
-						className={`${errors.email ? 'border-danger-700' : ''}`}
+						className={`${errors.email ? 'border-danger-700' : ''} `}
 					/>
 
 					{/* 비밀번호 */}

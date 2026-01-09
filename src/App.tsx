@@ -2,7 +2,10 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import { Layout } from './components/layout/Layout'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { AuthLayout } from './components/layout/AuthLayout'
+import OnboardingPage from './pages/auth/OnboardingPage'
 import MainPage from './pages/MainPage'
+import LoginPage from './pages/auth/LoginPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -15,12 +18,24 @@ const queryClient = new QueryClient({
 
 const router = createBrowserRouter([
 	{
-		path: '/',
 		element: <Layout />,
 		children: [
 			{
-				index: true,
+				path: '/',
 				element: <MainPage />,
+			},
+		],
+	},
+	{
+		element: <AuthLayout />,
+		children: [
+			{
+				path: '/login',
+				element: <LoginPage />,
+			},
+			{
+				path: '/onboarding',
+				element: <OnboardingPage />,
 			},
 		],
 	},

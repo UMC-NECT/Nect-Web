@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
-import { loginSchema } from '../utils/validate'
-import type { LoginFormType } from '../utils/validate'
+import { loginSchema, onboardingSchema } from '../utils/validate'
+import type { LoginFormType, OnboardingFormType } from '../utils/validate'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 export const useLoginForm = () => {
@@ -28,4 +28,13 @@ export const useLoginForm = () => {
 		clearErrors,
 		watch,
 	}
+}
+
+export const useOnboardingForm = () => {
+	const methods = useForm<OnboardingFormType>({
+		resolver: zodResolver(onboardingSchema),
+		mode: 'onChange',
+	})
+
+	return methods
 }
