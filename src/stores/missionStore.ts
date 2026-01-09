@@ -1,10 +1,14 @@
 import { create } from 'zustand'
 import type { Mission } from '@/components/week-mission/MissionBoard'
+import type { MissionStatus } from '@/types/missionStatus'
 
 interface MissionStore {
 	missions: Mission[]
 	setMissions: (missions: Mission[]) => void
-	updateMission: (missionId: number, updates: { createdAt?: string; dueDate?: string; sectionIndex?: number }) => void
+	updateMission: (
+		missionId: number,
+		updates: { createdAt?: string; dueDate?: string; sectionIndex?: number; status?: MissionStatus }
+	) => void
 	addMission: (mission: Mission) => void
 	removeMission: (missionId: number) => void
 }

@@ -1,7 +1,11 @@
 import StatusChip from './StatusChip'
-import { MISSION_STATUSES } from '@/types/missionStatus'
+import { MISSION_STATUSES, type MissionStatus } from '@/types/missionStatus'
 
-const StatusChipList = () => {
+interface StatusChipListProps {
+	onStatusChange?: (status: MissionStatus) => void
+}
+
+const StatusChipList = ({ onStatusChange }: StatusChipListProps) => {
 	const handleWheel = (e: React.WheelEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
@@ -9,6 +13,12 @@ const StatusChipList = () => {
 
 	const handleMouseDown = (e: React.MouseEvent) => {
 		e.stopPropagation()
+	}
+
+	const handleStatusClick = (status: MissionStatus) => {
+		if (onStatusChange) {
+			onStatusChange(status)
+		}
 	}
 
 	return (
@@ -21,7 +31,7 @@ const StatusChipList = () => {
 				<p className='caption-1 text-neutral-500 font-medium'>:: 상태 변경</p>
 				<div className='flex flex-col gap-[10px] items-start w-full'>
 					{MISSION_STATUSES.map((status, index) => (
-						<StatusChip key={index} state={status} />
+						<StatusChip key={index} state={status} onClick={() => handleStatusClick(status)} />
 					))}
 				</div>
 			</div>

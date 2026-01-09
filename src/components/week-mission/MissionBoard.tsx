@@ -39,7 +39,10 @@ export interface Section {
 interface MissionBoardProps {
 	missions: Mission[]
 	sections?: Section[] // 섹션 제목 배열 (기본: 4개)
-	onMissionUpdate?: (missionId: number, updates: { createdAt?: string; dueDate?: string; sectionIndex?: number }) => void
+	onMissionUpdate?: (
+		missionId: number,
+		updates: { createdAt?: string; dueDate?: string; sectionIndex?: number; status?: MissionStatus }
+	) => void
 }
 
 const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoardProps) => {
@@ -370,6 +373,11 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 											onClick={mission.onClick}
 											onDragStart={e => handleMissionDragStart(mission.id, e)}
 											onResizeStart={() => handleMissionResizeStart(mission.id)}
+											onStatusChange={newStatus => {
+												if (onMissionUpdate) {
+													onMissionUpdate(mission.id, { status: newStatus })
+												}
+											}}
 											isDragging={isDragging}
 											isResizing={isResizing}
 										/>

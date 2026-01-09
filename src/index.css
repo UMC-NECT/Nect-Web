@@ -105,6 +105,12 @@ button:disabled {
 	--color-danger-600: #666666;
 	--color-danger-700: #EC2D30;
 
+	--color-status-error: #ff7f38;
+	--color-status-success: #009444;
+	--color-status-complete: #2883de;
+	--color-status-progress: #ffeb63;
+	--color-status-info: #838391;
+
 	--shadow-sm: 0 8px 24px 0 rgba(39, 39, 39, 0.15);
 	--shadow-md: 0 16px 40px 0 rgba(39, 39, 39, 0.2);
 	--shadow-brand: 0 16px 40px 0 rgba(72, 11, 153, 0.2);
