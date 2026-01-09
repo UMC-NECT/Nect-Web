@@ -6,6 +6,7 @@ import { AuthLayout } from './components/layout/AuthLayout'
 import OnboardingPage from './pages/auth/OnboardingPage'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
+import WeekMissionPage from './pages/WeekMissionPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
 			{
 				path: '/',
 				element: <MainPage />,
+			},
+			{
+				path: '/week-mission',
+				element: <WeekMissionPage />,
 			},
 		],
 	},

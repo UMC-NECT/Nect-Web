@@ -269,7 +269,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 			{/* 그리드 영역 - 4개 섹션 */}
 			<div className='flex relative'>
 				{/* 왼쪽 MissonPart 컴포넌트들 - 고정 위치 */}
-				<div className='flex flex-col gap-y-[26px] pt-px shrink-0'>
+				<div className='flex flex-col gap-y-[12px] pt-px shrink-0'>
 					{/* 첫 번째 줄: 위크미션 Task */}
 					<MissonPart_Title title='위크미션 Task' isGoal />
 					{/* 나머지 줄들: 섹션 제목들 */}
@@ -294,7 +294,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 					>
 						<div
 							ref={gridContainerRef}
-							className='grid gap-x-0 gap-y-[26px] shrink-0 relative border-t border-neutral-200'
+							className='grid gap-x-0 gap-y-[12px] shrink-0 relative border-t border-neutral-200'
 							style={{
 								gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
 								gridTemplateRows: `repeat(${sections.length + 1}, 130px)`,
