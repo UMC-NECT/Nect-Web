@@ -118,7 +118,7 @@ button:disabled {
 	--radius-full: 100%;
 
 	--spacing-gutter: 24px;
-	--max-width-main: 1140px;
+	--max-width-main: 1440px;
 }
 
 @layer utilities {
@@ -228,5 +228,12 @@ button:disabled {
 
 	.shadow-drop-primary-2 {
 		box-shadow: var(--shadow-drop-primary-2);
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
 	}
 }

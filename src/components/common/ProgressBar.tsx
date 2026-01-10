@@ -3,35 +3,21 @@ interface IProgressBar {
 	totalSteps?: number
 }
 
-const ProgressBar = ({ currentStep = 2, totalSteps = 8 }: IProgressBar) => {
+const ProgressBar = ({ currentStep = 1, totalSteps = 6 }: IProgressBar) => {
 	const steps = Array.from({ length: totalSteps })
 
 	return (
-		<div className='relative w-full max-w-188 h-1.5'>
-			{/* 배경으로 깔아줄 8칸 */}
-			<div className='flex w-full h-full gap-1.5 rounded-[20px] overflow-hidden'>
-				{steps.map((_, index) => (
-					<div
-						key={index}
-						className={`flex-1 transition-colors duration-300 bg-primary-100-light ${
-							index === 0 ? 'rounded-l-[20px]' : ''
-						} ${index === totalSteps - 1 ? 'rounded-r-[20px]' : ''}`}
-					/>
-				))}
-			</div>
-
-			{/* 진행 단계만큼 색찰 */}
-			<div className='absolute top-0 left-0 w-full h-full flex'>
+		<div className='w-full max-w-188'>
+			{/* 전체 8단계 프로그레스 바 */}
+			<div className='flex w-full h-1.5 gap-1.5'>
 				{steps.map((_, index) => (
 					<div
 						key={index}
 						className={`
-                        h-1.5 flex-1 transition-colors duration-300
-                        ${index < currentStep ? 'bg-primary-400-normal' : ''}
-                        ${index === 0 ? 'rounded-l-[20px]' : ''}
-                        ${index === currentStep - 1 ? 'rounded-r-[20px]' : ''}
-                    `}
-					></div>
+							flex-1 h-full rounded-[20px] transition-colors duration-300
+							${index < currentStep ? 'bg-primary-400-normal' : 'bg-primary-100-light'}
+						`}
+					/>
 				))}
 			</div>
 		</div>
