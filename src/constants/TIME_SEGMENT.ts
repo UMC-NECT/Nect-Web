@@ -1,0 +1,1 @@
+export const TIME_SEGMENT: Array<string> = ['Week', 'Month', 'Year']
