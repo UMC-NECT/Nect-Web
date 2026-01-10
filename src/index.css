@@ -228,6 +228,8 @@ button:disabled {
 
 	.shadow-drop-primary-2 {
 		box-shadow: var(--shadow-drop-primary-2);
+	}
+	
 	.scrollbar-hide {
 		-ms-overflow-style: none;
 		scrollbar-width: none;
