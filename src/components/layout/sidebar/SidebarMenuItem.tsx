@@ -7,6 +7,7 @@ interface SidebarMenuItemProps {
 	alwaysDark?: boolean
 	shadowType?: 'neutral-1' | 'neutral-2'
 	hasBadge?: boolean
+	className?: string
 }
 
 export const SidebarMenuItem = ({
@@ -16,6 +17,7 @@ export const SidebarMenuItem = ({
 	alwaysDark = false,
 	shadowType,
 	hasBadge = false,
+	className,
 }: SidebarMenuItemProps) => {
 	const textColor = alwaysDark ? 'text-neutral-900' : isActive ? 'text-neutral-900' : 'text-neutral-500'
 
@@ -28,13 +30,17 @@ export const SidebarMenuItem = ({
 				? 'bg-neutral-50 shadow-inner-neutral-2'
 				: ''
 
+	const letterSpacingStyle = label === '팀 메세지' ? { letterSpacing: '-0.04em' } : {}
+
 	return (
-		<div className={cn('w-14 h-14 rounded-16 flex flex-col justify-center items-center gap-0.5', shadowClass)}>
+		<div className={cn('w-14 h-14 rounded-16 flex flex-col justify-center items-center gap-0.5', shadowClass, className)}>
 			<div className='w-7 h-7 relative'>
 				<Icon className={cn('w-7 h-7', textColor)} />
 				{hasBadge && <div className='bg-primary-500-normal absolute top-px right-px w-1 h-1 rounded-full' />}
 			</div>
-			<div className={cn('w-12 text-center caption-1 font-medium', textColor)}>{label}</div>
+			<div className={cn('w-12 text-center caption-1 font-medium', textColor)} style={letterSpacingStyle}>
+				{label}
+			</div>
 		</div>
 	)
 }
