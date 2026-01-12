@@ -25,6 +25,9 @@ const role = z.string().min(1, '역할을 선택해주세요')
 const fields = z.array(z.string()).min(1, '분야를 최소 1개 선택해주세요')
 const customField = z.string().optional()
 
+// 온보딩 3
+const skill = z.array(z.string()).min(1, '스킬을 최소 1개 선택해주세요').max(20, '최대 20개의 스킬까지 대표 가능')
+
 // 온보딩 스키마
 export const onboardingSchema = z.object({
 	// Step 1
@@ -36,6 +39,9 @@ export const onboardingSchema = z.object({
 	role: role,
 	fields: fields,
 	customField: customField,
+
+	// Step 3
+	skill: skill,
 })
 
 export type OnboardingFormType = z.infer<typeof onboardingSchema>

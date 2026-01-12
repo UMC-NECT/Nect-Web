@@ -15,6 +15,7 @@ type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
 	1: ['nickname', 'birth', 'job'],
 	2: ['role', 'fields'],
+	3: ['skill'],
 }
 
 const OnboardingMain = () => {

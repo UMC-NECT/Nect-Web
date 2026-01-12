@@ -3,7 +3,10 @@ import CheckboxItem from '@/components/common/CheckboxItem'
 import DividerLine from '@/components/common/DividerLine'
 import Input from '@/components/common/Input'
 import TagButton from '@/components/common/TagButton'
+import type { OnboardingFormType } from '@/utils/validate'
 import { useState } from 'react'
+import { useFormContext } from 'react-hook-form'
+import CheckIcon from '@/assets/icons/signup/check-icon.svg?react'
 
 const skillsTitle = ['디자인', '개발', '기획', '마케팅', '기타']
 const skillsDetail: Record<string, string[]> = {
@@ -106,35 +109,56 @@ const skillsDetail: Record<string, string[]> = {
 }
 
 const Step3 = () => {
-	const [selectedSkill, setSelectedSkill] = useState<string[]>([]) // 선택한 스킬들
-	const [inputValue, setInputValue] = useState('') // 직접 입력한 필드
+	const [inputValue, setInputValue] = useState('') // 직접 입력 필드용
+
+	// 유효성 검사용
+	const {
+		setValue,
+		watch,
+		formState: { errors },
+	} = useFormContext<OnboardingFormType>()
+
+	// 폼 데이터 감시
+	const selectedSkills = watch('skill') || []
 
 	// 스킬 선택 (왼쪽꺼)
 	const handleSelectSkill = (skill: string) => {
-		const newFields = selectedSkill.includes(skill) ? selectedSkill.filter(f => f !== skill) : [...selectedSkill, skill]
+		const isAlreadySelected = selectedSkills.includes(skill)
 
-		setSelectedSkill(newFields)
+		if (isAlreadySelected) {
+			// 이미 선택한 항목 해제는 허용
+			const newFields = selectedSkills.filter(f => f !== skill)
+			setValue('skill', newFields, { shouldValidate: true })
+		} else {
+			// 새로 추가
+			setValue('skill', [...selectedSkills, skill], { shouldValidate: true })
+		}
 	}
 
 	// 직접 입력한 스킬 추가 (엔터누르면 추가됨)
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === 'Enter' && inputValue.trim() && !e.nativeEvent.isComposing) {
+		if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
 			e.preventDefault()
-			if (!selectedSkill.includes(inputValue.trim())) {
-				setSelectedSkill([...selectedSkill, inputValue.trim()])
+			const trimmedValue = inputValue.trim()
+
+			if (!trimmedValue) return
+
+			// 중복 방지 체크해서 추가
+			if (!selectedSkills.includes(trimmedValue)) {
+				setValue('skill', [...selectedSkills, trimmedValue], { shouldValidate: true })
+				setInputValue('')
 			}
-			setInputValue('')
 		}
 	}
 
 	// 카테고리별로 선택된 스킬을 그룹화
 	const groupedSkills = skillsTitle.reduce(
 		(acc, title) => {
-			const categorySkills = skillsDetail[title]?.filter(skill => selectedSkill.includes(skill)) || []
+			const categorySkills = skillsDetail[title]?.filter(skill => selectedSkills.includes(skill)) || []
 
 			// "기타" 카테고리에 직접 입력한 스킬 추가
 			if (title === '기타') {
-				const customSkills = selectedSkill.filter(skill => {
+				const customSkills = selectedSkills.filter(skill => {
 					return !Object.values(skillsDetail).flat().includes(skill)
 				})
 				const allSkills = [...categorySkills, ...customSkills]
@@ -173,7 +197,7 @@ const Step3 = () => {
 										<CheckboxItem
 											key={skill}
 											label={skill}
-											checked={selectedSkill.includes(skill)}
+											checked={selectedSkills.includes(skill)}
 											onChange={handleSelectSkill}
 										/>
 									))}
@@ -184,10 +208,11 @@ const Step3 = () => {
 
 					{/* 직접입력 */}
 					<Input
-						placeholder='직접입력 후 Enter'
+						placeholder={selectedSkills.length >= 20 ? '최대 개수 도달' : '직접입력 후 Enter'}
+						disabled={selectedSkills.length >= 20}
 						className='body-1 placeholder:body-1 placeholder:text-neutral-300 px-5 py-3.25'
 						value={inputValue}
-						onChange={e => setInputValue(e.target.value)}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
 						onKeyDown={handleKeyDown}
 					/>
 				</div>
@@ -197,7 +222,7 @@ const Step3 = () => {
 
 				{/* 오른쪽 */}
 				<div className='w-109.5 sm:w-60 md:w-90 lg:w-100 h-84.25 flex flex-col justify-between'>
-					<div className='overflow-y-auto flex flex-col gap-5'>
+					<div className='overflow-y-auto flex flex-col gap-5 pb-4.25'>
 						{Object.keys(groupedSkills).length === 0 ? (
 							<div className='body-1 text-neutral-400'></div>
 						) : (
@@ -205,17 +230,42 @@ const Step3 = () => {
 								<div key={category} className='flex flex-col gap-3'>
 									<div className='body-1 font-semibold text-neutral-800'>{category}</div>
 									<div className='flex flex-wrap gap-2'>
-										{skills.map(skill => (
-											<TagButton key={skill} text={skill} onClick={() => handleSelectSkill(skill)} />
-										))}
+										{skills.map(skill => {
+											// "Adobe"로 시작하면 어도비 제거하고 표시함
+											const displayText = skill.startsWith('Adobe ') ? skill.replace('Adobe ', '') : skill
+											return (
+												<TagButton
+													key={skill}
+													text={displayText}
+													onClick={() => handleSelectSkill(skill)}
+												/>
+											)
+										})}
 									</div>
 								</div>
 							))
 						)}
 					</div>
 
-					{/* 선택한 항목 개수 */}
-					<div className='body-3 text-end text-status-success'>{selectedSkill.length}/20</div>
+					{/* 선택한 항목 개수 && 에러 메시지 */}
+					<div className='flex justify-between'>
+						<span className='flex justify-center items-center gap-1'>
+							{selectedSkills.length >= 20 && (
+								<CheckIcon className={`w-3 h-3 ${errors.skill ? 'text-status-error' : 'text-status-success'}`} />
+							)}
+
+							{selectedSkills.length === 20 && (
+								<>
+									<span className='body-3 text-status-success'>대표 스킬 적용</span>
+								</>
+							)}
+
+							{errors.skill && <span className='body-3 text-status-error'>{errors.skill.message}</span>}
+						</span>
+						<span className={`body-3 text-end ${errors.skill ? 'text-status-error' : 'text-status-success'}`}>
+							{selectedSkills.length}/20
+						</span>
+					</div>
 				</div>
 			</div>
 		</div>
