@@ -16,7 +16,7 @@ export interface MenuItem {
 
 export const TOP_MENU_ITEMS: MenuItem[] = [
 	{ id: 'notification', icon: NotificationIcon, label: '알림' },
-	{ id: 'message', icon: MessageIcon, label: '메세지' },
+	{ id: 'message', icon: MessageIcon, label: '팀 메세지' },
 ]
 
 export const BOTTOM_MENU_ITEMS: MenuItem[] = [
