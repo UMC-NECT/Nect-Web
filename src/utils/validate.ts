@@ -31,6 +31,9 @@ const skill = z.array(z.string()).min(1, '스킬을 최소 1개 선택해주세�
 // 온보딩 4
 const interest = z.array(z.string()).min(1, '관심분야를 최소 1개 선택해주세요')
 
+// 온보딩 5
+const goal = z.array(z.string()).min(1, '목표를 최소 1개 선택해주세요')
+
 // 온보딩 스키마
 export const onboardingSchema = z.object({
 	// Step 1
@@ -48,6 +51,9 @@ export const onboardingSchema = z.object({
 
 	// Step 4
 	interest: interest,
+
+	// Step 5
+	goal: goal,
 })
 
 export type OnboardingFormType = z.infer<typeof onboardingSchema>
