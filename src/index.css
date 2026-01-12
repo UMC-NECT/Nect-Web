@@ -116,6 +116,7 @@ button:disabled {
 	--shadow-brand: 0 16px 40px 0 rgba(72, 11, 153, 0.2);
 
 	--radius-10: 10px;
+	--radius-12: 12px;
 	--radius-16: 16px;
 	--radius-100: 100px;
 	--radius-full: 100%;

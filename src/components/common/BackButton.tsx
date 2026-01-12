@@ -10,7 +10,7 @@ const BackButton = ({ onClick }: IBackButton) => {
 			<button
 				type='button'
 				onClick={onClick}
-				className='max-w-11.5 p-3.25 border rounded-full border-neutral-200 bg-neutral-50 text-neutral-600 hover:cursor-pointer hover:bg-neutral-200 duration-300 ease-in-out'
+				className='max-w-11.5 p-3.25 border rounded-full border-neutral-200 bg-neutral-50 text-neutral-600 hover:cursor-pointer hover:bg-neutral-100 hover:border-neutral-300 duration-200 ease-in-out'
 				aria-label='뒤로가기'
 			>
 				<BackButtonIcon />
