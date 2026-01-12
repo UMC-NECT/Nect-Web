@@ -1,6 +1,7 @@
 import ChipButton from '@/components/common/ChipButton'
 import { useFormContext } from 'react-hook-form'
 import type { OnboardingFormType } from '@/utils/validate'
+import DividerLine from '@/components/common/DividerLine'
 
 const roles = ['디자이너', '개발자', '기획자', '마케터', '기타']
 
@@ -98,7 +99,9 @@ const Step2 = () => {
 				</div>
 
 				{/* 세로 구분선 */}
-				<div className='w-px h-79.5 mx-11.5 mt-12.75 bg-neutral-200' />
+				<div className='mt-12.75'>
+					<DividerLine />
+				</div>
 
 				{/* 분야 */}
 				<div className='flex-1'>
