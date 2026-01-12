@@ -34,6 +34,10 @@ const interest = z.array(z.string()).min(1, '관심분야를 최소 1개 선택�
 // 온보딩 5
 const goal = z.array(z.string()).min(1, '목표를 최소 1개 선택해주세요')
 
+// 온보딩 6
+const workStyle = z.number().int().min(1).max(5).optional()
+const communicationStyle = z.number().int().min(1).max(5).optional()
+
 // 온보딩 스키마
 export const onboardingSchema = z.object({
 	// Step 1
@@ -54,6 +58,10 @@ export const onboardingSchema = z.object({
 
 	// Step 5
 	goal: goal,
+
+	// Step 6
+	workStyle: workStyle,
+	communicationStyle: communicationStyle,
 })
 
 export type OnboardingFormType = z.infer<typeof onboardingSchema>
