@@ -117,7 +117,7 @@ const Step2 = () => {
 								text={field}
 								isChecked={selectedFields.includes(field)}
 								onClick={() => handleFieldClick(field)}
-								className='body-1'
+								className='body-1 w-full'
 							/>
 						))}
 
