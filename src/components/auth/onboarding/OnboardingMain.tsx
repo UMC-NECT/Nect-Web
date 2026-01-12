@@ -8,6 +8,7 @@ import type { OnboardingFormType } from '@/utils/validate'
 import { FormProvider, type Path } from 'react-hook-form'
 import Step2 from './steps/Step2'
 import Step3 from './steps/Step3'
+import Step4 from './steps/Step4'
 
 type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
@@ -16,10 +17,11 @@ const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
 	1: ['nickname', 'birth', 'job'],
 	2: ['role', 'fields'],
 	3: ['skill'],
+	4: ['interest'],
 }
 
 const OnboardingMain = () => {
-	const [currentStep, setCurrentStep] = useState<STEPS>(3)
+	const [currentStep, setCurrentStep] = useState<STEPS>(4)
 	const [isNicknameChecked, setIsNicknameChecked] = useState<boolean>(false)
 
 	const methods = useOnboardingForm() // 온보딩 1~6단계용 커스텀 useForm
@@ -76,6 +78,8 @@ const OnboardingMain = () => {
 				return <Step2 />
 			case 3:
 				return <Step3 />
+			case 4:
+				return <Step4 />
 			default:
 				return <></>
 		}
