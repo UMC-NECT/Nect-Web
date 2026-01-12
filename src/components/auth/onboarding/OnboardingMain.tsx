@@ -21,6 +21,7 @@ const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
 	3: ['skill'],
 	4: ['interest'],
 	5: ['goal'],
+	6: [],
 }
 
 const OnboardingMain = () => {
