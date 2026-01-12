@@ -13,6 +13,7 @@ type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 // 단계별로 유효성 검사 항목
 const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
 	1: ['nickname', 'birth', 'job'],
+	2: ['role', 'fields'],
 }
 
 const OnboardingMain = () => {
@@ -34,10 +35,13 @@ const OnboardingMain = () => {
 		const currentFields = STEP_FIELDS[currentStep] || []
 
 		const isEmptyFieldExist = currentFields.some(field => {
-			const value = values[field]
+			const value = values[field as keyof OnboardingFormType]
+			if (Array.isArray(value)) {
+				return value.length === 0
+			}
 			return !value || (typeof value === 'string' && value.trim() === '')
 		})
-		const hasError = currentFields.some(field => !!errors[field])
+		const hasError = currentFields.some(field => !!errors[field as keyof OnboardingFormType])
 
 		return isEmptyFieldExist || hasError
 	}
@@ -91,6 +95,7 @@ const OnboardingMain = () => {
 			}
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
+				console.log('현재 폼에 입력된 값들', methods.getValues())
 			} else {
 				console.log('최종 제출', methods.getValues())
 			}

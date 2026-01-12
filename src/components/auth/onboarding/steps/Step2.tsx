@@ -1,5 +1,6 @@
-import { useState } from 'react'
 import ChipButton from '@/components/common/ChipButton'
+import { useFormContext } from 'react-hook-form'
+import type { OnboardingFormType } from '@/utils/validate'
 
 const roles = ['디자이너', '개발자', '기획자', '마케터', '기타']
 
@@ -22,40 +23,49 @@ const roleFields: Record<string, string[]> = {
 }
 
 const Step2 = () => {
-	const [selectedRole, setSelectedRole] = useState<string>('') // 1. 역할
-	const [selectedFields, setSelectedFields] = useState<string[]>([]) // 2. 분야
-	const [customField, setCustomField] = useState<string>('') // 2. 분야: 직접 작성 필드
+	const { setValue, watch } = useFormContext<OnboardingFormType>()
+
+	// 값 감시
+	const selectedRole = watch('role') || ''
+	const selectedFields = watch('fields') || []
+	const customFieldInput = watch('customField') || ''
 
 	const displayRole = selectedRole || '디자이너' // 초기값은 디자이너
 
 	// 직접입력 필드가 선택되었는지 확인용
 	const isCustomFieldSelected = selectedFields.some(f => f.startsWith('직접입력:'))
 
+	// 역할 클릭 핸들러
 	const handleRoleClick = (role: string) => {
-		setSelectedRole(role)
-		setSelectedFields([])
-		setCustomField('')
+		setValue('role', role, { shouldValidate: true })
+		setValue('fields', [], { shouldValidate: true })
+		setValue('customField', '', { shouldValidate: true })
 	}
 
+	// 분야 클릭 핸들러
 	const handleFieldClick = (field: string) => {
-		setSelectedFields(prev => (prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]))
+		const newFields = selectedFields.includes(field) ? selectedFields.filter(f => f !== field) : [...selectedFields, field]
+
+		setValue('fields', newFields, { shouldValidate: true })
 	}
 
+	// 분야(직접 입력) 입력시 -> 최대 8글자 + setValue()
 	const handleCustomFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value
 		if (value.length <= 8) {
-			setCustomField(value)
+			setValue('customField', value, { shouldValidate: true })
 		}
 	}
 
 	const handleCustomFieldBlur = () => {
-		if (customField.trim()) {
-			setSelectedFields(prev => {
-				const filtered = prev.filter(f => !f.startsWith('직접입력:'))
-				return [...filtered, `직접입력:${customField.trim()}`]
-			})
+		if (customFieldInput.trim()) {
+			const customValue = `직접입력:${customFieldInput.trim()}`
+			const filtered = selectedFields.filter(f => !f.startsWith('직접입력:'))
+			const newFields = [...filtered, customValue]
+			setValue('fields', newFields, { shouldValidate: true })
 		} else {
-			setSelectedFields(prev => prev.filter(f => !f.startsWith('직접입력:')))
+			const newFields = selectedFields.filter(f => !f.startsWith('직접입력:'))
+			setValue('fields', newFields, { shouldValidate: true })
 		}
 	}
 
@@ -112,7 +122,7 @@ const Step2 = () => {
 						<input
 							type='text'
 							placeholder='직접입력'
-							value={customField}
+							value={customFieldInput}
 							onChange={handleCustomFieldChange}
 							onBlur={handleCustomFieldBlur}
 							className={`px-5 py-2.5 w-full max-w-73 text-center border-2 rounded-xl body-1 duration-300 ease-in-out focus:outline-none ${
