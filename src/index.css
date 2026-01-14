@@ -105,9 +105,14 @@ button:disabled {
 	--color-danger-600: #666666;
 	--color-danger-700: #ec2d30;
 
-	--color-status-error: #ff7f38;
+	--color-status-error: #FF7F38;
+	--color-status-complete: #2883DE;
+	--color-status-progress: #FFEB63;
 	--color-status-success: #009444;
-	--color-social-kakao: #fee500;
+	--color-status-info: #71717F;
+	--color-status-info-light: #DADAE8;
+
+	--color-social-kakao: #FEE500;
 
 	--shadow-inner-neutral-1: inset 0 1.3px 3px 0 rgba(228, 228, 228, 0.2), inset 0 3px 6px 0 rgba(228, 228, 228, 0.2);
 	--shadow-inner-neutral-2: inset -1px 2.5px 4px 0 rgba(228, 228, 228, 0.2);
@@ -234,7 +239,7 @@ button:disabled {
 	.shadow-drop-primary-2 {
 		box-shadow: var(--shadow-drop-primary-2);
 	}
-	
+
 	.scrollbar-hide {
 		-ms-overflow-style: none;
 		scrollbar-width: none;
