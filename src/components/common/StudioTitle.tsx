@@ -1,4 +1,4 @@
-import CalendarIcon from '@/assets/icons/week-mission/calender.svg?react'
+import CalendarIcon from '@/assets/icons/common/calendar.svg?react'
 
 interface StudioTitleProps {
 	title: string
