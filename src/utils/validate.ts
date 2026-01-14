@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+// 로그인
 const emailSchema = z
 	.string()
 	.min(1, '아이디에 @를 포함한 이메일 형식으로 작성해주세요.')
@@ -14,10 +15,28 @@ export const loginSchema = z.object({
 })
 export type LoginFormType = z.infer<typeof loginSchema>
 
-// 온보딩 1 스키마
+// 온보딩 1
 const nickname = z.string().min(1, '닉네임은 1글자 이상으로 작성해주세요.')
 const birth = z.string().length(8, '8자리').regex(/^\d+$/, '숫자만 입력하세요')
-const job = z.string()
+const job = z.string().min(1, '직업을 선택해주세요.')
+
+// 온보딩 2
+const role = z.string().min(1, '역할을 선택해주세요')
+const fields = z.array(z.string()).min(1, '분야를 최소 1개 선택해주세요')
+const customField = z.string().optional()
+
+// 온보딩 3
+const skill = z.array(z.string()).min(1, '스킬을 최소 1개 선택해주세요').max(20, '최대 20개의 스킬까지 대표 가능')
+
+// 온보딩 4
+const interest = z.array(z.string()).min(1, '관심분야를 최소 1개 선택해주세요')
+
+// 온보딩 5
+const goal = z.array(z.string()).min(1, '목표를 최소 1개 선택해주세요')
+
+// 온보딩 6
+const workStyle = z.number().int().min(1).max(5).optional()
+const communicationStyle = z.number().int().min(1).max(5).optional()
 
 // 온보딩 스키마
 export const onboardingSchema = z.object({
@@ -25,6 +44,24 @@ export const onboardingSchema = z.object({
 	nickname: nickname,
 	birth: birth,
 	job: job,
+
+	// Step 2
+	role: role,
+	fields: fields,
+	customField: customField,
+
+	// Step 3
+	skill: skill,
+
+	// Step 4
+	interest: interest,
+
+	// Step 5
+	goal: goal,
+
+	// Step 6
+	workStyle: workStyle,
+	communicationStyle: communicationStyle,
 })
 
 export type OnboardingFormType = z.infer<typeof onboardingSchema>

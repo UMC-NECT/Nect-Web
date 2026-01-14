@@ -113,6 +113,7 @@ button:disabled {
 	--shadow-drop-primary-2: 0 1px 2px 0 rgba(102, 15, 216, 0.2), 0 0 4px 0 rgba(154, 92, 235, 0.2);
 
 	--radius-10: 10px;
+	--radius-12: 12px;
 	--radius-16: 16px;
 	--radius-100: 100px;
 	--radius-full: 100%;
