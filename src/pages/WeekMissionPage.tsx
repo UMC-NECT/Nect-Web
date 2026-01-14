@@ -24,7 +24,7 @@ const WeekMissionPage = () => {
 			<StudioTitle title='위크 미션 (Week Misson)' description='주간 미션을 설정하고 프로젝트 완주를 돕는 팀 스페이스' />
 
 			{/* 주차 선택 및 뷰 타입 선택 영역 */}
-			<div className='flex items-center justify-between pl-[72px] mt-8'>
+			<div className='flex items-center justify-between pl-[72px] mt-[31px]'>
 				<WeekSelector />
 				<div className='flex items-center gap-4'>
 					{/* 일정 추가 버튼 */}
