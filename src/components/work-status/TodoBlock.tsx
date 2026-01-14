@@ -1,0 +1,150 @@
+import AvatarGroup from '@/components/common/AvatarGroup'
+import ProgressBar from '@/components/week-mission/ProgressBar'
+import LinkIcon from '@/assets/icons/work-status/link.svg?react'
+import DoIcon from '@/assets/icons/work-status/do.svg?react'
+import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
+import { calculateDateSpan } from '@/utils/dateUtils'
+import LinkChip from './LinkChip'
+
+interface TodoBlockProps {
+	id: number
+	team: string
+	title: string
+	todo: {
+		id: number
+		done: number
+		total: number // 전체 작업 수 (없으면 done + inProgress로 계산)
+	}
+	dueDate?: string // "2025.11.21" 형식
+	participants?: { id: number; name: string; avatar: string }[] // 사용자 아바타 이미지 URL 배열
+	links?: string
+	attachments?: number // 첨부파일 개수
+	variant?: 'Default' | 'Minimum' | 'Edit'
+}
+
+const TodoBlock = ({
+	team,
+	title,
+	todo,
+	dueDate,
+	participants = [],
+    links,
+    attachments,
+	variant = 'Default',
+}: TodoBlockProps) => {
+	const isMinimum = variant === 'Minimum'
+	const isEdit = variant === 'Edit'
+	const isDefaultOrEdit = variant === 'Default' || variant === 'Edit'
+
+	// 진행률 계산 (4개 세그먼트 기준)
+	const progressSegments = 4
+	const completedSegments = todo.total > 0 ? Math.round((todo.done / todo.total) * progressSegments) : 0
+
+	// D-day 계산
+	let daysRemaining: number | null = null
+	if (dueDate) {
+		// 현재 날짜를 "YYYY.MM.DD" 형식으로 변환
+		const today = new Date()
+		const todayStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`
+		daysRemaining = calculateDateSpan(todayStr, dueDate)
+	}
+
+	return (
+		<div
+			className={`bg-neutral-50 border border-solid flex flex-col items-start pl-[14px] pr-[12px] relative rounded-[12px] shadow-drop-neutral-3 w-[208px] ${
+				isMinimum
+					? 'border-neutral-200 pb-[12px] pt-[10px]'
+					: isEdit
+						? 'border-semantic-500 py-[10px]'
+						: 'border-neutral-200 py-[10px]'
+			}`}
+		>
+			<div className='flex flex-col gap-[12px] items-start relative shrink-0 w-full'>
+				{/* 헤더: 라벨 + 제목 */}
+				<div className='flex flex-col gap-[5px] items-start leading-normal not-italic relative shrink-0 text-neutral-900 w-full'>
+					<p className='caption-3 font-medium w-full whitespace-pre-wrap'>{team}</p>
+					<p className='body-1 font-semibold relative shrink-0 w-full line-clamp-2'>
+						{title}
+					</p>
+				</div>
+
+				{/* 상세 정보 (Default 또는 Edit일 때만 표시) */}
+				{isDefaultOrEdit && (
+					<div className='flex flex-col gap-[8px] items-start relative shrink-0 w-full'>
+						{/* 아이콘 + 카운트 */}
+						<div className='flex gap-[7px] h-[28px] items-center relative shrink-0'>
+							{/* 진행 중 아이콘 + 카운트 */}
+                            {links ? <LinkChip app={links} /> :
+                                <div className='flex gap-[3px] items-center relative shrink-0'>
+                                    <div className='overflow-clip relative shrink-0 size-[18px]'>
+                                        <LinkIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
+                                    </div>
+                                    <div className='flex items-center relative shrink-0'>
+                                        <p className='body-3 text-[#838391] font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
+                                            {attachments}
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+
+							{/* 완료 아이콘 + 카운트 */}
+							<div className='flex gap-[3px] items-center relative shrink-0'>
+								<div className='overflow-clip relative shrink-0 size-[18px]'>
+									<DoIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
+								</div>
+								<div className='flex items-center relative shrink-0'>
+									<p className='body-3 text-[#838391] font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
+										{`${todo.done}/${todo.total}`}
+									</p>
+								</div>
+							</div>
+						</div>
+
+						{/* 진행률 바 + 마감일 + D-day + 아바타 */}
+						<div className='flex flex-col gap-[6px] items-start relative shrink-0 w-full'>
+							{/* 진행률 바 */}
+							<div className='w-[132px]'>
+								<ProgressBar completed={completedSegments} total={progressSegments} />
+							</div>
+
+							{/* 마감일 + D-day + 아바타 */}
+							<div className='flex items-center justify-between relative shrink-0 w-full'>
+								{/* 마감일 */}
+								<div className='flex gap-gutter items-center relative shrink-0'>
+									{dueDate && (
+										<div className='flex gap-[4px] items-center leading-[1.6] relative shrink-0 whitespace-pre'>
+											<p className='caption-2 text-neutral-500 font-medium relative shrink-0'>마감일</p>
+											<p className='caption-2 text-neutral-900 font-medium relative shrink-0'>{dueDate}</p>
+										</div>
+									)}
+								</div>
+
+								{/* D-day + 아바타 그룹 + 드롭다운 */}
+								<div className='flex gap-[6px] items-center justify-end relative shrink-0'>
+									{/* D-day */}
+									{daysRemaining !== null && (
+										<div className='flex flex-col font-medium justify-center leading-0 not-italic relative shrink-0 text-primary-500-normal text-right whitespace-nowrap'>
+											<p className='body-3 leading-normal whitespace-pre'>{`D-${daysRemaining}`}</p>
+										</div>
+									)}
+
+									{/* 아바타 그룹 */}
+									{participants.length > 0 && (
+										<div className='flex items-center justify-end pr-[4px] relative shrink-0'>
+											<AvatarGroup avatars={participants.map(participant => participant.avatar)} maxCount={2} size={22.533} />
+										</div>
+									)}
+
+									{/* 드롭다운 아이콘 */}
+									<ChevronDownIcon className='w-4 h-4 hover:cursor-pointer' style={{ stroke: '#838391' }} />
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+	)
+}
+
+export default TodoBlock
