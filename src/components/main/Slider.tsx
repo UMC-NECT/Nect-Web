@@ -29,7 +29,7 @@ const Slider = () => {
                 className="!overflow-visible"
             >
                 {slides.map((slide, index) => (
-                    <SwiperSlide key={index} className="!w-[1200px]">
+                    <SwiperSlide key={`${slide.id}-${index}`} className="!w-[1200px]">
                         <div className={`w-[1200px] h-[373px] ${slide.color} rounded-2xl flex items-center justify-center`}>
                             <span className="text-white text-2xl font-bold">
                                 Slide {slide.id}

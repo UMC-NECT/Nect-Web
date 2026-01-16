@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { CREATOR_TYPES, type CreatorType } from '@/constants/categories';
 
 const RecommendationSection = () => {
     const [selectedCategory, setSelectedCategory] = useState<CreatorType>('디자이너');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const recommendations = [
         { id: 1, name: '추천 1' },
@@ -12,12 +13,29 @@ const RecommendationSection = () => {
         { id: 4, name: '추천 4' },
     ];
 
+    // 외부 클릭 감지
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        if (isDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDropdownOpen]);
+
     return (
         <div className="w-[1200px] mx-auto">
             <h2 className="text-[28px] font-bold mb-8 flex items-center gap-2">
                 내가 찾고 있는 
                 {/* 드롭다운 */}
-                <div className="relative">
+                <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className="text-primary-500-normal hover:text-primary-600-normal transition-colors flex items-center gap-1"
@@ -61,7 +79,7 @@ const RecommendationSection = () => {
                 {recommendations.map((item) => (
                     <div 
                         key={item.id}
-                        className="rounded-xl cursor-pointer"
+                        className="rounded-xl"
                     >
                         {/* 프로필 이미지 영역 (더미) */}
                         <div className="w-[285px] h-[280px] bg-neutral-300 rounded-lg mb-4"></div>
