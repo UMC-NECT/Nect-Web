@@ -6,7 +6,7 @@ const NewsSection = () => {
     const newsItems = [
         {
             id: 1,
-            title: '메칭의 전과정을 함께!',
+            title: '매칭의 전과정을 함께!',
             description: '관심사 목표 기반의 프로필 설정을 통해 매칭을 분석해줘요!'
         },
         {

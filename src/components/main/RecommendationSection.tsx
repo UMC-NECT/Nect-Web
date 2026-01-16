@@ -1,16 +1,9 @@
 import { useState } from 'react';
+import { CREATOR_TYPES, type CreatorType } from '@/constants/categories';
 
 const RecommendationSection = () => {
-    const [selectedCategory, setSelectedCategory] = useState('디자이너');
+    const [selectedCategory, setSelectedCategory] = useState<CreatorType>('디자이너');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    
-    const categories = [
-        '디자이너',
-        '기획자',
-        '편집자',
-        '개발자',
-        '마케터',
-    ];
 
     const recommendations = [
         { id: 1, name: '추천 1' },
@@ -43,7 +36,7 @@ const RecommendationSection = () => {
                     {/* 드롭다운 메뉴 */}
                     {isDropdownOpen && (
                         <div className="absolute top-full mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg py-2 z-10 min-w-[140px]">
-                            {categories.map((category) => (
+                            {CREATOR_TYPES.map((category) => (
                                 <button
                                     key={category}
                                     onClick={() => {

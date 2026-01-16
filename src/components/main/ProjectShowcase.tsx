@@ -10,7 +10,7 @@ const ProjectShowcase = () => {
     ];
 
     return (
-        <div className="w-full -mx-gutter bg-neutral-500 py-16">
+        <div className="w-full -mx-4 bg-neutral-500 py-16">
             <div>
                 <h2 className="text-[28px] font-bold mb-12 text-center">
                     완주한 프로젝트를 포트폴리오로 확인하세요!
