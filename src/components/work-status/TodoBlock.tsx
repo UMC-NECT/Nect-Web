@@ -80,7 +80,7 @@ const TodoBlock = ({
                                         <LinkIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
                                     </div>
                                     <div className='flex items-center relative shrink-0'>
-                                        <p className='body-3 text-[#838391] font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
+                                        <p className='body-3 text-status-info font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
                                             {attachments}
                                         </p>
                                     </div>
@@ -93,7 +93,7 @@ const TodoBlock = ({
 									<DoIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
 								</div>
 								<div className='flex items-center relative shrink-0'>
-									<p className='body-3 text-[#838391] font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
+									<p className='body-3 text-status-info font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
 										{`${todo.done}/${todo.total}`}
 									</p>
 								</div>

@@ -1,5 +1,5 @@
 import type { MissionStatus } from '@/types/missionStatus'
-import { STATUS } from '@/constants/STATUS'
+import { STATUS } from '@/constants/status'
 import { useLocation } from 'react-router'
 import { cn } from '@/utils/cn'
 

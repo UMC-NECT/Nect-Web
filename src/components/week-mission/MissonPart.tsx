@@ -19,7 +19,7 @@ export const MissionPart_Add = () => {
 	return (
 		<div className='flex flex-col items-center justify-center rounded-xl px-2.5 py-4 gap-1 mt-3 bg-neutral-100 w-[72px] h-[118px] hover:bg-neutral-200 cursor-pointer transition-all duration-300'>
 			<p className='body-2 font-bold text-neutral-000 text-center'>팀 추가</p>
-			<PlusIcon className='w-[18px] h-[18px]' />
+			<PlusIcon className='w-[18px] h-[18px] stroke-neutral-000' />
 		</div>
 	)
 }

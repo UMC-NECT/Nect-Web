@@ -112,6 +112,11 @@ button:disabled {
 	--color-status-info: #71717F;
 	--color-status-info-light: #DADAE8;
 
+	--color-status-bg-blue: #E9F3FC;
+	--color-status-bg-yellow: #FDF5E4;
+	--color-status-bg-green: #EDF6F1;
+	--color-status-bg-gray: #F7F7FA;
+
 	--color-social-kakao: #FEE500;
 
 	--shadow-inner-neutral-1: inset 0 1.3px 3px 0 rgba(228, 228, 228, 0.2), inset 0 3px 6px 0 rgba(228, 228, 228, 0.2);
