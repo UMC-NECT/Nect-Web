@@ -23,7 +23,6 @@ button:disabled {
 /* 전역 스크롤바 스타일 - 6px */
 * {
 	scrollbar-width: auto; /* Firefox는 px 사이즈 직접 설정 불가하기 때문에 auto 사용 */
-	scrollbar-color: #d9d9d9 transparent; /* Firefox: thumb 색상 / track 배경색(투명) */
 }
 
 /* Chrome, Safari, Edge 스크롤바 커스터마이징 */
@@ -257,5 +256,34 @@ button:disabled {
 	/* 페이지 전체 가로 스크롤바만 숨기기 */
 	html {
   		overflow-x: hidden; /* 스크롤바는 숨기고 가로 스크롤을 방지 */
+	}
+
+	/* WorkStatusScrollbar - 큰거 (6px) */
+	.WorkStatusScrollbar::-webkit-scrollbar {
+		scrollbar-width: auto !important;
+		width: 6px !important;
+	}
+
+	.WorkStatusScrollbar::-webkit-scrollbar-track {
+		background: transparent !important;
+	}
+
+	.WorkStatusScrollbar::-webkit-scrollbar-thumb {
+		background-color: transparent !important;
+		border-radius: 50px !important;
+	}
+
+	.WorkStatusScrollbar::-webkit-scrollbar-button {
+		display: none !important;
+		width: 0 !important;
+		height: 0 !important;
+	}
+
+	.WorkStatusScrollbar:hover::-webkit-scrollbar-thumb {
+		background-color: #fafafa !important;
+	}
+
+	.WorkStatusScrollbar.scrolling::-webkit-scrollbar-thumb {
+		background-color: #e7e7e7 !important;
 	}
 }
