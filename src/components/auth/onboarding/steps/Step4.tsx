@@ -37,7 +37,7 @@ const Step4 = () => {
 		<>
 			<div className='mb-16'>
 				{/* 타이틀 */}
-				<div className='flex flex-col justify-center items-center gap-3.25 mb-19.25'>
+				<div className='flex flex-col justify-center items-center gap-3 mb-19.25'>
 					<div className='heading-3 text-neutral-900'>
 						<span className='text-primary-500-normal'>관심 분야</span>를 골라주세요
 					</div>

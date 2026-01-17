@@ -142,8 +142,10 @@ const OnboardingMain = () => {
 
 					{/* 컨텐츠 */}
 					{renderStep()}
+				</div>
 
-					{/* 다음 버튼 */}
+				{/* 다음 버튼 */}
+				<div className='absolute bottom-34 left-1/2 -translate-x-1/2'>
 					<Button size='lg' onClick={handleNext} disabled={isNextDisabled()}>
 						다음
 					</Button>

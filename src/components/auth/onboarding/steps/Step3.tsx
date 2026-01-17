@@ -176,7 +176,7 @@ const Step3 = () => {
 	return (
 		<div className='flex flex-col justify-center items-center'>
 			{/* 제목 */}
-			<div className='flex flex-col justify-center items-center gap-3.25 mb-17.5'>
+			<div className='flex flex-col justify-center items-center gap-3 mb-17.5'>
 				<div className='heading-3 text-neutral-900'>
 					활용 가능한 <span className='text-primary-500-normal'>대표 스킬</span>을 등록해주세요
 				</div>
