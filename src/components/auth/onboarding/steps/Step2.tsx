@@ -2,6 +2,7 @@ import ChipButton from '@/components/common/ChipButton'
 import { useFormContext } from 'react-hook-form'
 import type { OnboardingFormType } from '@/utils/validate'
 import DividerLine from '@/components/common/DividerLine'
+import { useRef } from 'react'
 
 const roles = ['디자이너', '개발자', '기획자', '마케터', '기타']
 
@@ -25,6 +26,7 @@ const roleFields: Record<string, string[]> = {
 
 const Step2 = () => {
 	const { setValue, watch } = useFormContext<OnboardingFormType>()
+	const isDeactivatingRef = useRef(false)
 
 	// 값 감시
 	const selectedRole = watch('role') || ''
@@ -59,12 +61,28 @@ const Step2 = () => {
 	}
 
 	const handleCustomFieldBlur = () => {
+		// 클릭으로 인한 비활성화인 경우 blur 무시
+		if (isDeactivatingRef.current) {
+			isDeactivatingRef.current = false
+			return
+		}
+
 		if (customFieldInput.trim()) {
 			const customValue = `직접입력:${customFieldInput.trim()}`
 			const filtered = selectedFields.filter(f => !f.startsWith('직접입력:'))
 			const newFields = [...filtered, customValue]
 			setValue('fields', newFields, { shouldValidate: true })
 		} else {
+			const newFields = selectedFields.filter(f => !f.startsWith('직접입력:'))
+			setValue('fields', newFields, { shouldValidate: true })
+		}
+	}
+
+	// 직접입력 필드 클릭 핸들러
+	const handleCustomFieldClick = () => {
+		if (isCustomFieldSelected) {
+			// 이미 선택되어 있다면 텍스트는 유지한채로 비활성화
+			isDeactivatingRef.current = true
 			const newFields = selectedFields.filter(f => !f.startsWith('직접입력:'))
 			setValue('fields', newFields, { shouldValidate: true })
 		}
@@ -128,9 +146,10 @@ const Step2 = () => {
 							value={customFieldInput}
 							onChange={handleCustomFieldChange}
 							onBlur={handleCustomFieldBlur}
-							className={`px-5 py-2.5 w-full max-w-73 text-center border-2 rounded-xl body-1 duration-300 ease-in-out focus:outline-none ${
+							onClick={handleCustomFieldClick}
+							className={`px-5 py-2.5 w-full max-w-73 text-center border-2 rounded-xl body-1 duration-300 ease-in-out focus:outline-none cursor-pointer ${
 								isCustomFieldSelected
-									? 'text-neutral-50 bg-primary-400-normal border-primary-400-normal'
+									? 'text-neutral-50 font-semibold bg-primary-400-normal border-primary-400-normal'
 									: 'text-neutral-900 bg-neutral-50 border-neutral-200 placeholder:text-neutral-300'
 							}`}
 						/>
