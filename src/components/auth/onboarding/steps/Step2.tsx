@@ -58,6 +58,13 @@ const Step2 = () => {
 		if (value.length <= 8) {
 			setValue('customField', value, { shouldValidate: true })
 		}
+		// 텍스트를 수정 중이면 플래그 리셋
+		isDeactivatingRef.current = false
+	}
+
+	// 포커스가 다시 들어오면 플래그 리셋하는용
+	const handleCustomFieldFocus = () => {
+		isDeactivatingRef.current = false
 	}
 
 	const handleCustomFieldBlur = () => {
@@ -145,6 +152,7 @@ const Step2 = () => {
 							placeholder='직접입력'
 							value={customFieldInput}
 							onChange={handleCustomFieldChange}
+							onFocus={handleCustomFieldFocus}
 							onBlur={handleCustomFieldBlur}
 							onClick={handleCustomFieldClick}
 							className={`px-5 py-2.5 w-full max-w-73 text-center border-2 rounded-xl body-1 duration-300 ease-in-out focus:outline-none cursor-pointer ${
