@@ -16,6 +16,7 @@ export const useLoginForm = () => {
 	} = useForm<LoginFormType>({
 		resolver: zodResolver(loginSchema),
 		mode: 'onSubmit',
+		reValidateMode: 'onSubmit',
 	})
 
 	return {
