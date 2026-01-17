@@ -43,7 +43,12 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 						placeholder='닉네임'
 						error={errors.nickname?.message}
 						success={isNicknameChecked ? '사용 가능' : ''}
-						{...register('nickname', { onChange: () => setIsNicknameChecked(false) })}
+						{...register('nickname', {
+							onChange: e => {
+								setValue('nickname', e.target.value, { shouldValidate: true })
+								setIsNicknameChecked(false)
+							},
+						})}
 					/>
 					{/* 생년월일 (zod) */}
 					<Input
