@@ -37,6 +37,7 @@ const goal = z.array(z.string()).min(1, '목표를 최소 1개 선택해주세�
 // 온보딩 6
 const workStyle = z.number().int().min(1).max(5).optional()
 const communicationStyle = z.number().int().min(1).max(5).optional()
+const teamworkStyle = z.number().int().min(1).max(5).optional()
 
 // 온보딩 스키마
 export const onboardingSchema = z.object({
@@ -62,6 +63,7 @@ export const onboardingSchema = z.object({
 	// Step 6
 	workStyle: workStyle,
 	communicationStyle: communicationStyle,
+	teamworkStyle: teamworkStyle,
 })
 
 export type OnboardingFormType = z.infer<typeof onboardingSchema>

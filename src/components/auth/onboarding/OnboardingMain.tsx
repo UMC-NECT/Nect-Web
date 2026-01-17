@@ -111,7 +111,7 @@ const OnboardingMain = () => {
 			}
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
-				console.log('현재 폼에 입력된 값들', methods.getValues())
+				console.log(`현재 폼에 입력된 값들(${currentStep}): `, methods.getValues())
 			} else {
 				console.log('최종 제출', methods.getValues())
 			}

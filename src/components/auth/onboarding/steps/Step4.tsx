@@ -47,15 +47,13 @@ const Step4 = () => {
 				{/* 컨텐츠 */}
 				<div className='w-126.5 grid grid-cols-2 gap-x-2.5 gap-y-3'>
 					{interest.map(i => (
-						<>
-							<ChipButton
-								key={i}
-								text={i}
-								isChecked={selectedInterest.includes(i)}
-								onClick={() => handleSelectInterest(i)}
-								className='body-1 px-5 py-2.5 w-full'
-							/>
-						</>
+						<ChipButton
+							key={i}
+							text={i}
+							isChecked={selectedInterest.includes(i)}
+							onClick={() => handleSelectInterest(i)}
+							className='body-1 px-5 py-2.5 w-full'
+						/>
 					))}
 				</div>
 			</div>
