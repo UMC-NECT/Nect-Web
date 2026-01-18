@@ -88,7 +88,7 @@ const MissionBlock = memo(
 		return (
 			<div
 				data-mission-block
-				className={`relative flex flex-col pl-4 pr-[10px] py-[10px] max-h-[118px] mt-3 select-none z-10 ${isGoal ? 'bg-primary-100-light border border-primary-300-light mt-3' : 'bg-neutral-50 border border-neutral-200'} rounded-[12px] shadow-[0px_-4px_16px_0px_rgba(25,25,25,0.04)] w-full ${
+				className={`relative flex flex-col pl-4 pr-[10px] py-[10px] max-h-[118px] h-full mt-3 select-none z-10 ${isGoal ? 'bg-primary-100-light border border-primary-300-light mt-3' : 'bg-neutral-50 border border-neutral-200'} rounded-[12px] shadow-[0px_-4px_16px_0px_rgba(25,25,25,0.04)] w-full ${
 					isDragging ? 'cursor-grabbing opacity-70 z-50' : isResizing ? 'cursor-ew-resize' : 'cursor-move'
 				}`}
 				onMouseDown={handleDragStart}

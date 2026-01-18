@@ -6,12 +6,22 @@ import { useState } from 'react'
 import Button from '@/components/common/Button'
 import type { OnboardingFormType } from '@/utils/validate'
 import { FormProvider, type Path } from 'react-hook-form'
+import Step2 from './steps/Step2'
+import Step3 from './steps/Step3'
+import Step4 from './steps/Step4'
+import Step5 from './steps/Step5'
+import Step6 from './steps/Step6'
 
 type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
 // 단계별로 유효성 검사 항목
 const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
 	1: ['nickname', 'birth', 'job'],
+	2: ['role', 'fields'],
+	3: ['skill'],
+	4: ['interest'],
+	5: ['goal'],
+	6: [],
 }
 
 const OnboardingMain = () => {
@@ -33,10 +43,13 @@ const OnboardingMain = () => {
 		const currentFields = STEP_FIELDS[currentStep] || []
 
 		const isEmptyFieldExist = currentFields.some(field => {
-			const value = values[field]
+			const value = values[field as keyof OnboardingFormType]
+			if (Array.isArray(value)) {
+				return value.length === 0
+			}
 			return !value || (typeof value === 'string' && value.trim() === '')
 		})
-		const hasError = currentFields.some(field => !!errors[field])
+		const hasError = currentFields.some(field => !!errors[field as keyof OnboardingFormType])
 
 		return isEmptyFieldExist || hasError
 	}
@@ -65,6 +78,18 @@ const OnboardingMain = () => {
 		switch (currentStep) {
 			case 1:
 				return <Step1 setIsNicknameChecked={setIsNicknameChecked} isNicknameChecked={isNicknameChecked} />
+			case 2:
+				return <Step2 />
+			case 3:
+				return <Step3 />
+			case 4:
+				return <Step4 />
+			case 5:
+				return <Step5 />
+			case 6:
+				return <Step6 />
+			default:
+				return <></>
 		}
 	}
 
@@ -86,6 +111,7 @@ const OnboardingMain = () => {
 			}
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
+				console.log('현재 폼에 입력된 값들', methods.getValues())
 			} else {
 				console.log('최종 제출', methods.getValues())
 			}

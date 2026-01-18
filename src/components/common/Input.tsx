@@ -13,7 +13,7 @@ interface IInput extends React.InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, IInput>(
 	({ category = 'auth', placeholder, error, success, className, ...rest }, ref) => {
 		const message = error || success
-		const statusColor = error ? 'text-[#FF7F38]' : 'text-[#22C55E]'
+		const statusColor = error ? 'text-status-error' : 'text-status-success'
 
 		const baseStyles = {
 			auth: 'w-full h-14 px-4 py-3.5 rounded-10 border-[1.5px] border-neutral-200 bg-neutral-100 focus:border-primary-500-normal focus:outline-none title-2 placeholder:text-neutral-300',

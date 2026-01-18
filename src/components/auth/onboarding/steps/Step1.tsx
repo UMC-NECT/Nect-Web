@@ -36,7 +36,7 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 			<div className='heading-3 text-neutral-900 text-center mb-23'>나에 대해 알려주세요!</div>
 
 			<div className='flex flex-col justify-center items-center gap-47.25'>
-				<div className='flex flex-col gap-7.5'>
+				<div className='flex flex-col gap-9'>
 					{/* 닉네임 (zod + 중복검사 api)  */}
 					<Input
 						category='onboarding'
@@ -62,7 +62,8 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 						}}
 						{...register('birth', {
 							onChange: e => {
-								e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 8)
+								const cleanedValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 8)
+								setValue('birth', cleanedValue, { shouldValidate: true })
 							},
 						})}
 					/>

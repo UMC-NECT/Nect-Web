@@ -17,7 +17,7 @@ button {
 }
 
 button:disabled {
-	cursor: not-allowed
+	cursor: not-allowed;
 }
 
 /* 전역 스크롤바 스타일 - 6px */
@@ -103,19 +103,17 @@ button:disabled {
 	--color-semantic-700: #ec2d30;
 
 	--color-danger-600: #666666;
-	--color-danger-700: #EC2D30;
+	--color-danger-700: #ec2d30;
 
-	--color-status-error: #ff7f38;
-	--color-status-success: #009444;
-	--color-status-complete: #2883de;
-	--color-status-progress: #ffeb63;
-	--color-status-info: #838391;
-
-	--shadow-sm: 0 8px 24px 0 rgba(39, 39, 39, 0.15);
-	--shadow-md: 0 16px 40px 0 rgba(39, 39, 39, 0.2);
-	--shadow-brand: 0 16px 40px 0 rgba(72, 11, 153, 0.2);
+	--shadow-inner-neutral-1: inset 0 1.3px 3px 0 rgba(228, 228, 228, 0.2), inset 0 3px 6px 0 rgba(228, 228, 228, 0.2);
+	--shadow-inner-neutral-2: inset -1px 2.5px 4px 0 rgba(228, 228, 228, 0.2);
+	--shadow-drop-neutral-1: 0 6px 20px 0 rgba(228, 228, 228, 1);
+	--shadow-drop-neutral-2: 0 -4px 16px 0 rgba(228, 228, 228, 0.5);
+	--shadow-drop-neutral-3: 0 -4px 16px 0 rgba(25, 25, 25, 0.04);
+	--shadow-drop-primary-2: 0 1px 2px 0 rgba(102, 15, 216, 0.2), 0 0 4px 0 rgba(154, 92, 235, 0.2);
 
 	--radius-10: 10px;
+	--radius-12: 12px;
 	--radius-16: 16px;
 	--radius-100: 100px;
 	--radius-full: 100%;
@@ -209,6 +207,30 @@ button:disabled {
 		line-height: 1.4;
 	}
 
+	.shadow-inner-neutral-1 {
+		box-shadow: var(--shadow-inner-neutral-1);
+	}
+
+	.shadow-inner-neutral-2 {
+		box-shadow: var(--shadow-inner-neutral-2);
+	}
+
+	.shadow-drop-neutral-1 {
+		box-shadow: var(--shadow-drop-neutral-1);
+	}
+
+	.shadow-drop-neutral-2 {
+		box-shadow: var(--shadow-drop-neutral-2);
+	}
+
+	.shadow-drop-neutral-3 {
+		box-shadow: var(--shadow-drop-neutral-3);
+	}
+
+	.shadow-drop-primary-2 {
+		box-shadow: var(--shadow-drop-primary-2);
+	}
+	
 	.scrollbar-hide {
 		-ms-overflow-style: none;
 		scrollbar-width: none;

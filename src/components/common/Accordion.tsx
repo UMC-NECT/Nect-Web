@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { cn } from '@/utils/cn'
 import ArrowDownIcon from '@/assets/icons/signup/arrow-down.svg?react'
+import { useOutsideClick } from '@/hooks/useOutsideClick'
 
 interface IAccordion {
 	title: string
@@ -12,10 +13,13 @@ interface IAccordion {
 const Accordion = ({ title, children, className, defaultOpen = false }: IAccordion) => {
 	const [isOpen, setIsOpen] = useState(defaultOpen)
 
+	const accordionRef = useRef<HTMLDivElement>(null)
+	useOutsideClick(accordionRef, () => setIsOpen(false))
+
 	const toggleAccordion = () => setIsOpen(!isOpen)
 
 	return (
-		<div className={cn('w-full', className)}>
+		<div className={cn('w-full relative', className)} ref={accordionRef}>
 			{/* 타이틀 */}
 			<button
 				type='button'
@@ -38,11 +42,11 @@ const Accordion = ({ title, children, className, defaultOpen = false }: IAccordi
 			{/* 체크박스 항목들 */}
 			<div
 				className={cn(
-					'overflow-hidden transition-all duration-300 ease-in-out',
-					isOpen ? 'max-h-44 opacity-100' : 'max-h-0 opacity-0'
+					'absolute w-full overflow-hidden transition-all duration-300 ease-in-out z-10',
+					isOpen ? 'max-h-55 opacity-100' : 'max-h-0 opacity-0'
 				)}
 			>
-				<div className='bg-neutral-50 max-h-44 overflow-y-auto'>{children}</div>
+				<div className='bg-neutral-50 max-h-55 overflow-y-auto'>{children}</div>
 			</div>
 		</div>
 	)
