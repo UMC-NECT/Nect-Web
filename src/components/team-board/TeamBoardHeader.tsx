@@ -92,7 +92,7 @@ const TeamBoardHeader = ({
 							<div className='pl-3 pr-1.5 py-1 bg-neutral-100 rounded-100 outline-1 -outline-offset-1 outline-neutral-200 flex justify-center items-center gap-0.5'>
 								<div className="text-center justify-center text-neutral-700 body-2 font-medium line-clamp-1">{memberCount}</div>
 								<div className='w-4 h-4 relative overflow-hidden'>
-									<ChevronDownIcon className='w-4 h-4 text-Color-Neutrals-500' />
+									<ChevronDownIcon className='w-4 h-4 text-neutral-500' />
 								</div>
 							</div>
 						</div>
