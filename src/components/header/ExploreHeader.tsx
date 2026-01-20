@@ -84,7 +84,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						<BarIcon />
 						<button
 							onClick={onNavigate}
-							className='text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
+							className='text-[18px] font-medium text-neutral-400 hover:text-primary-500-normal transition-colors'
 						>
 							팀 작업실
 						</button>
@@ -149,7 +149,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 							<button
 								key={item.name}
 								onClick={() => setActiveSubMenu(item.name)}
-								className={`px-4 py-2 text-[16px] font-medium rounded-xl transition-colors ${
+								className={`px-4 py-2 text-[16px] font-medium rounded-xl transition-colors mr-[10px] ${
 									activeSubMenu === item.name
 										? 'text-neutral-900 bg-neutral-100'
 										: 'text-neutral-700 hover:bg-neutral-50'

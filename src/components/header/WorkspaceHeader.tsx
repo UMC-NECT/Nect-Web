@@ -55,14 +55,14 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                             {/* 프로젝트·팀원 탐색 드롭다운 */}
                             {showExploreMenu && (
                                 <div 
-                                    className="absolute top-[46px] left-[-10px] w-[160px] bg-white rounded-xl border border-neutral-200 py-2 z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
+                                    className="absolute top-[46px] left-[-10px] w-[160px] bg-white rounded-[12px] border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
                                     onMouseEnter={() => setShowExploreMenu(true)}
                                     onMouseLeave={() => setShowExploreMenu(false)}
                                 >
                                     {exploreMenuItems.map((item, index) => (
                                         <div key={item.name}>
                                             <button
-                                                className="w-full px-4 py-2.5 text-left text-[14px] font-medium text-neutral-900 transition-colors"
+                                                className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center"
                                             >
                                                 {item.name}
                                             </button>
@@ -96,14 +96,14 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                             {/* 팀 작업실 드롭다운 */}
                             {showWorkspaceMenu && (
                                 <div 
-                                    className="absolute top-[46px] left-[-20px] w-[160px] bg-white rounded-xl border border-neutral-200 py-2 z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
+                                    className="absolute top-[46px] left-[-20px] w-[160px] bg-white rounded-[12px] border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
                                     onMouseEnter={() => setShowWorkspaceMenu(true)}
                                     onMouseLeave={() => setShowWorkspaceMenu(false)}
                                 >
                                     {workspaceMenuItems.map((item, index) => (
                                         <div key={item.name}>
                                             <button
-                                                className="w-full px-4 py-2.5 text-left text-[14px] font-medium text-neutral-900 transition-colors"
+                                                className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center"
                                             >
                                                 {item.name}
                                             </button>
