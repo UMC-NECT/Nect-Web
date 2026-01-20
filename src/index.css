@@ -243,4 +243,9 @@ button:disabled {
 	.scrollbar-hide::-webkit-scrollbar {
 		display: none;
 	}
+
+	/* 페이지 전체 가로 스크롤바만 숨기기 */
+	html {
+  		overflow-x: hidden; /* 스크롤바는 숨기고 가로 스크롤을 방지 */
+	}
 }
