@@ -105,9 +105,13 @@ button:disabled {
 	--color-danger-600: #666666;
 	--color-danger-700: #ec2d30;
 
-	--color-status-error: #ff7f38;
+	--color-status-error: #FF7F38;
 	--color-status-success: #009444;
-	--color-social-kakao: #fee500;
+	--color-status-progress: #FFEB63;
+	--color-status-complete: #2883DE;
+	--color-status-info-cool-gray-deep: #71717F;
+	--color-status-info-cool-gray-light: #DADAE8;
+	--color-status-info-cool-gray-neutral: #ADADBB;
 
 	--shadow-inner-neutral-1: inset 0 1.3px 3px 0 rgba(228, 228, 228, 0.2), inset 0 3px 6px 0 rgba(228, 228, 228, 0.2);
 	--shadow-inner-neutral-2: inset -1px 2.5px 4px 0 rgba(228, 228, 228, 0.2);
