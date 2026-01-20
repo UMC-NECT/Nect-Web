@@ -27,7 +27,7 @@ const Step5 = () => {
 	return (
 		<div className='flex flex-col justify-center items-center mb-17'>
 			{/* 타이틀 */}
-			<div className='flex flex-col justify-center items-center gap-3.25 mb-17.5'>
+			<div className='flex flex-col justify-center items-center gap-3 mb-17.5'>
 				<div className='heading-3 text-neutral-900'>
 					넥트를 통해 이루고 싶은 <span className='text-primary-500-normal'>첫번째 목표</span>를 알려주세요 !
 				</div>

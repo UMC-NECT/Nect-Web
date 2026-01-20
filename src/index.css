@@ -105,6 +105,8 @@ button:disabled {
 	--color-danger-600: #666666;
 	--color-danger-700: #ec2d30;
 
+	--color-status-error: #ff7f38;
+	--color-status-success: #009444;
 	--color-social-kakao: #fee500;
 
 	--shadow-inner-neutral-1: inset 0 1.3px 3px 0 rgba(228, 228, 228, 0.2), inset 0 3px 6px 0 rgba(228, 228, 228, 0.2);

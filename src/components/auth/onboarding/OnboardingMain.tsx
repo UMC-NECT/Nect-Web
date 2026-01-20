@@ -111,7 +111,7 @@ const OnboardingMain = () => {
 			}
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
-				console.log('현재 폼에 입력된 값들', methods.getValues())
+				console.log(`현재 폼에 입력된 값들(${currentStep}): `, methods.getValues())
 			} else {
 				console.log('최종 제출', methods.getValues())
 			}
@@ -142,8 +142,10 @@ const OnboardingMain = () => {
 
 					{/* 컨텐츠 */}
 					{renderStep()}
+				</div>
 
-					{/* 다음 버튼 */}
+				{/* 다음 버튼 */}
+				<div className='absolute bottom-34 left-1/2 -translate-x-1/2'>
 					<Button size='lg' onClick={handleNext} disabled={isNextDisabled()}>
 						다음
 					</Button>

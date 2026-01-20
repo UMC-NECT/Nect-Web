@@ -15,16 +15,11 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 		register,
 		setValue,
 		watch,
-		getFieldState,
 		formState: { errors },
 	} = useFormContext<OnboardingFormType>()
 
 	// 직업 필드 감시
 	const selectedJob = watch('job') || ''
-
-	// 생일 유효성 검사
-	const { invalid: isBirthInvalid, isDirty: isBirthDirty } = getFieldState('birth')
-	const isBirthValid = !isBirthInvalid && isBirthDirty
 
 	// 직업 선택 핸들러
 	const handleSelectJob = (option: string) => {
@@ -43,7 +38,12 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 						placeholder='닉네임'
 						error={errors.nickname?.message}
 						success={isNicknameChecked ? '사용 가능' : ''}
-						{...register('nickname', { onChange: () => setIsNicknameChecked(false) })}
+						{...register('nickname', {
+							onChange: e => {
+								setValue('nickname', e.target.value, { shouldValidate: true })
+								setIsNicknameChecked(false)
+							},
+						})}
 					/>
 					{/* 생년월일 (zod) */}
 					<Input
@@ -51,7 +51,6 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 						type='text'
 						placeholder='생년월일 8자리'
 						maxLength={8}
-						success={isBirthValid ? '8자리' : ''}
 						error={errors.birth?.message}
 						onKeyDown={e => {
 							const allowedKeys = ['Backspace', 'Tab', 'Delete', 'ArrowLeft', 'ArrowRight', 'Enter']
