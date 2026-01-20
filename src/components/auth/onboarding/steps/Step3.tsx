@@ -6,7 +6,7 @@ import TagButton from '@/components/common/TagButton'
 import type { OnboardingFormType } from '@/utils/validate'
 import { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
-import CheckIcon from '@/assets/icons/signup/check-icon.svg?react'
+import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 
 const skillsTitle = ['디자인', '개발', '기획', '마케팅', '기타']
 const skillsDetail: Record<string, string[]> = {

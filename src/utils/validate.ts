@@ -1,11 +1,10 @@
 import { z } from 'zod'
 
-// 로그인
 const emailSchema = z
 	.string()
-	.min(1, '아이디에 @를 포함한 이메일 형식으로 작성해주세요.')
-	.email('아이디에 @를 포함한 이메일 형식으로 작성해주세요.')
-const passwordSchema = z.string().min(6, '')
+	.min(1, '@를 포함한 이메일 형식의 아이디를 입력해주세요.')
+	.email('@를 포함한 이메일 형식의 아이디를 입력해주세요.')
+const passwordSchema = z.string().min(1, '')
 
 // 로그인 스키마
 export const loginSchema = z.object({

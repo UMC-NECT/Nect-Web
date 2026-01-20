@@ -4,7 +4,7 @@ import SocialLogin from '@/components/auth/login/SocialLogin'
 
 const LoginPage = () => {
 	return (
-		<div className=' min-h-screen flex flex-col justify-center items-center'>
+		<div className=' min-h-screen flex flex-col pt-38.75 items-center'>
 			{/* 상단 - 헤더 */}
 			<AuthHeader />
 
