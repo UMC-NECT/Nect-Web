@@ -1,4 +1,4 @@
-import BackButtonIcon from '../../assets/icons/signup/back-button.svg?react'
+import BackButtonIcon from '@/assets/icons/auth/back-button.svg?react'
 
 interface IBackButton {
 	onClick?: () => void

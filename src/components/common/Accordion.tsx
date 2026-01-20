@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { cn } from '@/utils/cn'
-import ArrowDownIcon from '@/assets/icons/signup/arrow-down.svg?react'
+import ArrowDownIcon from '@/assets/icons/auth/arrow-down.svg?react'
 import { useOutsideClick } from '@/hooks/useOutsideClick'
 
 interface IAccordion {
