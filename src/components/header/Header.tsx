@@ -9,7 +9,13 @@ const Header = () => {
 		return <WorkspaceHeader onNavigate={() => setIsWorkspace(false)} />
 	}
 
-	return <ExploreHeader onNavigate={() => setIsWorkspace(true)} />
+	return (
+		<ExploreHeader
+			onNavigate={() => {
+				setIsWorkspace(true)
+			}}
+		/>
+	)
 }
 
 export default Header
