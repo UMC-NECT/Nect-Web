@@ -1,16 +1,16 @@
 import Button from '@/components/common/Button'
 import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 import CheckboxIcon from '@/assets/icons/auth/checkbox.svg?react'
-import { useNavigate } from 'react-router'
 import { useState } from 'react'
+import { useSignup } from '@/stores/useSignup'
 
 const AgreeStep = () => {
 	const textEmail = 'Next2u@naver.com'
-	const navigate = useNavigate()
 	const [allAgree, setAllAgree] = useState<boolean>(true)
+	const { setCurrentStep } = useSignup()
 
 	const handleSubmit = () => {
-		navigate('/onboarding')
+		setCurrentStep('done')
 	}
 
 	return (

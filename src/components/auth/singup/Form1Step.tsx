@@ -2,18 +2,18 @@ import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
 import { useSignup } from '@/stores/useSignup'
 
-const EmailStep = () => {
-	const { setCurrentStep, setIsSignup } = useSignup()
+const NameStep = () => {
+	const { setCurrentStep } = useSignup()
 
 	const handleSignupComplete = () => {
-		setIsSignup(true)
-		setCurrentStep('agree')
+		//setIsSignup(true)
+		setCurrentStep('form2')
 	}
 
 	return (
 		<div className='flex flex-col items-center justify-between h-full mt-42'>
 			<div className='w-105'>
-				<h2 className='heading-2 font-bold text-neutral-900 mb-9 text-center'>이메일로 가입하기</h2>
+				<h2 className='heading-2 font-bold text-neutral-900 mb-9 text-center'>이메일로 가입</h2>
 
 				<div className='flex flex-col gap-4 mb-26.5'>
 					{/* 이름 */}
@@ -56,4 +56,4 @@ const EmailStep = () => {
 	)
 }
 
-export default EmailStep
+export default NameStep

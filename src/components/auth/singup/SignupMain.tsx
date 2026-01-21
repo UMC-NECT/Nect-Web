@@ -9,11 +9,11 @@ import { useSignup } from '@/stores/useSignup'
 
 const SignupMain = () => {
 	const navigate = useNavigate()
-	const { setIsSignup, setCurrentStep } = useSignup()
+	const { setCurrentStep } = useSignup()
 
 	// 테스트용
 	const handleSocialLogin = () => {
-		setIsSignup(true)
+		//setIsSignup(true)
 		setCurrentStep('agree')
 	}
 
@@ -41,7 +41,7 @@ const SignupMain = () => {
 						<KakaoIcon className='w-5.25 h-5.25' />
 						카카오로 시작하기
 					</Button>
-					<Button color='auth' size='lg' fullWidth className='font-normal' onClick={() => setCurrentStep('form')}>
+					<Button color='auth' size='lg' fullWidth className='font-normal' onClick={() => setCurrentStep('form1')}>
 						이메일로 시작하기
 					</Button>
 				</div>
@@ -54,7 +54,7 @@ const SignupMain = () => {
 					<span
 						className='body-1 text-primary-400-normal cursor-pointer'
 						onClick={() => {
-							setIsSignup(false)
+							//setIsSignup(false)
 							navigate('/login')
 						}}
 					>

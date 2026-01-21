@@ -6,7 +6,7 @@ export const AuthLayout = () => {
 	const location = useLocation()
 	const { currentStep } = useSignup()
 
-	const showSignupHeader = location.pathname === '/signup' && ['main', 'form', 'agree'].includes(currentStep)
+	const showSignupHeader = location.pathname === '/signup' && ['main', 'form1', 'form2', 'agree', 'done'].includes(currentStep)
 
 	return (
 		<div className='h-screen overflow-hidden flex flex-col'>
