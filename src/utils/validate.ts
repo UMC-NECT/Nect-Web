@@ -33,6 +33,19 @@ export const signupForm2Schema = z.object({
 })
 export type SignupForm2Type = z.infer<typeof signupForm2Schema>
 
+// 약관 동의 폼
+const agree1 = z.boolean() // 만 14세 이상 입니다
+const agree2 = z.boolean() // (필수) 서비스 이용약관 동의
+const agree3 = z.boolean() // (필수) 개인정보 수집 이용 동의
+const agree4 = z.boolean().optional() // (선택) 마케팅 정보 이메일 수신 동의
+export const agreeSchema = z.object({
+	agree1: agree1,
+	agree2: agree2,
+	agree3: agree3,
+	agree4: agree4,
+})
+export type AgreeFormType = z.infer<typeof agreeSchema>
+
 // ===== 로그인 =====
 const emailSchema = z
 	.string()
