@@ -18,11 +18,23 @@ const WorkStatusPage = () => {
 	const scrollTimeoutRef = useRef<number | null>(null)
 	const segments = ['Team', 'PM', 'Design', 'Backend', 'Frontend']
 
-	const { getStatusCounts, getWorkStatusItemsByStatus, getProgressByTeam } = useWorkStatusStore()
+	const { getStatusCounts, getWorkStatusItemsByStatus, getWorkStatusItemsByTeam, getProgressByTeam } = useWorkStatusStore()
 	const { getRecentHistory } = useHistoryStore()
 
 	const statusCounts = getStatusCounts()
 	const statuses: MissionStatus[] = ['planning', 'in_progress', 'completed', 'backlog']
+
+	// 선택된 세그먼트에 따라 아이템 필터링
+	const getFilteredItemsByStatus = (status: MissionStatus) => {
+		if (selectedSegment === 'Team') {
+			// Team 선택 시 모든 팀의 아이템 표시
+			return getWorkStatusItemsByStatus(status)
+		} else {
+			// 특정 팀 선택 시 해당 팀의 아이템만 필터링
+			const teamItems = getWorkStatusItemsByTeam(selectedSegment)
+			return teamItems.filter(item => item.status === status)
+		}
+	}
 
 	// 팀별 진행률 계산
 	const teams = ['PM', 'Design', 'Backend', 'Frontend']
@@ -115,7 +127,7 @@ const WorkStatusPage = () => {
 					{statuses.map(status => (
 						<div key={status} className='flex flex-col gap-2 items-start relative shrink-0 w-[224px]'>
 							<TodoSection status={status}>
-								{getWorkStatusItemsByStatus(status).map(item => (
+								{getFilteredItemsByStatus(status).map(item => (
 									<TodoBlock
 										key={item.id}
 										id={item.id}
@@ -126,7 +138,8 @@ const WorkStatusPage = () => {
 										participants={item.participants}
 										links={item.links}
 										attachments={item.attachments}
-										variant={status === 'backlog' ? 'Minimum' : undefined}
+										variant={status === 'backlog' ? 'Minimum' : 'Default'}
+										isEdit={item.isEdit}
 									/>
 								))}
 							</TodoSection>
@@ -167,7 +180,7 @@ const WorkStatusPage = () => {
 				<div className='flex flex-col gap-5 items-start relative shrink-0 w-full'>
 					<h2 className='title-2 text-neutral-900 font-bold relative shrink-0 w-full'>최근 히스토리</h2>
 					<div className='flex flex-col gap-5 items-start relative shrink-0 w-full'>
-						{historyItems.map(item => (
+						{historyItems.map((item, index) => (
 							<HistoryItem
 								key={item.id}
 								team={item.team}
@@ -176,6 +189,7 @@ const WorkStatusPage = () => {
 								time={item.time}
 								iconVariant={item.iconVariant}
 								app={item.app}
+								isLast={index === historyItems.length - 1}
 							/>
 						))}
 					</div>

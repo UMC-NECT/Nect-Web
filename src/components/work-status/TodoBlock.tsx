@@ -17,9 +17,10 @@ interface TodoBlockProps {
 	}
 	dueDate?: string // "2025.11.21" 형식
 	participants?: { id: number; name: string; avatar: string }[] // 사용자 아바타 이미지 URL 배열
-	links?: string
+	links?: string | string[]
 	attachments?: number // 첨부파일 개수
 	variant?: 'Default' | 'Minimum' | 'Edit'
+	isEdit?: boolean
 }
 
 const TodoBlock = ({
@@ -31,10 +32,10 @@ const TodoBlock = ({
     links,
     attachments,
 	variant = 'Default',
+	isEdit = false,
 }: TodoBlockProps) => {
 	const isMinimum = variant === 'Minimum'
-	const isEdit = variant === 'Edit'
-	const isDefaultOrEdit = variant === 'Default' || variant === 'Edit'
+	const isDefault = variant === 'Default'
 
 	// 진행률 계산 (4개 세그먼트 기준)
 	const progressSegments = 4
@@ -69,23 +70,46 @@ const TodoBlock = ({
 				</div>
 
 				{/* 상세 정보 (Default 또는 Edit일 때만 표시) */}
-				{isDefaultOrEdit && (
+				{isDefault && (
 					<div className='flex flex-col gap-[8px] items-start relative shrink-0 w-full'>
 						{/* 아이콘 + 카운트 */}
 						<div className='flex gap-[7px] h-[28px] items-center relative shrink-0'>
-							{/* 진행 중 아이콘 + 카운트 */}
-                            {links ? <LinkChip app={links} /> :
-                                <div className='flex gap-[3px] items-center relative shrink-0'>
-                                    <div className='overflow-clip relative shrink-0 size-[18px]'>
-                                        <LinkIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
-                                    </div>
-                                    <div className='flex items-center relative shrink-0'>
-                                        <p className='body-3 text-status-info font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
-                                            {attachments}
-                                        </p>
-                                    </div>
-                                </div>
-                            }
+							{/* 링크/첨부파일 아이콘 + 카운트 */}
+							{(() => {
+								// links를 배열로 변환 (쉼표로 구분된 문자열이거나 이미 배열)
+								const linksArray = links
+									? Array.isArray(links)
+										? links
+										: links.split(',').map(link => link.trim()).filter(link => link)
+									: []
+
+								// 최대 2개까지 표시
+								const displayLinks = linksArray.slice(0, 2)
+
+								if (displayLinks.length > 0) {
+									return (
+										<div className='flex gap-[3px] items-center relative shrink-0'>
+											{displayLinks.map((link, index) => (
+												<LinkChip key={index} app={link} />
+											))}
+										</div>
+									)
+								} else if (attachments) {
+									return (
+										<div className='flex gap-[3px] items-center relative shrink-0'>
+											<div className='overflow-clip relative shrink-0 size-[18px]'>
+												<LinkIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
+											</div>
+											<div className='flex items-center relative shrink-0'>
+												<p className='body-3 text-status-info font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
+													{attachments}
+												</p>
+											</div>
+										</div>
+									)
+								}
+								return null
+							})()}
 
 							{/* 완료 아이콘 + 카운트 */}
 							<div className='flex gap-[3px] items-center relative shrink-0'>
@@ -120,17 +144,17 @@ const TodoBlock = ({
 								</div>
 
 								{/* D-day + 아바타 그룹 + 드롭다운 */}
-								<div className='flex gap-[6px] items-center justify-end relative shrink-0'>
+								<div className='flex  items-center justify-end relative shrink-0'>
 									{/* D-day */}
 									{daysRemaining !== null && (
-										<div className='flex flex-col font-medium justify-center leading-0 not-italic relative shrink-0 text-primary-500-normal text-right whitespace-nowrap'>
+										<div className='flex flex-col font-medium justify-center leading-0 not-italic relative shrink-0  mr-1.5 text-primary-500-normal text-right whitespace-nowrap'>
 											<p className='body-3 leading-normal whitespace-pre'>{`D-${daysRemaining}`}</p>
 										</div>
 									)}
 
 									{/* 아바타 그룹 */}
 									{participants.length > 0 && (
-										<div className='flex items-center justify-end pr-[4px] relative shrink-0'>
+										<div className='flex items-center justify-end relative shrink-0'>
 											<AvatarGroup avatars={participants.map(participant => participant.avatar)} maxCount={2} size={22.533} />
 										</div>
 									)}

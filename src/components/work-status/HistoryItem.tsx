@@ -7,12 +7,18 @@ interface HistoryItemProps {
 	time: string
 	iconVariant: 'add' | 'share' | 'app'
 	app?: string
+	isLast?: boolean
 }
 
-const HistoryItem = ({ team, user, action, time, iconVariant, app }: HistoryItemProps) => {
+const HistoryItem = ({ team, user, action, time, iconVariant, app, isLast = false }: HistoryItemProps) => {
 	return (
 		<div className='flex gap-[14px] items-start relative shrink-0 w-[207px]'>
-			<HistoryIcon variant={iconVariant} app={app} />
+			<div className='relative flex flex-col items-center'>
+				<HistoryIcon variant={iconVariant} app={app} />
+				{!isLast && (
+					<div className='absolute top-10 left-1/2 -translate-x-1/2 w-[2px] h-[120px] bg-neutral-100' />
+				)}
+			</div>
 			<div className='flex flex-col gap-[6px] items-start leading-0 relative shrink-0 w-[153px]'>
 				<div className='flex flex-col gap-[4px] items-start relative shrink-0 w-full'>
 					<div className='flex font-medium gap-[6px] items-center not-italic relative shrink-0'>

@@ -14,9 +14,10 @@ export interface WorkStatusItem {
 	}
 	dueDate?: string // "2025.11.21" 형식
 	participants?: { id: number; name: string; avatar: string }[]
-	links?: string
+	links?: string | string[]
 	attachments?: number
 	variant?: 'Default' | 'Minimum' | 'Edit'
+	isEdit?: boolean
 }
 
 interface WorkStatusStore {
@@ -51,9 +52,9 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		team: 'Frontend',
 		title: '할 일 세부 내용 (위크 미션) 두줄까지 가능',
 		status: 'planning',
-		todo: { id: 2, done: 2, total: 4 },
+		todo: { id: 2, done: 4, total: 4 },
 		dueDate: '2026.01.15',
-		links: 'Figma',
+		links: 'Figma,PDF',
 		attachments: 1,
 		participants: [
 			{ id: 1, name: '시루', avatar: 'https://placehold.co/20x20' },
@@ -65,8 +66,9 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		team: 'Backend',
 		title: '할 일 세부 내용 (위크 미션)',
 		status: 'planning',
-		todo: { id: 3, done: 2, total: 4 },
+		todo: { id: 3, done: 4, total: 4 },
 		dueDate: '2026.01.18',
+		links: 'Word,Excel,PPT',
 		attachments: 1,
 		participants: [
 			{ id: 1, name: '시루', avatar: 'https://placehold.co/20x20' },
@@ -78,7 +80,7 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		team: 'Design',
 		title: '할 일 세부 내용 (위크 미션)',
 		status: 'planning',
-		todo: { id: 4, done: 1, total: 3 },
+		todo: { id: 4, done: 3, total: 3 },
 		dueDate: '2026.01.22',
 		attachments: 1,
 		participants: [
@@ -93,21 +95,22 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		status: 'in_progress',
 		todo: { id: 5, done: 2, total: 4 },
 		dueDate: '2026.01.14',
-		links: 'Figma',
+		links: ['Figma', 'PDF'],
 		attachments: 1,
 		participants: [
 			{ id: 1, name: '시루', avatar: 'https://placehold.co/20x20' },
 			{ id: 2, name: '이방토', avatar: 'https://placehold.co/20x20' },
 		],
+		isEdit: true,
 	},
 	{
 		id: 6,
 		team: 'PM',
 		title: '할 일 세부 내용 (위크 미션) 두줄까지 가능',
 		status: 'in_progress',
-		todo: { id: 6, done: 2, total: 4 },
+		todo: { id: 6, done: 4, total: 4 },
 		dueDate: '2026.01.20',
-		links: 'Figma',
+		links: 'Figma,Word',
 		attachments: 1,
 		participants: [
 			{ id: 1, name: '시루', avatar: 'https://placehold.co/20x20' },
@@ -119,7 +122,7 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		team: 'PM',
 		title: '그 이상은 점점점 처리 그 이상은 점점점 처리 그 이상은 점점점 처리',
 		status: 'in_progress',
-		todo: { id: 7, done: 2, total: 4 },
+		todo: { id: 7, done: 4, total: 4 },
 		dueDate: '2026.01.25',
 		attachments: 1,
 		participants: [
@@ -132,8 +135,9 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		team: 'Backend',
 		title: '할 일 세부 내용 (위크 미션)',
 		status: 'completed',
-		todo: { id: 8, done: 2, total: 4 },
+		todo: { id: 8, done: 4, total: 4 },
 		dueDate: '2026.01.10',
+		links: ['PDF', 'Zip'],
 		attachments: 1,
 		participants: [
 			{ id: 1, name: '시루', avatar: 'https://placehold.co/20x20' },
@@ -147,6 +151,7 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		status: 'completed',
 		todo: { id: 9, done: 2, total: 4 },
 		dueDate: '2026.01.16',
+		links: 'Excel,PPT,Word',
 		attachments: 1,
 		participants: [
 			{ id: 1, name: '시루', avatar: 'https://placehold.co/20x20' },
@@ -158,7 +163,7 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 		team: 'PM',
 		title: '할 일 세부 내용 (위크 미션)',
 		status: 'completed',
-		todo: { id: 10, done: 2, total: 4 },
+		todo: { id: 10, done: 4, total: 4 },
 		dueDate: '2026.01.28',
 		attachments: 1,
 		participants: [
@@ -179,6 +184,7 @@ const initialWorkStatusItems: WorkStatusItem[] = [
 			{ id: 2, name: '이방토', avatar: 'https://placehold.co/20x20' },
 		],
 		variant: 'Minimum',
+		isEdit: true,
 	},
 	{
 		id: 12,
