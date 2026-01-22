@@ -18,6 +18,20 @@ export const signupForm1Schema = z.object({
 export type SignupForm1Type = z.infer<typeof signupForm1Schema>
 
 // 이메일 가입 폼2
+const signupEmail = z
+	.string()
+	.min(1, '@를 포함한 이메일 형식의 아이디를 입력해주세요.')
+	.email('@를 포함한 이메일 형식의 아이디를 입력해주세요.')
+const signupPassword = z.string().regex(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/, {
+	message: '영문, 숫자, 특수문자를 포함하여 8자 이상 입력해주세요.',
+})
+const signupPassword2 = z.string().optional()
+export const signupForm2Schema = z.object({
+	email: signupEmail,
+	password: signupPassword,
+	password2: signupPassword2,
+})
+export type SignupForm2Type = z.infer<typeof signupForm2Schema>
 
 // ===== 로그인 =====
 const emailSchema = z

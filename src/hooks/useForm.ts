@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
-import { loginSchema, onboardingSchema, signupForm1Schema } from '../utils/validate'
-import type { LoginFormType, OnboardingFormType, SignupForm1Type } from '../utils/validate'
+import { loginSchema, onboardingSchema, signupForm1Schema, signupForm2Schema } from '../utils/validate'
+import type { LoginFormType, OnboardingFormType, SignupForm1Type, SignupForm2Type } from '../utils/validate'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 // 회원가입 (이메일로 가입 - 폼1)
@@ -19,6 +19,39 @@ export const useSignupForm1 = () => {
 		resolver: zodResolver(signupForm1Schema),
 		mode: 'onChange',
 		reValidateMode: 'onSubmit',
+	})
+
+	return {
+		register,
+		handleSubmit,
+		errors,
+		isValid,
+		isDirty,
+		touchedFields,
+		reset,
+		setError,
+		clearErrors,
+		watch,
+		getValues,
+		setValue,
+	}
+}
+// 회원가입 (이메일로 가입 - 폼2)
+export const useSignupForm2 = () => {
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isValid, isDirty, touchedFields },
+		reset,
+		setError,
+		clearErrors,
+		watch,
+		getValues,
+		setValue,
+	} = useForm<SignupForm2Type>({
+		resolver: zodResolver(signupForm2Schema),
+		mode: 'onChange',
+		reValidateMode: 'onChange',
 	})
 
 	return {
