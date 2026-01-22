@@ -26,6 +26,7 @@ interface WorkStatusStore {
 	addWorkStatusItem: (item: WorkStatusItem) => void
 	updateWorkStatusItem: (id: number, updates: Partial<WorkStatusItem>) => void
 	removeWorkStatusItem: (id: number) => void
+	moveWorkStatusItem: (id: number, newStatus: MissionStatus, newIndex: number) => void
 	getWorkStatusItemsByStatus: (status: MissionStatus) => WorkStatusItem[]
 	getWorkStatusItemsByTeam: (team: string) => WorkStatusItem[]
 	getProgressByTeam: (team: string) => Progress
@@ -273,6 +274,29 @@ export const useWorkStatusStore = create<WorkStatusStore>(set => ({
 		set(state => ({
 			workStatusItems: state.workStatusItems.filter(item => item.id !== id),
 		})),
+	moveWorkStatusItem: (id, newStatus, newIndex) =>
+		set(state => {
+			const item = state.workStatusItems.find(item => item.id === id)
+			if (!item) return state
+
+			// 기존 아이템 제거
+			const itemsWithoutMoved = state.workStatusItems.filter(item => item.id !== id)
+
+			// 새 상태의 아이템들 가져오기
+			const itemsInNewStatus = itemsWithoutMoved.filter(item => item.status === newStatus)
+
+			// 새 위치에 아이템 삽입
+			const updatedItem = { ...item, status: newStatus }
+			const newItems = [...itemsInNewStatus]
+			newItems.splice(newIndex, 0, updatedItem)
+
+			// 다른 상태의 아이템들과 병합
+			const otherItems = itemsWithoutMoved.filter(item => item.status !== newStatus)
+
+			return {
+				workStatusItems: [...otherItems, ...newItems],
+			}
+		}),
 	getWorkStatusItemsByStatus: (status: MissionStatus): WorkStatusItem[] => {
 		const state = useWorkStatusStore.getState()
 		return state.workStatusItems.filter((item: WorkStatusItem) => item.status === status)

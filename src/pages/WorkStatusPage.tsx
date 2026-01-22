@@ -1,4 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
+import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import SegmentsBar from '@/components/week-mission/SegmentsBar'
 import StatusChip from '@/components/common/StatusChip'
 import TodoSection from '@/components/work-status/TodoSection'
@@ -8,72 +12,79 @@ import TodoBlock from '@/components/work-status/TodoBlock'
 import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 import type { MissionStatus } from '@/types/missionStatus'
 import StudioTitle from '@/components/common/StudioTitle'
+import type { WorkStatusItem } from '@/stores/work-status/workStatusStore'
 import { useWorkStatusStore } from '@/stores/work-status/workStatusStore'
-import { useHistoryStore } from '@/stores/work-status/historyStore'
+import { useWorkStatusDragAndDrop } from '@/hooks/work-status/useWorkStatusDragAndDrop'
+import { useWorkStatusFilter } from '@/hooks/work-status/useWorkStatusFilter'
+import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
+import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
+
+// Droppable 컬럼 컴포넌트
+interface DroppableColumnProps {
+	id: string
+	children: React.ReactNode
+}
+
+const DroppableColumn = ({ id, children }: DroppableColumnProps) => {
+	const { setNodeRef } = useDroppable({
+		id,
+	})
+
+	return <div ref={setNodeRef}>{children}</div>
+}
+
+// 드래그 가능한 TodoBlock 래퍼 컴포넌트
+interface SortableTodoBlockProps {
+	item: WorkStatusItem
+	status: MissionStatus
+}
+
+const SortableTodoBlock = ({ item, status }: SortableTodoBlockProps) => {
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+		id: item.id,
+	})
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		opacity: isDragging ? 0.5 : 1,
+	}
+
+	return (
+		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+			<TodoBlock
+				id={item.id}
+				team={item.team}
+				title={item.title}
+				todo={item.todo}
+				dueDate={item.dueDate}
+				participants={item.participants}
+				links={item.links}
+				attachments={item.attachments}
+				variant={status === 'backlog' ? 'Minimum' : 'Default'}
+				isEdit={item.isEdit}
+			/>
+		</div>
+	)
+}
 
 const WorkStatusPage = () => {
 	const [selectedSegment, setSelectedSegment] = useState('Team')
-	const [isScrolling, setIsScrolling] = useState(false)
-	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const scrollTimeoutRef = useRef<number | null>(null)
 	const segments = ['Team', 'PM', 'Design', 'Backend', 'Frontend']
-
-	const { getStatusCounts, getWorkStatusItemsByStatus, getWorkStatusItemsByTeam, getProgressByTeam } = useWorkStatusStore()
-	const { getRecentHistory } = useHistoryStore()
-
-	const statusCounts = getStatusCounts()
 	const statuses: MissionStatus[] = ['planning', 'in_progress', 'completed', 'backlog']
 
-	// 선택된 세그먼트에 따라 아이템 필터링
-	const getFilteredItemsByStatus = (status: MissionStatus) => {
-		if (selectedSegment === 'Team') {
-			// Team 선택 시 모든 팀의 아이템 표시
-			return getWorkStatusItemsByStatus(status)
-		} else {
-			// 특정 팀 선택 시 해당 팀의 아이템만 필터링
-			const teamItems = getWorkStatusItemsByTeam(selectedSegment)
-			return teamItems.filter(item => item.status === status)
-		}
-	}
+	// 커스텀 훅들
+	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
+	const { isScrolling, scrollContainerRef } = useWorkStatusScroll()
+	const { statusCounts, progressData, historyItems } = useWorkStatusData()
+	const { activeId, sensors, handleDragStart, handleDragEnd } = useWorkStatusDragAndDrop({
+		statuses,
+		getFilteredItemsByStatus,
+	})
 
-	// 팀별 진행률 계산
-	const teams = ['PM', 'Design', 'Backend', 'Frontend']
-	const progressData = teams.reduce((acc, team) => {
-		acc[team] = getProgressByTeam(team)
-		return acc
-	}, {} as Record<string, ReturnType<typeof getProgressByTeam>>)
-
-	// 히스토리 데이터
-	const historyItems = getRecentHistory(6)
-
-	// 스크롤 감지
-	useEffect(() => {
-		const container = scrollContainerRef.current
-		if (!container) return
-
-		const handleScroll = () => {
-			setIsScrolling(true)
-
-			if (scrollTimeoutRef.current) {
-				clearTimeout(scrollTimeoutRef.current)
-			}
-
-			scrollTimeoutRef.current = setTimeout(() => {
-				setIsScrolling(false)
-			}, 150)
-		}
-
-		container.addEventListener('scroll', handleScroll, { passive: true })
-		container.addEventListener('wheel', handleScroll, { passive: true })
-
-		return () => {
-			container.removeEventListener('scroll', handleScroll)
-			container.removeEventListener('wheel', handleScroll)
-			if (scrollTimeoutRef.current) {
-				clearTimeout(scrollTimeoutRef.current)
-			}
-		}
-	}, [])
+	// 드래그 중인 아이템 찾기 (필터링 없이 전체 아이템에서 찾음)
+	const { workStatusItems } = useWorkStatusStore()
+	const activeItem = activeId ? workStatusItems.find(item => item.id === activeId) : undefined
 
 	return (
 		<div className='relative flex mt-16 h-[calc(100vh-66px-64px)] w-full ml-[72px] overflow-hidden'>
@@ -117,35 +128,55 @@ const WorkStatusPage = () => {
 				</div>
 
 				{/* 4개 컬럼 TodoSection 영역 - 함께 스크롤 */}
-				<div
-					ref={scrollContainerRef}
-					className={`WorkStatusScrollbar flex gap-5 items-start relative shrink-0 w-full flex-1 min-h-0 overflow-y-auto pr-[6px] ${
-						isScrolling ? 'scrolling' : ''
-					}`}
-					style={{ scrollbarGutter: 'stable' }}
+				<DndContext
+					sensors={sensors}
+					onDragStart={handleDragStart}
+					onDragEnd={handleDragEnd}
+					modifiers={[]}
 				>
-					{statuses.map(status => (
-						<div key={status} className='flex flex-col gap-2 items-start relative shrink-0 w-[224px]'>
-							<TodoSection status={status}>
-								{getFilteredItemsByStatus(status).map(item => (
-									<TodoBlock
-										key={item.id}
-										id={item.id}
-										team={item.team}
-										title={item.title}
-										todo={item.todo}
-										dueDate={item.dueDate}
-										participants={item.participants}
-										links={item.links}
-										attachments={item.attachments}
-										variant={status === 'backlog' ? 'Minimum' : 'Default'}
-										isEdit={item.isEdit}
-									/>
-								))}
-							</TodoSection>
-						</div>
-					))}
-				</div>
+					<div
+						ref={scrollContainerRef}
+						className={`WorkStatusScrollbar flex gap-5 items-start relative shrink-0 w-full flex-1 min-h-0 overflow-y-auto pr-[6px] ${
+							isScrolling ? 'scrolling' : ''
+						}`}
+						style={{ scrollbarGutter: 'stable' }}
+					>
+					{statuses.map(status => {
+						const items = getFilteredItemsByStatus(status)
+						return (
+							<DroppableColumn key={status} id={status}>
+								<SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
+									<div className='flex flex-col gap-2 items-start relative shrink-0 w-[224px]'>
+										<TodoSection status={status}>
+											{items.map(item => (
+												<SortableTodoBlock key={item.id} item={item} status={status} />
+											))}
+										</TodoSection>
+									</div>
+								</SortableContext>
+							</DroppableColumn>
+						)
+					})}
+					</div>
+					{activeItem && (
+						<DragOverlay style={{ cursor: 'grabbing', zIndex: 9999 }}>
+							<div style={{ opacity: 0.9, transform: 'rotate(2deg)', pointerEvents: 'none' }}>
+								<TodoBlock
+									id={activeItem.id}
+									team={activeItem.team}
+									title={activeItem.title}
+									todo={activeItem.todo}
+									dueDate={activeItem.dueDate}
+									participants={activeItem.participants}
+									links={activeItem.links}
+									attachments={activeItem.attachments}
+									variant={activeItem.status === 'backlog' ? 'Minimum' : 'Default'}
+									isEdit={activeItem.isEdit}
+								/>
+							</div>
+						</DragOverlay>
+					)}
+				</DndContext>
 			</div>
 
 			{/* 오른쪽 사이드바 */}
