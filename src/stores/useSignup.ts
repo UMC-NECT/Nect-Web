@@ -11,7 +11,7 @@ interface SignupState {
 
 export const useSignup = create<SignupState>(set => ({
 	isSignup: false,
-	currentStep: 'main', // main -> form1 -> form2 -> agree -> done
+	currentStep: 'form1', // main -> form1 -> form2 -> agree -> done
 	setIsSignup: (isSignup: boolean) => set({ isSignup }),
 	setCurrentStep: (step: SignupStep) => set({ currentStep: step }),
 }))

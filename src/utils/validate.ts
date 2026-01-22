@@ -1,5 +1,25 @@
 import { z } from 'zod'
 
+// ===== 회원가입 =====
+// 이메일 가입 폼1
+const name = z.string().min(1, { message: '이름을 입력해주세요.' })
+const phone = z
+	.string()
+	.min(1, '전화번호를 입력해주세요.')
+	.regex(/^010-\d{4}-\d{4}$/, '올바르지 않은 전화번호입니다.')
+	.length(13)
+const certificationNumber = z.string().length(6)
+
+export const signupForm1Schema = z.object({
+	name: name,
+	phone: phone,
+	certificationNumber: certificationNumber,
+})
+export type SignupForm1Type = z.infer<typeof signupForm1Schema>
+
+// 이메일 가입 폼2
+
+// ===== 로그인 =====
 const emailSchema = z
 	.string()
 	.min(1, '@를 포함한 이메일 형식의 아이디를 입력해주세요.')
@@ -14,6 +34,7 @@ export const loginSchema = z.object({
 })
 export type LoginFormType = z.infer<typeof loginSchema>
 
+// ===== 온보딩 =====
 // 온보딩 1
 const nickname = z.string().min(1, '닉네임은 1글자 이상으로 작성해주세요.').max(4, '5글자 이내의 닉네임')
 const birth = z.string().length(8, '8자리').regex(/^\d+$/, '숫자만 입력하세요')
