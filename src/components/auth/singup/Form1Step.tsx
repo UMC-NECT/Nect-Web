@@ -82,7 +82,6 @@ const NameStep = () => {
 
 		// 추후 api로 대체
 		if (certificationNumber === certNumber) {
-			alert(`가입 성공!\n인증번호: ${certificationNumber}`)
 			setCurrentStep('form2')
 		} else {
 			setError('certificationNumber', {
