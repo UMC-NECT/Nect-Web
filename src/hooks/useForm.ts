@@ -12,9 +12,11 @@ export const useLoginForm = () => {
 		setError,
 		clearErrors,
 		watch,
+		getValues,
 	} = useForm<LoginFormType>({
 		resolver: zodResolver(loginSchema),
-		mode: 'onChange',
+		mode: 'onSubmit',
+		reValidateMode: 'onSubmit',
 	})
 
 	return {
@@ -27,6 +29,7 @@ export const useLoginForm = () => {
 		setError,
 		clearErrors,
 		watch,
+		getValues,
 	}
 }
 
@@ -34,6 +37,11 @@ export const useOnboardingForm = () => {
 	const methods = useForm<OnboardingFormType>({
 		resolver: zodResolver(onboardingSchema),
 		mode: 'onChange',
+		defaultValues: {
+			workStyle: 3,
+			communicationStyle: 3,
+			teamworkStyle: 3,
+		},
 	})
 
 	return methods

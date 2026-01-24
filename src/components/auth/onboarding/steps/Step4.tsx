@@ -37,7 +37,7 @@ const Step4 = () => {
 		<>
 			<div className='mb-16'>
 				{/* 타이틀 */}
-				<div className='flex flex-col justify-center items-center gap-3.25 mb-19.25'>
+				<div className='flex flex-col justify-center items-center gap-3 mb-19.25'>
 					<div className='heading-3 text-neutral-900'>
 						<span className='text-primary-500-normal'>관심 분야</span>를 골라주세요
 					</div>
@@ -47,15 +47,13 @@ const Step4 = () => {
 				{/* 컨텐츠 */}
 				<div className='w-126.5 grid grid-cols-2 gap-x-2.5 gap-y-3'>
 					{interest.map(i => (
-						<>
-							<ChipButton
-								key={i}
-								text={i}
-								isChecked={selectedInterest.includes(i)}
-								onClick={() => handleSelectInterest(i)}
-								className='body-1 px-5 py-2.5 w-full'
-							/>
-						</>
+						<ChipButton
+							key={i}
+							text={i}
+							isChecked={selectedInterest.includes(i)}
+							onClick={() => handleSelectInterest(i)}
+							className='body-1 px-5 py-2.5 w-full'
+						/>
 					))}
 				</div>
 			</div>

@@ -1,5 +1,5 @@
-import GoogleIcon from '@/assets/icons/signup/google.svg?react'
-import KakaoIcon from '@/assets/icons/signup/kakao.svg?react'
+import GoogleIcon from '@/assets/icons/auth/google.svg?react'
+import KakaoIcon from '@/assets/icons/auth/kakao.svg?react'
 import Button from '@/components/common/Button'
 
 const SocialLogin = () => {
@@ -13,13 +13,13 @@ const SocialLogin = () => {
 			</div>
 
 			{/* 소셜 로그인 */}
-			<div className='w-[50%] flex flex-col gap-3'>
+			<div className='w-105 flex flex-col gap-3'>
 				<Button color='socialLogin' fullWidth>
 					<GoogleIcon className='w-5.25 h-5.25' />
 					Google 로그인
 				</Button>
 
-				<Button color='socialLogin' fullWidth>
+				<Button color='socialLogin' fullWidth className='bg-social-kakao border-none'>
 					<KakaoIcon className='w-5.25 h-5.25' />
 					카카오 로그인
 				</Button>
