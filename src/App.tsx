@@ -12,6 +12,8 @@ import SignupPage from './pages/auth/SignupPage'
 import WorkStatusPage from './pages/WorkStatusPage'
 import ProfileAnalysisPage from './pages/ProfileAnalysisPage'
 import AnalysisLayout from './components/layout/AnalysisLayout'
+import MyPage from './pages/MyPage'
+import ProfileSettings from './components/mypage/ProfileSettings'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -41,7 +43,21 @@ const router = createBrowserRouter([
 			{
 				path: '/work-status',
 				element: <WorkStatusPage />,
-			}
+			},
+			{
+				path: '/my-page',
+				element: <MyPage />,
+				children: [
+					{
+						index: true,
+						element: <ProfileSettings />,
+					},
+					{
+						path: 'profile',
+						element: <ProfileSettings />,
+					},
+				],
+			},
 		],
 	},
 	{
