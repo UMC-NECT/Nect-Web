@@ -2,8 +2,9 @@ import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
 import { useSignup } from '@/stores/useSignup'
 import { useEffect, useRef, useState } from 'react'
-import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 import { useSignupForm2 } from '@/hooks/useForm'
+import FormField from '@/components/auth/common/FormField'
+import FieldMessage from '@/components/auth/common/FieldMessage'
 
 const EmailStep = () => {
 	// 전역 상태
@@ -62,8 +63,24 @@ const EmailStep = () => {
 				{/* 폼 컨테이너 */}
 				<div className='flex flex-col gap-4 mb-26.5'>
 					{/* 이메일 */}
-					<div className='h-29 flex flex-col items-start gap-2'>
-						<div className='title-3 text-neutral-900'>이메일</div>
+					<FormField
+						label='이메일'
+						messageArea={
+							<>
+								{/* 이메일 에러 메시지 */}
+								{errors.email && <FieldMessage type='error' message={errors.email.message || ''} />}
+
+								{/* 중복 이메일 */}
+								{!errors.email && checkedEmail === email && checkedEmail !== '' && isSameEmail && (
+									<FieldMessage type='error' message='이미 가입된 이메일입니다.' />
+								)}
+								{/* 사용 가능 이메일 */}
+								{!errors.email && checkedEmail === email && checkedEmail !== '' && !isSameEmail && (
+									<FieldMessage type='success' message='사용 가능한 이메일입니다.' />
+								)}
+							</>
+						}
+					>
 						<div className='flex gap-1.5 w-full'>
 							<Input
 								category='auth'
@@ -86,33 +103,23 @@ const EmailStep = () => {
 								중복 확인
 							</Button>
 						</div>
-
-						{/* 이메일 에러 메시지 */}
-						{errors.email && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-								<span className='body-2 text-danger-700'>{errors.email.message}</span>
-							</div>
-						)}
-						{/* 중복된 이메일입니다. */}
-						{!errors.email && checkedEmail === email && checkedEmail !== '' && isSameEmail && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-								<span className='body-2 text-danger-700'>이미 가입된 이메일입니다.</span>
-							</div>
-						)}
-						{/* 사용 가능한 이메일입니다. */}
-						{!errors.email && checkedEmail === email && checkedEmail !== '' && !isSameEmail && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-status-success' />
-								<span className='body-2 text-status-success'>사용 가능한 이메일입니다.</span>
-							</div>
-						)}
-					</div>
+					</FormField>
 
 					{/* 비밀번호 */}
-					<div className='h-29 flex flex-col items-start gap-2'>
-						<div className='title-3 text-neutral-900'>비밀번호</div>
+					<FormField
+						label='비밀번호'
+						messageArea={
+							<>
+								{/* 영문/숫자/특수문자를 포함 8자 이상 */}
+								{errors.password && <FieldMessage type='error' message={errors.password.message || ''} />}
+
+								{/* 사용 가능 */}
+								{!errors.password && password && (
+									<FieldMessage type='success' message='사용 가능한 비밀번호입니다.' />
+								)}
+							</>
+						}
+					>
 						<Input
 							category='auth'
 							placeholder='비밀번호를 입력해주세요'
@@ -123,27 +130,23 @@ const EmailStep = () => {
 							}}
 							{...passwordRestRef}
 						/>
-
-						{/* 영문, 숫자, 특수문자를 포함하여 8자 이상 입력해주세요. */}
-						{errors.password && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-								<span className='body-2 text-danger-700'>{errors.password.message}</span>
-							</div>
-						)}
-
-						{/* 사용 가능 */}
-						{!errors.password && password && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-status-success' />
-								<span className='body-2 text-status-success'>사용 가능한 비밀번호입니다.</span>
-							</div>
-						)}
-					</div>
+					</FormField>
 
 					{/* 비밀번호 재확인 */}
-					<div className='h-29 flex flex-col items-start gap-2'>
-						<div className='title-3 text-neutral-900'>비밀번호 확인</div>
+					<FormField
+						label='비밀번호 확인'
+						messageArea={
+							<>
+								{/* 비번 재확인 에러 메시지 */}
+								{errors.password2 && <FieldMessage type='error' message={errors.password2.message || ''} />}
+
+								{/* 비밀번호 확인 */}
+								{!errors.password2 && password2 && (
+									<FieldMessage type='success' message='비밀번호가 일치합니다.' />
+								)}
+							</>
+						}
+					>
 						<Input
 							category='auth'
 							placeholder='비밀번호를 다시 입력해주세요'
@@ -164,21 +167,7 @@ const EmailStep = () => {
 								}
 							}}
 						/>
-						{/* 비번 재확인 에러 메시지 */}
-						{errors.password2 && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-								<span className='body-2 text-danger-700'>{errors.password2.message}</span>
-							</div>
-						)}
-						{/* 비밀번호 확인 */}
-						{!errors.password2 && password2 && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-status-success' />
-								<span className='body-2 text-status-success'>비밀번호가 일치합니다.</span>
-							</div>
-						)}
-					</div>
+					</FormField>
 				</div>
 
 				<Button color='auth' onClick={handleSignupComplete} className='h-14' fullWidth disabled={!isNextAvailable}>

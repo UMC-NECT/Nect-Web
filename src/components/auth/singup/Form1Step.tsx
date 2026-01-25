@@ -4,7 +4,8 @@ import Input from '@/components/common/Input'
 import { useSignup } from '@/stores/useSignup'
 import { useSignupForm1 } from '@/hooks/useForm'
 import type { SignupForm1Type } from '@/utils/validate'
-import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
+import FormField from '@/components/auth/common/FormField'
+import FieldMessage from '@/components/auth/common/FieldMessage'
 
 const NameStep = () => {
 	// 전역 상태
@@ -13,7 +14,7 @@ const NameStep = () => {
 	const [isCertificated, setIsCertificated] = useState<boolean>(false) // 인증 요청 유무
 	const [certNumber, setCertNumber] = useState<string>('') // 임시 인증번호
 	const [isCorrect, setIsCorrect] = useState<boolean>(false) // 인증번호 일치 여부
-	const [timer, setTimer] = useState<number>(20) // 타이머
+	const [timer, setTimer] = useState<number>(180) // 타이머
 	const isTimerExpired = timer === 0 && isCertificated // 타이머 만료 여부
 
 	// 유효성 검사 관련
@@ -91,7 +92,7 @@ const NameStep = () => {
 		setIsCertificated(true)
 
 		// 타이머 리셋
-		setTimer(20)
+		setTimer(180)
 		setIsCorrect(false)
 		setValue('certificationNumber', '')
 
@@ -124,8 +125,10 @@ const NameStep = () => {
 				{/* 폼 컨테이너 */}
 				<div className='flex flex-col gap-4 mb-26.5'>
 					{/* 이름 */}
-					<div className='h-29 flex flex-col items-start gap-2'>
-						<div className='title-3 text-neutral-900'>이름</div>
+					<FormField
+						label='이름'
+						messageArea={errors.name && <FieldMessage type='error' message={errors.name.message || ''} />}
+					>
 						<Input
 							category='auth'
 							placeholder='이름을 입력해주세요'
@@ -136,18 +139,15 @@ const NameStep = () => {
 								nameInputRef.current = e // 포커스용 ref 연결
 							}}
 						/>
-						{/* 이름 에러 메시지 */}
-						{errors.name && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-								<span className='body-2 text-danger-700'>{errors.name.message}</span>
-							</div>
-						)}
-					</div>
+					</FormField>
 
 					{/* 전화번호 */}
-					<div className='h-29 flex flex-col items-start gap-2'>
-						<div className='title-3 text-neutral-900'>전화번호</div>
+					<FormField
+						label='전화번호'
+						messageArea={
+							errors.phone && !isTimerExpired && <FieldMessage type='error' message={errors.phone.message || ''} />
+						}
+					>
 						<div className='flex gap-1.5 w-full'>
 							<Input
 								category='auth'
@@ -191,72 +191,53 @@ const NameStep = () => {
 								{isCertificated ? '다시 요청' : '인증 요청'}
 							</Button>
 						</div>
-
-						{/* 전화번호 에러 메시지 */}
-						{errors.phone && !isTimerExpired && (
-							<div className='flex justify-center items-center gap-1'>
-								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-								<span className='body-2 text-danger-700'>{errors.phone.message}</span>
-							</div>
-						)}
-					</div>
+					</FormField>
 
 					{/* 인증번호 */}
-					<div className='h-29'>
-						{/* 입력 필드 */}
-						<div className='flex flex-col items-start gap-2'>
-							<div className='title-3 text-neutral-900'>인증번호</div>
-							<div className='relative w-full'>
-								<Input
-									category='auth'
-									placeholder='6자리'
-									maxLength={6}
-									className='placeholder:text-neutral-300 placeholder:title-2'
-									disabled={!isCertificated || isTimerExpired}
-									{...certificateRestRef}
-									ref={e => {
-										certificateHookRef(e)
-										certInputRef.current = e // 포커스용 ref 연결
-									}}
-								/>
-								{/* 타이머 표시 */}
-								{isCertificated && (
-									<div
-										className={`absolute right-4 top-1/2 -translate-y-1/2 title-2  ${isTimerExpired ? 'text-danger-700' : 'text-primary-500-normal'}`}
-									>
-										{formatTimer(timer)}
-									</div>
+					<FormField
+						label='인증번호'
+						messageArea={
+							<div className='w-full flex items-center mt-1.5'>
+								{/* 성공 */}
+								{isCorrect && <FieldMessage type='success' message='인증이 완료되었습니다.' />}
+
+								{/* 인증시간 만료 or 인증번호 일치 x */}
+								{certificationNumber?.length === 6 && !isCorrect && (
+									<FieldMessage
+										type='error'
+										message={isTimerExpired ? '인증 시간 만료' : '인증번호가 일치하지 않습니다.'}
+									/>
 								)}
+
+								<span className='ml-auto body-2 text-neutral-400 underline cursor-pointer'>
+									인증 번호가 안오시나요?
+								</span>
 							</div>
-						</div>
-
-						{/* 인증번호 에러 메시지 */}
-						<div className='w-full flex items-center mt-1.5'>
-							{/* 성공 */}
-							{isCorrect ? (
-								<span className='flex justify-center items-center gap-1'>
-									<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-status-success' />
-									<span className='body-2 text-status-success'>인증이 완료되었습니다.</span>
-								</span>
-							) : (
-								''
+						}
+					>
+						<div className='relative w-full'>
+							<Input
+								category='auth'
+								placeholder='6자리'
+								maxLength={6}
+								className='placeholder:text-neutral-300 placeholder:title-2'
+								disabled={!isCertificated || isTimerExpired}
+								{...certificateRestRef}
+								ref={e => {
+									certificateHookRef(e)
+									certInputRef.current = e // 포커스용 ref 연결
+								}}
+							/>
+							{/* 타이머 표시 */}
+							{isCertificated && (
+								<div
+									className={`absolute right-4 top-1/2 -translate-y-1/2 title-2 ${isTimerExpired ? 'text-danger-700' : 'text-primary-500-normal'}`}
+								>
+									{formatTimer(timer)}
+								</div>
 							)}
-
-							{/* 인증시간 만료 or 인증번호 일치 x */}
-							{certificationNumber?.length === 6 && !isCorrect && (
-								<span className='flex justify-center items-center gap-1'>
-									<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-									<span className='body-2 text-danger-700'>
-										{isTimerExpired ? '인증 시간 만료' : '인증번호가 일치하지 않습니다.'}
-									</span>
-								</span>
-							)}
-
-							<span className='ml-auto body-2 text-neutral-400 underline cursor-pointer'>
-								인증 번호가 안오시나요?
-							</span>
 						</div>
-					</div>
+					</FormField>
 				</div>
 
 				<Button color='auth' onClick={handleSubmit(onSubmit)} className='h-14' fullWidth disabled={isNextAvailable}>
