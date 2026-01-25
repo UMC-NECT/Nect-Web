@@ -13,19 +13,20 @@ const NameStep = () => {
 	const [isCertificated, setIsCertificated] = useState<boolean>(false) // 인증 요청 유무
 	const [certNumber, setCertNumber] = useState<string>('') // 임시 인증번호
 	const [isCorrect, setIsCorrect] = useState<boolean>(false) // 인증번호 일치 여부
+	const [timer, setTimer] = useState<number>(20) // 타이머
+	const isTimerExpired = timer === 0 && isCertificated // 타이머 만료 여부
 
 	// 유효성 검사 관련
 	const { register, watch, handleSubmit, errors, setValue, setError } = useSignupForm1()
 	const name = watch('name')
 	const phone = watch('phone')
 	const certificationNumber = watch('certificationNumber')
-	const isPhoneFilled = !phone || !!errors.phone
 
 	// 포커싱용 ref
 	const nameInputRef = useRef<HTMLInputElement>(null) // 이름 필드
 	const certInputRef = useRef<HTMLInputElement>(null) // 인증번호 필드
 
-	// ref 분리 (이름 필드 포커싱과 useForm사용시 ref가 겹침)
+	// ref 분리 (이름 필드 포커싱과 useForm 사용시 ref가 겹침)
 	const { ref: nameHookRef, ...nameRestRef } = register('name')
 	const { ref: certificateHookRef, ...certificateRestRef } = register('certificationNumber', {
 		onChange: e => {
@@ -55,12 +56,31 @@ const NameStep = () => {
 		!!errors.phone ||
 		!!errors.certificationNumber ||
 		!isCertificated ||
-		!isCorrect
+		!isCorrect ||
+		isTimerExpired
 
 	// 초기 렌더링 시, 이름에 자동 포커싱
 	useEffect(() => {
 		nameInputRef.current?.focus()
 	}, [])
+
+	// 타이머 카운트다운
+	useEffect(() => {
+		if (isCertificated && timer > 0 && !isCorrect) {
+			const countdown = setInterval(() => {
+				setTimer(prev => prev - 1)
+			}, 1000)
+
+			return () => clearInterval(countdown)
+		}
+	}, [isCertificated, timer, isCorrect])
+
+	// 타이머를 mm:ss 형식으로 변환
+	const formatTimer = (seconds: number) => {
+		const minutes = Math.floor(seconds / 60)
+		const secs = seconds % 60
+		return `${minutes}:${secs.toString().padStart(2, '0')}`
+	}
 
 	// 전화번호 인증요청시
 	const handleCertificatePhone = () => {
@@ -69,6 +89,11 @@ const NameStep = () => {
 		setCertNumber(certNumber)
 		alert(`인증 요청 버튼 클릭함.\n 전번: ${phone} | 인증번호: ${certNumber}`)
 		setIsCertificated(true)
+
+		// 타이머 리셋
+		setTimer(20)
+		setIsCorrect(false)
+		setValue('certificationNumber', '')
 
 		// 인증 번호 입력 필드로 포커싱
 		setTimeout(() => {
@@ -160,15 +185,15 @@ const NameStep = () => {
 							<Button
 								color='auth'
 								className='w-40 h-14 title-2 px-5.5 py-3.5'
-								disabled={isPhoneFilled}
+								disabled={!name || !phone || !!errors.phone}
 								onClick={handleCertificatePhone}
 							>
-								인증 요청
+								{isCertificated ? '다시 요청' : '인증 요청'}
 							</Button>
 						</div>
 
 						{/* 전화번호 에러 메시지 */}
-						{errors.phone && (
+						{errors.phone && !isTimerExpired && (
 							<div className='flex justify-center items-center gap-1'>
 								<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
 								<span className='body-2 text-danger-700'>{errors.phone.message}</span>
@@ -181,18 +206,28 @@ const NameStep = () => {
 						{/* 입력 필드 */}
 						<div className='flex flex-col items-start gap-2'>
 							<div className='title-3 text-neutral-900'>인증번호</div>
-							<Input
-								category='auth'
-								placeholder='6자리'
-								maxLength={6}
-								className='placeholder:text-neutral-300 placeholder:title-2'
-								disabled={!isCertificated}
-								{...certificateRestRef}
-								ref={e => {
-									certificateHookRef(e)
-									certInputRef.current = e // 포커스용 ref 연결
-								}}
-							/>
+							<div className='relative w-full'>
+								<Input
+									category='auth'
+									placeholder='6자리'
+									maxLength={6}
+									className='placeholder:text-neutral-300 placeholder:title-2'
+									disabled={!isCertificated || isTimerExpired}
+									{...certificateRestRef}
+									ref={e => {
+										certificateHookRef(e)
+										certInputRef.current = e // 포커스용 ref 연결
+									}}
+								/>
+								{/* 타이머 표시 */}
+								{isCertificated && (
+									<div
+										className={`absolute right-4 top-1/2 -translate-y-1/2 title-2  ${isTimerExpired ? 'text-danger-700' : 'text-primary-500-normal'}`}
+									>
+										{formatTimer(timer)}
+									</div>
+								)}
+							</div>
 						</div>
 
 						{/* 인증번호 에러 메시지 */}
@@ -207,11 +242,13 @@ const NameStep = () => {
 								''
 							)}
 
-							{/* 에러 */}
+							{/* 인증시간 만료 or 인증번호 일치 x */}
 							{certificationNumber?.length === 6 && !isCorrect && (
 								<span className='flex justify-center items-center gap-1'>
 									<CheckIcon className='w-2.25 h-1.5 mx-0.5 my-0.75 text-danger-700' />
-									<span className='body-2 text-danger-700'>인증번호가 일치하지 않습니다.</span>
+									<span className='body-2 text-danger-700'>
+										{isTimerExpired ? '인증 시간 만료' : '인증번호가 일치하지 않습니다.'}
+									</span>
 								</span>
 							)}
 
