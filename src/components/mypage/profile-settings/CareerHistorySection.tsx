@@ -1,42 +1,15 @@
-import { useState } from 'react'
-
 import Button from '@/components/common/Button'
 import GoalIcon from '@/assets/icons/week-mission/goal.svg?react'
 import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
+import type { CareerType } from '@/utils/schemas/profileSchema'
 
-interface Achievement {
-	id: number
-	title: string
-	content: string
+interface CareerHistorySectionProps {
+	careers: CareerType[]
+	onCareersChange: (careers: CareerType[]) => void
 }
 
-interface Career {
-	id: number
-	projectName: string
-	startDate: string
-	endDate: string
-	isInProgress: boolean
-	industry: string
-	role: string
-	achievements: Achievement[]
-}
-
-const CareerHistorySection = () => {
-	// 경력 목록 상태 (배열로 관리)
-	const [careers, setCareers] = useState<Career[]>([
-		{
-			id: 1,
-			projectName: '',
-			startDate: '',
-			endDate: '',
-			isInProgress: false,
-			industry: '',
-			role: '',
-			achievements: [{ id: 1, title: '', content: '' }],
-		},
-	])
-
+const CareerHistorySection = ({ careers, onCareersChange }: CareerHistorySectionProps) => {
 	// 기간 계산 함수
 	const getDuration = (start: string, end: string, isInProgress: boolean) => {
 		if (isInProgress) return '(재직중)'
@@ -55,8 +28,8 @@ const CareerHistorySection = () => {
 	// 경력 추가
 	const addCareer = () => {
 		const newId = Math.max(...careers.map(c => c.id)) + 1
-		setCareers(prev => [
-			...prev,
+		onCareersChange([
+			...careers,
 			{
 				id: newId,
 				projectName: '',
@@ -71,14 +44,14 @@ const CareerHistorySection = () => {
 	}
 
 	// 경력 필드 업데이트
-	const updateCareer = (careerId: number, field: keyof Omit<Career, 'id' | 'achievements'>, value: string | boolean) => {
-		setCareers(prev => prev.map(c => (c.id === careerId ? { ...c, [field]: value } : c)))
+	const updateCareer = (careerId: number, field: keyof Omit<CareerType, 'id' | 'achievements'>, value: string | boolean) => {
+		onCareersChange(careers.map(c => (c.id === careerId ? { ...c, [field]: value } : c)))
 	}
 
 	// 주요 성과 추가
 	const addAchievement = (careerId: number) => {
-		setCareers(prev =>
-			prev.map(c => {
+		onCareersChange(
+			careers.map(c => {
 				if (c.id === careerId) {
 					const newAchievementId = Math.max(...c.achievements.map(a => a.id)) + 1
 					return {
@@ -93,8 +66,8 @@ const CareerHistorySection = () => {
 
 	// 주요 성과 필드 업데이트
 	const updateAchievement = (careerId: number, achievementId: number, field: 'title' | 'content', value: string) => {
-		setCareers(prev =>
-			prev.map(c => {
+		onCareersChange(
+			careers.map(c => {
 				if (c.id === careerId) {
 					return {
 						...c,
@@ -249,7 +222,7 @@ const CareerHistorySection = () => {
 							</div>
 						</div>
 
-						{/* 주요 성과  섹션*/}
+						{/* 주요 성과 섹션 */}
 						<div className='ml-15'>
 							{career.achievements.map(achievement => (
 								<div

@@ -5,6 +5,7 @@ import RoundChipButton from '../common/RoundChipButton'
 import ProjectCard from './profile-settings/ProjectCard'
 import CareerHistorySection from './profile-settings/CareerHistorySection'
 import { INTEREST_FIELDS, SKILLS_DATA } from '@/constants/mypage'
+import { getErrorMessages, validateProfile, type CareerType } from '@/utils/schemas/profileSchema'
 
 import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?react'
 import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
@@ -12,9 +13,32 @@ import EditPencilIcon from '@/assets/icons/mypage/edit-pencil.svg?react'
 import ClipIcon from '@/assets/icons/mypage/clip.svg?react'
 
 export const ProfileSettings = () => {
-	const [selectedFields, setSelectedFields] = useState<string[]>(['IT · 웹/모바일 서비스', '교육 · 에듀테크', '금융 · 핀테크'])
+	// 자기소개 상태
+	const [introduction, setIntroduction] = useState('')
+
+	// 핵심역량 상태
 	const [coreCompetency, setCoreCompetency] = useState('')
 	const competencyRef = useRef<HTMLTextAreaElement>(null)
+
+	// 관심분야 상태
+	const [selectedFields, setSelectedFields] = useState<string[]>(['IT · 웹/모바일 서비스', '교육 · 에듀테크', '금융 · 핀테크'])
+
+	// 보유 스킬 상태
+	const [skills] = useState<Record<string, string[]>>(SKILLS_DATA)
+
+	// 경력 상태
+	const [careers, setCareers] = useState<CareerType[]>([
+		{
+			id: 1,
+			projectName: '',
+			startDate: '',
+			endDate: '',
+			isInProgress: false,
+			industry: '',
+			role: '',
+			achievements: [{ id: 1, title: '', content: '' }],
+		},
+	])
 
 	// 핵심역량 textarea 자동 높이 조절용 (작성하는만큼 늘어남)
 	useEffect(() => {
@@ -44,11 +68,37 @@ export const ProfileSettings = () => {
 			setCoreCompetency(prev => prev + '\n• ')
 		}
 	}
+
 	// 불렛만 있는지 확인
 	const hasActualContent = (text: string) => {
 		// 불렛(•)과 공백, 줄바꿈을 제거한 후 내용이 있는지 확인
 		const withoutBullets = text.replace(/•/g, '').replace(/\s/g, '')
 		return withoutBullets.length > 0
+	}
+
+	// 저장 핸들러
+	const handleSave = () => {
+		const profileData = {
+			introduction,
+			coreCompetency,
+			interestFields: selectedFields,
+			skills,
+			careers,
+		}
+
+		const result = validateProfile(profileData)
+
+		if (!result.success) {
+			const errors = getErrorMessages(result.error)
+			console.error('유효성 검사 실패:', errors)
+
+			// 에러 메시지 표시
+			alert(errors.map((err: { path: string; message: string }) => err.message).join('\n'))
+			return
+		}
+
+		// 유효성 검사 통과 시 API 호출
+		console.log('유효성 검사 통과:', result.data)
 	}
 
 	return (
@@ -90,7 +140,7 @@ export const ProfileSettings = () => {
 
 					{/* 우측 - 버튼 2개 */}
 					<div className='flex gap-4'>
-						<Button color='mypage1' className='w-32.5'>
+						<Button color='mypage1' className='w-32.5' onClick={handleSave}>
 							저장
 						</Button>
 						<Button color='mypage2' className='w-32.5 px-2.5'>
@@ -118,6 +168,8 @@ export const ProfileSettings = () => {
 						<textarea
 							className='w-full h-22.5 px-5 py-4 text-[16px] leading-[180%] tracking-[-0.5px] resize-none focus:outline-none placeholder:text-[16px] placeholder:text-neutral-300 hover:bg-neutral-50 duration-200 ease-in-out rounded-12'
 							placeholder={`가장 먼저 읽게 되는 글입니다.\n프로필 카드에 보여질 간단한 자기소개를 작성해주세요 (2문장)`}
+							value={introduction}
+							onChange={e => setIntroduction(e.target.value)}
 						/>
 					</section>
 
@@ -195,14 +247,14 @@ export const ProfileSettings = () => {
 						</div>
 
 						<div className='flex flex-col gap-5'>
-							{Object.entries(SKILLS_DATA).map(([category, skills]) => (
+							{Object.entries(skills).map(([category, skillList]) => (
 								<div key={category} className='flex items-center gap-3'>
 									{/* 카테고리 */}
 									<span className='body-1 text-neutral-600 w-16 shrink-0'>{category}</span>
 
 									{/* 태그 */}
 									<div className='flex flex-wrap gap-1.5'>
-										{skills.map(skill => (
+										{skillList.map(skill => (
 											<span
 												key={skill}
 												className='body-1 bg-neutral-000 text-neutral-700 border border-[#EEEEEE] px-4 py-1.5 rounded-100'
@@ -217,7 +269,7 @@ export const ProfileSettings = () => {
 					</section>
 
 					{/* 주요 경력/이력 섹션 */}
-					<CareerHistorySection />
+					<CareerHistorySection careers={careers} onCareersChange={setCareers} />
 
 					{/* 포트폴리오 링크 및 파일 */}
 					<section className='ml-5'>
