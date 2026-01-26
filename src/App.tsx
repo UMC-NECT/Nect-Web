@@ -13,7 +13,8 @@ import WorkStatusPage from './pages/WorkStatusPage'
 import ProfileAnalysisPage from './pages/ProfileAnalysisPage'
 import AnalysisLayout from './components/layout/AnalysisLayout'
 import MyPage from './pages/MyPage'
-import ProfileSettings from './components/mypage/ProfileSettings'
+import { ProfileSettings } from './components/mypage/profile-settings/ProfileSettings'
+import IdeaAnalysis from './components/mypage/idea-analysis/IdeaAnalysis'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
 					{
 						path: 'profile',
 						element: <ProfileSettings />,
+					},
+					{
+						path: 'idea-analysis',
+						element: <IdeaAnalysis />,
 					},
 				],
 			},

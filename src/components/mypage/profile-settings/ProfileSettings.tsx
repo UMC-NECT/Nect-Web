@@ -1,44 +1,86 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 
-import Button from '../common/Button'
-import RoundChipButton from '../common/RoundChipButton'
-import ProjectCard from './profile-settings/ProjectCard'
-import CareerHistorySection from './profile-settings/CareerHistorySection'
+import Button from '../../common/Button'
+import RoundChipButton from '../../common/RoundChipButton'
+import ProjectCard from './ProjectCard'
+import CareerHistorySection from './CareerHistorySection'
+import ConfirmModal from '../../common/ConfirmModal'
 import { INTEREST_FIELDS, SKILLS_DATA } from '@/constants/mypage'
 import { getErrorMessages, validateProfile, type CareerType } from '@/utils/schemas/profileSchema'
 
 import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?react'
 import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
-import EditPencilIcon from '@/assets/icons/mypage/edit-pencil.svg?react'
 import ClipIcon from '@/assets/icons/mypage/clip.svg?react'
+import { useBlocker } from 'react-router'
+
+// 초기 상태 값
+const INITIAL_INTRODUCTION = ''
+const INITIAL_COMPETENCY = ''
+const INITIAL_FIELDS = ['IT · 웹/모바일 서비스', '교육 · 에듀테크', '금융 · 핀테크']
+const INITIAL_CAREERS: CareerType[] = [
+	{
+		id: 1,
+		projectName: '',
+		startDate: '',
+		endDate: '',
+		isInProgress: false,
+		industry: '',
+		role: '',
+		achievements: [{ id: 1, title: '', content: '' }],
+	},
+]
 
 export const ProfileSettings = () => {
 	// 자기소개 상태
-	const [introduction, setIntroduction] = useState('')
+	const [introduction, setIntroduction] = useState(INITIAL_INTRODUCTION)
 
 	// 핵심역량 상태
-	const [coreCompetency, setCoreCompetency] = useState('')
+	const [coreCompetency, setCoreCompetency] = useState(INITIAL_COMPETENCY)
 	const competencyRef = useRef<HTMLTextAreaElement>(null)
 
 	// 관심분야 상태
-	const [selectedFields, setSelectedFields] = useState<string[]>(['IT · 웹/모바일 서비스', '교육 · 에듀테크', '금융 · 핀테크'])
+	const [selectedFields, setSelectedFields] = useState<string[]>(INITIAL_FIELDS)
 
 	// 보유 스킬 상태
 	const [skills] = useState<Record<string, string[]>>(SKILLS_DATA)
 
 	// 경력 상태
-	const [careers, setCareers] = useState<CareerType[]>([
-		{
-			id: 1,
-			projectName: '',
-			startDate: '',
-			endDate: '',
-			isInProgress: false,
-			industry: '',
-			role: '',
-			achievements: [{ id: 1, title: '', content: '' }],
-		},
-	])
+	const [careers, setCareers] = useState<CareerType[]>(INITIAL_CAREERS)
+
+	// 저장된 초기값들을 state로 관리 (저장 성공 시 업데이트)
+	const [savedData, setSavedData] = useState({
+		introduction: INITIAL_INTRODUCTION,
+		coreCompetency: INITIAL_COMPETENCY,
+		selectedFields: INITIAL_FIELDS,
+		careers: INITIAL_CAREERS,
+	})
+
+	// 프사 상태
+	const [profileImage, setProfileImage] = useState<string | null>(null)
+	const fileInputRef = useRef<HTMLInputElement>(null)
+	const handleAvatarClick = () => {
+		fileInputRef.current?.click()
+	}
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (file) {
+			const reader = new FileReader()
+			reader.onloadend = () => {
+				setProfileImage(reader.result as string)
+			}
+			reader.readAsDataURL(file)
+		}
+	}
+
+	// 변경사항 감지
+	const isDirty = useMemo(() => {
+		const hasIntroductionChanged = introduction !== savedData.introduction
+		const hasCompetencyChanged = coreCompetency !== savedData.coreCompetency
+		const hasFieldsChanged = JSON.stringify(selectedFields) !== JSON.stringify(savedData.selectedFields)
+		const hasCareersChanged = JSON.stringify(careers) !== JSON.stringify(savedData.careers)
+
+		return hasIntroductionChanged || hasCompetencyChanged || hasFieldsChanged || hasCareersChanged
+	}, [introduction, coreCompetency, selectedFields, careers, savedData])
 
 	// 핵심역량 textarea 자동 높이 조절용 (작성하는만큼 늘어남)
 	useEffect(() => {
@@ -47,6 +89,23 @@ export const ProfileSettings = () => {
 			competencyRef.current.style.height = `${competencyRef.current.scrollHeight}px`
 		}
 	}, [coreCompetency])
+
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (isDirty) {
+				e.preventDefault()
+				e.returnValue = ''
+			}
+		}
+
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	}, [isDirty])
+
+	// 내부 이동 감지 (뒤로가기, 링크 클릭 등)
+	const blocker = useBlocker(
+		({ currentLocation, nextLocation }) => isDirty && currentLocation.pathname !== nextLocation.pathname
+	)
 
 	// 관심 분야 태그버튼 토글
 	const toggleField = (field: string) => {
@@ -76,8 +135,8 @@ export const ProfileSettings = () => {
 		return withoutBullets.length > 0
 	}
 
-	// 저장 핸들러
-	const handleSave = () => {
+	// 저장 핸들러 (성공 여부 반환)
+	const handleSave = useCallback(() => {
 		const profileData = {
 			introduction,
 			coreCompetency,
@@ -90,15 +149,52 @@ export const ProfileSettings = () => {
 
 		if (!result.success) {
 			const errors = getErrorMessages(result.error)
-			console.error('유효성 검사 실패:', errors)
-
-			// 에러 메시지 표시
 			alert(errors.map((err: { path: string; message: string }) => err.message).join('\n'))
-			return
+
+			// 유효성 검사 실패 시, 이동하려던 것이었다면 이동 취소(모달 닫고 현재 페이지 유지)
+			if (blocker.state === 'blocked') {
+				blocker.reset()
+			}
+			return false
 		}
 
-		// 유효성 검사 통과 시 API 호출
-		console.log('유효성 검사 통과:', result.data)
+		// API 호출 로직
+		console.log('유효성 검사 통과 및 저장:', result.data)
+
+		// 저장 성공 시 현재 값을 저장된 값으로 업데이트 (isDirty를 false로 만듦)
+		setSavedData({
+			introduction,
+			coreCompetency,
+			selectedFields: [...selectedFields],
+			careers: JSON.parse(JSON.stringify(careers)),
+		})
+
+		return true
+	}, [introduction, coreCompetency, selectedFields, skills, careers, blocker])
+
+	// 모달 핸들러: 저장하지 않고 나가기
+	const handleLeaveWithoutSaving = () => {
+		if (blocker.state === 'blocked') {
+			blocker.proceed() // 이동 진행
+		}
+	}
+
+	// 모달 핸들러: 저장 후 나가기
+	const handleSaveAndLeave = () => {
+		const success = handleSave()
+		if (success) {
+			// 저장 성공 시 이동 진행
+			if (blocker.state === 'blocked') {
+				blocker.proceed()
+			}
+		}
+	}
+
+	// 모달 닫기 (취소 or 모달 제외한 영역 누름)
+	const handleCloseModal = () => {
+		if (blocker.state === 'blocked') {
+			blocker.reset() // 이동을 취소하고 현재 페이지에 머무름
+		}
 	}
 
 	return (
@@ -122,7 +218,14 @@ export const ProfileSettings = () => {
 				<div className='flex items-start justify-between mb-10 ml-2.5'>
 					{/* 좌측 - 기본 정보 */}
 					<div className='flex items-center gap-4'>
-						<ProfileImageEditIcon />
+						<input type='file' ref={fileInputRef} onChange={handleFileChange} className='hidden' accept='image/*' />
+						<div className='relative cursor-pointer' onClick={handleAvatarClick}>
+							{profileImage ? (
+								<img src={profileImage} alt='Profile Preview' className='w-20 h-20 rounded-full object-cover' />
+							) : (
+								<ProfileImageEditIcon />
+							)}
+						</div>
 
 						{/* 소개글 */}
 						<div>
@@ -239,11 +342,6 @@ export const ProfileSettings = () => {
 							<h2 className='title-2 font-bold text-neutral-900'>
 								보유스킬 <span className='text-danger-700'>*</span>
 							</h2>
-
-							<Button color='text' size='sm'>
-								<EditPencilIcon className='w-4 h-4 mr-1' />
-								수정
-							</Button>
 						</div>
 
 						<div className='flex flex-col gap-5'>
@@ -309,6 +407,18 @@ export const ProfileSettings = () => {
 					</section>
 				</div>
 			</div>
+
+			{/* 페이지 이탈 확인 모달 */}
+			<ConfirmModal
+				isOpen={blocker.state === 'blocked'}
+				onClose={handleCloseModal}
+				title='페이지 이탈하겠습니까?'
+				description='변경사항은 자동 저장되지 않습니다.'
+				cancelText='저장하지 않고 나가기'
+				confirmText='저장 후 나가기'
+				onCancel={handleLeaveWithoutSaving}
+				onConfirm={handleSaveAndLeave}
+			/>
 		</div>
 	)
 }

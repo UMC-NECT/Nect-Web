@@ -44,7 +44,7 @@ export const INTEREST_FIELDS = [
 	'헬스케어 · 피트니스',
 	'교육 · 에듀테크',
 	'금융 · 핀테크',
-	'직접 작성',
+	'기타',
 ]
 
 export const SKILLS_DATA = {
