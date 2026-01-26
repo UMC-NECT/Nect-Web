@@ -35,3 +35,20 @@ export const MYPAGE_MENU = [
 
 export type MyPageMenuId = (typeof MYPAGE_MENU)[number]['id']
 export type MyPageMenuItemId = (typeof MYPAGE_MENU)[number]['items'][number]['id']
+
+export const INTEREST_FIELDS = [
+	'IT · 웹/모바일 서비스',
+	'출판 · 콘텐츠 제작',
+	'예술 · 전시 · 미디어아트',
+	'게임 · 엔터테인먼트',
+	'헬스케어 · 피트니스',
+	'교육 · 에듀테크',
+	'금융 · 핀테크',
+	'직접 작성',
+]
+
+export const SKILLS_DATA = {
+	디자인: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
+	기획: ['Notion', 'UX Research'],
+	기타: ['Claude', 'Consecutive Interpretation'],
+}
