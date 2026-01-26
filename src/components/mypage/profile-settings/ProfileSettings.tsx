@@ -10,6 +10,7 @@ import { InterestFieldsSection } from './sections/InterestFieldsSection'
 import { SkillsSection } from './sections/SkillsSection'
 import { PortfolioSection } from './sections/PortfolioSection'
 import { ProjectHistorySection } from './sections/project-history/ProjectHistorySection'
+import { MyPageHeader } from '../MyPageHeader'
 import { SKILLS_DATA } from '@/constants/mypage'
 import { getErrorMessages, validateProfile, type CareerType } from '@/utils/schemas/profileSchema'
 import { useBlocker } from 'react-router'
@@ -145,18 +146,7 @@ export const ProfileSettings = () => {
 
 	return (
 		<div className='ml-7'>
-			{/* 브레드크럼 + 타이틀 */}
-			<div className='ml-3 mb-9 w-fit'>
-				<nav className='body-2 text-neutral-400 mb-7'>
-					<span>마이 페이지</span>
-					<span className='mx-2'>{'>'}</span>
-					<span>나의 정보관리</span>
-					<span className='mx-2'>{'>'}</span>
-					<span className=''>내 프로필 설정</span>
-				</nav>
-
-				<h1 className='text-2xl font-bold text-neutral-900 mb-8'>프로필 설정</h1>
-			</div>
+			<MyPageHeader />
 
 			{/* 전체 컨테이너 */}
 			<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>

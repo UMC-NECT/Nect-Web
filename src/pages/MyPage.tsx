@@ -8,7 +8,7 @@ const MyPage = () => {
 			<MyPageSidebar />
 
 			{/* 우측 - 컨텐츠 */}
-			<main className=''>
+			<main className='flex-1 min-w-0'>
 				<Outlet />
 			</main>
 		</div>

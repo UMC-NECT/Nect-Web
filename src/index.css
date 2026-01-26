@@ -102,6 +102,14 @@ button:disabled {
 
 	--color-social-kakao: #fee500;
 
+	--color-semantic-purple: #e8d8fc;
+	--color-semantic-pink: #ffe0f1;
+	--color-semantic-blue: #e5ebff;
+	--color-semantic-green: #e4f5ec;
+	--color-semantic-yellow: #fff4db;
+	--color-semantic-gray: #F7F7FA;
+	
+
 	--color-danger-600: #666666;
 	--color-danger-700: #ec2d30;
 
@@ -156,6 +164,7 @@ button:disabled {
 	--shadow-drop-neutral-4: 0 0 6px 0 rgba(25, 25, 25, 0.2);
 	--shadow-drop-primary-2: 0 1px 2px 0 rgba(102, 15, 216, 0.2), 0 0 4px 0 rgba(154, 92, 235, 0.2);
 
+	--radius-6: 6px;
 	--radius-10: 10px;
 	--radius-12: 12px;
 	--radius-16: 16px;
