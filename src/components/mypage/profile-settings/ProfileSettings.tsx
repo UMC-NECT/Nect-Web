@@ -39,7 +39,6 @@ export const ProfileSettings = () => {
 	const [selectedFields, setSelectedFields] = useState<string[]>(INITIAL_FIELDS) // 관심분야
 	const [skills] = useState<Record<string, string[]>>(SKILLS_DATA) // 보유 스킬
 	const [careers, setCareers] = useState<CareerType[]>(INITIAL_CAREERS) // 경력
-	const [profileImage, setProfileImage] = useState<string | null>(null) // 프사
 
 	// 저장된 초기값들을 state로 관리 (저장 성공 시 업데이트)
 	const [savedData, setSavedData] = useState({
@@ -151,7 +150,7 @@ export const ProfileSettings = () => {
 			{/* 전체 컨테이너 */}
 			<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>
 				{/* 프사 + 기본 정보 */}
-				<ProfileBasicInfo profileImage={profileImage} onProfileImageChange={setProfileImage} onSave={handleSave} />
+				<ProfileBasicInfo onSave={handleSave} />
 
 				<div className='flex flex-col gap-16'>
 					{/* 자기소개 섹션 */}

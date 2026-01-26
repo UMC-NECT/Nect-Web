@@ -12,17 +12,20 @@ interface CareerHistorySectionProps {
 const CareerHistorySection = ({ careers, onCareersChange }: CareerHistorySectionProps) => {
 	// 기간 계산 함수
 	const getDuration = (start: string, end: string, isInProgress: boolean) => {
-		if (isInProgress) return '(재직중)'
+		// 진행중이면 현재 날짜를 종료일로 사용
+		const effectiveEnd = isInProgress ? '2026.02' : end
 
 		const regex = /^\d{4}\.\d{2}$/
-		if (!regex.test(start) || !regex.test(end)) return '(0년 0개월)'
+		if (!regex.test(start) || !regex.test(effectiveEnd)) return '(0년 0개월)'
 
 		const [sY, sM] = start.split('.').map(Number)
-		const [eY, eM] = end.split('.').map(Number)
+		const [eY, eM] = effectiveEnd.split('.').map(Number)
 		const totalMonths = eY * 12 + eM - (sY * 12 + sM)
 
 		if (totalMonths < 0) return '(유효하지 않은 날짜)'
-		return `(${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월)`
+		const years = Math.floor(totalMonths / 12)
+		const months = totalMonths % 12
+		return `(${years}년 ${months}개월)`
 	}
 
 	// 경력 추가
@@ -45,7 +48,18 @@ const CareerHistorySection = ({ careers, onCareersChange }: CareerHistorySection
 
 	// 경력 필드 업데이트
 	const updateCareer = (careerId: number, field: keyof Omit<CareerType, 'id' | 'achievements'>, value: string | boolean) => {
-		onCareersChange(careers.map(c => (c.id === careerId ? { ...c, [field]: value } : c)))
+		onCareersChange(
+			careers.map(c => {
+				if (c.id === careerId) {
+					// 진행중 상태가 변경될 때 endDate를 현재 날짜로 설정
+					if (field === 'isInProgress' && value === true) {
+						return { ...c, [field]: value, endDate: '2026.02' }
+					}
+					return { ...c, [field]: value }
+				}
+				return c
+			})
+		)
 	}
 
 	// 주요 성과 추가
@@ -163,7 +177,7 @@ const CareerHistorySection = ({ careers, onCareersChange }: CareerHistorySection
 											rows={1}
 											className='w-18.25 bg-transparent resize-none focus:outline-none placeholder:text-neutral-300 text-neutral-900 overflow-hidden whitespace-nowrap text-center disabled:text-neutral-300'
 											placeholder='YYYY.MM'
-											value={career.isInProgress ? '' : career.endDate}
+											value={career.isInProgress ? '2026.02' : career.endDate}
 											onChange={e => updateCareer(career.id, 'endDate', e.target.value)}
 											maxLength={7}
 											disabled={career.isInProgress}
@@ -238,14 +252,23 @@ const CareerHistorySection = ({ careers, onCareersChange }: CareerHistorySection
 									/>
 
 									<textarea
-										className={`w-full body-1 leading-[180%] tracking-[-0.5px] resize-none focus:outline-none placeholder:text-[16px] placeholder:text-neutral-300 bg-transparent ${
+										className={`w-full body-1 leading-[180%] tracking-[-0.5px] resize-none focus:outline-none placeholder:text-[16px] placeholder:text-neutral-300 bg-transparent overflow-hidden ${
 											hasActualContent(achievement.content) ? 'text-neutral-900' : 'text-neutral-300'
 										}`}
 										placeholder={`업무 경헙을 성과 기반으로 작성해 보세요.\n나의 역할과 기여도, 사용 기술을 포함하는 것을 권장 합니다.`}
 										value={achievement.content}
 										onFocus={() => handleAchievementFocus(career.id, achievement.id)}
-										onChange={e => updateAchievement(career.id, achievement.id, 'content', e.target.value)}
+										onChange={e => {
+											updateAchievement(career.id, achievement.id, 'content', e.target.value)
+											e.target.style.height = 'auto'
+											e.target.style.height = `${e.target.scrollHeight}px`
+										}}
 										onKeyDown={e => handleAchievementKeyDown(e, career.id, achievement.id)}
+										onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
+											const target = e.currentTarget
+											target.style.height = 'auto'
+											target.style.height = `${target.scrollHeight}px`
+										}}
 									/>
 								</div>
 							))}

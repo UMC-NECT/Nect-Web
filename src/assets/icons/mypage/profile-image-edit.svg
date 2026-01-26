@@ -1,5 +1,5 @@
 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="50" fill="#CACACA"/>
+<circle cx="50" cy="50" r="49.5" fill="#D9D9D9" stroke="#F5F5F5"/>
 <g filter="url(#filter0_ii_3831_56954)">
 <rect x="70" y="63" width="30" height="30" rx="15" fill="#660FD8"/>
 <g clip-path="url(#clip0_3831_56954)">

@@ -1,37 +1,25 @@
-import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router'
-import { MYPAGE_MENU, type MyPageMenuItemId } from '@/constants/mypage'
+import { MYPAGE_MENU } from '@/constants/mypage'
+import ProfileImageIcon from '@/assets/icons/mypage/profile-image.svg?react'
+import { useUserStore } from '@/stores/useUserStore'
 
 interface MyPageSidebarProps {
-	userName?: string
-	userRole?: string
-	userEmail?: string
-	profileImage?: string
-	isPro?: boolean
 	matchingWaitCount?: number
 	receivedRequestCount?: number
 }
 
-export const MyPageSidebar = ({
-	userName = '이방토',
-	userRole = '디자이너',
-	userEmail = 'ellaelia2@hanyang.ac.kr',
-	profileImage = 'https://placehold.co/80x80',
-	isPro = true,
-	matchingWaitCount = 10,
-	receivedRequestCount = 5,
-}: MyPageSidebarProps) => {
+export const MyPageSidebar = ({ matchingWaitCount = 10, receivedRequestCount = 5 }: MyPageSidebarProps) => {
+	const { userName, userRole, userEmail, profileImage, isPro } = useUserStore()
 	const navigate = useNavigate()
 	const location = useLocation()
-	const [activeItem, setActiveItem] = useState<MyPageMenuItemId>('profile-settings')
 
-	const handleMenuClick = (itemId: MyPageMenuItemId, path: string) => {
-		setActiveItem(itemId)
+	const handleMenuClick = (path: string) => {
 		navigate(path)
 	}
 
-	const isActive = (itemId: string) => {
-		return activeItem === itemId || location.pathname.includes(itemId.replace('-', '/'))
+	const isActive = (path: string): boolean => {
+		// 경로로 현재 위치 파익
+		return location.pathname === path || location.pathname.startsWith(path + '/')
 	}
 
 	return (
@@ -39,7 +27,15 @@ export const MyPageSidebar = ({
 			{/* 프로필 섹션 */}
 			<div className='flex flex-col items-start px-4 py-2.5 gap-4 mb-3'>
 				{/* 프사 */}
-				<img src={profileImage} alt='프로필' className='w-20 h-20 rounded-full overflow-hidden object-cover' />
+				{profileImage ? (
+					<img
+						src={profileImage}
+						alt='프로필'
+						className='w-20 h-20 rounded-full overflow-hidden object-cover border border-neutral-100'
+					/>
+				) : (
+					<ProfileImageIcon className='w-20 h-20' />
+				)}
 
 				<div className='flex flex-col items-start gap-0.5'>
 					{/* 이름 */}
@@ -80,9 +76,9 @@ export const MyPageSidebar = ({
 								<li key={item.id}>
 									<button
 										type='button'
-										onClick={() => handleMenuClick(item.id as MyPageMenuItemId, item.path)}
+										onClick={() => handleMenuClick(item.path)}
 										className={`w-45.5 h-7.25 text-left body-2 p-1 hover:text-primary-600-normal duration-200 ease-in-out ${
-											isActive(item.id) ? 'text-primary-600-normal font-bold' : 'text-neutral-600'
+											isActive(item.path) ? 'text-primary-600-normal font-bold' : 'text-neutral-600'
 										}`}
 									>
 										{item.label}

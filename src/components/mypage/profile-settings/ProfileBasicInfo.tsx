@@ -1,14 +1,15 @@
 import { useRef } from 'react'
 import Button from '../../common/Button'
 import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?react'
+import ProfilePencilIcon from '@/assets/icons/mypage/profile-pencil.svg?react'
+import { useUserStore } from '@/stores/useUserStore'
 
 interface ProfileBasicInfoProps {
-	profileImage: string | null
-	onProfileImageChange: (image: string) => void
 	onSave: () => void
 }
 
-export const ProfileBasicInfo = ({ profileImage, onProfileImageChange, onSave }: ProfileBasicInfoProps) => {
+export const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
+	const { profileImage, userName, userRole, userEmail, setProfileImage } = useUserStore()
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const handleAvatarClick = () => {
@@ -20,7 +21,7 @@ export const ProfileBasicInfo = ({ profileImage, onProfileImageChange, onSave }:
 		if (file) {
 			const reader = new FileReader()
 			reader.onloadend = () => {
-				onProfileImageChange(reader.result as string)
+				setProfileImage(reader.result as string)
 			}
 			reader.readAsDataURL(file)
 		}
@@ -35,7 +36,16 @@ export const ProfileBasicInfo = ({ profileImage, onProfileImageChange, onSave }:
 					<input type='file' ref={fileInputRef} onChange={handleFileChange} className='hidden' accept='image/*' />
 					<div className='relative cursor-pointer' onClick={handleAvatarClick}>
 						{profileImage ? (
-							<img src={profileImage} alt='Profile Preview' className='w-20 h-20 rounded-full object-cover' />
+							<>
+								<img
+									src={profileImage}
+									alt='Profile Preview'
+									className='w-25 h-25 rounded-full object-cover border border-neutral-100'
+								/>
+								<div className='absolute bottom-1.75 right-0 rounded-full bg-primary-500-normal flex items-center justify-center'>
+									<ProfilePencilIcon />
+								</div>
+							</>
 						) : (
 							<ProfileImageEditIcon />
 						)}
@@ -44,11 +54,11 @@ export const ProfileBasicInfo = ({ profileImage, onProfileImageChange, onSave }:
 					{/* 소개글 */}
 					<div>
 						<div className='flex items-center gap-2.5 mb-1'>
-							<span className='title-2 font-bold'>이방토</span>
+							<span className='title-2 font-bold'>{userName}</span>
 							<span className='text-neutral-300 font-semibold'>|</span>
-							<span className='title-2 text-neutral-400'>Design</span>
+							<span className='title-2 text-neutral-400'>{userRole}</span>
 						</div>
-						<p className='body-2 text-neutral-500 mb-2'>ellaelia2@hanyang.ac.kr</p>
+						<p className='body-2 text-neutral-500 mb-2'>{userEmail}</p>
 						<span className='text-[14px] text-primary-500-normal leading-[140%] font-semibold bg-primary-100-light border border-primary-200-light px-3 py-1 rounded-100'>
 							재학 중
 						</span>
