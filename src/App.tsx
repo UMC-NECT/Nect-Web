@@ -15,6 +15,7 @@ import AnalysisLayout from './components/layout/AnalysisLayout'
 import MyPage from './pages/MyPage'
 import { ProfileSettings } from './components/mypage/profile-settings/ProfileSettings'
 import IdeaAnalysis from './components/mypage/idea-analysis/IdeaAnalysis'
+import OngoingProject from './components/mypage/ongoing-project/OngoingProject'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -46,7 +47,7 @@ const router = createBrowserRouter([
 				element: <WorkStatusPage />,
 			},
 			{
-				path: '/my-page',
+				path: '/mypage',
 				element: <MyPage />,
 				children: [
 					{
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
 					{
 						path: 'idea-analysis',
 						element: <IdeaAnalysis />,
+					},
+					{
+						path: 'ongoing',
+						element: <OngoingProject />,
 					},
 				],
 			},

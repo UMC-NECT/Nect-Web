@@ -1,12 +1,12 @@
 import RoundChipButton from '../../../common/RoundChipButton'
 import { INTEREST_FIELDS } from '@/constants/mypage'
 
-interface InterestFieldsSectionProps {
+interface ISection04InterestFields {
 	selectedFields: string[]
 	onToggleField: (field: string) => void
 }
 
-export const InterestFieldsSection = ({ selectedFields, onToggleField }: InterestFieldsSectionProps) => {
+const Section04InterestFields = ({ selectedFields, onToggleField }: ISection04InterestFields) => {
 	return (
 		<section className=' ml-5'>
 			<h2 className='title-2 font-bold text-neutral-900 mb-4'>
@@ -26,3 +26,5 @@ export const InterestFieldsSection = ({ selectedFields, onToggleField }: Interes
 		</section>
 	)
 }
+
+export default Section04InterestFields

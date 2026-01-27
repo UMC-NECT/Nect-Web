@@ -1,19 +1,20 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-
-import CareerHistorySection from './sections/CareerHistorySection'
-import ConfirmModal from '../../common/ConfirmModal'
-import { ProfileBasicInfo } from './ProfileBasicInfo'
-import { IntroductionSection } from './sections/IntroductionSection'
-import { CoreCompetencySection } from './sections/CoreCompetencySection'
-import { ProfileKeywordSection } from './sections/ProfileKeywordSection'
-import { InterestFieldsSection } from './sections/InterestFieldsSection'
-import { SkillsSection } from './sections/SkillsSection'
-import { PortfolioSection } from './sections/PortfolioSection'
-import { ProjectHistorySection } from './sections/project-history/ProjectHistorySection'
-import { MyPageHeader } from '../MyPageHeader'
-import { SKILLS_DATA } from '@/constants/mypage'
-import { getErrorMessages, validateProfile, type CareerType } from '@/utils/schemas/profileSchema'
 import { useBlocker } from 'react-router'
+
+import ConfirmModal from '../../common/ConfirmModal'
+import { MyPageHeader } from '../MyPageHeader'
+import { getErrorMessages, validateProfile, type CareerType } from '@/utils/schemas/profileSchema'
+import { SKILLS_DATA } from '@/constants/mypage'
+
+import ProfileBasicInfo from './ProfileBasicInfo'
+import Section01Introduction from './sections/Section01Introduction'
+import Section02CoreCompetency from './sections/Section02CoreCompetency'
+import Section03ProfileKeyword from './sections/Section03ProfileKeyword'
+import Section04InterestFields from './sections/Section04InterestFields'
+import Section05Skills from './sections/Section05Skills'
+import Section06CareerHistory from './sections/Section06CareerHistory'
+import Section07Portfolio from './sections/Section07Portfolio'
+import Section08ProjectHistory from './sections/Section08ProjectHistory'
 
 // 초기 상태 값
 const INITIAL_INTRODUCTION = ''
@@ -153,29 +154,29 @@ export const ProfileSettings = () => {
 				<ProfileBasicInfo onSave={handleSave} />
 
 				<div className='flex flex-col gap-16'>
-					{/* 자기소개 섹션 */}
-					<IntroductionSection value={introduction} onChange={setIntroduction} />
+					{/* 섹션 01. 자기소개 */}
+					<Section01Introduction value={introduction} onChange={setIntroduction} />
 
-					{/* 핵심역량 섹션 */}
-					<CoreCompetencySection value={coreCompetency} onChange={setCoreCompetency} />
+					{/* 섹션 02. 핵심역량 */}
+					<Section02CoreCompetency value={coreCompetency} onChange={setCoreCompetency} />
 
-					{/* 프로필 분석 키워드 섹션 */}
-					<ProfileKeywordSection />
+					{/* 섹션 03. 프로필 분석 키워드 */}
+					<Section03ProfileKeyword />
 
-					{/* 관심분야 섹션 */}
-					<InterestFieldsSection selectedFields={selectedFields} onToggleField={toggleField} />
+					{/* 섹션 04. 관심분야 */}
+					<Section04InterestFields selectedFields={selectedFields} onToggleField={toggleField} />
 
-					{/* 보유스킬 섹션 */}
-					<SkillsSection skills={skills} />
+					{/* 섹션 05. 보유스킬 */}
+					<Section05Skills skills={skills} />
 
-					{/* 주요 경력/이력 섹션 */}
-					<CareerHistorySection careers={careers} onCareersChange={setCareers} />
+					{/* 섹션 06. 주요 경력/이력 */}
+					<Section06CareerHistory careers={careers} onCareersChange={setCareers} />
 
-					{/* 포트폴리오 섹션 */}
-					<PortfolioSection />
+					{/* 섹션 07. 포트폴리오 */}
+					<Section07Portfolio />
 
-					{/* 프로젝트 히스토리 섹션 */}
-					<ProjectHistorySection />
+					{/* 섹션 08. 프로젝트 히스토리 */}
+					<Section08ProjectHistory />
 				</div>
 			</div>
 

@@ -18,7 +18,10 @@ export const MyPageSidebar = ({ matchingWaitCount = 10, receivedRequestCount = 5
 	}
 
 	const isActive = (path: string): boolean => {
-		// 경로로 현재 위치 파익
+		// /mypage 인덱스 라우트일 때 프로필 설정 메뉴 활성화
+		if (location.pathname === '/mypage' && path === '/mypage/profile') {
+			return true
+		}
 		return location.pathname === path || location.pathname.startsWith(path + '/')
 	}
 

@@ -4,12 +4,12 @@ import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
 import type { CareerType } from '@/utils/schemas/profileSchema'
 
-interface CareerHistorySectionProps {
+interface ISection06CareerHistory {
 	careers: CareerType[]
 	onCareersChange: (careers: CareerType[]) => void
 }
 
-const CareerHistorySection = ({ careers, onCareersChange }: CareerHistorySectionProps) => {
+const Section06CareerHistory = ({ careers, onCareersChange }: ISection06CareerHistory) => {
 	// 기간 계산 함수
 	const getDuration = (start: string, end: string, isInProgress: boolean) => {
 		// 진행중이면 현재 날짜를 종료일로 사용
@@ -289,4 +289,4 @@ const CareerHistorySection = ({ careers, onCareersChange }: CareerHistorySection
 	)
 }
 
-export default CareerHistorySection
+export default Section06CareerHistory

@@ -10,7 +10,7 @@ interface PortfolioItem {
 	isCompleted?: boolean // 입력 완료 상태
 }
 
-export const PortfolioSection = () => {
+const Section07Portfolio = () => {
 	const [portfolios, setPortfolios] = useState<PortfolioItem[]>([{ id: 1, title: '', link: '', isCompleted: false }])
 	const [dragOver, setDragOver] = useState<number | null>(null)
 	const [nextId, setNextId] = useState(2)
@@ -174,3 +174,5 @@ export const PortfolioSection = () => {
 		</section>
 	)
 }
+
+export default Section07Portfolio

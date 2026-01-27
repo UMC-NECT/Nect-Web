@@ -1,9 +1,9 @@
-interface IntroductionSectionProps {
+interface ISection01Introduction {
 	value: string
 	onChange: (value: string) => void
 }
 
-export const IntroductionSection = ({ value, onChange }: IntroductionSectionProps) => {
+const Section01Introduction = ({ value, onChange }: ISection01Introduction) => {
 	return (
 		<section className='my-2.5'>
 			<h2 className='title-2 font-bold text-neutral-900 mb-2 ml-5'>
@@ -18,3 +18,5 @@ export const IntroductionSection = ({ value, onChange }: IntroductionSectionProp
 		</section>
 	)
 }
+
+export default Section01Introduction

@@ -9,7 +9,7 @@ export const Layout = () => {
 	const { isWorkspace } = useWorkspace()
 	const { isMissionModalOpen, closeMissionModal } = useMissionModalStore()
 	const location = useLocation()
-	const isMyPage = location.pathname.startsWith('/my-page')
+	const isMyPage = location.pathname.startsWith('/mypage')
 
 	const getContentClassName = () => {
 		// 마이 페이지 레이아웃

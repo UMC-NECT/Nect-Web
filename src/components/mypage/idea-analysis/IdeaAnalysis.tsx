@@ -272,13 +272,13 @@ const IdeaAnalysis = () => {
 	}
 
 	return (
-		<div className='flex flex-col gap-9 min-w-229 w-full'>
+		<div className='ml-7 w-full'>
 			{!hasReport ? (
 				// 리포트 없는 경우
 				<EmptyIdeaAnalysis setHasReport={handleReport} />
 			) : (
 				// 리포트 있는 경우
-				<div className='w-full'>
+				<>
 					{/* 브레드크럼 + 타이틀 */}
 					<MyPageHeader
 						action={
@@ -334,7 +334,7 @@ const IdeaAnalysis = () => {
 							</div>
 						</div>
 					</div>
-				</div>
+				</>
 			)}
 
 			{/* 프로젝트 등록 확인 모달 */}

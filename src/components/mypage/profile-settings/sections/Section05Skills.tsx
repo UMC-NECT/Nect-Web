@@ -1,8 +1,8 @@
-interface SkillsSectionProps {
+interface ISection05Skills {
 	skills: Record<string, string[]>
 }
 
-export const SkillsSection = ({ skills }: SkillsSectionProps) => {
+const Section05Skills = ({ skills }: ISection05Skills) => {
 	return (
 		<section className='my-2.5 ml-5'>
 			<div className='flex items-center justify-between mb-4'>
@@ -34,3 +34,5 @@ export const SkillsSection = ({ skills }: SkillsSectionProps) => {
 		</section>
 	)
 }
+
+export default Section05Skills

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Button from '../../../../common/Button'
+import Button from '../../../common/Button'
 import ProjectCard from './ProjectCard'
 
 interface ProjectItem {
@@ -9,7 +9,7 @@ interface ProjectItem {
 	date: string
 }
 
-export const ProjectHistorySection = () => {
+const Section08ProjectHistory = () => {
 	const [projects, setProjects] = useState<ProjectItem[]>([
 		{
 			id: 1,
@@ -56,3 +56,5 @@ export const ProjectHistorySection = () => {
 		</section>
 	)
 }
+
+export default Section08ProjectHistory

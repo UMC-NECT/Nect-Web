@@ -12,7 +12,7 @@ const EmptyIdeaAnalysis = ({ setHasReport }: EmptyIdeaAnalysisProps) => {
 		setHasReport()
 	}
 	return (
-		<div className='flex flex-col gap-9 min-w-229 w-full'>
+		<div className='flex flex-col min-w-229 w-full'>
 			{/* 브레드크럼 + 타이틀 */}
 			<MyPageHeader />
 

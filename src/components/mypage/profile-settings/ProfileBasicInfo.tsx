@@ -8,7 +8,7 @@ interface ProfileBasicInfoProps {
 	onSave: () => void
 }
 
-export const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
+const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
 	const { profileImage, userName, userRole, userEmail, setProfileImage } = useUserStore()
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -88,3 +88,5 @@ export const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
 		</>
 	)
 }
+
+export default ProfileBasicInfo

@@ -1,11 +1,11 @@
 import { useRef, useEffect } from 'react'
 
-interface CoreCompetencySectionProps {
+interface ISection02CoreCompetency {
 	value: string
 	onChange: (value: string) => void
 }
 
-export const CoreCompetencySection = ({ value, onChange }: CoreCompetencySectionProps) => {
+const Section02CoreCompetency = ({ value, onChange }: ISection02CoreCompetency) => {
 	const competencyRef = useRef<HTMLTextAreaElement>(null)
 
 	// 불렛만 있는지 확인
@@ -54,3 +54,5 @@ export const CoreCompetencySection = ({ value, onChange }: CoreCompetencySection
 		</section>
 	)
 }
+
+export default Section02CoreCompetency

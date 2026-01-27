@@ -32,21 +32,26 @@ export const MyPageHeader = ({ action }: MyPageHeaderProps) => {
 	const { sectionTitle, itemLabel } = findCurrentMenuItem()
 
 	return (
-		<div className='ml-3 mb-9 w-full'>
-			{/* 브레드크럼 */}
-			<nav className='body-2 text-neutral-400 mb-7'>
-				<span>마이 페이지</span>
-				<span className='mx-2'>{'>'}</span>
-				<span>{sectionTitle}</span>
-				<span className='mx-2'>{'>'}</span>
-				<span>{itemLabel}</span>
-			</nav>
+		<div className='mb-9 w-full flex justify-between items-end'>
+			{/* 브레드크럼 + 타이틀 */}
+			<div>
+				{/* 브레드크럼 */}
+				<nav className='body-2 text-neutral-400 mb-7'>
+					<span>마이 페이지</span>
+					<span className='mx-2'>{'>'}</span>
+					<span>{sectionTitle}</span>
+					<span className='mx-2'>{'>'}</span>
+					<span>{itemLabel}</span>
+				</nav>
 
-			{/* 타이틀 + 액션 버튼 */}
-			<div className='flex items-center justify-between'>
-				<h1 className='heading-2 font-bold text-neutral-900'>{itemLabel}</h1>
-				{action}
+				{/* 타이틀 */}
+				<div className='flex items-center justify-between'>
+					<h1 className='heading-2 font-bold text-neutral-900'>{itemLabel}</h1>
+				</div>
 			</div>
+
+			{/* 액션 버튼 */}
+			<div>{action}</div>
 		</div>
 	)
 }

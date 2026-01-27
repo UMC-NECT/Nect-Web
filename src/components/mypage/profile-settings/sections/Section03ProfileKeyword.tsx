@@ -1,7 +1,7 @@
 import Button from '../../../common/Button'
 import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
 
-export const ProfileKeywordSection = () => {
+const Section03ProfileKeyword = () => {
 	return (
 		<section className='my-2.5'>
 			<div className='flex items-center justify-between'>
@@ -27,3 +27,5 @@ export const ProfileKeywordSection = () => {
 		</section>
 	)
 }
+
+export default Section03ProfileKeyword
