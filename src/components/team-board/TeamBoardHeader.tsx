@@ -45,7 +45,7 @@ const TeamBoardHeader = ({
 	].filter(item => item.content) // 내용이 있는 항목만 필터링
 
 	return (
-		<div className='self-stretch inline-flex justify-between items-start'>
+		<div className='self-stretch w-[1224px] inline-flex justify-between items-start'>
 			{/* 왼쪽 영역: 프로젝트 정보 및 공지사항 */}
 			<div className='w-[808px] inline-flex flex-col justify-start items-start gap-8'>
 				{/* 프로젝트 제목 및 설명 */}
