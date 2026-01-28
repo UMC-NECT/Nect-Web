@@ -72,7 +72,7 @@ const RadarChart = ({ data, totalScore, className = '' }: RadarChartProps) => {
 	}
 
 	return (
-		<div className={`relative w-full rounded-xl outline-1 -outline-offset-1 outline-neutral-100 ${className}`}>
+		<div className={`relative ${className}`}>
 			<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
 				{/* 그림자 필터 정의 (shadow-drop-neutral-4) */}
 				<defs>
