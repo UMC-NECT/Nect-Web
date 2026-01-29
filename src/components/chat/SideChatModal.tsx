@@ -115,7 +115,7 @@ const SideChatModal = () => {
 	}
 
 	return (
-		<div className='flex items-start'>
+		<div className='flex items-start h-full'>
 			{/* 사이드바 */}
 			<ChatSidebar
 				unreadCount={messages.filter(m => !m.isRead).length}
@@ -124,7 +124,7 @@ const SideChatModal = () => {
 				onSettingsClick={() => {}}
 			/>
 			{/* 메인 채팅 모달 */}
-			<div className='w-[380px] bg-neutral-50 rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden shadow-drop-neutral-1 relative max-h-[calc(100vh-20px)] flex flex-col'>
+			<div className='w-[380px] h-full bg-neutral-50 rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden shadow-drop-neutral-1 relative flex flex-col'>
 				{/* 헤더 */}
 				<ChatMessageHeader
 					onBack={() => {}}

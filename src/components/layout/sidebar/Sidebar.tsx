@@ -111,7 +111,7 @@ export const Sidebar = () => {
 				</div>
 			)}
 			{showChatModal && (
-				<div ref={chatModalRef} className='fixed top-[148px] left-16 z-40'>
+				<div ref={chatModalRef} className='fixed top-[130px] left-16 z-40 h-[calc(100vh-130px-20px)]'>
 					<SideChatModal />
 				</div>
 			)}
