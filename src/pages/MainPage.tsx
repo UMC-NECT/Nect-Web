@@ -8,6 +8,8 @@ import AboutNect from '@/components/main/AboutNect';
 import Statistics from '@/components/main/Statistics';
 import ProjectShowcase from '@/components/main/ProjectShowcase';
 import NewsSection from '@/components/main/NewsSection';
+import CallToAction from '@/components/main/CallToAction';
+import Footer from '@/components/main/Footer'
 
 const MainPage = () => {
     return (
@@ -60,8 +62,18 @@ const MainPage = () => {
             </section>
             
             {/* 소식 섹션 */}
-            <section className="mb-16">
+            <section className="mt-[122px]">
                 <NewsSection />
+            </section>
+
+            {/* 소식 섹션 */}
+            <section className="mt-[96px]">
+                <CallToAction />
+            </section>
+
+            {/* footer */}
+            <section className="mt-[260px]">
+                <Footer />
             </section>
         </div>
     );

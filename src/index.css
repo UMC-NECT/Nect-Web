@@ -268,4 +268,30 @@ button:disabled {
 	html {
   		overflow-x: hidden; /* 스크롤바는 숨기고 가로 스크롤을 방지 */
 	}
+
+	@keyframes scroll-left {
+		0% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(-50%);
+		}
+	}
+	
+	@keyframes scroll-right {
+		0% {
+			transform: translateX(-50%);
+		}
+		100% {
+			transform: translateX(0);
+		}
+	}
+	
+	.animate-scroll-left {
+		animation: scroll-left 40s linear infinite;
+	}
+	
+	.animate-scroll-right {
+		animation: scroll-right 40s linear infinite;
+	}
 }
