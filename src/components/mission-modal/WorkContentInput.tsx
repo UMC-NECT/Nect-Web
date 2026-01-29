@@ -202,7 +202,7 @@ const WorkContentInput = ({
 					>
 						<TagChipList
 							variant='person'
-							title='멘션'
+							title='담당자 선택'
 							filterQuery={mentionQuery}
 							filteredPersonIds={filteredPersonIds}
 							onPersonSelect={person => handlePersonSelect(person)}

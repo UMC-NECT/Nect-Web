@@ -344,4 +344,14 @@ button:disabled {
 	.WorkStatusScrollbar.scrolling::-webkit-scrollbar-thumb {
 		background-color: #e7e7e7 !important;
 	}
+
+	/* OverlayScrollbars 커스텀 스타일 - MissionModal용 */
+	.mission-modal-scrollbar .os-scrollbar {
+		--os-size: 6px;
+		--os-handle-border-radius: 50px;
+	}
+
+	.mission-modal-scrollbar .os-scrollbar-handle {
+		background: #cccccc !important;
+	}
 }

@@ -33,10 +33,23 @@ export interface Feedback {
 	state: 'default' | 'complete' | 'disabled'
 }
 
+export type FileItemType = 'file' | 'link'
+
+export interface FileItem {
+	id: number
+	type: FileItemType
+	name: string
+	url?: string
+	fileName?: string
+}
+
 import type { MissionStatus } from '@/types/missionStatus'
 export type { MissionStatus }
 
 interface MissionModalStore {
+	// 모달 상태
+	isMissionModalOpen: boolean
+
 	// 기존 데이터
 	persons: Person[]
 	roles: Role[]
@@ -56,6 +69,7 @@ interface MissionModalStore {
 	tasks: Task[]
 	feedbacks: Feedback[]
 	mentionedPersons: Person[]
+	files: FileItem[]
 
 	// 기존 액션
 	setSelectedPersons: (persons: Person[]) => void
@@ -92,7 +106,15 @@ interface MissionModalStore {
 	setMentionedPersons: (persons: Person[]) => void
 	addMentionedPerson: (person: Person) => void
 	removeMentionedPerson: (personId: number) => void
+	setFiles: (files: FileItem[]) => void
+	addFile: (file: FileItem) => void
+	updateFile: (fileId: number, updates: Partial<FileItem>) => void
+	removeFile: (fileId: number) => void
 	resetMissionModal: () => void
+
+	// 모달 상태 액션
+	openMissionModal: () => void
+	closeMissionModal: () => void
 }
 
 // 임시 데이터
@@ -130,6 +152,7 @@ const initialMissions: Mission[] = [
 // 미션 모달 초기 데이터
 const initialTasks: Task[] = []
 const initialFeedbacks: Feedback[] = []
+const initialFiles: FileItem[] = []
 
 const initialMissionModalState = {
 	missionNumber: 1,
@@ -142,9 +165,13 @@ const initialMissionModalState = {
 	tasks: initialTasks,
 	feedbacks: initialFeedbacks,
 	mentionedPersons: [] as Person[],
+	files: initialFiles,
 }
 
 export const useMissionModalStore = create<MissionModalStore>(set => ({
+	// 모달 상태
+	isMissionModalOpen: false,
+
 	// 기존 데이터
 	persons: initialPersons,
 	roles: initialRoles,
@@ -262,5 +289,22 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		set(state => ({
 			mentionedPersons: state.mentionedPersons.filter(p => p.id !== personId),
 		})),
+	setFiles: files => set({ files }),
+	addFile: file =>
+		set(state => ({
+			files: [...state.files, file],
+		})),
+	updateFile: (fileId, updates) =>
+		set(state => ({
+			files: state.files.map(f => (f.id === fileId ? { ...f, ...updates } : f)),
+		})),
+	removeFile: fileId =>
+		set(state => ({
+			files: state.files.filter(f => f.id !== fileId),
+		})),
 	resetMissionModal: () => set(initialMissionModalState),
+
+	// 모달 상태 액션
+	openMissionModal: () => set({ isMissionModalOpen: true }),
+	closeMissionModal: () => set({ isMissionModalOpen: false, ...initialMissionModalState }),
 }))

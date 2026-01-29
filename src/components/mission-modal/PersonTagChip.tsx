@@ -26,8 +26,8 @@ const PersonTagChip = ({ personName, personColor, personImage, state, onClick }:
 				isDisabled
 					? cn( 'bg-[linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5))]', 'cursor-default')
 					: isDefault
-						? cn('hover:bg-neutral-100', 'shadow-drop-neutral-2', 'hover:cursor-pointer')
-						: cn(useColor && personColor, 'shadow-drop-neutral-2', 'hover:cursor-pointer')
+						? cn('hover:bg-neutral-100', 'hover:cursor-pointer')
+						: cn(useColor && personColor, 'hover:cursor-pointer')
 			)}
 			onClick={!isDisabled && !isClear ? onClick : undefined}
 		>
