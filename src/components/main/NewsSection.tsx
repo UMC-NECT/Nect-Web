@@ -1,100 +1,136 @@
-import { useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import { useRef, useState } from 'react';
+import type { Swiper as SwiperType } from 'swiper';
+import 'swiper/swiper-bundle.css'; 
+
+import { newsItems } from '@/constants/newsItem';
 
 const NewsSection = () => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    
-    const newsItems = [
-        {
-            id: 1,
-            title: '매칭의 전과정을 함께!',
-            description: '관심사 목표 기반의 프로필 설정을 통해 매칭을 분석해줘요!'
-        },
-        {
-            id: 2,
-            title: '프로젝트 초심자를 위한 가이드!',
-            description: '아이디어 분석을 통해 프로젝트를 보다 쉽게 시작할 수 있어요'
-        },
-        {
-            id: 3,
-            title: '추가 소식 3',
-            description: '세 번째 소식 내용입니다'
-        },
-        {
-            id: 4,
-            title: '추가 소식 4',
-            description: '네 번째 소식 내용입니다'
-        },
-    ];
+    const swiperRef = useRef<SwiperType | null>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
 
-    const handlePrev = () => {
-        setCurrentIndex((prev) => Math.max(0, prev - 1));
-    };
+    const repeatedNewsItems = Array(5).fill(newsItems).flat().map((item, index) => ({
+        ...item,
+        id: index + 1
+    }));
 
-    const handleNext = () => {
-        setCurrentIndex((prev) => Math.min(newsItems.length - 2, prev + 1));
+    const handlePaginationClick = (index: number) => {
+        if (swiperRef.current) {
+            swiperRef.current.slideToLoop(index * 3);
+        }
     };
 
     return (
-        <div className="w-[1200px] mx-auto">
-            <h2 className="text-[28px] font-bold mb-2 text-center">
-                넥트에서 협업의 전 과정을
-            </h2>
-            <p className="text-[28px] font-bold text-center mb-12">
+        <div className="w-[1233px] mx-auto mb-[50px] relative">
+            <h2 className="text-[32px] font-bold text-center mb-[66px]">
+                넥트에서 협업의 전 과정을<br />
                 A부터 Z까지
-            </p>
+            </h2>
             
-            {/* 카로셀 컨테이너 */}
-            <div className="relative flex items-center justify-center gap-6">
-                {/* 왼쪽 화살표 */}
-                <button
-                    onClick={handlePrev}
-                    disabled={currentIndex === 0}
-                    className="w-12 h-12 flex-shrink-0 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors disabled:opacity-30"
+            <div className="w-full relative">
+                <Swiper
+                    modules={[Navigation, Pagination]}
+                    slidesPerView={3}
+                    slidesPerGroup={3}
+                    spaceBetween={24}
+                    navigation={{
+                        nextEl: '.news-custom-next',
+                        prevEl: '.news-custom-prev',
+                    }}
+                    pagination={false}
+                    loop={true}
+                    onSwiper={(swiper) => {
+                        swiperRef.current = swiper;
+                    }}
+                    onSlideChange={(swiper) => {
+                        const realIndex = swiper.realIndex;
+                        setActiveIndex(Math.floor(realIndex / 3));
+                    }}
+                    className="news-section-swiper"
                 >
+                    {repeatedNewsItems.map((item, index) => (
+                        <SwiperSlide key={`news-${index}`}>
+                            <div 
+                                className="w-full h-[322px] border-2 rounded-2xl p-8"
+                                style={{
+                                    backgroundColor: item.bgColor,
+                                    borderColor: item.borderColor
+                                }}
+                            >
+                                <h3 className={`text-[24px] font-bold mb-3 ${
+                                    item.isActive ? 'text-primary-600-normal' : 'text-neutral-900'
+                                }`}>
+                                    {item.title}
+                                </h3>
+                                
+                                <p className="text-[18px] leading-relaxed text-neutral-600 whitespace-pre-line">
+                                    {item.description}
+                                </p>
+
+                                <div className="w-[140px] h-[140px] ml-auto mt-[12px] mb-6 overflow-hidden">
+                                    <img 
+                                        src={item.image} 
+                                        alt={item.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+
+                {/* 화살표 버튼 */}
+                <div className="news-custom-prev absolute left-[-50px] top-[138px] z-10 w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-100 hover:rounded-full">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                </button>
-
-                {/* 카드들 */}
-                <div className="overflow-hidden" style={{ width: '930px' }}> {/* 453 * 2 + 24 = 930px */}
-                    <div 
-                        className="flex gap-6 transition-transform duration-300"
-                        style={{
-                            transform: `translateX(-${currentIndex * 477}px)` // 453 + 24 = 477px
-                        }}
-                    >
-                        {newsItems.map((item) => (
-                            <div
-                                key={item.id}
-                                className="flex-shrink-0 w-[453px] bg-neutral-200 rounded-2xl p-8"
-                            >
-                                {/* 이미지 영역 (더미) */}
-                                <div className="w-[129.5px] h-[92.5px] bg-neutral-400 mb-6"></div>
-                                
-                                {/* 제목 */}
-                                <h3 className="text-[20px] font-bold mb-3">{item.title}</h3>
-                                
-                                {/* 설명 */}
-                                <p className="text-[20px] font-semibold leading-relaxed">
-                                    {item.description}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
                 </div>
-
-                {/* 오른쪽 화살표 */}
-                <button
-                    onClick={handleNext}
-                    disabled={currentIndex >= newsItems.length - 2}
-                    className="w-12 h-12 flex-shrink-0 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors disabled:opacity-30"
-                >
+                <div className="news-custom-next absolute right-[-50px] top-[138px] z-10 w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-100 hover:rounded-full">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
-                </button>
+                </div>
             </div>
+
+            {/* 수동 페이지네이션 */}
+            <div className="news-manual-pagination flex justify-center gap-2 mt-12">
+                {[0, 1, 2, 3, 4].map((idx) => (
+                    <div
+                        key={idx}
+                        className={`pagination-dot transition-all cursor-pointer ${idx === activeIndex ? 'active' : ''}`}
+                        onClick={() => handlePaginationClick(idx)}
+                    />
+                ))}
+            </div>
+
+            <style>{`
+                .news-section-swiper {
+                    overflow: hidden !important;
+                }
+
+                .pagination-dot {
+                    width: 10px;
+                    height: 10px;
+                    background: #CCCCCC;
+                    border-radius: 50%;
+                    transition: all 0.3s;
+                }
+
+                .pagination-dot.active {
+                    background: #595959;
+                    width: 22px;
+                    border-radius: 6px;
+                }
+
+                /* Custom 버튼 disabled 상태 */
+                .news-custom-prev.swiper-button-disabled,
+                .news-custom-next.swiper-button-disabled {
+                    opacity: 0.3;
+                    cursor: not-allowed;
+                    pointer-events: none;
+                }
+            `}</style>
         </div>
     );
 };

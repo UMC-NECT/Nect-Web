@@ -1,12 +1,14 @@
 export const CATEGORY_FIELDS = [
+    { name: '기획/홍보' },
     { name: '브랜딩' },
-    { name: '기획' },
     { name: 'UX/UI' },
-    { name: '영상' },
-    { name: '그래픽' },
+    { name: '제품/공간' },
+    { name: '영상/모션' },
+    { name: '아트/그래픽' },
     { name: '프론트' },
-    { name: '스프링' },
     { name: '백엔드' },
+    { name: '엔지니어' },
+    { name: '데이터분석' },
 ] as const;
 
 export const CREATOR_TYPES = [

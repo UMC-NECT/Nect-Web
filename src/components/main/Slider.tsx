@@ -2,15 +2,30 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Navigation } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
 
+// 이미지 import
+import slide1 from '../../assets/icons/main/slide1.svg';
+import slide2 from '../../assets/icons/main/slide2.svg';
+import slide3 from '../../assets/icons/main/slide3.svg';
+
 const Slider = () => {
-    // 원본 데이터
     const originalSlides = [
-        { id: 1, color: 'bg-neutral-300' },
-        { id: 2, color: 'bg-neutral-400' },
-        { id: 3, color: 'bg-neutral-500' },
+        { 
+            id: 1, 
+            image: slide1,
+            alt: '슬라이드 1' 
+        },
+        { 
+            id: 2, 
+            image: slide2,
+            alt: '슬라이드 2' 
+        },
+        { 
+            id: 3, 
+            image: slide3,
+            alt: '슬라이드 3' 
+        },
     ];
 
-    // 슬라이드 복제 (무한 루프를 위해)
     const slides = [...originalSlides, ...originalSlides];
 
     return (
@@ -29,11 +44,13 @@ const Slider = () => {
                 className="!overflow-visible"
             >
                 {slides.map((slide, index) => (
-                    <SwiperSlide key={`${slide.id}-${index}`} className="!w-[1200px]">
-                        <div className={`w-[1200px] h-[373px] ${slide.color} rounded-2xl flex items-center justify-center`}>
-                            <span className="text-white text-2xl font-bold">
-                                Slide {slide.id}
-                            </span>
+                    <SwiperSlide key={`${slide.id}-${index}`} className="!w-[1128px]">
+                        <div className="relative w-[1128px] h-[350px] rounded-2xl overflow-hidden">
+                            <img 
+                                src={slide.image} 
+                                alt={slide.alt}
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                     </SwiperSlide>
                 ))}

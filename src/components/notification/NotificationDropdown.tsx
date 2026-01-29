@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import ProfileImage from '@/assets/icons/header/Image.svg?react'
-import BarIcon from '@/assets/icons/header/Bar.svg?react'
+import BarIcon from '@/assets/icons/common/Bar.svg?react'
 import { NotificationItem } from './NotificationItem'
 import { type Notification } from '@/types/notification'
 
