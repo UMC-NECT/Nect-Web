@@ -16,10 +16,10 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 	return (
 		<>
 			<div
-				className='self-stretch px-5 py-4 inline-flex flex-col justify-start items-center cursor-pointer hover:bg-neutral-50'
+				className='w-full px-5 py-4 flex flex-col justify-start items-center cursor-pointer hover:bg-neutral-50'
 				onClick={onClick}
 			>
-				<div className='self-stretch min-w-80 inline-flex justify-center items-center gap-3'>
+				<div className='w-full flex justify-center items-center gap-3'>
 					{/* 프로필 이미지 */}
 					{isGroup ? (
 						participantCount >= 4 ? (
@@ -107,9 +107,9 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 					)}
 
 					{/* 메시지 정보 */}
-					<div className='flex-1 flex justify-between items-center'>
+					<div className='flex-1 flex justify-between items-center min-w-0'>
 						{/* 왼쪽: 이름/역할, 멤버 수, 마지막 메시지 */}
-						<div className='w-56 inline-flex flex-col justify-start items-start gap-0.5'>
+						<div className='flex-1 flex flex-col justify-start items-start gap-0.5 min-w-0'>
 							<div className='self-stretch inline-flex justify-start items-center gap-1'>
 								<div className='justify-center text-neutral-900 body-1 font-semibold leading-6'>
 									{message.senderName}
