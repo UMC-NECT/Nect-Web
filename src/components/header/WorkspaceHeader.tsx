@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import LogoIcon from '@/assets/icons/header/Logo.svg?react';
-import BarIcon from '@/assets/icons/header/Bar.svg?react';
+import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import SearchIcon from '@/assets/icons/header/Search.svg?react';
 
 interface WorkspaceHeaderProps {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import LogoIcon from '@/assets/icons/header/Logo.svg?react'
-import BarIcon from '@/assets/icons/header/Bar.svg?react'
+import BarIcon from '@/assets/icons/common/Bar.svg?react'
 import MessageIcon from '@/assets/icons/common/message.svg?react'
 import NotificationIcon from '@/assets/icons/common/notification.svg?react'
 import ProfileIcon from '@/assets/icons/header/Profile.svg?react'

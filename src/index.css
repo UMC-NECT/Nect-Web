@@ -109,6 +109,26 @@ button:disabled {
 	--color-status-success: #009444;
 	--color-social-kakao: #fee500;
 
+	--color-bg-blue: #E9F3FC;
+	--color-bg-yellow: #FDF5E4;
+	--color-bg-green: #EDF6F1;
+	--color-bg-gray: #F7F7FA;
+
+	--color-tag-purple: #E8D8FC;
+	--color-tag-purple-deep: #C494FF;
+	--color-tag-pink: #FFE0F1;
+	--color-tag-pink-deep: #FF94CC;
+	--color-tag-orange: #FFE0E0;
+	--color-tag-orange-deep: #FF9494;
+	--color-tag-blue: #E5EBFF;
+	--color-tag-blue-deep: #94AAFF;
+	--color-tag-green: #E4F5EC;
+	--color-tag-green-deep: #8CDB92;
+	--color-tag-yellow: #FFF4DB;
+	--color-tag-yellow-deep: #F8C08B;
+	--color-tag-gray: #EDEDED;
+
+
 	--shadow-inner-neutral-1: inset 0 1.3px 3px 0 rgba(228, 228, 228, 0.2), inset 0 3px 6px 0 rgba(228, 228, 228, 0.2);
 	--shadow-inner-neutral-2: inset -1px 2.5px 4px 0 rgba(228, 228, 228, 0.2);
 	--shadow-drop-neutral-1: 0 6px 20px 0 rgba(228, 228, 228, 1);

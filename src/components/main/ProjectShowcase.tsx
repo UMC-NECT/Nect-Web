@@ -1,5 +1,7 @@
+import BgPattern from '@/assets/icons/main/bg.svg';
+import portfolio from '@/assets/icons/main/nugu.svg';
+
 const ProjectShowcase = () => {
-    // 더미 프로젝트 데이터
     const projects = [
         { id: 1 },
         { id: 2 },
@@ -10,34 +12,83 @@ const ProjectShowcase = () => {
     ];
 
     return (
-        <div className="w-full -mx-4 bg-neutral-500 py-16">
-            <div>
-                <h2 className="text-[28px] font-bold mb-12 text-center">
-                    완주한 프로젝트를 포트폴리오로 확인하세요!
+        <div className="w-full h-[1064px] -mx-4 relative py-16 overflow-hidden">
+            {/* SVG 배경 */}
+            <div 
+                className="absolute inset-0 bg-neutral-900"
+                style={{
+                    backgroundImage: `url(${BgPattern})`,
+                }}
+            />
+            
+            <div className="relative mt-12">
+                <h2 className="text-[32px] font-bold mb-12 text-center text-white">
+                    완주한 프로젝트의<br />
+                    프로젝트를 넥트에서 확인해보세요 !
                 </h2>
                 
-                {/* 첫 번째 줄 */}
-                <div className="flex gap-[43px] mb-[63px]">
-                    {projects.slice(0, 3).map((project) => (
-                        <div 
-                            key={project.id}
-                            className="w-[444px] h-[303px] bg-neutral-200 cursor-pointer"
-                        >
-                        </div>
-                    ))}
+                {/* 첫 번째 줄 - 왼쪽으로 흐름 */}
+                <div className="flex gap-[43px] mb-[63px] overflow-hidden">
+                    <div className="flex gap-[43px] animate-scroll-left">
+                        {[...projects.slice(0, 3), ...projects.slice(0, 3)].map((project, index) => (
+                            <div 
+                                key={`first-${index}`}
+                                className="w-[414px] h-[230px] rounded-xl cursor-pointer flex-shrink-0"
+                                style={{
+                                    backgroundImage: `url(${portfolio})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                }}
+                            />
+                        ))}
+                    </div>
                 </div>
                 
-                {/* 두 번째 줄 */}
-                <div className="flex gap-[43px] justify-end">
-                    {projects.slice(3, 6).map((project) => (
-                        <div 
-                            key={project.id}
-                            className="w-[444px] h-[303px] bg-neutral-200 cursor-pointer"
-                        >
-                        </div>
-                    ))}
+                {/* 두 번째 줄 - 오른쪽으로 흐름 */}
+                <div className="flex gap-[43px] overflow-hidden">
+                    <div className="flex gap-[43px] animate-scroll-right">
+                        {[...projects.slice(3, 6), ...projects.slice(3, 6)].map((project, index) => (
+                            <div 
+                                key={`second-${index}`}
+                                className="w-[414px] h-[230px] rounded-xl cursor-pointer flex-shrink-0"
+                                style={{
+                                    backgroundImage: `url(${portfolio})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                }}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
+            
+            <style jsx>{`
+                @keyframes scroll-left {
+                    0% {
+                        transform: translateX(0);
+                    }
+                    100% {
+                        transform: translateX(-50%);
+                    }
+                }
+                
+                @keyframes scroll-right {
+                    0% {
+                        transform: translateX(-50%);
+                    }
+                    100% {
+                        transform: translateX(0);
+                    }
+                }
+                
+                .animate-scroll-left {
+                    animation: scroll-left 20s linear infinite;
+                }
+                
+                .animate-scroll-right {
+                    animation: scroll-right 20s linear infinite;
+                }
+            `}</style>
         </div>
     );
 };
