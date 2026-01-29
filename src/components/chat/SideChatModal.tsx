@@ -144,13 +144,7 @@ const SideChatModal = () => {
 					/>
 				))}
 			</div>
-				{/* 새 메시지 버튼 */}
-				<button
-					onClick={() => setView('newChat')}
-					className='absolute bottom-4 left-4 w-10 h-10 rounded-lg bg-white border border-neutral-200 flex items-center justify-center shadow-drop-neutral-3'
-				>
-					✏️
-				</button>
+				
 			</div>
 		</div>
 	)
