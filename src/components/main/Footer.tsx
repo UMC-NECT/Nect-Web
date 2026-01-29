@@ -37,7 +37,6 @@ const Footer = () => {
                         <a 
                             key={index}
                             href="#" 
-                            className="hover:text-primary-500-normal transition"
                         >
                             {link}
                         </a>
