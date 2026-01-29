@@ -8,6 +8,7 @@ import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
 import WeekMissionPage from './pages/WeekMissionPage'
 import SignupPage from './pages/auth/SignupPage'
+import WorkStatusPage from './pages/WorkStatusPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
 			{
 				path: '/week-mission',
 				element: <WeekMissionPage />,
+			},
+			{
+				path: '/work-status',
+				element: <WorkStatusPage />,
 			},
 		],
 	},
