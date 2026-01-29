@@ -86,7 +86,6 @@ const getLinkIcon = (url: string) => {
 const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete, onDownload, className }: FileItemProps) => {
 	const [editName, setEditName] = useState('')
 	const [editUrl, setEditUrl] = useState('')
-	const [isDragOver, setIsDragOver] = useState(false)
 	const [droppedFile, setDroppedFile] = useState<File | null>(null)
 	const [showMenu, setShowMenu] = useState(false)
 	const dropZoneRef = useRef<HTMLDivElement>(null)
@@ -132,20 +131,17 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 	const handleDragOver = useCallback((e: React.DragEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
-		setIsDragOver(true)
 	}, [])
 
 	const handleDragLeave = useCallback((e: React.DragEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
-		setIsDragOver(false)
 	}, [])
 
 	const handleDrop = useCallback(
 		(e: React.DragEvent) => {
 			e.preventDefault()
 			e.stopPropagation()
-			setIsDragOver(false)
 
 			const files = e.dataTransfer.files
 			if (files.length > 0) {
@@ -204,7 +200,6 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 				ref={dropZoneRef}
 				className={cn(
 					'flex gap-2.5 items-center bg-neutral-100 py-2 px-3.5 w-full rounded-md transition-colors',
-					isDragOver && 'bg-primary-100-light border-2 border-dashed border-primary-400-normal',
 					className
 				)}
 				onDragOver={handleDragOver}
