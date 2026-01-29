@@ -14,7 +14,7 @@ const AvatarGroup = ({ avatars = [], maxCount = 3, size = 22.533 }: AvatarGroupP
 	const remainingCount = avatars.length - maxCount
 
 	return (
-		<div className="flex items-center justify-end -space-x-[3.467px]">
+		<div className="flex items-center justify-end -space-x-[8px]">
 			{displayAvatars.map((avatar, index) => (
 				<div
 					key={index}
