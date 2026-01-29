@@ -10,5 +10,6 @@ const CallToAction = () => {
             </button>
         </div>
     );
-}
+};
+
 export default CallToAction;
