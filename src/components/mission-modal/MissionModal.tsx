@@ -21,11 +21,10 @@ import CheckboxIcon from '@/assets/icons/common/checkbox/checkbox-gray.svg?react
 import InfoIcon from '@/assets/icons/common/info.svg?react'
 
 interface MissionModalProps {
-	onFileUploadClick?: () => void
 	className?: string
 }
 
-const MissionModal = ({ onFileUploadClick, className }: MissionModalProps) => {
+const MissionModal = ({ className }: MissionModalProps) => {
 	const {
 		missionNumber,
 		title,
@@ -52,6 +51,8 @@ const MissionModal = ({ onFileUploadClick, className }: MissionModalProps) => {
 		addFeedback,
 		updateFeedback,
 		toggleFeedback,
+		addFile,
+		removeFile,
 	} = useMissionModalStore()
 
 	const sensors = useSensors(
@@ -78,6 +79,8 @@ const MissionModal = ({ onFileUploadClick, className }: MissionModalProps) => {
 	const [isAddingFeedback, setIsAddingFeedback] = useState(true)
 	const [editingFeedbackId, setEditingFeedbackId] = useState<number | null>(null)
 	const [editingFeedbackContent, setEditingFeedbackContent] = useState('')
+
+	const [isAddingFile, setIsAddingFile] = useState(false)
 
 	const [openDropdown, setOpenDropdown] = useState<'parts' | 'assignees' | 'duration' | 'status' | null>(null)
 	const dropdownRef = useRef<HTMLDivElement>(null)
@@ -431,7 +434,7 @@ const MissionModal = ({ onFileUploadClick, className }: MissionModalProps) => {
 										</p>
 										<button
 											className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-[6px] shadow-inner-neutral-2'
-											onClick={onFileUploadClick}
+											onClick={() => setIsAddingFile(true)}
 										>
 											<PlusIcon className='w-4 h-4 stroke-neutral-400' />
 											<span className='body-3 font-medium text-neutral-400 tracking-[-0.26px]'>추가</span>
@@ -439,32 +442,46 @@ const MissionModal = ({ onFileUploadClick, className }: MissionModalProps) => {
 									</div>
 
 									{/* Content */}
-									<div className='bg-neutral-50 border border-neutral-100 rounded-[6px] min-h-[206px] p-2 overflow-y-auto max-h-[300px]'>
-										{files.length > 0 ? (
-											<div className='flex flex-col'>
-												{files.map(file => (
-													<FileItem
-														key={file.id}
-														data={file}
-														onClick={() => {
-															if (file.url) {
-																window.open(file.url, '_blank')
-															}
-														}}
-													/>
-												))}
-
-											</div>
-										) : (
-											<>
-                                                    <FileItem data={{
-                                                                                                        id: 1,
-                                                                                                        name: '새 파일',
-                                                                                                        fileName: '새.pdf',
-                                                                                                        type: 'file'
-                                                                                                    }} />
-                                            </>
-										)}
+									<div className='bg-neutral-50 border py-2 border-neutral-100 rounded-[6px] min-h-[206px] overflow-y-auto max-h-[300px]'>
+										<div className='flex flex-col'>
+											{/* 기존 파일 목록 */}
+											{files.map(file => (
+												<FileItem
+													key={file.id}
+													data={file}
+													onClick={() => {
+														if (file.url) {
+															const url =
+																file.url.startsWith('http://') || file.url.startsWith('https://')
+																	? file.url
+																	: `https://${file.url}`
+															window.open(url, '_blank')
+														}
+													}}
+													onDelete={() => removeFile(file.id)}
+													onDownload={() => {
+														// 파일 다운로드 로직 (실제 파일 URL이 있다면 다운로드)
+														if (file.fileName) {
+															console.log('다운로드:', file.fileName)
+														}
+													}}
+												/>
+											))}
+											{/* 파일 추가 입력 */}
+											{isAddingFile && (
+												<FileItem
+													isEditing
+													onSave={fileData => {
+														addFile({
+															id: Date.now(),
+															...fileData,
+														})
+														setIsAddingFile(false)
+													}}
+													onCancel={() => setIsAddingFile(false)}
+												/>
+											)}
+										</div>
 									</div>
 								</div>
 							</div>
