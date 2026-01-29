@@ -19,7 +19,7 @@ const ProjectShowcase = () => {
     const secondRowProjects = [...projects.slice(3, 6), ...projects.slice(3, 6), ...projects.slice(3, 6), ...projects.slice(3, 6)];
 
     return (
-        <div className="w-full h-[1064px] -mx-4 relative py-16 overflow-hidden">
+        <div className="w-full h-[1064px] -mx-4 relative overflow-hidden">
             {/* SVG 배경 */}
             <div 
                 className="absolute inset-0 bg-neutral-900"
@@ -94,7 +94,7 @@ const ProjectShowcase = () => {
                     </div>
                 </div>
                 <div className='w-full flex justify-center'>
-                    <button className="w-[320px] h-[60px]px-6 py-3 bg-primary-400-normal text-neutral-000 font-medium rounded-lg">
+                    <button className="w-[320px] h-[60px] px-6 py-3 bg-primary-400-normal text-neutral-000 font-medium rounded-lg">
                         Text
                     </button>
                 </div>
