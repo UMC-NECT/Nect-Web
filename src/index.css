@@ -23,7 +23,6 @@ button:disabled {
 /* 전역 스크롤바 스타일 - 6px */
 * {
 	scrollbar-width: auto; /* Firefox는 px 사이즈 직접 설정 불가하기 때문에 auto 사용 */
-	scrollbar-color: #d9d9d9 transparent; /* Firefox: thumb 색상 / track 배경색(투명) */
 }
 
 /* Chrome, Safari, Edge 스크롤바 커스터마이징 */
@@ -105,9 +104,19 @@ button:disabled {
 	--color-danger-600: #666666;
 	--color-danger-700: #ec2d30;
 
-	--color-status-error: #ff7f38;
+	--color-status-error: #FF7F38;
+	--color-status-complete: #2883DE;
+	--color-status-progress: #FFEB63;
 	--color-status-success: #009444;
-	--color-social-kakao: #fee500;
+	--color-status-info: #71717F;
+	--color-status-info-light: #DADAE8;
+
+	--color-status-bg-blue: #E9F3FC;
+	--color-status-bg-yellow: #FDF5E4;
+	--color-status-bg-green: #EDF6F1;
+	--color-status-bg-gray: #F7F7FA;
+
+	--color-social-kakao: #FEE500;
 
 	--color-bg-blue: #E9F3FC;
 	--color-bg-yellow: #FDF5E4;
@@ -254,7 +263,7 @@ button:disabled {
 	.shadow-drop-primary-2 {
 		box-shadow: var(--shadow-drop-primary-2);
 	}
-	
+
 	.scrollbar-hide {
 		-ms-overflow-style: none;
 		scrollbar-width: none;
@@ -293,5 +302,34 @@ button:disabled {
 	
 	.animate-scroll-right {
 		animation: scroll-right 40s linear infinite;
+	}
+}
+	/* WorkStatusScrollbar - 큰거 (6px) */
+	.WorkStatusScrollbar::-webkit-scrollbar {
+		scrollbar-width: auto !important;
+		width: 6px !important;
+	}
+
+	.WorkStatusScrollbar::-webkit-scrollbar-track {
+		background: transparent !important;
+	}
+
+	.WorkStatusScrollbar::-webkit-scrollbar-thumb {
+		background-color: transparent !important;
+		border-radius: 50px !important;
+	}
+
+	.WorkStatusScrollbar::-webkit-scrollbar-button {
+		display: none !important;
+		width: 0 !important;
+		height: 0 !important;
+	}
+
+	.WorkStatusScrollbar:hover::-webkit-scrollbar-thumb {
+		background-color: #fafafa !important;
+	}
+
+	.WorkStatusScrollbar.scrolling::-webkit-scrollbar-thumb {
+		background-color: #e7e7e7 !important;
 	}
 }
