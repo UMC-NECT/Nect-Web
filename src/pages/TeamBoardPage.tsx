@@ -270,7 +270,7 @@ const TeamBoardPage = () => {
 				{/* 왼쪽 영역 (808x990) */}
 				<div className="flex flex-col gap-4 w-[808px]">
 					{/* 상단: RadarChartCard + ContentListCard 두 개 (808x448) */}
-					<div className="flex gap-4 h-[448px]">
+					<div className="flex gap-6 h-[448px]">
 						{/* RadarChartCard (392x448) */}
 						<RadarChartCard title="팀 역할별 역량" totalScore={80} maxScore={80} data={radarChartData} />
 						{/* ContentListCard 두 개 (세로 배치, 392x216 각각) */}
