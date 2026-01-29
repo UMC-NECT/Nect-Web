@@ -124,7 +124,7 @@ const SideChatModal = () => {
 				onSettingsClick={() => {}}
 			/>
 			{/* 메인 채팅 모달 */}
-			<div className='w-[380px] h-full bg-neutral-50 rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden shadow-drop-neutral-1 relative flex flex-col'>
+			<div className='w-[380px] h-full bg-neutral-50 rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
 				{/* 헤더 */}
 				<ChatMessageHeader
 					onBack={() => {}}

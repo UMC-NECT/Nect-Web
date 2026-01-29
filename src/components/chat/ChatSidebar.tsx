@@ -1,4 +1,5 @@
 import MessageIcon from '@/assets/icons/common/message.svg?react'
+import SettingIcon from '@/assets/icons/sidebar/setting.svg?react'
 
 interface ChatSidebarProps {
 	unreadCount?: number
@@ -67,29 +68,11 @@ const ChatSidebar = ({ unreadCount = 0, onMessageClick, onCloudClick, onSettings
 					onClick={onSettingsClick}
 					className="w-[30px] h-[30px] relative flex justify-center items-center"
 				>
-					<div className="w-[30px] h-[30px] rounded-lg shadow-inner-neutral-2" />
+					<div className="w-[30px] h-[30px] rounded-lg" />
 					{/* 설정 아이콘 SVG */}
-					<svg
-						className="w-6 h-6 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-						viewBox="0 0 20 20"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M10 10.8333C10.4602 10.8333 10.8333 10.4602 10.8333 10C10.8333 9.53976 10.4602 9.16667 10 9.16667C9.53976 9.16667 9.16667 9.53976 9.16667 10C9.16667 10.4602 9.53976 10.8333 10 10.8333Z"
-							stroke="#ADADBB"
-							strokeWidth="1.25"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						/>
-						<path
-							d="M10 5.41667V3.75M10 16.25V14.5833M14.5833 10H16.25M3.75 10H5.41667M15.3033 4.69667L14.1667 5.83333M5.83333 14.1667L4.69667 15.3033M15.3033 15.3033L14.1667 14.1667M5.83333 5.83333L4.69667 4.69667"
-							stroke="#ADADBB"
-							strokeWidth="1.25"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						/>
-					</svg>
+					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 p-[1.25px] flex items-center justify-center">
+						<SettingIcon className="w-5 h-5" />
+					</div>
 				</button>
 			</div>
 		</div>
