@@ -7,6 +7,7 @@ import OnboardingPage from './pages/auth/OnboardingPage'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
 import WeekMissionPage from './pages/WeekMissionPage'
+import SignupPage from './pages/auth/SignupPage'
 import WorkStatusPage from './pages/WorkStatusPage'
 
 const queryClient = new QueryClient({
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
 			{
 				path: '/onboarding',
 				element: <OnboardingPage />,
+			},
+			{
+				path: '/signup',
+				element: <SignupPage />,
 			},
 		],
 	},
