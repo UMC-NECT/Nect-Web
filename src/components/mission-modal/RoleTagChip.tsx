@@ -16,30 +16,21 @@ const RoleTagChip = ({ roleName, roleColor, state, onClick }: RoleTagChipProps) 
 
 	return (
 		<div className='flex'>
-			{isEdit && (
-				<DragIcon />
-			)}
+			{isEdit && <DragIcon />}
 			<div
 				className={cn(
 					'rounded-md py-0.5 w-fit h-6 flex items-center gap-1',
 					isClear ? 'pl-2 pr-1' : 'px-2',
 					isDisabled
-						? cn(roleColor,'bg-[linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5))]', 'cursor-default')
-						: cn(roleColor, 'shadow-drop-neutral-2', 'hover:cursor-pointer'
-						)
+						? cn(roleColor, 'bg-[linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5))]', 'cursor-default')
+						: cn(roleColor, 'shadow-drop-neutral-2', 'hover:cursor-pointer')
 				)}
+				onClick={!isDisabled && !isClear ? onClick : undefined}
 			>
-				<p
-					className={cn(
-						'button-1 font-medium text-center',
-						isDisabled ? 'text-neutral-300' : 'text-neutral-700'
-					)}
-				>
+				<p className={cn('button-1 font-medium text-center', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
 					{roleName}
 				</p>
-				{isClear && !isDisabled && (
-					<XIcon className='cursor-pointer' onClick={onClick} />
-				)}
+				{isClear && !isDisabled && <XIcon className='cursor-pointer' onClick={onClick} />}
 			</div>
 		</div>
 	)
