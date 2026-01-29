@@ -55,6 +55,7 @@ interface MissionModalStore {
 	workContent: string
 	tasks: Task[]
 	feedbacks: Feedback[]
+	mentionedPersons: Person[]
 
 	// 기존 액션
 	setSelectedPersons: (persons: Person[]) => void
@@ -88,6 +89,9 @@ interface MissionModalStore {
 	updateFeedback: (feedbackId: number, updates: Partial<Feedback>) => void
 	removeFeedback: (feedbackId: number) => void
 	toggleFeedback: (feedbackId: number) => void
+	setMentionedPersons: (persons: Person[]) => void
+	addMentionedPerson: (person: Person) => void
+	removeMentionedPerson: (personId: number) => void
 	resetMissionModal: () => void
 }
 
@@ -137,6 +141,7 @@ const initialMissionModalState = {
 	workContent: '',
 	tasks: initialTasks,
 	feedbacks: initialFeedbacks,
+	mentionedPersons: [] as Person[],
 }
 
 export const useMissionModalStore = create<MissionModalStore>(set => ({
@@ -245,6 +250,17 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 			feedbacks: state.feedbacks.map(f =>
 				f.id === feedbackId ? { ...f, state: f.state === 'complete' ? 'default' : 'complete' } : f
 			),
+		})),
+	setMentionedPersons: persons => set({ mentionedPersons: persons }),
+	addMentionedPerson: person =>
+		set(state => ({
+			mentionedPersons: state.mentionedPersons.some(p => p.id === person.id)
+				? state.mentionedPersons
+				: [...state.mentionedPersons, person],
+		})),
+	removeMentionedPerson: personId =>
+		set(state => ({
+			mentionedPersons: state.mentionedPersons.filter(p => p.id !== personId),
 		})),
 	resetMissionModal: () => set(initialMissionModalState),
 }))

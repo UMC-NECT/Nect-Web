@@ -24,6 +24,9 @@ interface TagChipListProps {
 	customSelectedRoleIds?: number[]
 	onPersonSelect?: (person: Person, isSelected: boolean) => void
 	onRoleSelect?: (role: Role, isSelected: boolean) => void
+	// 필터링 지원
+	filterQuery?: string
+	filteredPersonIds?: number[]
 }
 
 const defaultTitles: Record<TagChipListVariant, string> = {
@@ -46,6 +49,8 @@ const TagChipList = ({
 	customSelectedRoleIds,
 	onPersonSelect,
 	onRoleSelect,
+	filterQuery = '',
+	filteredPersonIds,
 }: TagChipListProps) => {
 	const {
 		persons,
@@ -137,27 +142,34 @@ const TagChipList = ({
 	const getPersonState = (person: Person): 'default' | 'filter' | 'clear' | 'disabled' => {
 		const isSelected = isPersonSelected(person.id)
 		const isDisabled = disabledPersonIds.includes(person.id)
+		const isFiltered = filteredPersonIds?.includes(person.id)
 
 		if (isDisabled) return 'disabled'
 		if (showClearButton && isSelected) return 'clear'
-		if (isSelected) return 'filter'
+		if (isSelected || isFiltered) return 'filter'
 		return 'default'
 	}
 
-	const renderPersonChips = () => (
-		<div className='flex flex-col gap-2 w-full mt-2 max-h-[316px] overflow-y-auto WorkStatusScrollbar'>
-			{persons.map(person => (
-				<PersonTagChip
-					key={person.id}
-					personName={person.name}
-					personColor={person.color}
-					personImage={person.image}
-					state={getPersonState(person)}
-					onClick={() => handlePersonClick(person)}
-				/>
-			))}
-		</div>
-	)
+	const renderPersonChips = () => {
+		const filteredPersons = filterQuery
+			? persons.filter(person => person.name.toLowerCase().includes(filterQuery.toLowerCase()))
+			: persons
+
+		return (
+			<div className='flex flex-col gap-2 w-full mt-2 max-h-[316px] overflow-y-auto WorkStatusScrollbar'>
+				{filteredPersons.map(person => (
+					<PersonTagChip
+						key={person.id}
+						personName={person.name}
+						personColor={person.color}
+						personImage={person.image}
+						state={getPersonState(person)}
+						onClick={() => handlePersonClick(person)}
+					/>
+				))}
+			</div>
+		)
+	}
 
 	const getRoleState = (role: Role): 'default' | 'clear' | 'disabled' | 'edit' => {
 		const isSelected = isRoleSelected(role.id)

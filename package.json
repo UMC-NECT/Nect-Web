@@ -29,6 +29,7 @@
     "swiper": "^12.0.3",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
+    "textarea-caret": "^3.1.0",
     "vite-plugin-svgr": "^4.5.0",
     "zod": "^4.2.1",
     "zustand": "^5.0.9"
@@ -38,6 +39,7 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@types/textarea-caret": "^3.0.4",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
