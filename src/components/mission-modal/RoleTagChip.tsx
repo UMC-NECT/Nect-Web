@@ -6,7 +6,7 @@ interface RoleTagChipProps {
 	roleName: string
 	roleColor: string
 	state: 'default' | 'clear' | 'disabled' | 'edit'
-	onClick?: () => void
+	onClick?: (e?: React.MouseEvent) => void
 }
 
 const RoleTagChip = ({ roleName, roleColor, state, onClick }: RoleTagChipProps) => {
