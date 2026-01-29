@@ -8,13 +8,6 @@ import UpcomingTeamSchedule from '@/components/team-board/UpcomingTeamSchedule'
 
 const TeamBoardPage = () => {
 	// 샘플 데이터
-	const avatars = [
-		'https://placehold.co/60x60',
-		'https://placehold.co/60x60',
-		'https://placehold.co/60x60',
-		'https://placehold.co/60x60',
-		'https://placehold.co/60x60',
-	]
 
 	const radarChartData = [
 		{
@@ -255,8 +248,6 @@ const TeamBoardPage = () => {
 					description="크리에이터를 위한 사이드 프로젝트 매칭 & 협업 플랫폼"
 					notice="이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~"
 					regularMeeting="매주 금요일 PM 8:30 / 강남 사거리역 스타벅스"
-					memberCount={20}
-					memberAvatars={avatars}
 					startDate="2025.11.14"
 					endDate="2026.2.20"
 				/>
