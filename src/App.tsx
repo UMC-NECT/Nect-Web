@@ -35,9 +35,11 @@ const router = createBrowserRouter([
 			{
 				path: '/team-board',
 				element: <TeamBoardPage />,
+			},
+			{
 				path: '/work-status',
 				element: <WorkStatusPage />,
-			},
+			}
 		],
 	},
 	{
