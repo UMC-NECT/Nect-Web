@@ -113,6 +113,20 @@ button:disabled {
 	--color-status-info-cool-gray-light: #DADAE8;
 	--color-status-info-cool-gray-neutral: #ADADBB;
 
+	--color-roletag-purple: #E8D8FC;
+	--color-roletag-purple-deep: #C494FF;
+	--color-roletag-pink: #FFE0F1;
+	--color-roletag-pink-deep: #FF94CC;
+	--color-roletag-orange: #FFE0E0;
+	--color-roletag-orange-deep: #FF9494;
+	--color-roletag-blue: #E5EBFF;
+	--color-roletag-blue-deep: #94AAFF;
+	--color-roletag-green: #E4F5EC;
+	--color-roletag-green-deep: #8CDB92;
+	--color-roletag-yellow: #FFF4DB;
+	--color-roletag-yellow-deep: #F8C08B;
+	--color-roletag-gray: #EDEDED;
+
 	--color-social-kakao: #FEE500;
 
 	--color-bg-blue: #E9F3FC;
@@ -167,7 +181,7 @@ button:disabled {
 		font-size: 36px;
 		line-height: 1.2;
 	}
-	
+
 	.heading-1 {
 		font-size: 32px;
 		line-height: 1.3;
@@ -287,7 +301,7 @@ button:disabled {
 			transform: translateX(-50%);
 		}
 	}
-	
+
 	@keyframes scroll-right {
 		0% {
 			transform: translateX(-50%);
@@ -296,11 +310,11 @@ button:disabled {
 			transform: translateX(0);
 		}
 	}
-	
+
 	.animate-scroll-left {
 		animation: scroll-left 40s linear infinite;
 	}
-	
+
 	.animate-scroll-right {
 		animation: scroll-right 40s linear infinite;
 	}
@@ -332,5 +346,15 @@ button:disabled {
 
 	.WorkStatusScrollbar.scrolling::-webkit-scrollbar-thumb {
 		background-color: #e7e7e7 !important;
+	}
+
+	/* OverlayScrollbars 커스텀 스타일 - MissionModal용 */
+	.mission-modal-scrollbar .os-scrollbar {
+		--os-size: 6px;
+		--os-handle-border-radius: 50px;
+	}
+
+	.mission-modal-scrollbar .os-scrollbar-handle {
+		background: #cccccc !important;
 	}
 }
