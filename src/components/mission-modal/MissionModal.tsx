@@ -37,6 +37,7 @@ const MissionModal = ({ className }: MissionModalProps) => {
 		tasks,
 		feedbacks,
 		files,
+		setMissionNumber,
 		setTitle,
 		addSelectedPart,
 		removeSelectedPart,
@@ -84,19 +85,24 @@ const MissionModal = ({ className }: MissionModalProps) => {
 
 	const [isAddingFile, setIsAddingFile] = useState(false)
 
-	const [openDropdown, setOpenDropdown] = useState<'parts' | 'assignees' | 'duration' | 'status' | null>(null)
+	const [openDropdown, setOpenDropdown] = useState<'mission' | 'parts' | 'assignees' | 'duration' | 'status' | null>(null)
 	const dropdownRef = useRef<HTMLDivElement>(null)
+	const missionDropdownRef = useRef<HTMLDivElement>(null)
 
 	const completedTasks = tasks.filter(t => t.isComplete).length
 	const totalTasks = tasks.length
 
-	const toggleDropdown = (dropdown: 'parts' | 'assignees' | 'duration' | 'status') => {
+	const toggleDropdown = (dropdown: 'mission' | 'parts' | 'assignees' | 'duration' | 'status') => {
 		setOpenDropdown(prev => (prev === dropdown ? null : dropdown))
 	}
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+			const target = event.target as Node
+			const isInsideDropdownRef = dropdownRef.current?.contains(target)
+			const isInsideMissionDropdownRef = missionDropdownRef.current?.contains(target)
+
+			if (!isInsideDropdownRef && !isInsideMissionDropdownRef) {
 				setOpenDropdown(null)
 			}
 		}
@@ -179,8 +185,21 @@ const MissionModal = ({ className }: MissionModalProps) => {
 				className
 			)}
 		>
-			<div className='mr-auto mb-[26px] ml-[58px] mt-[34px]'>
-				<MissionTagChip missionNumber={missionNumber} />
+			<div ref={missionDropdownRef} className='mr-auto mb-[26px] ml-[58px] mt-[34px] relative'>
+				<div onClick={() => toggleDropdown('mission')} className='cursor-pointer'>
+					<MissionTagChip missionNumber={missionNumber} />
+				</div>
+				{openDropdown === 'mission' && (
+					<div className='absolute top-full left-0  z-10'>
+						<TagChipList
+							variant='mission'
+							onMissionClick={mission => {
+								setMissionNumber(mission.missionNumber)
+								setOpenDropdown(null)
+							}}
+						/>
+					</div>
+				)}
 			</div>
 			<OverlayScrollbarsComponent
 				className='max-h-[600px] pb-[34px] px-[58px] mission-modal-scrollbar'
