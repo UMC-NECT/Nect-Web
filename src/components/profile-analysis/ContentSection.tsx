@@ -1,11 +1,14 @@
+import { cn } from "@/utils/cn"
+
 interface ContentSectionProps {
     title: string
     children: React.ReactNode
+    className?: string
 }
 
-const ContentSection = ({ title, children }: ContentSectionProps) => {
+const ContentSection = ({ title, children, className }: ContentSectionProps) => {
     return (
-        <div className='flex flex-col w-full justify-center mt-12'>
+        <div className={cn('flex flex-col w-full justify-center mt-12', className)}>
             <span className='heading-3 font-bold text-primary-600-normal'>{title}</span>
             {children}
         </div>
