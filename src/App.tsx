@@ -10,6 +10,8 @@ import WeekMissionPage from './pages/WeekMissionPage'
 import TeamBoardPage from './pages/TeamBoardPage'
 import SignupPage from './pages/auth/SignupPage'
 import WorkStatusPage from './pages/WorkStatusPage'
+import ProfileAnalysisPage from './pages/ProfileAnalysisPage'
+import AnalysisLayout from './components/layout/AnalysisLayout'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -40,6 +42,15 @@ const router = createBrowserRouter([
 				path: '/work-status',
 				element: <WorkStatusPage />,
 			}
+		],
+	},
+	{
+		element: <AnalysisLayout />,
+		children: [
+			{
+				path: '/profile-analysis',
+				element: <ProfileAnalysisPage />,
+			},
 		],
 	},
 	{

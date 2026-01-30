@@ -347,6 +347,9 @@ button:disabled {
 	.WorkStatusScrollbar.scrolling::-webkit-scrollbar-thumb {
 		background-color: #e7e7e7 !important;
 	}
+	.recharts-wrapper * {
+		outline: none !important;
+	}
 
 	/* OverlayScrollbars 커스텀 스타일 - MissionModal용 */
 	.mission-modal-scrollbar .os-scrollbar {
