@@ -1,11 +1,15 @@
 import { ChatRoomMessage } from './ChatRoomMessage'
+import ChatRoomHeader from './ChatRoomHeader'
+import ChatSidebar from './ChatSidebar'
 
 interface SideChatRoomProps {
 	roomName: string
+	memberCount?: number
+	role?: string
 	onClose: () => void
 }
 
-const SideChatRoom = ({ roomName, onClose }: SideChatRoomProps) => {
+const SideChatRoom = ({ roomName, memberCount, role, onClose }: SideChatRoomProps) => {
 	const messages = [
 		{ id: 1, senderName: '송지원', content: '메시지 내용', time: 'PM 10:31', isMine: false },
 		{ id: 2, senderName: '김진호', content: '메시지 내용', time: 'PM 10:36', isMine: false },
@@ -14,35 +18,28 @@ const SideChatRoom = ({ roomName, onClose }: SideChatRoomProps) => {
 	]
 
 	return (
-		<div className='w-[360px] bg-white rounded-2xl border border-neutral-200 z-50 overflow-hidden shadow-drop-neutral-1 flex'>
-			{/* 왼쪽 사이드바 */}
-			<div className='w-12 bg-neutral-50 flex flex-col items-center py-4 gap-2'>
-				<div className='w-8 h-8 rounded-full bg-neutral-200' />
-				<div className='w-8 h-8 rounded-full bg-neutral-200' />
-				<div className='w-8 h-8 rounded-full bg-neutral-200' />
-				<div className='mt-auto w-8 h-8 rounded-lg bg-white border border-neutral-200 flex items-center justify-center'>
-					<span className='text-xs'>✏️</span>
-				</div>
-			</div>
-
+		<div className='flex items-start h-full'>
+			{/* 사이드바 */}
+			<ChatSidebar
+				unreadCount={0}
+				onMessageClick={onClose}
+				onCloudClick={() => {}}
+				onSettingsClick={() => {}}
+			/>
 			{/* 메인 채팅 영역 */}
-			<div className='flex-1 flex flex-col h-[500px]'>
+			<div className='w-[380px] h-full bg-white rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
 				{/* 헤더 */}
-				<div className='h-12 border-b border-neutral-200 flex items-center justify-between px-3 shrink-0'>
-					<div className='flex items-center gap-2'>
-						<button onClick={onClose} className='text-sm'>
-							←
-						</button>
-						<span className='text-sm'>{roomName}</span>
-					</div>
-					<div className='flex items-center gap-2'>
-						<button className='text-sm'>🔍</button>
-						<button className='text-sm'>☰</button>
-					</div>
-				</div>
+				<ChatRoomHeader
+					roomName={roomName}
+					memberCount={memberCount}
+					role={role}
+					onBack={onClose}
+					onSearch={() => {}}
+					onMenu={() => {}}
+				/>
 
 				{/* 메시지 영역 */}
-				<div className='flex-1 overflow-y-auto p-3 bg-neutral-50 min-h-0'>
+				<div className='flex-1 overflow-y-auto p-3 bg-neutral-50 min-h-0 notification-scrollbar'>
 					{messages.map(message => (
 						<ChatRoomMessage
 							key={message.id}
@@ -55,7 +52,7 @@ const SideChatRoom = ({ roomName, onClose }: SideChatRoomProps) => {
 				</div>
 
 				{/* 입력 필드 */}
-				<div className='h-12 border-t border-neutral-200 flex items-center px-3 gap-2 shrink-0'>
+				<div className='h-12 border-t border-neutral-200 flex items-center px-3 gap-2 shrink-0 bg-white'>
 					<input
 						type='text'
 						placeholder='메시지 입력'

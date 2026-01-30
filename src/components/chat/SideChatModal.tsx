@@ -11,6 +11,7 @@ type ModalView = 'list' | 'newChat' | 'selectContact' | 'room'
 const SideChatModal = () => {
 	const [view, setView] = useState<ModalView>('list')
 	const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
+	const [selectedMessage, setSelectedMessage] = useState<typeof messages[0] | null>(null)
 
 	const messages = [
 		{
@@ -102,8 +103,18 @@ const SideChatModal = () => {
 		
 	]
 
-	if (view === 'room' && selectedRoom) {
-		return <SideChatRoom roomName={selectedRoom} onClose={() => setView('list')} />
+	if (view === 'room' && selectedRoom && selectedMessage) {
+		return (
+			<SideChatRoom
+				roomName={selectedRoom}
+				memberCount={selectedMessage.memberCount}
+				role={selectedMessage.role}
+				onClose={() => {
+					setView('list')
+					setSelectedMessage(null)
+				}}
+			/>
+		)
 	}
 
 	if (view === 'newChat') {
@@ -139,6 +150,7 @@ const SideChatModal = () => {
 						showDivider={index === 0}
 						onClick={() => {
 							setSelectedRoom(message.senderName)
+							setSelectedMessage(message)
 							setView('room')
 						}}
 					/>
