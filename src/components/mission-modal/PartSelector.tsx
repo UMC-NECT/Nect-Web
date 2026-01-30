@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn'
 import RoleTagChip from './RoleTagChip'
 import PersonTagChip from './PersonTagChip'
-import type { Role, Person } from '@/stores/mission-modal/missionModalStore'
+import type { Role, Person } from '@/stores/teamStore'
 
 type PartSelectorVariant = 'role' | 'person'
 
@@ -49,7 +49,7 @@ const PartSelector = ({
 								onRoleRemove?.(role.id)
 							}}
 						>
-							<RoleTagChip roleName={role.name} roleColor={role.color} state='clear' />
+							<RoleTagChip roleId={role.id} roleName={role.name} state='clear' />
 						</div>
 					))
 				) : (
@@ -63,7 +63,7 @@ const PartSelector = ({
 						>
 							<PersonTagChip
 								personName={person.name}
-								personColor={person.color}
+								roleId={person.roleId}
 								personImage={person.image}
 								state='default'
 							/>

@@ -1,15 +1,17 @@
 import { cn } from '@/utils/cn'
+import { getRoleColorById } from '@/utils/roleColor'
 import XIcon from '@/assets/icons/common/X-small.svg?react'
 import DragIcon from '@/assets/icons/common/drag.svg?react'
 
 interface RoleTagChipProps {
+	roleId: number
 	roleName: string
-	roleColor: string
 	state: 'default' | 'clear' | 'disabled' | 'edit'
 	onClick?: (e?: React.MouseEvent) => void
 }
 
-const RoleTagChip = ({ roleName, roleColor, state, onClick }: RoleTagChipProps) => {
+const RoleTagChip = ({ roleId, roleName, state, onClick }: RoleTagChipProps) => {
+	const roleColor = getRoleColorById(roleId)
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'
 	const isEdit = state === 'edit'

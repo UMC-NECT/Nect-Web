@@ -26,7 +26,7 @@ const StatusChip = ({ state, gridColumnSize, onClick }: StatusChipProps) => {
 			onClick={onClick}
 		>
 			<div className={cn('w-[10px] h-[10px] rounded-full shrink-0', config.dotColor)} />
-			{!isCircular && <p className='body-2 text-neutral-700 font-medium text-center whitespace-nowrap'>{config.text}</p>}
+			{!isCircular && <p className='body-2 text-neutral-700 font-medium text-center whitespace-nowrap h-5'>{config.text}</p>}
 		</div>
 	)
 }

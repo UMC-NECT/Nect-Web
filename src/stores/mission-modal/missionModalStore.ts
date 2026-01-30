@@ -1,17 +1,8 @@
 import { create } from 'zustand'
+import type { Person, Role } from '@/stores/teamStore'
 
-export interface Person {
-	id: number
-	name: string
-	color: string
-	image: string
-}
-
-export interface Role {
-	id: number
-	name: string
-	color: string
-}
+// Re-export for backward compatibility
+export type { Person, Role }
 
 export interface Mission {
 	id: number
@@ -50,9 +41,7 @@ interface MissionModalStore {
 	// 모달 상태
 	isMissionModalOpen: boolean
 
-	// 기존 데이터
-	persons: Person[]
-	roles: Role[]
+	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: Mission[]
 	selectedPersons: Person[]
 	selectedRoles: Role[]
@@ -117,30 +106,7 @@ interface MissionModalStore {
 	closeMissionModal: () => void
 }
 
-// 임시 데이터
-const initialPersons: Person[] = [
-	{ id: 1, name: '시루', color: 'bg-roletag-purple', image: 'https://placehold.co/24x24' },
-	{ id: 2, name: '이방토', color: 'bg-roletag-blue', image: 'https://placehold.co/24x24' },
-	{ id: 3, name: '김개발', color: 'bg-roletag-green', image: 'https://placehold.co/24x24' },
-	{ id: 4, name: '박디자인', color: 'bg-roletag-pink', image: 'https://placehold.co/24x24' },
-	{ id: 5, name: '최기획', color: 'bg-roletag-orange', image: 'https://placehold.co/24x24' },
-	{ id: 6, name: '정마케팅', color: 'bg-roletag-yellow', image: 'https://placehold.co/24x24' },
-	{ id: 7, name: '한영업', color: 'bg-roletag-gray', image: 'https://placehold.co/24x24' },
-	{ id: 8, name: '오데이터', color: 'bg-roletag-purple', image: 'https://placehold.co/24x24' },
-	{ id: 9, name: '송보안', color: 'bg-roletag-blue', image: 'https://placehold.co/24x24' },
-	{ id: 10, name: '임인프라', color: 'bg-roletag-green', image: 'https://placehold.co/24x24' },
-	{ id: 11, name: '강리서치', color: 'bg-roletag-pink', image: 'https://placehold.co/24x24' },
-	{ id: 12, name: '윤전략', color: 'bg-roletag-orange', image: 'https://placehold.co/24x24' },
-]
-
-const initialRoles: Role[] = [
-	{ id: 1, name: 'PM', color: 'bg-roletag-purple' },
-	{ id: 2, name: 'Design', color: 'bg-roletag-pink' },
-	{ id: 3, name: 'Backend', color: 'bg-roletag-blue' },
-	{ id: 4, name: 'Frontend', color: 'bg-roletag-green' },
-	{ id: 5, name: 'QA', color: 'bg-roletag-yellow' },
-]
-
+// 임시 데이터 (persons, roles는 teamStore에서 관리)
 const initialMissions: Mission[] = [
 	{ id: 1, missionNumber: 1 },
 	{ id: 2, missionNumber: 2 },
@@ -172,9 +138,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	// 모달 상태
 	isMissionModalOpen: false,
 
-	// 기존 데이터
-	persons: initialPersons,
-	roles: initialRoles,
+	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: initialMissions,
 	selectedPersons: [],
 	selectedRoles: [],
