@@ -6,12 +6,12 @@ interface Contact {
 	profileImage?: string
 }
 
-interface SideSelectContactModalProps {
+interface SelectContactModalProps {
 	onClose: () => void
 	onConfirm: (selectedContacts: Contact[]) => void
 }
 
-const SideSelectContactModal = ({ onClose, onConfirm }: SideSelectContactModalProps) => {
+const SelectContactModal = ({ onClose, onConfirm }: SelectContactModalProps) => {
 	const [selectedContacts, setSelectedContacts] = useState<number[]>([])
 	const [searchQuery, setSearchQuery] = useState('')
 
@@ -79,5 +79,5 @@ const SideSelectContactModal = ({ onClose, onConfirm }: SideSelectContactModalPr
 	)
 }
 
-export default SideSelectContactModal
+export default SelectContactModal
 

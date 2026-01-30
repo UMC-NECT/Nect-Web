@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { ChatRoomMessage } from './ChatRoomMessage'
-import ChatRoomHeader from './ChatRoomHeader'
-import ChatSearchHeader from './ChatSearchHeader'
-import ChatRoomMenu from './ChatRoomMenu'
+import ChatHeader from './ChatHeader'
+import ChatMenu from './ChatMenu'
 import ChatSidebar from './ChatSidebar'
 import ChatInput from './ChatInput'
 import { ChatDateLine } from './ChatDateLine'
 import { ChatReadLine } from './ChatReadLine'
 
-interface SideChatRoomProps {
+interface ChatRoomProps {
 	roomName: string
 	memberCount?: number
 	role?: string
@@ -16,7 +15,7 @@ interface SideChatRoomProps {
 	onClose: () => void
 }
 
-const SideChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: SideChatRoomProps) => {
+const ChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: ChatRoomProps) => {
 	const [isSearchMode, setIsSearchMode] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const messages = [
@@ -46,28 +45,25 @@ const SideChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }:
 			{/* 메인 채팅 영역 */}
 			<div className='w-[380px] h-full bg-white rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
 				{/* 헤더 */}
-				{isSearchMode ? (
-					<ChatSearchHeader
-						onClose={() => setIsSearchMode(false)}
-						onSearch={(query) => {
-							console.log('검색:', query)
-							// TODO: 검색 로직 구현
-						}}
-					/>
-				) : (
-					<ChatRoomHeader
-						roomName={roomName}
-						memberCount={memberCount}
-						role={role}
-						onBack={onClose}
-						onSearch={() => setIsSearchMode(true)}
-						onMenu={() => setIsMenuOpen(true)}
-					/>
-				)}
+				<ChatHeader
+					type={isSearchMode ? 'search' : 'room'}
+					roomName={roomName}
+					memberCount={memberCount}
+					role={role}
+					onBack={onClose}
+					onSearchClick={() => setIsSearchMode(true)}
+					onMenu={() => setIsMenuOpen(true)}
+					onClose={() => setIsSearchMode(false)}
+					onSearch={(query) => {
+						console.log('검색:', query)
+						// TODO: 검색 로직 구현
+					}}
+				/>
 
 				{/* 메뉴 모달 */}
 				{isMenuOpen && (
-					<ChatRoomMenu
+					<ChatMenu
+						type="room"
 						onClose={() => setIsMenuOpen(false)}
 						onTurnOffNotification={() => {
 							console.log('알림 끄기')
@@ -127,5 +123,5 @@ const SideChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }:
 	)
 }
 
-export default SideChatRoom
+export default ChatRoom
 

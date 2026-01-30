@@ -11,7 +11,7 @@ import PNGIcon from '@/assets/icons/app/PNG.svg?react'
 import MP4Icon from '@/assets/icons/app/MP4.svg?react'
 import MOVIcon from '@/assets/icons/app/MOV.svg?react'
 import EtcIcon from '@/assets/icons/app/Etc.svg?react'
-import FileContextMenu from './FileContextMenu'
+import ChatMenu from './ChatMenu'
 
 interface FileMessageProps {
 	senderName?: string
@@ -172,7 +172,8 @@ export const FileMessage = ({
 
 			{/* 컨텍스트 메뉴 */}
 			{contextMenu && (
-				<FileContextMenu
+				<ChatMenu
+					type="file"
 					x={contextMenu.x}
 					y={contextMenu.y}
 					onClose={() => setContextMenu(null)}

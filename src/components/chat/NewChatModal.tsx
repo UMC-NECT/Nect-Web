@@ -1,11 +1,11 @@
 import { useState } from 'react'
 
-interface SideNewChatModalProps {
+interface NewChatModalProps {
 	onClose: () => void
 	onSelectContact: () => void
 }
 
-const SideNewChatModal = ({ onClose, onSelectContact }: SideNewChatModalProps) => {
+const NewChatModal = ({ onClose, onSelectContact }: NewChatModalProps) => {
 	const [selectedChatType, setSelectedChatType] = useState<'general' | 'team' | null>(null)
 
 	return (
@@ -48,5 +48,5 @@ const SideNewChatModal = ({ onClose, onSelectContact }: SideNewChatModalProps) =
 	)
 }
 
-export default SideNewChatModal
+export default NewChatModal
 

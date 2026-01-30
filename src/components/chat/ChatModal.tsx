@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { ChatMessageItem } from './ChatMessageItem'
-import SideChatRoom from './SideChatRoom'
-import SideNewChatModal from './SideNewChatModal'
-import SideSelectContactModal from './SideSelectContactModal'
-import ChatMessageHeader from './ChatMessageHeader'
+import ChatRoom from './ChatRoom'
+import NewChatModal from './NewChatModal'
+import SelectContactModal from './SelectContactModal'
+import ChatHeader from './ChatHeader'
 import ChatSidebar from './ChatSidebar'
 
 type ModalView = 'list' | 'newChat' | 'selectContact' | 'room'
 
-const SideChatModal = () => {
+const ChatModal = () => {
 	const [view, setView] = useState<ModalView>('list')
 	const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
 	const [selectedMessage, setSelectedMessage] = useState<typeof messages[0] | null>(null)
@@ -105,7 +105,7 @@ const SideChatModal = () => {
 
 	if (view === 'room' && selectedRoom && selectedMessage) {
 		return (
-			<SideChatRoom
+			<ChatRoom
 				roomName={selectedRoom}
 				memberCount={selectedMessage.memberCount}
 				role={selectedMessage.role}
@@ -119,11 +119,11 @@ const SideChatModal = () => {
 	}
 
 	if (view === 'newChat') {
-		return <SideNewChatModal onClose={() => setView('list')} onSelectContact={() => setView('selectContact')} />
+		return <NewChatModal onClose={() => setView('list')} onSelectContact={() => setView('selectContact')} />
 	}
 
 	if (view === 'selectContact') {
-		return <SideSelectContactModal onClose={() => setView('newChat')} onConfirm={() => setView('list')} />
+		return <SelectContactModal onClose={() => setView('newChat')} onConfirm={() => setView('list')} />
 	}
 
 	return (
@@ -138,9 +138,9 @@ const SideChatModal = () => {
 			{/* 메인 채팅 모달 */}
 			<div className='w-[380px] h-full bg-neutral-50 rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
 				{/* 헤더 */}
-				<ChatMessageHeader
-					onBack={() => {}}
-					onSearch={() => {}}
+				<ChatHeader
+					type="list"
+					onSearchClick={() => {}}
 					onNewMessage={() => setView('newChat')}
 				/>
 				<div className='notification-scrollbar flex-1 overflow-y-auto overflow-x-hidden'>
@@ -163,5 +163,5 @@ const SideChatModal = () => {
 	)
 }
 
-export default SideChatModal
+export default ChatModal
 
