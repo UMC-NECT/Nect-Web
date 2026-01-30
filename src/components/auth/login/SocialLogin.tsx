@@ -1,16 +1,13 @@
 import GoogleIcon from '@/assets/icons/auth/google.svg?react'
 import KakaoIcon from '@/assets/icons/auth/kakao.svg?react'
 import Button from '@/components/common/Button'
+import OR from '@/components/common/OR'
 
 const SocialLogin = () => {
 	return (
 		<>
 			{/* -- OR --  */}
-			<div className='flex items-center mb-3.75'>
-				<span className='w-20 h-px bg-neutral-200'></span>
-				<span className='body-1 text-neutral-400 px-3'>or</span>
-				<span className='w-20 h-px bg-neutral-200'></span>
-			</div>
+			<OR />
 
 			{/* 소셜 로그인 */}
 			<div className='w-105 flex flex-col gap-3'>
