@@ -15,7 +15,6 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
         { name: '프로젝트 찾기' },
         { name: '팀원 찾기' },
         { name: '출시 프로젝트' },
-        { name: '커뮤니티' },
     ];
 
     const workspaceMenuItems = [
@@ -46,7 +45,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                                 className={`text-[18px] font-medium transition-colors ${
                                     showExploreMenu 
                                         ? 'text-primary-500-normal' 
-                                        : 'text-neutral-400 hover:text-primary-500-normal'
+                                        : 'text-neutral-400'
                                 }`}
                             >
                                 프로젝트ㆍ팀원 탐색
@@ -87,7 +86,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                                 className={`text-[18px] font-medium transition-colors ${
                                     showWorkspaceMenu 
                                         ? 'text-primary-500-normal' 
-                                        : 'text-neutral-900 hover:text-primary-500-normal'
+                                        : 'text-neutral-900 hover:text-neutral-900'
                                 }`}
                             >
                                 팀 작업실

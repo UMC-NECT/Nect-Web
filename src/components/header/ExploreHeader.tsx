@@ -34,8 +34,6 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 		{ name: '프로젝트 찾기' },
 		{ name: '팀원 찾기' },
 		{ name: '출시 프로젝트' },
-		{ name: '커뮤니티' },
-		{ name: '포트폴리오 보기' },
 	]
 
 	// 스크롤 이벤트 핸들러
@@ -84,7 +82,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						<BarIcon />
 						<button
 							onClick={onNavigate}
-							className='text-[18px] font-medium text-neutral-400 hover:text-primary-500-normal transition-colors'
+							className='text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
 						>
 							팀 작업실
 						</button>
@@ -170,7 +168,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						</button>
 						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2'>
 							<PortfolioIcon className='h-[14px] w-[14px] text-primary-800-dark' />
-							My 포트폴리오
+							NECT 리포트
 						</button>
 					</div>
 				</div>
