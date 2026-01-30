@@ -169,10 +169,13 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 		if (!editName.trim()) return
 
 		if (droppedFile) {
+			// 파일을 Blob URL로 변환하여 저장 (다운로드를 위해)
+			const blobUrl = URL.createObjectURL(droppedFile)
 			onSave?.({
 				type: 'file',
 				name: editName.trim(),
 				fileName: droppedFile.name,
+				url: blobUrl,
 			})
 		} else if (editUrl.trim()) {
 			onSave?.({

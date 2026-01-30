@@ -461,9 +461,13 @@ const MissionModal = ({ className }: MissionModalProps) => {
 													}}
 													onDelete={() => removeFile(file.id)}
 													onDownload={() => {
-														// 파일 다운로드 로직 (실제 파일 URL이 있다면 다운로드)
-														if (file.fileName) {
-															console.log('다운로드:', file.fileName)
+														if (file.url && file.fileName) {
+															const link = document.createElement('a')
+															link.href = file.url
+															link.download = file.fileName
+															document.body.appendChild(link)
+															link.click()
+															document.body.removeChild(link)
 														}
 													}}
 												/>
