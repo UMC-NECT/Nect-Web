@@ -1,15 +1,11 @@
-import { useState } from 'react'
 import WeekSelector from '@/components/week-mission/WeekSelector'
-import SegmentsBar from '@/components/week-mission/SegmentsBar'
 import MissionBoard from '@/components/week-mission/MissionBoard'
 import { useMissionStore } from '@/stores/missionStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
-import { TIME_SEGMENT } from '@/constants/TIME_SEGMENT'
 
 const WeekMissionPage = () => {
 	const { missions, updateMission } = useMissionStore()
-	const [timeView, setTimeView] = useState(TIME_SEGMENT[0])
 
 	// 섹션 데이터 (기본값)
 	const sections = [
@@ -19,7 +15,7 @@ const WeekMissionPage = () => {
 	]
 
 	return (
-		<div className='flex flex-col py-8 pb-20'>
+		<div className='flex flex-col pt-16 pb-20'>
 			{/* 페이지 타이틀 영역 */}
 			<StudioTitle title='위크 미션 (Week Misson)' description='주간 미션을 설정하고 프로젝트 완주를 돕는 팀 스페이스' />
 
@@ -31,12 +27,6 @@ const WeekMissionPage = () => {
 					<button className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors'>
 						<ScheduleAddIcon className='w-6 h-6' />
 					</button>
-					{/* SegmentsBar */}
-					<SegmentsBar
-						segments={TIME_SEGMENT}
-						defaultValue={timeView}
-						onChange={value => setTimeView(value)}
-					/>
 				</div>
 			</div>
 
