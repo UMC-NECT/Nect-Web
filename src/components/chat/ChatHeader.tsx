@@ -102,7 +102,7 @@ const ChatHeader = ({
 						</button>
 						{/* 방 이름 + 멤버 수 / 역할 */}
 						<div className="flex items-center gap-1.5">
-							<div className="max-w-[150px] text-neutral-900 title-3 font-medium line-clamp-1">
+							<div className="max-w-[150px] text-neutral-900 title-3 font-semibold line-clamp-1">
 								{roomName}
 							</div>
 							{memberCount !== undefined && (
@@ -147,7 +147,7 @@ const ChatHeader = ({
 				{/* 왼쪽: 타이틀 */}
 				<div className="flex justify-start items-center">
 					<div className="h-5 flex justify-start items-center ml-3">
-						<div className="max-w-44 justify-center text-neutral-900 title-3 font-medium line-clamp-1">
+						<div className="max-w-44 justify-center text-neutral-900 title-3 font-semibold line-clamp-1">
 							{title}
 						</div>
 					</div>
