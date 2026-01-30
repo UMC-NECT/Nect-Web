@@ -1,13 +1,13 @@
-import { Outlet } from "react-router"
-import Header from "../header/Header"
+import { Outlet } from 'react-router'
+import AnalysisHeader from '../header/AnalysisHeader'
 
 const AnalysisLayout = () => {
 	return (
 		<>
-            <Header />
-            <div className='w-full  pt-[66px]'>
-			    <Outlet />
-            </div>
+			<AnalysisHeader onNavigate={() => {}} />
+			<div className='w-full'>
+				<Outlet />
+			</div>
 		</>
 	)
 }
