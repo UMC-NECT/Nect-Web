@@ -7,6 +7,7 @@ import OnboardingPage from './pages/auth/OnboardingPage'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
 import WeekMissionPage from './pages/WeekMissionPage'
+import TeamBoardPage from './pages/TeamBoardPage'
 import SignupPage from './pages/auth/SignupPage'
 import WorkStatusPage from './pages/WorkStatusPage'
 
@@ -32,9 +33,13 @@ const router = createBrowserRouter([
 				element: <WeekMissionPage />,
 			},
 			{
+				path: '/team-board',
+				element: <TeamBoardPage />,
+			},
+			{
 				path: '/work-status',
 				element: <WorkStatusPage />,
-			},
+			}
 		],
 	},
 	{
