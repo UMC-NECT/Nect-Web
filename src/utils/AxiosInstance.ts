@@ -69,6 +69,7 @@ api.interceptors.response.use(
                     const { removeItem: removeRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
                     removeAccessToken()
                     removeRefreshToken()
+                    throw err
                 })
                 .finally(() => {
                     refreshPromise = null
