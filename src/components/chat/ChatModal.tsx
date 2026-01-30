@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { ChatMessageItem } from './ChatMessageItem'
 import ChatRoom from './ChatRoom'
 import ChatMemberSelectModal from './ChatMemberSelectModal'
+import ChatRoomInfoModal from './ChatRoomInfoModal'
 import ChatHeader from './ChatHeader'
 import ChatSidebar from './ChatSidebar'
 
-type ModalView = 'list' | 'selectContact' | 'room'
+type ModalView = 'list' | 'roomInfo' | 'selectContact' | 'room'
 
 const ChatModal = () => {
 	const [view, setView] = useState<ModalView>('list')
@@ -118,7 +119,28 @@ const ChatModal = () => {
 	}
 
 	if (view === 'selectContact') {
-		return <ChatMemberSelectModal onClose={() => setView('list')} onConfirm={() => setView('list')} />
+		return (
+			<ChatMemberSelectModal
+				onClose={() => setView('list')}
+				onConfirm={(_selectedContacts) => {
+					// 멤버 선택 완료 후 방 정보 설정으로 이동
+					setView('roomInfo')
+				}}
+			/>
+		)
+	}
+
+	if (view === 'roomInfo') {
+		return (
+			<ChatRoomInfoModal
+				onClose={() => setView('list')}
+				onConfirm={(roomName, selectedAvatar) => {
+					console.log('방 정보:', { roomName, selectedAvatar })
+					// TODO: 채팅방 생성 로직 구현
+					setView('list')
+				}}
+			/>
+		)
 	}
 
 	return (

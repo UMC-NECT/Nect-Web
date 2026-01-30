@@ -37,6 +37,10 @@ const ChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: Cha
 
 	// 대화상대 선택 모달이 열려있으면 모달만 표시
 	if (isSelectContactOpen) {
+		// 기존 멤버 ID 목록 (실제로는 채팅방 데이터에서 가져와야 함)
+		// 예시: PM 역할의 첫 번째 멤버(id: 1)와 Design 역할의 첫 번째 멤버(id: 3)가 이미 채팅방에 있음
+		const existingMemberIds = [1, 3] // 예시: 이미 채팅방에 있는 멤버 ID
+		
 		return (
 			<ChatMemberSelectModal
 				onClose={() => setIsSelectContactOpen(false)}
@@ -45,6 +49,7 @@ const ChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: Cha
 					// TODO: 대화상대 초대 로직 구현
 					setIsSelectContactOpen(false)
 				}}
+				existingMemberIds={existingMemberIds}
 			/>
 		)
 	}
