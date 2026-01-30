@@ -13,6 +13,7 @@ import PlusBlock from './PlusBlock'
 import DateCell from './DateCell'
 import { MissonPart_Title, MissionPart_Add } from './MissonPart'
 import type { MissionStatus } from '@/types/missionStatus'
+import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 
 const ITEM_WIDTH = 80 // WeekDates와 동일한 날짜 박스 너비
 
@@ -57,6 +58,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 	// 드래그 스크롤 훅
 	const weekDatesDrag = useDragScroll({ scrollRef: weekDatesRef })
 	const boardDrag = useDragScroll({ scrollRef: boardScrollRef })
+	const { openMissionModal } = useMissionModalStore()
 
 	// WeekDates와 MissionBoard 스크롤 동기화
 	// 드래그 중에는 동기화하지 않도록 isDraggingRef 전달
@@ -415,7 +417,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 													pointerEvents: isHovered ? 'auto' : 'none',
 												}}
 											>
-												<PlusBlock onClick={() => {}} />
+												<PlusBlock onClick={() => {openMissionModal()}} />
 											</div>
 										</div>
 									)

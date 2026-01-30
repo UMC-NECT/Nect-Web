@@ -20,7 +20,7 @@ const StatusChip = ({ state, gridColumnSize, onClick }: StatusChipProps) => {
 		<div
 			className={cn(
 				'flex items-center justify-center gap-[4px] py-[3px] bg-neutral-000 shadow-[0_0_4px_0_rgba(154,92,235,0.2)] border border-neutral-000',
-				isCircular ? 'rounded-full px-[3px]' : 'rounded-[12px] pl-[9px] pr-[11px]',
+				isCircular ? 'rounded-full px-[3px]' : 'rounded-12 pl-[9px] pr-[11px]',
 				isWorkStatus ? '' : 'cursor-pointer hover:border-neutral-200 transition-all duration-300'
 			)}
 			onClick={onClick}

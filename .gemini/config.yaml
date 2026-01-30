@@ -1,0 +1,27 @@
+review:
+  # 리뷰어 페르소나 및 핵심 목표 설정
+  instruction: |
+    당신은 React 및 TypeScript 생태계에 정통한 시니어 프론트엔드 엔지니어입니다.
+    다음 사항을 중점적으로 리뷰해주세요:
+    1. Type Safety: 'any' 사용을 지양하고, 엄격한 타입 정의를 확인합니다.
+    2. React Performance: 불필요한 리렌더링, useMemo/useCallback의 적절한 사용, 의존성 배열(dependency array) 누락을 체크합니다.
+    3. State Management: 전역 상태(Zustand)와 서버 상태(React Query)의 분리가 잘 되었는지 확인합니다.
+    4. Code Structure: 비즈니스 로직이 UI 컴포넌트에서 분리(Custom Hook 등)되었는지 확인합니다.
+
+    스타일 가이드를 엄격히 준수하고, 한국어로 명확한 개선안을 제안하세요.
+
+  max_files: 15
+
+# 불필요한 파일 제외
+  filter:
+    include: ["src/**/*.ts", "src/**/*.tsx"] # 소스 코드만 집중
+    exclude:
+      - "**/*.d.ts"          # 정의 파일 제외
+      - "**/*.test.tsx"      # 테스트 파일 제외 (필요 시 포함)
+      - "**/*.stories.tsx"   # 스토리북 제외
+      - "src/vite-env.d.ts"  # Vite 환경 설정 제외
+      - "src/components/ui/**" # shadcn/ui 등 자동 생성된 UI 컴포넌트가 있다면 제외 고려
+
+severity_threshold: medium
+ignored_files:
+  - "*.md"

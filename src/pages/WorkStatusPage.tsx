@@ -18,6 +18,7 @@ import { useWorkStatusDragAndDrop } from '@/hooks/work-status/useWorkStatusDragA
 import { useWorkStatusFilter } from '@/hooks/work-status/useWorkStatusFilter'
 import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
+import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 
 // Droppable 컬럼 컴포넌트
 interface DroppableColumnProps {
@@ -72,6 +73,7 @@ const WorkStatusPage = () => {
 	const [selectedSegment, setSelectedSegment] = useState('Team')
 	const segments = ['Team', 'PM', 'Design', 'Backend', 'Frontend']
 	const statuses: MissionStatus[] = ['planning', 'in_progress', 'completed', 'backlog']
+	const { openMissionModal } = useMissionModalStore()
 
 	// 커스텀 훅들
 	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
@@ -119,6 +121,7 @@ const WorkStatusPage = () => {
 								<button
 									type='button'
 									className='bg-neutral-000 flex gap-0.5 items-center justify-center p-1.5 relative rounded-full shrink-0 w-7 h-7 shadow-[0px_0px_2.68px_0px_rgba(165,165,165,0.3)] '
+									onClick={() => {openMissionModal()}}
 								>
 									<PlusIcon className='w-4 h-4 shrink-0 stroke-neutral-700' />
 								</button>

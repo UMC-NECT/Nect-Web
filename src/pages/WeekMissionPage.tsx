@@ -28,7 +28,7 @@ const WeekMissionPage = () => {
 				<WeekSelector />
 				<div className='flex items-center gap-4'>
 					{/* 일정 추가 버튼 */}
-					<button className='flex items-center justify-center p-1 bg-neutral-50 shadow-[inset_-1px_2.5px_4px_0px_rgba(228,228,228,0.20)] rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors'>
+					<button className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors'>
 						<ScheduleAddIcon className='w-6 h-6' />
 					</button>
 					{/* SegmentsBar */}
