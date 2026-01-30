@@ -31,7 +31,7 @@ const StatusChipList = ({ onStatusChange }: StatusChipListProps) => {
 				<p className='caption-1 text-neutral-500 font-medium'>상태 변경</p>
 				<div className='flex flex-col gap-[10px] items-start w-full'>
 					{MISSION_STATUSES.map((status, index) => (
-						<StatusChip key={index} state={status} onClick={() => handleStatusClick(status)} />
+						<StatusChip key={index} state={status} hover={true} onClick={() => handleStatusClick(status)} />
 					))}
 				</div>
 			</div>

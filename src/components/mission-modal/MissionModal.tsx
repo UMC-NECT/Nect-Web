@@ -30,7 +30,8 @@ const MissionModal = ({ className }: MissionModalProps) => {
 		title,
 		selectedParts,
 		selectedAssignees,
-		selectedDuration,
+		startDate,
+		deadline,
 		missionStatus,
 		workContent,
 		tasks,
@@ -41,7 +42,8 @@ const MissionModal = ({ className }: MissionModalProps) => {
 		removeSelectedPart,
 		addSelectedAssignee,
 		removeSelectedAssignee,
-		setSelectedDuration,
+		setStartDate,
+		setDeadline,
 		setMissionStatus,
 		setWorkContent,
 		addTask,
@@ -259,33 +261,32 @@ const MissionModal = ({ className }: MissionModalProps) => {
 										<span className='body-2 font-medium text-neutral-500 w-[70px]'>진행 기간</span>
 										<input
 											type='text'
-											value={selectedDuration}
+											value={startDate && deadline ? `${startDate} ~ ${deadline}` : startDate || ''}
 											onChange={e => {
-												let value = e.target.value
-
-												// 숫자와 점, ~, 공백만 허용
-												value = value.replace(/[^0-9.~ ]/g, '')
-
-												// 자동 포맷팅: yyyy.mm.dd ~ yyyy.mm.dd
-												const digits = value.replace(/[^0-9]/g, '')
+												const value = e.target.value.replace(/[^0-9]/g, '')
 												let formatted = ''
 
-												for (let i = 0; i < digits.length && i < 16; i++) {
+												for (let i = 0; i < value.length && i < 16; i++) {
 													if (i === 4 || i === 6 || i === 12 || i === 14) {
 														formatted += '.'
 													}
 													if (i === 8) {
 														formatted += ' ~ '
 													}
-													formatted += digits[i]
+													formatted += value[i]
 												}
 
-												setSelectedDuration(formatted)
+												// startDate와 deadline 분리
+												const parts = formatted.split(' ~ ')
+												setStartDate(parts[0] || '')
+												setDeadline(parts[1] || '')
 											}}
 											placeholder='입력해주세요'
 											className={cn(
-												'flex min-h-[28px] py-0.5 px-2 rounded-[6px] bg-neutral-50 w-[266px] items-center',
-												'hover:bg-neutral-100 focus:bg-neutral-100 transition-colors shadow-inner-neutral-2',
+												'flex min-h-[28px] py-0.5 rounded-[6px] w-[266px] items-center',
+												'transition-colors',
+												!(startDate || deadline) && 'bg-neutral-50 hover:bg-neutral-100 shadow-inner-neutral-2 px-2',
+												(startDate || deadline) && 'hover:bg-neutral-100',
 												'button-1 font-medium text-neutral-700 placeholder:text-neutral-300',
 												'outline-none border-none'
 											)}
@@ -296,7 +297,7 @@ const MissionModal = ({ className }: MissionModalProps) => {
 									<div className='flex gap-2.5 items-center relative'>
 										<span className='body-2 font-medium text-neutral-500 w-[70px]'>작업 상태</span>
 										<div onClick={() => toggleDropdown('status')}>
-											<StatusChip state={missionStatus} />
+											<StatusChip state={missionStatus} hover={true} />
 										</div>
 										{openDropdown === 'status' && (
 											<div className='absolute top-full left-[76px] mt-1 z-10'>

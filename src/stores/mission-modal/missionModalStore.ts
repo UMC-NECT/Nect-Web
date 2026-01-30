@@ -52,7 +52,8 @@ interface MissionModalStore {
 	title: string
 	selectedParts: Role[]
 	selectedAssignees: Person[]
-	selectedDuration: string
+	startDate: string
+	deadline: string
 	missionStatus: MissionStatus
 	workContent: string
 	tasks: Task[]
@@ -78,7 +79,8 @@ interface MissionModalStore {
 	setSelectedAssignees: (assignees: Person[]) => void
 	addSelectedAssignee: (assignee: Person) => void
 	removeSelectedAssignee: (assigneeId: number) => void
-	setSelectedDuration: (duration: string) => void
+	setStartDate: (date: string) => void
+	setDeadline: (date: string) => void
 	setMissionStatus: (status: MissionStatus) => void
 	setWorkContent: (content: string) => void
 	setTasks: (tasks: Task[]) => void
@@ -125,7 +127,8 @@ const initialMissionModalState = {
 	title: '',
 	selectedParts: [] as Role[],
 	selectedAssignees: [] as Person[],
-	selectedDuration: '',
+	startDate: '',
+	deadline: '',
 	missionStatus: 'planning' as MissionStatus,
 	workContent: '',
 	tasks: initialTasks,
@@ -193,7 +196,8 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		set(state => ({
 			selectedAssignees: state.selectedAssignees.filter(a => a.id !== assigneeId),
 		})),
-	setSelectedDuration: duration => set({ selectedDuration: duration }),
+	setStartDate: date => set({ startDate: date }),
+	setDeadline: date => set({ deadline: date }),
 	setMissionStatus: status => set({ missionStatus: status }),
 	setWorkContent: content => set({ workContent: content }),
 	setTasks: tasks => set({ tasks }),
