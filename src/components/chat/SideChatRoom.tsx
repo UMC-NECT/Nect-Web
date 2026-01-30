@@ -1,6 +1,7 @@
 import { ChatRoomMessage } from './ChatRoomMessage'
 import ChatRoomHeader from './ChatRoomHeader'
 import ChatSidebar from './ChatSidebar'
+import ChatInput from './ChatInput'
 
 interface SideChatRoomProps {
 	roomName: string
@@ -52,16 +53,17 @@ const SideChatRoom = ({ roomName, memberCount, role, onClose }: SideChatRoomProp
 				</div>
 
 				{/* 입력 필드 */}
-				<div className='h-12 border-t border-neutral-200 flex items-center px-3 gap-2 shrink-0 bg-white'>
-					<input
-						type='text'
-						placeholder='메시지 입력'
-						className='flex-1 h-8 px-2 rounded-lg border border-neutral-200 text-sm'
+				<div className='border-t border-neutral-200 shrink-0'>
+					<ChatInput
+						onSend={(message) => {
+							console.log('메시지 전송:', message)
+							// TODO: 실제 메시지 전송 로직 구현
+						}}
+						onAttach={() => {
+							console.log('파일 첨부')
+							// TODO: 파일 첨부 로직 구현
+						}}
 					/>
-					<button className='w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-xs'>🎤</button>
-					<button className='w-8 h-8 rounded-full bg-primary-500-normal flex items-center justify-center text-xs'>
-						✈️
-					</button>
 				</div>
 			</div>
 		</div>
