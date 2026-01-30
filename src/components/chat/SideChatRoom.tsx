@@ -2,27 +2,38 @@ import { ChatRoomMessage } from './ChatRoomMessage'
 import ChatRoomHeader from './ChatRoomHeader'
 import ChatSidebar from './ChatSidebar'
 import ChatInput from './ChatInput'
+import { ChatDateLine } from './ChatDateLine'
+import { ChatReadLine } from './ChatReadLine'
 
 interface SideChatRoomProps {
 	roomName: string
 	memberCount?: number
 	role?: string
+	unreadCount?: number
 	onClose: () => void
 }
 
-const SideChatRoom = ({ roomName, memberCount, role, onClose }: SideChatRoomProps) => {
+const SideChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: SideChatRoomProps) => {
 	const messages = [
-		{ id: 1, senderName: '송지원', content: '메시지 내용', time: 'PM 10:31', isMine: false },
-		{ id: 2, senderName: '김진호', content: '메시지 내용', time: 'PM 10:36', isMine: false },
-		{ id: 3, senderName: '나', content: '메시지 내용', time: 'PM 10:40', isMine: true },
-		{ id: 4, senderName: '나', content: '긴 메시지 내용 긴 메시지 내용 긴 메시지 내용', time: 'PM 10:41', isMine: true },
+		{ id: 'date-1', type: 'date', date: '2026년 1월 27일 화요일' },
+		{ id: 1, senderName: '나', content: '다들 모이셨나요?바로진행해볼까요?바로진행해볼까요?바로진행해볼까요?바로진행해볼까요?', time: '00:00', isMine: true, readCount: 20 },
+		{ id: 2, senderName: '이방토', content: '네좋습니다!네좋습니다!네좋습니다!네좋습니다!네좋습니다!네좋습니다!네좋습니다!네좋습니다!', time: '00:00', isMine: false, role: 'Design', profileImage: 'https://placehold.co/30x30', readCount: 20 },
+		{ id: 3, senderName: '나', content: '미카엘님, 저번에 말씀하신 API 명세서 나왔나요?', time: '00:00', isMine: true, readCount: 20 },
+		{ id: 4, senderName: '미카엘', content: '네, 방금 정리했습니다. 파일 올릴게요~', time: '00:00', isMine: false, role: 'Backend', profileImage: 'https://placehold.co/30x30', readCount: 20 },
+		{ id: 5, senderName: '미카엘', fileAttachment: { fileName: 'API_명세서_초안_초안_초안_초안_초안_초안_초안_초안_초안.pdf', fileSize: '00.0MB', fileType: 'PDF' }, time: '00:00', isMine: false, role: 'Backend', profileImage: 'https://placehold.co/30x30', readCount: 20 },
+		{ id: 'read-line-1', type: 'read-line' },
+		{ id: 6, senderName: '나', content: '확인했습니다. 고생하셨어요!', time: '00:00', isMine: true, readCount: 20 },
+		{ id: 7, senderName: '나', content: '저희 전체적으로 진행 상황 음성 회의를 하려고 해요 ! 내일 오후 5시 다들 가능하시나요?', time: '00:00', isMine: true },
+		{ id: 8, senderName: '숀', content: '네 가능합니다', time: '00:00', isMine: false, role: 'Frontend', profileImage: 'https://placehold.co/30x30' },
+		{ id: 9, senderName: '세인트', content: '넵 알겠습니다 !', time: '00:00', isMine: false, role: 'Backend', profileImage: 'https://placehold.co/30x30' },
+		{ id: 10, senderName: '나', fileAttachment: { fileName: '회의_자료_초안_초안_초안_초안_초안_초안_초안.pptx', fileSize: '2.5MB', fileType: 'PPT' }, time: '00:00', isMine: true, readCount: 20 },
 	]
 
 	return (
 		<div className='flex items-start h-full'>
 			{/* 사이드바 */}
 			<ChatSidebar
-				unreadCount={0}
+				unreadCount={unreadCount}
 				onMessageClick={onClose}
 				onCloudClick={() => {}}
 				onSettingsClick={() => {}}
@@ -40,16 +51,28 @@ const SideChatRoom = ({ roomName, memberCount, role, onClose }: SideChatRoomProp
 				/>
 
 				{/* 메시지 영역 */}
-				<div className='flex-1 overflow-y-auto p-3 bg-neutral-50 min-h-0 notification-scrollbar'>
-					{messages.map(message => (
-						<ChatRoomMessage
-							key={message.id}
-							senderName={message.senderName}
-							content={message.content}
-							time={message.time}
-							isMine={message.isMine}
-						/>
-					))}
+				<div className='flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 bg-neutral-50 min-h-0 notification-scrollbar'>
+					{messages.map((message: any) => {
+						if (message.type === 'date') {
+							return <ChatDateLine key={message.id} date={message.date} />
+						}
+						if (message.type === 'read-line') {
+							return <ChatReadLine key={message.id} />
+						}
+						return (
+							<ChatRoomMessage
+								key={message.id}
+								senderName={message.senderName}
+								content={message.content}
+								time={message.time}
+								isMine={message.isMine}
+								readCount={message.readCount}
+								role={message.role}
+								profileImage={message.profileImage}
+								fileAttachment={message.fileAttachment}
+							/>
+						)
+					})}
 				</div>
 
 				{/* 입력 필드 */}

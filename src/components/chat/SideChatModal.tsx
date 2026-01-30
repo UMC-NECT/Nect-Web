@@ -109,6 +109,7 @@ const SideChatModal = () => {
 				roomName={selectedRoom}
 				memberCount={selectedMessage.memberCount}
 				role={selectedMessage.role}
+				unreadCount={messages.filter(m => !m.isRead).length}
 				onClose={() => {
 					setView('list')
 					setSelectedMessage(null)
@@ -142,7 +143,7 @@ const SideChatModal = () => {
 					onSearch={() => {}}
 					onNewMessage={() => setView('newChat')}
 				/>
-				<div className='notification-scrollbar flex-1 overflow-y-auto'>
+				<div className='notification-scrollbar flex-1 overflow-y-auto overflow-x-hidden'>
 				{messages.map((message, index) => (
 					<ChatMessageItem
 						key={message.id}

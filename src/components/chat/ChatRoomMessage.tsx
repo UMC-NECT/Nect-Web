@@ -1,21 +1,67 @@
+import { MyMessage } from './MyMessage'
+import { OtherMessage } from './OtherMessage'
+import { FileMessage } from './FileMessage'
+
 interface ChatRoomMessageProps {
-	senderName: string
-	content: string
+	senderName?: string
+	content?: string
 	time: string
 	isMine: boolean
+	readCount?: number
+	role?: string
+	profileImage?: string
+	fileAttachment?: {
+		fileName: string
+		fileSize: string
+		fileType: 'PDF' | 'Figma' | 'Word' | 'Excel' | 'PPT' | 'Zip' | 'JPG' | 'PNG' | 'JPEG' | 'MOV' | 'MP4' | 'Etc'
+	}
 }
 
-export const ChatRoomMessage = ({ senderName, content, time, isMine }: ChatRoomMessageProps) => {
-	return (
-		<div className={`mb-2 flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-			<div className='max-w-[70%]'>
-				{!isMine && <span className='text-xs text-neutral-600 mb-1 block'>{senderName}</span>}
-				<div className={`px-3 py-2 rounded-lg ${isMine ? 'bg-primary-500-normal' : 'bg-neutral-200'}`}>
-					<p className={`text-sm ${isMine ? 'text-white' : 'text-neutral-900'}`}>{content}</p>
-				</div>
-				<span className='text-xs text-neutral-400 mt-1 block'>{time}</span>
-			</div>
-		</div>
-	)
-}
+export const ChatRoomMessage = ({
+	senderName,
+	content,
+	time,
+	isMine,
+	readCount,
+	role,
+	profileImage,
+	fileAttachment,
+}: ChatRoomMessageProps) => {
+	// 파일 첨부 메시지
+	if (fileAttachment) {
+		return (
+			<FileMessage
+				senderName={senderName}
+				role={role}
+				profileImage={profileImage}
+				time={time}
+				readCount={readCount}
+				isMine={isMine}
+				fileName={fileAttachment.fileName}
+				fileSize={fileAttachment.fileSize}
+				fileType={fileAttachment.fileType}
+			/>
+		)
+	}
 
+	// 내 메시지
+	if (isMine && content) {
+		return <MyMessage content={content} time={time} readCount={readCount} />
+	}
+
+	// 상대방 메시지
+	if (!isMine && senderName && content) {
+		return (
+			<OtherMessage
+				senderName={senderName}
+				content={content}
+				time={time}
+				role={role}
+				profileImage={profileImage}
+				readCount={readCount}
+			/>
+		)
+	}
+
+	return null
+}
