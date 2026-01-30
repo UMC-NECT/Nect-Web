@@ -3,7 +3,7 @@ import type { GrowGuide } from '@/stores/profileAnalysisStore'
 const GrowGuideSection = ({ tipText, title, description }: GrowGuide) => {
 
 	return (
-		<div className='flex flex-col gap-3 py-6 border-b border-neutral-200 last:border-b-0'>
+		<div className='flex flex-col gap-3 py-6'>
 			{/* Tip 라벨 */}
 			<p className='body-1 text-neutral-700 font-semibold'>
 				Tip <span className='text-primary-600-normal'>{tipText}</span>
