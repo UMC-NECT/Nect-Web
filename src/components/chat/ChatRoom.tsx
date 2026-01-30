@@ -6,6 +6,7 @@ import ChatSidebar from './ChatSidebar'
 import ChatInput from './ChatInput'
 import { ChatDateLine } from './ChatDateLine'
 import { ChatReadLine } from './ChatReadLine'
+import ChatMemberSelectModal from './ChatMemberSelectModal'
 
 interface ChatRoomProps {
 	roomName: string
@@ -18,6 +19,7 @@ interface ChatRoomProps {
 const ChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: ChatRoomProps) => {
 	const [isSearchMode, setIsSearchMode] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
+	const [isSelectContactOpen, setIsSelectContactOpen] = useState(false)
 	const messages = [
 		{ id: 'date-1', type: 'date', date: '2026년 1월 27일 화요일' },
 		{ id: 1, senderName: '나', content: '다들 모이셨나요?바로진행해볼까요?바로진행해볼까요?바로진행해볼까요?바로진행해볼까요?', time: '00:00', isMine: true, readCount: 20 },
@@ -32,6 +34,20 @@ const ChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: Cha
 		{ id: 9, senderName: '세인트', content: '넵 알겠습니다 !', time: '00:00', isMine: false, role: 'Backend', profileImage: 'https://placehold.co/30x30' },
 		{ id: 10, senderName: '나', fileAttachment: { fileName: '회의_자료_초안_초안_초안_초안_초안_초안_초안.pptx', fileSize: '2.5MB', fileType: 'PPT' }, time: '00:00', isMine: true, readCount: 20 },
 	]
+
+	// 대화상대 선택 모달이 열려있으면 모달만 표시
+	if (isSelectContactOpen) {
+		return (
+			<ChatMemberSelectModal
+				onClose={() => setIsSelectContactOpen(false)}
+				onConfirm={(selectedContacts) => {
+					console.log('선택된 대화상대:', selectedContacts)
+					// TODO: 대화상대 초대 로직 구현
+					setIsSelectContactOpen(false)
+				}}
+			/>
+		)
+	}
 
 	return (
 		<div className='flex items-start h-full'>
@@ -70,8 +86,7 @@ const ChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: Cha
 							// TODO: 알림 끄기 로직 구현
 						}}
 						onInviteContact={() => {
-							console.log('대화상대 초대')
-							// TODO: 대화상대 초대 로직 구현
+							setIsSelectContactOpen(true)
 						}}
 						onLeaveRoom={() => {
 							console.log('채팅방 나가기')

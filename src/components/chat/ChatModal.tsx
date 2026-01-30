@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { ChatMessageItem } from './ChatMessageItem'
 import ChatRoom from './ChatRoom'
-import NewChatModal from './NewChatModal'
-import SelectContactModal from './SelectContactModal'
+import ChatMemberSelectModal from './ChatMemberSelectModal'
 import ChatHeader from './ChatHeader'
 import ChatSidebar from './ChatSidebar'
 
-type ModalView = 'list' | 'newChat' | 'selectContact' | 'room'
+type ModalView = 'list' | 'selectContact' | 'room'
 
 const ChatModal = () => {
 	const [view, setView] = useState<ModalView>('list')
@@ -118,12 +117,8 @@ const ChatModal = () => {
 		)
 	}
 
-	if (view === 'newChat') {
-		return <NewChatModal onClose={() => setView('list')} onSelectContact={() => setView('selectContact')} />
-	}
-
 	if (view === 'selectContact') {
-		return <SelectContactModal onClose={() => setView('newChat')} onConfirm={() => setView('list')} />
+		return <ChatMemberSelectModal onClose={() => setView('list')} onConfirm={() => setView('list')} />
 	}
 
 	return (
@@ -141,7 +136,7 @@ const ChatModal = () => {
 				<ChatHeader
 					type="list"
 					onSearchClick={() => {}}
-					onNewMessage={() => setView('newChat')}
+					onNewMessage={() => setView('selectContact')}
 				/>
 				<div className='notification-scrollbar flex-1 overflow-y-auto overflow-x-hidden'>
 				{messages.map((message, index) => (
