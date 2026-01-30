@@ -2,7 +2,7 @@ export interface CommonResponse<T> {
     status: {
         statusCode: string
         message: string
-        description: boolean
+        description: string | null
     },
     body: T
 }

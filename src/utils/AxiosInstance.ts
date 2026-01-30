@@ -42,10 +42,11 @@ api.interceptors.response.use(
 				const { removeItem: removeRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
 				removeAccessToken()
 				removeRefreshToken()
-				window.location.href = '/login'
+
+				// 로그인 페이지 리다이렉트 잠시 주석 처리
+				//window.location.href = '/login'
 				return Promise.reject(error)
 			}
-			originalRequest._retry = true
 
 			if (!refreshPromise) {
 				refreshPromise = (async () => {
