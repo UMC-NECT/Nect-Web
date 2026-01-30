@@ -4,12 +4,14 @@ import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } 
 import SideNotificationModal from '@/components/notification/SideNotificationModal'
 import SideChatModal from '@/components/chat/SideChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { useNavigate } from 'react-router'
 
 export const Sidebar = () => {
 	const [activeTopMenu, setActiveTopMenu] = useState<TopMenuId | null>(null)
 	const [activeBottomMenu, setActiveBottomMenu] = useState<BottomMenuId | null>('team-board')
 	const [showNotificationModal, setShowNotificationModal] = useState(false)
 	const [showChatModal, setShowChatModal] = useState(false)
+	const navigate = useNavigate()
 
 	const notificationModalRef = useRef<HTMLDivElement>(null)
 	const chatModalRef = useRef<HTMLDivElement>(null)
@@ -50,6 +52,7 @@ export const Sidebar = () => {
 
 	const handleBottomMenuClick = (menuId: BottomMenuId) => {
 		setActiveBottomMenu(menuId)
+		navigate(`/${menuId}`)
 	}
 
 	return (

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import LogoIcon from '@/assets/icons/header/Logo.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import SearchIcon from '@/assets/icons/header/Search.svg?react';
+import { Link, useNavigate } from 'react-router';
 
 interface WorkspaceHeaderProps {
     onNavigate: () => void;
@@ -10,7 +11,7 @@ interface WorkspaceHeaderProps {
 const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
     const [showExploreMenu, setShowExploreMenu] = useState(false);
     const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
-
+    const navigate = useNavigate()
     const exploreMenuItems = [
         { name: '프로젝트 찾기' },
         { name: '팀원 찾기' },
@@ -28,23 +29,26 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
             <div className="fixed left-[92px] right-[92px] h-[66px] ">
                 <div className="mx-auto flex h-full items-center gap-9 px-6 relative">
                     {/* 로고 */}
-                    <div className="flex items-center cursor-pointer">
+                    <Link to='/' className="flex items-center cursor-pointer">
                         <LogoIcon className="h-10 w-auto" />
-                    </div>
+                    </Link>
 
                     {/* 네비게이션 */}
                     <nav className="flex items-center gap-4">
                         {/* 프로젝트·팀원 탐색 */}
                         <div className="relative">
-                            <button 
-                                onClick={onNavigate}
+                            <button
+                                onClick={() => {
+                                    onNavigate()
+                                    navigate('/')
+                                }}
                                 onMouseEnter={() => {
                                     setShowExploreMenu(true);
                                     setShowWorkspaceMenu(false);
                                 }}
                                 className={`text-[18px] font-medium transition-colors ${
-                                    showExploreMenu 
-                                        ? 'text-primary-500-normal' 
+                                    showExploreMenu
+                                        ? 'text-primary-500-normal'
                                         : 'text-neutral-400'
                                 }`}
                             >
@@ -53,7 +57,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
 
                             {/* 프로젝트·팀원 탐색 드롭다운 */}
                             {showExploreMenu && (
-                                <div 
+                                <div
                                     className="absolute top-[46px] left-[-10px] w-[160px] bg-white rounded-[12px] border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
                                     onMouseEnter={() => setShowExploreMenu(true)}
                                     onMouseLeave={() => setShowExploreMenu(false)}
@@ -78,14 +82,14 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
 
                         {/* 팀 작업실 */}
                         <div className="relative">
-                            <button 
+                            <button
                                 onMouseEnter={() => {
                                     setShowWorkspaceMenu(true);
                                     setShowExploreMenu(false);
                                 }}
                                 className={`text-[18px] font-medium transition-colors ${
-                                    showWorkspaceMenu 
-                                        ? 'text-primary-500-normal' 
+                                    showWorkspaceMenu
+                                        ? 'text-primary-500-normal'
                                         : 'text-neutral-900 hover:text-neutral-900'
                                 }`}
                             >
@@ -94,7 +98,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
 
                             {/* 팀 작업실 드롭다운 */}
                             {showWorkspaceMenu && (
-                                <div 
+                                <div
                                     className="absolute top-[46px] left-[-20px] w-[160px] bg-white rounded-[12px] border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
                                     onMouseEnter={() => setShowWorkspaceMenu(true)}
                                     onMouseLeave={() => setShowWorkspaceMenu(false)}
@@ -120,7 +124,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                     <div className="flex-1" />
 
                     {/* 검색 아이콘 */}
-                    <button 
+                    <button
                         className="flex h-10 w-10 items-center justify-center"
                         aria-label="검색"
                     >
