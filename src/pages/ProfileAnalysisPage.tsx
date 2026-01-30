@@ -8,12 +8,14 @@ import GrowGuideSection from '@/components/profile-analysis/GrowGuideSection'
 import RecommendationProject from '@/components/main/RecommendationProject'
 import RecommendationMember from '@/components/main/RecommendationMember'
 import Button from '@/components/common/Button'
+import { useNavigate } from 'react-router'
 
 const ProfileAnalysisPage = () => {
 	const { type, role, tags, radarData } = useCollaboStore()
     const { skills } = useSkillStore()
     const { roleRecommend } = useRoleRecommendStore()
     const { growGuide } = useGrowGuideStore()
+    const navigate = useNavigate()
 
 	return (
 		<div className='flex flex-col justify-center pt-32'>
@@ -98,7 +100,7 @@ const ProfileAnalysisPage = () => {
 			</div>
 
             <div className='flex gap-5 min-w-[660px] justify-center mx-auto mt-[112px] mb-24'>
-                <Button color='secondary' size='xl' fullWidth>메인홈으로 이동</Button>
+                <Button color='secondary' size='xl' fullWidth onClick={() => navigate('/')}>메인홈으로 이동</Button>
                 <Button color='primary' size='xl' fullWidth>아이디어 분석 후 프로젝트 생성</Button>
             </div>
 		</div>
