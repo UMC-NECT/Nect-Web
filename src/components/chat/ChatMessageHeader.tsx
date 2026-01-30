@@ -10,7 +10,7 @@ interface ChatMessageHeaderProps {
 
 const ChatMessageHeader = ({ title = 'Nect 메세지함', onSearch, onNewMessage }: ChatMessageHeaderProps) => {
 	return (
-		<div className="w-[380px] h-[50px] px-3 py-2.5 bg-white border-b border-neutral-100 flex flex-col justify-start items-start gap-2.5">
+		<div className="w-[380px] h-[50px] px-3 py-2.5 bg-white border-b border-neutral-100 flex flex-col justify-center items-start gap-2.5">
 			<div className="self-stretch flex justify-between items-center">
 				{/* 왼쪽: 뒤로가기 버튼 + 타이틀 */}
 				<div className="flex justify-start items-center">

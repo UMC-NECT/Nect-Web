@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { ChatRoomMessage } from './ChatRoomMessage'
 import ChatRoomHeader from './ChatRoomHeader'
+import ChatSearchHeader from './ChatSearchHeader'
+import ChatRoomMenu from './ChatRoomMenu'
 import ChatSidebar from './ChatSidebar'
 import ChatInput from './ChatInput'
 import { ChatDateLine } from './ChatDateLine'
@@ -14,6 +17,8 @@ interface SideChatRoomProps {
 }
 
 const SideChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }: SideChatRoomProps) => {
+	const [isSearchMode, setIsSearchMode] = useState(false)
+	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const messages = [
 		{ id: 'date-1', type: 'date', date: '2026년 1월 27일 화요일' },
 		{ id: 1, senderName: '나', content: '다들 모이셨나요?바로진행해볼까요?바로진행해볼까요?바로진행해볼까요?바로진행해볼까요?', time: '00:00', isMine: true, readCount: 20 },
@@ -41,14 +46,43 @@ const SideChatRoom = ({ roomName, memberCount, role, unreadCount = 0, onClose }:
 			{/* 메인 채팅 영역 */}
 			<div className='w-[380px] h-full bg-white rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
 				{/* 헤더 */}
-				<ChatRoomHeader
-					roomName={roomName}
-					memberCount={memberCount}
-					role={role}
-					onBack={onClose}
-					onSearch={() => {}}
-					onMenu={() => {}}
-				/>
+				{isSearchMode ? (
+					<ChatSearchHeader
+						onClose={() => setIsSearchMode(false)}
+						onSearch={(query) => {
+							console.log('검색:', query)
+							// TODO: 검색 로직 구현
+						}}
+					/>
+				) : (
+					<ChatRoomHeader
+						roomName={roomName}
+						memberCount={memberCount}
+						role={role}
+						onBack={onClose}
+						onSearch={() => setIsSearchMode(true)}
+						onMenu={() => setIsMenuOpen(true)}
+					/>
+				)}
+
+				{/* 메뉴 모달 */}
+				{isMenuOpen && (
+					<ChatRoomMenu
+						onClose={() => setIsMenuOpen(false)}
+						onTurnOffNotification={() => {
+							console.log('알림 끄기')
+							// TODO: 알림 끄기 로직 구현
+						}}
+						onInviteContact={() => {
+							console.log('대화상대 초대')
+							// TODO: 대화상대 초대 로직 구현
+						}}
+						onLeaveRoom={() => {
+							console.log('채팅방 나가기')
+							// TODO: 채팅방 나가기 로직 구현
+						}}
+					/>
+				)}
 
 				{/* 메시지 영역 */}
 				<div className='flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 bg-neutral-50 min-h-0 notification-scrollbar'>

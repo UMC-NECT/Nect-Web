@@ -13,7 +13,7 @@ interface ChatRoomHeaderProps {
 
 const ChatRoomHeader = ({ roomName, memberCount, role, onBack, onSearch, onMenu }: ChatRoomHeaderProps) => {
 	return (
-		<div className="w-full h-[50px] px-3 py-2.5 bg-white border-b border-neutral-100 flex flex-col justify-start items-start gap-2.5">
+		<div className="w-full h-[50px] px-3 py-2.5 bg-white border-b border-neutral-100 flex flex-col justify-center items-start gap-2.5">
 			<div className="self-stretch flex justify-between items-center">
 				{/* 왼쪽: 뒤로가기 버튼 + 방 이름 + 멤버 수 */}
 				<div className="flex justify-start items-center gap-2">

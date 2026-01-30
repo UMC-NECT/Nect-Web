@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react'
 import FigmaIcon from '@/assets/icons/app/figma.svg?react'
 import PDFIcon from '@/assets/icons/app/pdf.svg?react'
 import WordIcon from '@/assets/icons/app/Word.svg?react'
@@ -10,6 +11,7 @@ import PNGIcon from '@/assets/icons/app/PNG.svg?react'
 import MP4Icon from '@/assets/icons/app/MP4.svg?react'
 import MOVIcon from '@/assets/icons/app/MOV.svg?react'
 import EtcIcon from '@/assets/icons/app/Etc.svg?react'
+import FileContextMenu from './FileContextMenu'
 
 interface FileMessageProps {
 	senderName?: string
@@ -21,6 +23,8 @@ interface FileMessageProps {
 	fileName: string
 	fileSize: string
 	fileType: 'PDF' | 'Figma' | 'Word' | 'Excel' | 'PPT' | 'Zip' | 'JPG' | 'PNG' | 'JPEG' | 'MOV' | 'MP4' | 'Etc'
+	onRegisterToSharedDocs?: () => void
+	onDelete?: () => void
 }
 
 const getFileIcon = (fileType: string) => {
@@ -62,9 +66,26 @@ export const FileMessage = ({
 	fileName,
 	fileSize,
 	fileType,
+	onRegisterToSharedDocs,
+	onDelete,
 }: FileMessageProps) => {
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
+	const fileMessageRef = useRef<HTMLDivElement>(null)
+
+	const handleContextMenu = (e: React.MouseEvent) => {
+		e.preventDefault()
+		setContextMenu({
+			x: e.clientX,
+			y: e.clientY,
+		})
+	}
+
 	return (
-		<div className={`flex gap-1.5 ${isMine ? 'items-end justify-end' : 'items-start justify-start'} pt-2.5`}>
+		<div
+			ref={fileMessageRef}
+			className={`relative flex gap-1.5 ${isMine ? 'items-end justify-end' : 'items-start justify-start'} pt-2.5`}
+			onContextMenu={handleContextMenu}
+		>
 			{/* 내 메시지: 시간 표시만 */}
 			{isMine && (
 				<div className="flex flex-col h-[30px] items-end justify-end py-0.5">
@@ -112,9 +133,7 @@ export const FileMessage = ({
 
 				{/* 파일 첨부 메시지 */}
 				<div className="flex gap-1.5 items-end w-full">
-					<div className={`rounded-md flex flex-col items-start pl-2 pr-2.5 py-2 ${
-						isMine ? 'bg-primary-150-light' : 'bg-white'
-					}`}>
+					<div className={`rounded-md flex flex-col items-start pl-2 pr-2.5 py-2 bg-white`}>
 						<div className="flex gap-2 items-start w-full">
 							{/* 파일 아이콘 */}
 							<div className="relative w-7 h-7 shrink-0">
@@ -150,6 +169,17 @@ export const FileMessage = ({
 					)}
 				</div>
 			</div>
+
+			{/* 컨텍스트 메뉴 */}
+			{contextMenu && (
+				<FileContextMenu
+					x={contextMenu.x}
+					y={contextMenu.y}
+					onClose={() => setContextMenu(null)}
+					onRegisterToSharedDocs={onRegisterToSharedDocs}
+					onDelete={onDelete}
+				/>
+			)}
 		</div>
 	)
 }
