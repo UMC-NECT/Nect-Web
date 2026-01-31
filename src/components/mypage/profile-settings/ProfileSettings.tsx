@@ -1,7 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
+import { FormProvider } from 'react-hook-form'
 
-import { getErrorMessages, validateProfile, type CareerType } from '@/utils/schemas/profileSchema'
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
+import { useProfileSettingsForm } from '@/hooks/mypage/useProfileSettingsForm'
+import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 import CTAModal from '../CTAModal'
 import { MyPageHeader } from '../MyPageHeader'
@@ -15,85 +17,91 @@ import Section06CareerHistory from './sections/Section06CareerHistory'
 import Section07Portfolio from './sections/Section07Portfolio'
 import Section08ProjectHistory from './sections/Section08ProjectHistory'
 
-// 초기 상태 값
-const INITIAL_INTRODUCTION = ''
-const INITIAL_COMPETENCY = ''
-const INITIAL_FIELDS = ['IT · 웹/모바일 서비스', '교육 · 에듀테크', '금융 · 핀테크']
-const INITIAL_CAREERS: CareerType[] = [
-	{
-		id: 1,
-		projectName: '',
-		startDate: '',
-		endDate: '',
-		isInProgress: false,
-		industry: '',
-		role: '',
-		achievements: [{ id: 1, title: '', content: '' }],
-	},
-]
-const INITIAL_SKILLS: Record<string, string[]> = {
-	디자인: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
-	기획: ['Notion', 'Ux Research'],
-	기타: ['Claude', 'Consecutive Interpretation'],
-}
-
 export const ProfileSettings = () => {
-	// 상태들
-	const [introduction, setIntroduction] = useState(INITIAL_INTRODUCTION) // 자기소개
-	const [coreCompetency, setCoreCompetency] = useState(INITIAL_COMPETENCY) // 핵심역량
-	const [selectedFields, setSelectedFields] = useState<string[]>(INITIAL_FIELDS) // 관심분야
-	const [skills] = useState<Record<string, string[]>>(INITIAL_SKILLS) // 보유 스킬
-	const [careers, setCareers] = useState<CareerType[]>(INITIAL_CAREERS) // 경력
+	const methods = useProfileSettingsForm()
+	const {
+		handleSubmit,
+		formState: { isDirty },
+		reset,
+		watch,
+		setValue,
+	} = methods
 
-	// 저장된 초기값들을 state로 관리 (저장 성공 시 업데이트)
-	const [savedData, setSavedData] = useState({
-		introduction: INITIAL_INTRODUCTION,
-		coreCompetency: INITIAL_COMPETENCY,
-		selectedFields: INITIAL_FIELDS,
-		careers: INITIAL_CAREERS,
-	})
+	// 폼 데이터
+	const skills = watch('skills')
 
-	// 변경사항 감지
-	const isDirty = useMemo(() => {
-		const hasIntroductionChanged = introduction !== savedData.introduction
-		const hasCompetencyChanged = coreCompetency !== savedData.coreCompetency
-		const hasFieldsChanged = JSON.stringify(selectedFields) !== JSON.stringify(savedData.selectedFields)
-		const hasCareersChanged = JSON.stringify(careers) !== JSON.stringify(savedData.careers)
-
-		return hasIntroductionChanged || hasCompetencyChanged || hasFieldsChanged || hasCareersChanged
-	}, [introduction, coreCompetency, selectedFields, careers, savedData])
-
-	// 저장 핸들러
+	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
 	const handleSave = useCallback(() => {
-		const profileData = {
-			introduction,
-			coreCompetency,
-			interestFields: selectedFields,
-			skills,
-			careers,
-		}
+		let isValid = false
 
-		const result = validateProfile(profileData)
+		handleSubmit(
+			data => {
+				console.log('유효성 검사 통과 및 저장:', data)
+				reset(data)
+				isValid = true
+			},
+			errors => {
+				console.log('폼 에러:', errors)
 
-		if (!result.success) {
-			const errors = getErrorMessages(result.error)
-			alert(errors.map((err: { path: string; message: string }) => err.message).join('\n'))
-			return false
-		}
+				// 첫 번째 에러 찾기
+				const fieldOrder: (keyof ProfileFormDataType)[] = [
+					'introduction',
+					'coreCompetency',
+					'interestFields',
+					'skills',
+					'careers',
+					'portfolios',
+					'projectHistory',
+				]
 
-		// 추후 API 호출 로직
-		console.log('유효성 검사 통과 및 저장:', result.data)
+				const firstErrorKey = fieldOrder.find(field => errors[field])
 
-		// 저장 성공 시 현재 값을 저장된 값으로 업데이트 (isDirty를 false로 만듦)
-		setSavedData({
-			introduction,
-			coreCompetency,
-			selectedFields: [...selectedFields],
-			careers: JSON.parse(JSON.stringify(careers)),
-		})
+				if (firstErrorKey) {
+					// 해당 에러 섹션으로 스크롤
+					const errorFieldMap: Record<keyof ProfileFormDataType, string> = {
+						introduction: 'section-01',
+						coreCompetency: 'section-02',
+						interestFields: 'section-04',
+						skills: 'section-05',
+						careers: 'section-06',
+						portfolios: 'section-07',
+						projectHistory: 'section-08',
+					}
 
-		return true
-	}, [introduction, coreCompetency, selectedFields, skills, careers])
+					const sectionId = errorFieldMap[firstErrorKey]
+					if (sectionId) {
+						const element = document.getElementById(sectionId)
+						if (element) {
+							element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+						}
+					}
+				}
+
+				// 에러 메시지 재귀적으로 추출 (주요 경력/이력이 배열이라서 에러메시지가 제대로 안잡힘..)
+				const extractMessages = (obj: unknown): string[] => {
+					const messages: string[] = []
+					if (!obj || typeof obj !== 'object') return messages
+
+					const errorObj = obj as Record<string, unknown>
+					if (typeof errorObj.message === 'string') {
+						messages.push(errorObj.message)
+					}
+					Object.values(errorObj).forEach(value => {
+						if (value && typeof value === 'object') {
+							messages.push(...extractMessages(value))
+						}
+					})
+					return messages
+				}
+
+				const errorMessages = extractMessages(errors)
+				alert(errorMessages[0] || '필수 항목을 입력해주세요')
+				isValid = false
+			}
+		)()
+
+		return isValid
+	}, [handleSubmit, reset])
 
 	// 페이지 이탈 감지 훅
 	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
@@ -101,58 +109,69 @@ export const ProfileSettings = () => {
 		onSave: handleSave,
 	})
 
-	// 관심 분야 태그버튼 토글
-	const toggleField = (field: string) => {
-		setSelectedFields(prev => (prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]))
-	}
-
 	return (
-		<div className='ml-7'>
-			<MyPageHeader />
+		<FormProvider {...methods}>
+			<div className='ml-7'>
+				<MyPageHeader />
 
-			{/* 전체 컨테이너 */}
-			<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>
-				{/* 프사 + 기본 정보 */}
-				<ProfileBasicInfo onSave={handleSave} />
+				{/* 전체 컨테이너 */}
+				<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>
+					{/* 프사 + 기본 정보 */}
+					<ProfileBasicInfo onSave={handleSave} />
 
-				<div className='flex flex-col gap-16'>
-					{/* 섹션 01. 자기소개 */}
-					<Section01Introduction value={introduction} onChange={setIntroduction} />
+					<div className='flex flex-col gap-16'>
+						{/* 섹션 01. 자기소개 */}
+						<div id='section-01'>
+							<Section01Introduction control={methods.control} />
+						</div>
 
-					{/* 섹션 02. 핵심역량 */}
-					<Section02CoreCompetency value={coreCompetency} onChange={setCoreCompetency} />
+						{/* 섹션 02. 핵심역량 */}
+						<div id='section-02'>
+							<Section02CoreCompetency control={methods.control} />
+						</div>
 
-					{/* 섹션 03. 프로필 분석 키워드 */}
-					<Section03ProfileKeyword />
+						{/* 섹션 03. 프로필 분석 키워드 (읽기전용) */}
+						<Section03ProfileKeyword />
 
-					{/* 섹션 04. 관심분야 */}
-					<Section04InterestFields selectedFields={selectedFields} onToggleField={toggleField} />
+						{/* 섹션 04. 관심분야 */}
+						<div id='section-04'>
+							<Section04InterestFields control={methods.control} />
+						</div>
 
-					{/* 섹션 05. 보유스킬 */}
-					<Section05Skills skills={skills} />
+						{/* 섹션 05. 보유스킬 */}
+						<div id='section-05'>
+							<Section05Skills skills={skills} />
+						</div>
 
-					{/* 섹션 06. 주요 경력/이력 */}
-					<Section06CareerHistory careers={careers} onCareersChange={setCareers} />
+						{/* 섹션 06. 주요 경력/이력 */}
+						<div id='section-06'>
+							<Section06CareerHistory control={methods.control} setValue={setValue} watch={watch} />
+						</div>
 
-					{/* 섹션 07. 포트폴리오 */}
-					<Section07Portfolio />
+						{/* 섹션 07. 포트폴리오 */}
+						<div id='section-07'>
+							<Section07Portfolio control={methods.control} setValue={setValue} watch={watch} />
+						</div>
 
-					{/* 섹션 08. 프로젝트 히스토리 */}
-					<Section08ProjectHistory />
+						{/* 섹션 08. 프로젝트 히스토리 */}
+						<div id='section-08'>
+							<Section08ProjectHistory control={methods.control} setValue={setValue} />
+						</div>
+					</div>
 				</div>
-			</div>
 
-			{/* 페이지 이탈 확인 모달 */}
-			{isBlocked && (
-				<CTAModal
-					message='저장되지 않았습니다.'
-					subMessage='저장 후 페이지를 나가시겠습니까?'
-					leftButtonMsg='나가기'
-					rightButtonMsg='저장 후 나가기'
-					onLeftClick={handleLeaveWithoutSaving}
-					onRightClick={handleSaveAndLeave}
-				/>
-			)}
-		</div>
+				{/* 페이지 이탈 확인 모달 */}
+				{isBlocked && (
+					<CTAModal
+						message='저장되지 않았습니다.'
+						subMessage='저장 후 페이지를 나가시겠습니까?'
+						leftButtonMsg='나가기'
+						rightButtonMsg='저장 후 나가기'
+						onLeftClick={handleLeaveWithoutSaving}
+						onRightClick={handleSaveAndLeave}
+					/>
+				)}
+			</div>
+		</FormProvider>
 	)
 }

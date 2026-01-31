@@ -38,7 +38,7 @@ const OngoingProject = () => {
 	const navigate = useNavigate()
 
 	// 폼 관련
-	const { control, setValue, handleSubmit, isDirty, projectData, getValues, watch } = useOngoingProjectForm()
+	const { control, setValue, handleSubmit, isDirty, projectData, getValues, watch, reset } = useOngoingProjectForm()
 
 	// 페이지 이탈 감지 훅
 	const {
@@ -62,11 +62,14 @@ const OngoingProject = () => {
 				if (showSavedModal) {
 					setModalType('saved')
 				}
+
+				reset(data)
 				isValid = true
 			},
 			errors => {
 				// 첫 번째 에러 필드 찾기
 				const firstErrorKey = Object.keys(errors)[0] as keyof ProjectSettingsType
+
 				if (firstErrorKey) {
 					// 해당 섹션으로 스크롤
 					const errorFieldMap: Record<keyof ProjectSettingsType, string> = {

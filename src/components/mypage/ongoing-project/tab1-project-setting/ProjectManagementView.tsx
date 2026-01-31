@@ -5,7 +5,7 @@ import ProjectBasicInfo from './ProjectBasicInfo'
 import Section01ProjectField from './sections/Section01ProjectField'
 import Section02RecruitmentInfo from './sections/Section02RecruitmentInfo'
 import Section03TeamComposition from './sections/Section03TeamComposition'
-import Section07Portfolio from '../../profile-settings/sections/Section07Portfolio'
+import Section07ProjectFiles from './sections/Section07ProjectFiles'
 import Section08LeaderProfile from './sections/Section08LeaderProfile'
 import FormBulletTextArea from '@/components/common/FormBulletTextArea'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
@@ -105,7 +105,7 @@ const ProjectManagementView = ({ control, getValues, setValue, watch, setActiveT
 
 			{/* 섹션 07. 프로젝트 세부 기획 파일 */}
 			<div id='section-07'>
-				<Section07Portfolio />
+				<Section07ProjectFiles control={control} />
 			</div>
 
 			{/* 섹션 08. 리더 프로필 (읽기전용) */}

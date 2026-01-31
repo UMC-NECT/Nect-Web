@@ -1,48 +1,56 @@
 import { useState } from 'react'
+import { useFieldArray, type Control, type UseFormSetValue, type UseFormWatch, useFormContext } from 'react-hook-form'
 import Button from '../../../common/Button'
 import ClipIcon from '@/assets/icons/mypage/clip.svg?react'
+import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
-interface PortfolioItem {
-	id: number
-	title: string
-	link: string
-	file?: { name: string; url: string }
-	isCompleted?: boolean // 입력 완료 상태
+interface ISection07Portfolio {
+	control: Control<ProfileFormDataType>
+	setValue: UseFormSetValue<ProfileFormDataType>
+	watch: UseFormWatch<ProfileFormDataType>
 }
 
-const Section07Portfolio = () => {
-	const [portfolios, setPortfolios] = useState<PortfolioItem[]>([{ id: 1, title: '', link: '', isCompleted: false }])
+const Section07Portfolio = ({ control, setValue, watch }: ISection07Portfolio) => {
+	const { register } = useFormContext<ProfileFormDataType>()
+	const {
+		fields: portfolios,
+		append: appendPortfolio,
+		remove: removePortfolio,
+	} = useFieldArray({
+		control,
+		name: 'portfolios',
+	})
 	const [dragOver, setDragOver] = useState<number | null>(null)
-	const [nextId, setNextId] = useState(2)
 
 	const addPortfolio = () => {
-		setPortfolios([...portfolios, { id: nextId, title: '', link: '', isCompleted: false }])
-		setNextId(nextId + 1)
+		appendPortfolio({ id: Date.now(), title: '', link: '', isCompleted: false })
 	}
 
-	const updatePortfolio = (id: number, field: keyof PortfolioItem, value: string) => {
-		setPortfolios(portfolios.map(p => (p.id === id ? { ...p, [field]: value } : p)))
+	const removePortfolioByIndex = (index: number) => {
+		removePortfolio(index)
 	}
 
 	// 엔터용 핸들러
-	const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
 		if (e.key === 'Enter') {
-			const portfolio = portfolios.find(p => p.id === id)
-			if (portfolio && portfolio.title && portfolio.link) {
-				setPortfolios(portfolios.map(p => (p.id === id ? { ...p, isCompleted: true } : p)))
+			e.preventDefault()
+			const currentTitle = watch(`portfolios.${index}.title`)
+			const currentLink = watch(`portfolios.${index}.link`)
+			if (currentTitle && currentLink) {
+				setValue(`portfolios.${index}.isCompleted`, true, { shouldDirty: true })
 			}
 		}
 	}
 
 	// 드래그 핸들러 관련
-	const handleDragOver = (e: React.DragEvent, id: number) => {
+	const handleDragOver = (e: React.DragEvent, index: number) => {
 		e.preventDefault()
-		setDragOver(id)
+		setDragOver(index)
 	}
 	const handleDragLeave = () => {
 		setDragOver(null)
 	}
-	const handleDrop = (e: React.DragEvent, id: number) => {
+	const handleDrop = (e: React.DragEvent, index: number) => {
 		e.preventDefault()
 		setDragOver(null)
 
@@ -50,39 +58,26 @@ const Section07Portfolio = () => {
 		if (file) {
 			const reader = new FileReader()
 			reader.onloadend = () => {
-				// 파일명에서 확장자 제거
 				const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
-				setPortfolios(
-					portfolios.map(p =>
-						p.id === id ? { ...p, title: nameWithoutExt, file: { name: file.name, url: reader.result as string } } : p
-					)
-				)
+				setValue(`portfolios.${index}.title`, nameWithoutExt, { shouldDirty: true })
+				setValue(`portfolios.${index}.file`, { name: file.name, url: reader.result as string }, { shouldDirty: true })
 			}
 			reader.readAsDataURL(file)
 		}
 	}
 
 	// 파일 추가
-	const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
+	const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
 		const file = e.target.files?.[0]
 		if (file) {
 			const reader = new FileReader()
 			reader.onloadend = () => {
-				// 파일명에서 확장자 제거
 				const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
-				setPortfolios(
-					portfolios.map(p =>
-						p.id === id ? { ...p, title: nameWithoutExt, file: { name: file.name, url: reader.result as string } } : p
-					)
-				)
+				setValue(`portfolios.${index}.title`, nameWithoutExt, { shouldDirty: true })
+				setValue(`portfolios.${index}.file`, { name: file.name, url: reader.result as string }, { shouldDirty: true })
 			}
 			reader.readAsDataURL(file)
 		}
-	}
-
-	// 파일 삭제
-	const removePortfolio = (id: number) => {
-		setPortfolios(portfolios.filter(p => p.id !== id))
 	}
 
 	return (
@@ -95,82 +90,74 @@ const Section07Portfolio = () => {
 				</Button>
 			</div>
 
-			{portfolios.map(portfolio => (
-				<div key={portfolio.id} className='mb-4'>
-					<div
-						className={`flex gap-2.5 items-start px-5 py-4 rounded-12 transition-colors ${
-							dragOver === portfolio.id
-								? 'bg-primary-100-light border-2 border-primary-500-normal'
-								: 'hover:bg-neutral-50'
-						}`}
-						onDragOver={e => handleDragOver(e, portfolio.id)}
-						onDragLeave={handleDragLeave}
-						onDrop={e => handleDrop(e, portfolio.id)}
-					>
-						<ClipIcon className='w-5 h-5 mt-1 flex-shrink-0 text-neutral-400' />
-						<div className='flex-1'>
-							{portfolio.file || portfolio.isCompleted ? (
-								<>
-									{/* 파일명 / 링크제목 */}
-									<div className='flex justify-between items-start'>
-										<div className='flex-1'>
-											<p className='body-1 text-primary-500-normal font-semibold mb-1'>
-												{portfolio.title || portfolio.file?.name}
-											</p>
+			{portfolios.map((portfolio, index) => {
+				const currentIsCompleted = watch(`portfolios.${index}.isCompleted`)
 
-											{/* 경로명 (최대 50자) */}
-											<a
-												href={portfolio.link || portfolio.file?.url}
-												target='_blank'
-												rel='noopener noreferrer'
-												className='body-1 text-neutral-500 underline hover:text-neutral-700 cursor-pointer'
-											>
-												{(portfolio.link || portfolio.file?.url || '').length > 50
-													? (portfolio.link || portfolio.file?.url || '').slice(0, 50) + '...'
-													: portfolio.link || portfolio.file?.url}
-											</a>
-										</div>
-
-										<span
-											className='body-1 text-neutral-300 cursor-pointer hover:text-neutral-500'
-											onClick={() => removePortfolio(portfolio.id)}
-										>
-											삭제
-										</span>
-									</div>
-								</>
-							) : (
-								<>
+				return (
+					<div key={portfolio.id} className='mb-4'>
+						<div
+							className={`flex gap-2.5 items-start px-5 py-4 rounded-12 transition-colors ${
+								dragOver === index
+									? 'bg-primary-100-light border-2 border-primary-500-normal'
+									: 'hover:bg-neutral-50'
+							}`}
+							onDragOver={e => handleDragOver(e, index)}
+							onDragLeave={handleDragLeave}
+							onDrop={e => handleDrop(e, index)}
+						>
+							<ClipIcon className='w-5 h-5 mt-1 shrink-0 text-neutral-400' />
+							<div className='flex-1 flex gap-2 items-start'>
+								<div className='flex-1'>
 									<input
 										type='text'
-										className='w-full body-1 text-neutral-900 bg-transparent focus:outline-none placeholder:text-neutral-300 mb-2'
+										className={`w-full body-1 bg-transparent focus:outline-none placeholder:text-neutral-300 mb-2 ${
+											currentIsCompleted ? 'text-primary-500-normal font-semibold' : 'text-neutral-900'
+										}`}
 										placeholder='제목'
-										value={portfolio.title}
-										onChange={e => updatePortfolio(portfolio.id, 'title', e.target.value)}
-										onKeyDown={e => handleKeyDown(e, portfolio.id)}
+										{...register(`portfolios.${index}.title`)}
+										onKeyDown={e => handleKeyDown(e, index)}
 									/>
 									<input
 										type='text'
-										className='w-full body-1 text-neutral-900 bg-transparent focus:outline-none placeholder:text-neutral-300'
+										className={`w-full body-1 bg-transparent focus:outline-none placeholder:text-neutral-300 ${
+											currentIsCompleted ? 'text-neutral-500 underline cursor-pointer' : 'text-neutral-900'
+										}`}
 										placeholder='링크 붙여넣기 및 파일 드래그'
-										value={portfolio.link}
-										onChange={e => updatePortfolio(portfolio.id, 'link', e.target.value)}
-										onKeyDown={e => handleKeyDown(e, portfolio.id)}
+										{...register(`portfolios.${index}.link`)}
+										onKeyDown={e => handleKeyDown(e, index)}
+										onClick={() => {
+											if (currentIsCompleted) {
+												const link = watch(`portfolios.${index}.link`)
+												if (link) {
+													window.open(link, '_blank', 'noopener,noreferrer')
+												}
+											}
+										}}
+										readOnly={currentIsCompleted}
 									/>
-								</>
-							)}
+								</div>
+
+								{currentIsCompleted && (
+									<span
+										className='body-1 text-neutral-300 cursor-pointer hover:text-neutral-500'
+										onClick={() => removePortfolioByIndex(index)}
+									>
+										삭제
+									</span>
+								)}
+							</div>
 
 							<input
 								type='file'
 								accept='image/*,.pdf'
-								onChange={e => handleFileInput(e, portfolio.id)}
+								onChange={e => handleFileInput(e, index)}
 								className='hidden'
 								id={`file-input-${portfolio.id}`}
 							/>
 						</div>
 					</div>
-				</div>
-			))}
+				)
+			})}
 		</section>
 	)
 }

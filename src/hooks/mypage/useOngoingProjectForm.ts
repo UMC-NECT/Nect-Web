@@ -29,7 +29,7 @@ export const useOngoingProjectForm = () => {
 			// 섹션 06. 서비스 사용자
 			serviceUser: MOCK_SERVICE_USER,
 			// 섹션 07. 포트폴리오 파일
-			portfolioFiles: undefined,
+			portfolioFiles: [],
 		},
 	})
 
