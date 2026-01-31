@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import type { TeamMembersByRole } from '@/types/mypage/ongoindProject'
+import { DndContext, closestCenter, useDraggable, useDroppable } from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import type { TeamMembersByRole, TeamMember } from '@/types/mypage/ongoindProject'
 import Button from '@/components/common/Button'
 import RoleTag from '@/components/mypage/RoleTag'
 
@@ -7,6 +9,57 @@ interface IPartSettingsModal {
 	teamMembersByRole: TeamMembersByRole[]
 	onClose: () => void
 	onSave: (updatedParts: TeamMembersByRole[]) => void
+}
+
+// 드래그 가능한 멤버 카드 컴포넌트
+const DraggableMemberCard = ({ member }: { member: TeamMember }) => {
+	const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+		id: member.id,
+	})
+
+	return (
+		<button
+			ref={setNodeRef}
+			{...listeners}
+			{...attributes}
+			type='button'
+			className={`flex items-center gap-3 bg-neutral-000 min-w-50 border-[1.5px] border-neutral-100 rounded-12 pl-2 py-1 w-68.5 hover:border-neutral-200 hover:bg-neutral-100 transition-colors cursor-grab active:cursor-grabbing ${
+				isDragging ? 'opacity-50' : ''
+			}`}
+		>
+			{/* 프로필 이미지 */}
+			<div className='w-10 h-10 rounded-full bg-neutral-200 overflow-hidden shrink-0'>{member.profileImage}</div>
+
+			{/* 정보 */}
+			<div className='flex items-center gap-1'>
+				{member.isLeader && <span className='body-2 font-medium text-primary-400-normal'>Leader</span>}
+				<span className='title-3 font-semibold text-neutral-800'>{member.nickname}</span>
+				<span className='body-2 text-neutral-300'>|</span>
+				<span className='title-3 text-neutral-500'>{member.part}</span>
+			</div>
+		</button>
+	)
+}
+
+// 드롭 가능한 파트 영역 컴포넌트
+const DroppablePartSection = ({ role, roleLabel, members }: { role: string; roleLabel: string; members: TeamMember[] }) => {
+	const { setNodeRef } = useDroppable({
+		id: role,
+	})
+
+	return (
+		<div className='flex flex-col gap-4.5'>
+			{/* 역할 태그 */}
+			<RoleTag role={roleLabel} showTotal={false} />
+
+			{/* 멤버 목록 */}
+			<div ref={setNodeRef} className={`flex flex-wrap gap-3 min-h-20 p-2 rounded-12 `}>
+				{members.map(member => (
+					<DraggableMemberCard key={member.id} member={member} />
+				))}
+			</div>
+		</div>
+	)
 }
 
 const PartSettingsModal = ({ teamMembersByRole, onClose, onSave }: IPartSettingsModal) => {
@@ -29,6 +82,57 @@ const PartSettingsModal = ({ teamMembersByRole, onClose, onSave }: IPartSettings
 		setParts([...parts, newPart])
 	}
 
+	// 드래그 종료 핸들러
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event
+
+		if (!over) return
+
+		const memberId = active.id as string
+		const targetRole = over.id as string
+
+		// 같은 파트로 드롭하면 무시
+		const sourcePart = parts.find(part => part.members.some(member => member.id === memberId))
+		if (sourcePart?.role === targetRole) return
+
+		// 멤버를 새 파트로 이동
+		setParts(prevParts => {
+			const newParts = prevParts.map(part => ({
+				...part,
+				members: [...part.members],
+			}))
+
+			// 원본 파트에서 멤버 제거
+			let movedMember: TeamMember | undefined
+			newParts.forEach(part => {
+				const memberIndex = part.members.findIndex(m => m.id === memberId)
+				if (memberIndex !== -1) {
+					movedMember = { ...part.members[memberIndex] }
+					part.members.splice(memberIndex, 1)
+				}
+			})
+
+			// 대상 파트에 멤버 추가
+			if (movedMember) {
+				const targetPart = newParts.find(part => part.role === targetRole)
+				if (targetPart) {
+					targetPart.members.push({
+						...movedMember,
+						part: targetPart.roleLabel,
+					})
+					// 리더를 맨 앞으로 정렬
+					targetPart.members.sort((a, b) => {
+						if (a.isLeader && !b.isLeader) return -1
+						if (!a.isLeader && b.isLeader) return 1
+						return 0
+					})
+				}
+			}
+
+			return newParts
+		})
+	}
+
 	// 저장
 	const handleSave = () => {
 		onSave(parts)
@@ -47,42 +151,15 @@ const PartSettingsModal = ({ teamMembersByRole, onClose, onSave }: IPartSettings
 				</div>
 
 				{/* 컨텐츠 */}
-				<div className='flex-1 overflow-y-auto'>
-					<div className='flex flex-col gap-11.5 pb-10.5'>
-						{parts.map(({ role, roleLabel, members }) => (
-							<div key={role} className='flex flex-col gap-4.5'>
-								{/* 역할 태그 */}
-								<RoleTag role={roleLabel} showTotal={false} />
-
-								{/* 멤버 목록 */}
-								<div className='flex flex-wrap gap-3'>
-									{members.map(member => (
-										<button
-											key={member.id}
-											type='button'
-											className='flex items-center gap-3 bg-neutral-000 min-w-50 border-[1.5px] border-neutral-100 rounded-12 pl-2 py-1 w-68.5 hover:border-neutral-200 hover:bg-neutral-100 transition-colors cursor-pointer'
-										>
-											{/* 프로필 이미지 */}
-											<div className='w-10 h-10 rounded-full bg-neutral-200 overflow-hidden shrink-0'>
-												{member.profileImage}
-											</div>
-
-											{/* 정보 */}
-											<div className='flex items-center gap-1'>
-												{member.isLeader && (
-													<span className='body-2 font-medium text-primary-400-normal'>Leader</span>
-												)}
-												<span className='title-3 font-semibold text-neutral-800'>{member.nickname}</span>
-												<span className='body-2 text-neutral-300'>|</span>
-												<span className='title-3 text-neutral-500'>{member.part}</span>
-											</div>
-										</button>
-									))}
-								</div>
-							</div>
-						))}
+				<DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+					<div className='flex-1 overflow-y-auto'>
+						<div className='flex flex-col gap-11.5 pb-10.5'>
+							{parts.map(({ role, roleLabel, members }) => (
+								<DroppablePartSection key={role} role={role} roleLabel={roleLabel} members={members} />
+							))}
+						</div>
 					</div>
-				</div>
+				</DndContext>
 
 				{/* 푸터 */}
 				<div className='flex items-center justify-center gap-3 pb-12 pt-2'>

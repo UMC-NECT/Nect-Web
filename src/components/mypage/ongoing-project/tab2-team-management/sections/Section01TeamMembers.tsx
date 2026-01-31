@@ -37,7 +37,7 @@ const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMember
 						roleLabel={roleLabel}
 						roleColor={color}
 						members={members}
-						onOpenPartSettings={() => () => handlePartSettings(true)}
+						onOpenPartSettings={() => handlePartSettings(true)}
 						onSetLeader={handleSetLeader}
 					/>
 				))}

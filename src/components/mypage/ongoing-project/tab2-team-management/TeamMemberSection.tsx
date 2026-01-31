@@ -16,12 +16,10 @@ interface ITeamMemberSection {
 const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader }: ITeamMemberSection) => {
 	const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
 	const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | undefined>(undefined)
-	const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null)
 
 	// 모달이 열리면 백그라운드 스크롤 방지
 	useEffect(() => {
-		if (openDropdownId || selectedMember) {
-			// html과 body 모두에 overflow hidden 적용
+		if (openDropdownId) {
 			document.documentElement.style.overflow = 'hidden'
 			document.body.style.overflow = 'hidden'
 		} else {
@@ -32,7 +30,7 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 			document.documentElement.style.overflow = ''
 			document.body.style.overflow = ''
 		}
-	}, [openDropdownId, selectedMember])
+	}, [openDropdownId])
 
 	const handleContextMenu = (memberId: string, event: React.MouseEvent) => {
 		setDropdownPosition({
@@ -65,8 +63,7 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 				{sortedMembers.map(member => (
 					<div key={member.id} className='relative'>
 						<div
-							className='relative cursor-pointer'
-							onClick={() => !member.isMatching && setSelectedMember(member)}
+							className='relative'
 							onContextMenu={e => {
 								e.preventDefault()
 								if (!member.isMatching) {
