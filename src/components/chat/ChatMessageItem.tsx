@@ -15,10 +15,10 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 
 	return (
 		<>
-			<div
+		<div
 				className='w-full px-5 py-4 flex flex-col justify-start items-center cursor-pointer hover:bg-neutral-50'
-				onClick={onClick}
-			>
+			onClick={onClick}
+		>
 				<div className='w-full flex justify-center items-center gap-3'>
 					{/* 프로필 이미지 */}
 					{isGroup ? (
@@ -76,16 +76,16 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 									const pos = positions[index]
 									return (
 										<div key={index} className={`w-6 h-6 ${pos.left} ${pos.top} ${pos.zIndex} absolute`}>
-											<img
+							<img
 												className='w-6 h-6 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
 												src={participant || 'https://placehold.co/24x24'}
 												alt={`Participant ${index + 1}`}
-											/>
-										</div>
+							/>
+						</div>
 									)
 								})}
-							</div>
-						) : (
+				</div>
+			) : (
 							// 1명: 단일 이미지
 							<div className='w-11 h-11 relative shrink-0'>
 								<img
@@ -97,20 +97,20 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 						)
 					) : (
 						// 개인 채팅: 하나의 큰 프로필 이미지
-						<div className='w-11 h-11 relative shrink-0'>
-							<img
+				<div className='w-11 h-11 relative shrink-0'>
+					<img
 								className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
 								src={profileImage}
-								alt={message.senderName}
-							/>
-						</div>
-					)}
+						alt={message.senderName}
+					/>
+				</div>
+			)}
 
 					{/* 메시지 정보 */}
-					<div className='flex-1 flex justify-between items-center min-w-0'>
+			<div className='flex-1 flex justify-between items-center min-w-0'>
 						{/* 왼쪽: 이름/역할, 멤버 수, 마지막 메시지 */}
 						<div className='flex-1 flex flex-col justify-start items-start gap-0.5 min-w-0'>
-							<div className='self-stretch inline-flex justify-start items-center gap-1'>
+					<div className='self-stretch inline-flex justify-start items-center gap-1'>
 								<div className='justify-center text-neutral-900 body-1 font-semibold leading-6'>
 									{message.senderName}
 								</div>
@@ -118,11 +118,11 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 									<div className='justify-center text-neutral-500 caption-1 font-medium leading-4'>
 										{message.memberCount}
 									</div>
-								)}
+						)}
 								{!isGroup && message.role && (
 									<div className='justify-center text-neutral-500 body-2 font-medium leading-5'>{message.role}</div>
-								)}
-							</div>
+						)}
+					</div>
 							<div
 								className={`self-stretch justify-center label font-medium leading-5 line-clamp-1 ${
 									isGroup ? 'text-neutral-600' : 'text-neutral-500'
@@ -130,7 +130,7 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 							>
 								{message.content}
 							</div>
-						</div>
+				</div>
 
 						{/* 오른쪽: 시간, 읽지 않은 메시지 수 */}
 						<div className='h-11 pt-0.5 inline-flex flex-col justify-start items-end gap-2.5'>
@@ -155,12 +155,12 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 										}`}
 									>
 										{message.unreadCount > 99 ? '99+' : message.unreadCount}
-									</span>
-								</div>
-							)}
+							</span>
 						</div>
-					</div>
+					)}
 				</div>
+			</div>
+		</div>
 			</div>
 			{/* 구분선 */}
 			{showDivider && (

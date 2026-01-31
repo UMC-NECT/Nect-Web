@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-type ChatMenuType = 'room' | 'file'
+type ChatMenuType = 'room' | 'file' | 'image'
 
 interface ChatMenuProps {
 	type: ChatMenuType
@@ -15,6 +15,8 @@ interface ChatMenuProps {
 	y?: number
 	onRegisterToSharedDocs?: () => void
 	onDelete?: () => void
+	// Image menu props
+	onForward?: () => void
 }
 
 const ChatMenu = ({
@@ -27,13 +29,14 @@ const ChatMenu = ({
 	y,
 	onRegisterToSharedDocs,
 	onDelete,
+	onForward,
 }: ChatMenuProps) => {
 	const menuRef = useRef<HTMLDivElement>(null)
 	const [position, setPosition] = useState({ x: x || 0, y: y || 0 })
 
-	// 파일 메뉴의 경우 위치 조정
+	// 파일 메뉴 및 이미지 메뉴의 경우 위치 조정
 	useEffect(() => {
-		if (type === 'file' && x !== undefined && y !== undefined) {
+		if ((type === 'file' || type === 'image') && x !== undefined && y !== undefined) {
 			const adjustPosition = () => {
 				if (menuRef.current) {
 					const rect = menuRef.current.getBoundingClientRect()
@@ -95,6 +98,53 @@ const ChatMenu = ({
 			document.removeEventListener('keydown', handleEscape)
 		}
 	}, [onClose])
+
+	// 이미지 메뉴
+	if (type === 'image') {
+		return (
+			<>
+				{/* 배경 오버레이 */}
+				<div
+					className="fixed inset-0 z-40"
+					onClick={onClose}
+				/>
+				{/* 컨텍스트 메뉴 */}
+				<div
+					ref={menuRef}
+					className="fixed bg-white rounded-[10px] shadow-drop-neutral-1 py-0.5 z-50 flex flex-col overflow-hidden min-w-[120px]"
+					style={{
+						left: `${position.x}px`,
+						top: `${position.y}px`,
+					}}
+				>
+					{/* 전달 */}
+					<button
+						onClick={() => {
+							onForward?.()
+							onClose()
+						}}
+						className="flex items-center pl-5 pr-3 py-2 w-full hover:bg-neutral-50"
+					>
+						<span className="text-neutral-700 label font-medium tracking-[-0.26px] leading-normal">
+							전달
+						</span>
+					</button>
+					{/* 삭제 */}
+					<button
+						onClick={() => {
+							onDelete?.()
+							onClose()
+						}}
+						className="flex items-center pl-5 pr-3 py-2 w-full hover:bg-neutral-50"
+					>
+						<span className="text-danger-700 label font-medium tracking-[-0.26px] leading-normal">
+							삭제
+						</span>
+					</button>
+				</div>
+			</>
+		)
+	}
 
 	// 파일 메뉴
 	if (type === 'file') {

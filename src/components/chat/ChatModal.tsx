@@ -5,8 +5,9 @@ import ChatMemberSelectModal from './ChatMemberSelectModal'
 import ChatRoomInfoModal from './ChatRoomInfoModal'
 import ChatHeader from './ChatHeader'
 import ChatSidebar from './ChatSidebar'
+import ChatCloudView from './ChatCloudView'
 
-type ModalView = 'list' | 'roomInfo' | 'selectContact' | 'room'
+type ModalView = 'list' | 'roomInfo' | 'selectContact' | 'room' | 'cloud'
 
 const ChatModal = () => {
 	const [view, setView] = useState<ModalView>('list')
@@ -143,13 +144,21 @@ const ChatModal = () => {
 		)
 	}
 
+	if (view === 'cloud') {
+		return (
+			<ChatCloudView
+				onBack={() => setView('list')}
+			/>
+		)
+	}
+
 	return (
 		<div className='flex items-start h-full'>
 			{/* 사이드바 */}
 			<ChatSidebar
 				unreadCount={messages.filter(m => !m.isRead).length}
 				onMessageClick={() => setView('list')}
-				onCloudClick={() => {}}
+				onCloudClick={() => setView('cloud')}
 				onSettingsClick={() => {}}
 			/>
 			{/* 메인 채팅 모달 */}

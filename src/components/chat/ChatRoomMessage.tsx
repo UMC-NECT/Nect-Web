@@ -51,7 +51,7 @@ export const ChatRoomMessage = ({
 
 	// 상대방 메시지
 	if (!isMine && senderName && content) {
-		return (
+	return (
 			<OtherMessage
 				senderName={senderName}
 				content={content}
