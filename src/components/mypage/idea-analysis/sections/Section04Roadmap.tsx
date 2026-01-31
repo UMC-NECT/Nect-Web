@@ -1,3 +1,5 @@
+import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
+import ChevronUpIcon from '@/assets/icons/common/chevron-up.svg?react'
 import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
 
 interface Section04RoadmapProps {
@@ -47,21 +49,7 @@ const Section04Roadmap = ({ analysisData, openWeeks, toggleWeek }: Section04Road
 								>
 									<span className='title-3 font-semibold text-neutral-900'>{plan.goal}</span>
 									<div className='flex items-center justify-center w-7 h-7'>
-										<svg
-											width='14'
-											height='8'
-											viewBox='0 0 14 8'
-											fill='none'
-											className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
-										>
-											<path
-												d='M1 1L7 7L13 1'
-												stroke='#333333'
-												strokeWidth='1.5'
-												strokeLinecap='round'
-												strokeLinejoin='round'
-											/>
-										</svg>
+										{isOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
 									</div>
 								</button>
 								{isOpen && (

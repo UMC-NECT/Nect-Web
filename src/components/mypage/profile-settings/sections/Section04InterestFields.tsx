@@ -12,6 +12,7 @@ const Section04InterestFields = ({ selectedFields, onToggleField }: ISection04In
 			<h2 className='title-2 font-bold text-neutral-900 mb-4'>
 				관심 분야 <span className='text-danger-700'>*</span>
 			</h2>
+
 			<div className='flex flex-wrap gap-3'>
 				{INTEREST_FIELDS.map(field => (
 					<RoundChipButton

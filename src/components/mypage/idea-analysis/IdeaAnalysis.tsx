@@ -2,13 +2,14 @@ import { useState } from 'react'
 import EmptyIdeaAnalysis from './EmptyIdeaAnalysis'
 import { MyPageHeader } from '../MyPageHeader'
 import Button from '@/components/common/Button'
-import ConfirmModal from '@/components/common/ConfirmModal'
 import ReportHeader from './ReportHeader'
 import Section01BasicInfo from './sections/Section01BasicInfo'
 import Section02TeamComposition from './sections/Section02TeamComposition'
 import Section03Improvements from './sections/Section03Improvements'
 import Section04Roadmap from './sections/Section04Roadmap'
 import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
+import CTAModal from '../CTAModal'
+import { useNavigate } from 'react-router'
 
 // 필드별 색상 매핑
 const getFieldColor = (fieldName: string): string => {
@@ -231,7 +232,9 @@ const IdeaAnalysis = () => {
 	const [openWeeks, setOpenWeeks] = useState<number[]>([])
 	const [hasReport, setHasReport] = useState<boolean>(false)
 	const [analysisData, setAnalysisData] = useState<IdeaAnalysisData>(dummyAnalysisData)
-	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false)
+	const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+
+	const navigate = useNavigate()
 
 	// 주차별 로드맵 토글용
 	const toggleWeek = (week: number) => {
@@ -243,32 +246,10 @@ const IdeaAnalysis = () => {
 		setHasReport(true)
 	}
 
-	// 헤더의 AI 아이디어 분석 버튼
-	const handleAIIdea = () => {
-		// 추후 수정 예정
-		alert('아이디어 분석 페이지로 이동시킴')
-	}
-
-	// 프로젝트 등록하기 버튼 클릭
-	const handleProjectRegister = () => {
-		setIsConfirmModalOpen(true)
-	}
-
-	// 모달 닫기
-	const handleModalClose = () => {
-		setIsConfirmModalOpen(false)
-	}
-
-	// 돌아가기 버튼
-	const handleCancel = () => {
-		setIsConfirmModalOpen(false)
-	}
-
 	// 이동하기 버튼
 	const handleConfirm = () => {
-		setIsConfirmModalOpen(false)
-		// 추후 변경
-		alert('프로젝트 페이지로 이동합니다')
+		setIsModalOpen(false)
+		navigate('/mypage/ongoing')
 	}
 
 	return (
@@ -286,7 +267,7 @@ const IdeaAnalysis = () => {
 								color='socialLogin'
 								size='sm'
 								className='text-neutral-400 px-3.25 py-2.5 w-38.5 h-11 hover:bg-neutral-100'
-								onClick={handleAIIdea}
+								onClick={() => alert('아이디어 분석 페이지로 이동시킴')}
 							>
 								+ AI 아이디어 분석
 							</Button>
@@ -327,9 +308,9 @@ const IdeaAnalysis = () => {
 								<Button
 									color='onboarding'
 									className='px-5 py-4 w-80 h-15 title-3 font-semibold bg-primary-400-normal'
-									onClick={handleProjectRegister}
+									onClick={() => setIsModalOpen(true)}
 								>
-									프로젝트 등록하기
+									프로젝트 만들기
 								</Button>
 							</div>
 						</div>
@@ -338,16 +319,18 @@ const IdeaAnalysis = () => {
 			)}
 
 			{/* 프로젝트 등록 확인 모달 */}
-			<ConfirmModal
-				isOpen={isConfirmModalOpen}
-				onClose={handleModalClose}
-				title='프로젝트 등록이 완료 됐습니다!'
-				description='해당 프로젝트 페이지로 이동하시겠습니까?'
-				cancelText='돌아가기'
-				confirmText='이동하기'
-				onCancel={handleCancel}
-				onConfirm={handleConfirm}
-			/>
+			{isModalOpen && (
+				<CTAModal
+					message='프로젝트 등록이 완료 됐습니다!'
+					subMessage='해당 프로젝트 페이지로 이동하시겠습니까?'
+					isMessageHighlight={false}
+					fixedHeight={true}
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='이동하기'
+					onLeftClick={() => setIsModalOpen(false)}
+					onRightClick={handleConfirm}
+				/>
+			)}
 		</div>
 	)
 }

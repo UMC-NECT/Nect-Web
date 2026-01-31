@@ -1,8 +1,6 @@
 import Button from '@/components/common/Button'
 import PencilIcon from '@/assets/icons/mypage/edit-pencil.svg?react'
-import RoleTag from '../../RoleTag'
-
-type ColorType = 'purple' | 'pink' | 'green' | 'blue'
+import RoleTag from '@/components/mypage/RoleTag'
 
 interface TeamComposition {
 	role: string
@@ -10,13 +8,12 @@ interface TeamComposition {
 	positions: { name: string; count: number }[]
 }
 
-interface ITeamCompositionSection {
+interface ISection03TeamComposition {
 	teamComposition: TeamComposition[]
-	getRoleColor: (partName: string) => ColorType
 	onEditClick: () => void
 }
 
-const TeamCompositionSection = ({ teamComposition, getRoleColor, onEditClick }: ITeamCompositionSection) => {
+const Section03TeamComposition = ({ teamComposition, onEditClick }: ISection03TeamComposition) => {
 	return (
 		<div className='flex flex-col gap-4 pl-5'>
 			<div className='flex items-center justify-between'>
@@ -40,12 +37,7 @@ const TeamCompositionSection = ({ teamComposition, getRoleColor, onEditClick }: 
 						{/* 태그들 */}
 						<div className='flex items-center gap-2.5'>
 							{team.positions.map((position, idx) => (
-								<RoleTag
-									key={idx}
-									role={position.name}
-									total={position.count}
-									color={getRoleColor(position.name)}
-								/>
+								<RoleTag key={idx} role={position.name} total={position.count} />
 							))}
 						</div>
 					</div>
@@ -55,4 +47,4 @@ const TeamCompositionSection = ({ teamComposition, getRoleColor, onEditClick }: 
 	)
 }
 
-export default TeamCompositionSection
+export default Section03TeamComposition

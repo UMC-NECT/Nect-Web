@@ -7,106 +7,7 @@ import type { OnboardingFormType } from '@/utils/validate'
 import { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
-
-const skillsTitle = ['디자인', '개발', '기획', '마케팅', '기타']
-const skillsDetail: Record<string, string[]> = {
-	디자인: [
-		'Figma',
-		'Protopie',
-		'Adobe Photoshop',
-		'Adobe Illustrator',
-		'Adobe Indesign',
-		'Adobe XD',
-		'Final Cut Pro',
-		'Adobe Premiere Pro',
-		'Adobe After Effect',
-		'Adobe Firefly',
-		'Mdjourney',
-		'Nano Banana',
-		'DALL.E',
-		'Blender',
-		'Cinema 4d',
-		'VFX',
-		'MAYA',
-		'ZBrush',
-		'Sketch up',
-		'Auto CAD',
-		'3D Max',
-		'Rhino',
-		'Keyshot',
-		'Procreate',
-		'Enscape',
-	],
-	개발: [
-		'Java',
-		'HTML/CSS',
-		'JavaScript',
-		'TypeScript',
-		'Python',
-		'React',
-		'Spring',
-		'Spring Boot',
-		'Node.js',
-		'Vue.js',
-		'Next.js',
-		'Docker',
-		'AWS',
-		'MySQL',
-		'GO',
-		'C#',
-		'Swift',
-		'Android Studio',
-		'Kotlin',
-		'Flutter',
-		'React Native',
-		'PostgreSQL',
-		'C++',
-		'JSP',
-		'Git',
-		'GitHub',
-		'Kubernetes',
-	],
-	기획: ['Notion', 'Ux Research', 'Slack', 'Jira', 'Confluence', 'Balsamiq', 'Miro', 'Google Analytics', 'Amplitude', 'Excel'],
-	마케팅: [
-		'Google Tag Manager',
-		'AppsFlyer',
-		'Meta Ads Manager',
-		'Google Ads',
-		'Kakao Moment',
-		'Canve',
-		'Braze',
-		'Solapi',
-		'Mailchimp',
-	],
-	기타: [
-		'Chat GPT',
-		'Trados',
-		'Live Streaming',
-		'Google Gemini',
-		'Memsource',
-		'VMD',
-		'Claude',
-		'Consecutive Interpretation',
-		'3D Rendering',
-		'Google Workspace',
-		'Pro Tools',
-		'Safety Management',
-		'Canva',
-		'Logic Pro',
-		'Power BI',
-		'Miricanvas',
-		'Ableton Live',
-		'CRM Setup',
-		'Channel Talk',
-		'iZotope RX',
-		'CapCut',
-		'DaVinci Resolve',
-		'Vrew',
-		'Storyboarding',
-		'DeepL',
-		'Drone Piloting',
-	],
-}
+import { SKILL_CATEGORIES, SKILLS_BY_CATEGORY } from '@/constants/skills'
 
 const Step3 = () => {
 	const [inputValue, setInputValue] = useState('') // 직접 입력 필드용
@@ -152,14 +53,14 @@ const Step3 = () => {
 	}
 
 	// 카테고리별로 선택된 스킬을 그룹화
-	const groupedSkills = skillsTitle.reduce(
+	const groupedSkills = SKILL_CATEGORIES.reduce(
 		(acc, title) => {
-			const categorySkills = skillsDetail[title]?.filter(skill => selectedSkills.includes(skill)) || []
+			const categorySkills = SKILLS_BY_CATEGORY[title]?.filter(skill => selectedSkills.includes(skill)) || []
 
 			// "기타" 카테고리에 직접 입력한 스킬 추가
 			if (title === '기타') {
 				const customSkills = selectedSkills.filter(skill => {
-					return !Object.values(skillsDetail).flat().includes(skill)
+					return !Object.values(SKILLS_BY_CATEGORY).flat().includes(skill)
 				})
 				const allSkills = [...categorySkills, ...customSkills]
 				if (allSkills.length > 0) {
@@ -187,13 +88,13 @@ const Step3 = () => {
 			<div className='sm:w-150 md:w-250 lg:w-350 flex justify-center items-start ml-24'>
 				{/* 왼쪽 */}
 				<div className='max-w-85.75 sm:w-50 md:w-60 lg:w-80 flex flex-col gap-1.5'>
-					{skillsTitle.map(title => (
+					{SKILL_CATEGORIES.map(title => (
 						<Accordion
 							key={title}
 							title={title}
 							children={
 								<>
-									{skillsDetail[title]?.map(skill => (
+									{SKILLS_BY_CATEGORY[title]?.map(skill => (
 										<CheckboxItem
 											key={skill}
 											label={skill}

@@ -6,8 +6,6 @@ export const MYPAGE_MENU = [
 			{ id: 'profile-settings', label: '내 프로필 설정', path: '/mypage/profile' },
 			{ id: 'idea-analysis', label: '나의 아이디어 분석', path: '/mypage/idea-analysis' },
 			{ id: 'profile-analysis', label: '나의 프로필 분석', path: '/mypage/profile-analysis' },
-			{ id: 'portfolio', label: '나의 포트폴리오', path: '/mypage/portfolio' },
-			{ id: 'account', label: '계정 및 이용권', path: '/mypage/account' },
 		],
 	},
 	{
@@ -22,14 +20,6 @@ export const MYPAGE_MENU = [
 		id: 'my-matching',
 		title: '마이 매칭',
 		items: [{ id: 'matching-status', label: '매칭 현황', path: '/mypage/matching' }],
-	},
-	{
-		id: 'my-scrap',
-		title: '마이 스크랩',
-		items: [
-			{ id: 'scrap-projects', label: '관심 프로젝트', path: '/mypage/scrap/projects' },
-			{ id: 'scrap-profiles', label: '관심 프로필', path: '/mypage/scrap/profiles' },
-		],
 	},
 ] as const
 
@@ -47,9 +37,3 @@ export const INTEREST_FIELDS = [
 	'금융 · 핀테크',
 	'기타',
 ]
-
-export const SKILLS_DATA = {
-	디자인: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
-	기획: ['Notion', 'UX Research'],
-	기타: ['Claude', 'Consecutive Interpretation'],
-}

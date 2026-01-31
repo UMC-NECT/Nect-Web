@@ -1,6 +1,5 @@
 import Button from '@/components/common/Button'
 import GoalIcon from '@/assets/icons/week-mission/goal.svg?react'
-import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
 import type { CareerType } from '@/utils/schemas/profileSchema'
 
@@ -127,16 +126,9 @@ const Section06CareerHistory = ({ careers, onCareersChange }: ISection06CareerHi
 					주요 경력/이력 <span className='text-danger-700'>*</span>
 				</h2>
 
-				{/* 버튼 2개 */}
-				<div className='flex items-center'>
-					<Button color='text' size='sm' onClick={addCareer}>
-						+ 경력/이력 추가
-					</Button>
-					<Button color='text' size='sm'>
-						<RefreshIcon className='w-4 h-4 mr-1' />
-						불러오기
-					</Button>
-				</div>
+				<Button color='text' size='sm' onClick={addCareer}>
+					+ 경력/이력 추가
+				</Button>
 			</div>
 
 			{/* 경력 입력 컨테이너 */}
@@ -145,7 +137,7 @@ const Section06CareerHistory = ({ careers, onCareersChange }: ISection06CareerHi
 					<div key={career.id} className='mb-8'>
 						{/* 경력 입력 섹션 */}
 						<div className='flex gap-4 hover:bg-neutral-50 focus:bg-neutral-50 rounded-12 p-5 duration-200 ease-in-out'>
-							{/* 아이콘 */}
+							{/* 목표 아이콘 */}
 							<GoalIcon className='w-10 h-10 bg-primary-400-normal p-2.5 rounded-12' />
 
 							<div className='flex-1 my-1'>

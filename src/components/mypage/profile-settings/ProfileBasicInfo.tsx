@@ -1,8 +1,8 @@
 import { useRef } from 'react'
-import Button from '../../common/Button'
 import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?react'
 import ProfilePencilIcon from '@/assets/icons/mypage/profile-pencil.svg?react'
 import { useUserStore } from '@/stores/useUserStore'
+import Button from '../../common/Button'
 
 interface ProfileBasicInfoProps {
 	onSave: () => void
@@ -59,6 +59,7 @@ const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
 							<span className='title-2 text-neutral-400'>{userRole}</span>
 						</div>
 						<p className='body-2 text-neutral-500 mb-2'>{userEmail}</p>
+
 						<span className='text-[14px] text-primary-500-normal leading-[140%] font-semibold bg-primary-100-light border border-primary-200-light px-3 py-1 rounded-100'>
 							재학 중
 						</span>
@@ -76,7 +77,7 @@ const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
 				</div>
 			</div>
 
-			{/* 관심 분야 섹션 */}
+			{/* 관심 분야 / 관심 직종 / 경력 */}
 			<div className='grid grid-cols-[100px_1fr] gap-y-3 body-1 mb-12 ml-5'>
 				<span className='text-neutral-600'>관심 직무</span>
 				<span className='text-neutral-900'>UX/UI Product Designer / UX researcher</span>

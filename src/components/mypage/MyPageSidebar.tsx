@@ -1,14 +1,14 @@
 import { useNavigate, useLocation } from 'react-router'
+import { useUserStore } from '@/stores/useUserStore'
 import { MYPAGE_MENU } from '@/constants/mypage'
 import ProfileImageIcon from '@/assets/icons/mypage/profile-image.svg?react'
-import { useUserStore } from '@/stores/useUserStore'
 
 interface MyPageSidebarProps {
 	matchingWaitCount?: number
 	receivedRequestCount?: number
 }
 
-export const MyPageSidebar = ({ matchingWaitCount = 10, receivedRequestCount = 5 }: MyPageSidebarProps) => {
+export const MyPageSidebar = ({ matchingWaitCount = 0, receivedRequestCount = 0 }: MyPageSidebarProps) => {
 	const { userName, userRole, userEmail, profileImage, isPro } = useUserStore()
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -57,7 +57,7 @@ export const MyPageSidebar = ({ matchingWaitCount = 10, receivedRequestCount = 5
 				</div>
 			</div>
 
-			{/* 매칭 현황 섹션 */}
+			{/* 매칭 현황 */}
 			<div className='flex justify-start gap-3.5 px-1 mb-18'>
 				<div className='w-17.5 h-12 flex flex-col items-center'>
 					<span className='heading-3 font-bold text-neutral-900'>{matchingWaitCount}</span>

@@ -1,4 +1,4 @@
-import type { TabType } from './OngoingProject'
+import type { TabType } from '@/types/mypage/ongoindProject'
 
 interface ITabbar {
 	currentTab: string
@@ -7,11 +7,13 @@ interface ITabbar {
 
 const Tabbar = ({ currentTab, onClick }: ITabbar) => {
 	return (
-		<div className='flex items-center mb-16'>
+		<div className='flex items-center mb-7'>
 			<button type='button' onClick={() => onClick('프로젝트 설정')} className='flex flex-col gap-3 w-30 pt-2.5'>
 				<span
 					className={`title-3 font-semibold text-center ${
-						currentTab === '프로젝트 설정' ? 'text-primary-500-normal' : 'text-neutral-800'
+						currentTab === '프로젝트 설정'
+							? 'text-primary-500-normal'
+							: 'text-neutral-400 hover:text-neutral-500 duration-150 ease-in-out'
 					}`}
 				>
 					프로젝트 설정
@@ -22,7 +24,9 @@ const Tabbar = ({ currentTab, onClick }: ITabbar) => {
 			<button type='button' onClick={() => onClick('팀원 관리')} className='flex flex-col gap-3 w-30 pt-2.5'>
 				<span
 					className={`title-3 font-semibold text-center ${
-						currentTab === '팀원 관리' ? 'text-primary-500-normal' : 'text-neutral-800'
+						currentTab === '팀원 관리'
+							? 'text-primary-500-normal'
+							: 'text-neutral-400 hover:text-neutral-500 duration-150 ease-in-out'
 					}`}
 				>
 					팀원 관리

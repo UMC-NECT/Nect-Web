@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useBlocker } from 'react-router'
+import { useState, useCallback, useMemo } from 'react'
 
-import ConfirmModal from '../../common/ConfirmModal'
-import { MyPageHeader } from '../MyPageHeader'
 import { getErrorMessages, validateProfile, type CareerType } from '@/utils/schemas/profileSchema'
-import { SKILLS_DATA } from '@/constants/mypage'
+import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
 
+import CTAModal from '../CTAModal'
+import { MyPageHeader } from '../MyPageHeader'
 import ProfileBasicInfo from './ProfileBasicInfo'
 import Section01Introduction from './sections/Section01Introduction'
 import Section02CoreCompetency from './sections/Section02CoreCompetency'
@@ -32,13 +31,18 @@ const INITIAL_CAREERS: CareerType[] = [
 		achievements: [{ id: 1, title: '', content: '' }],
 	},
 ]
+const INITIAL_SKILLS: Record<string, string[]> = {
+	디자인: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
+	기획: ['Notion', 'Ux Research'],
+	기타: ['Claude', 'Consecutive Interpretation'],
+}
 
 export const ProfileSettings = () => {
 	// 상태들
 	const [introduction, setIntroduction] = useState(INITIAL_INTRODUCTION) // 자기소개
 	const [coreCompetency, setCoreCompetency] = useState(INITIAL_COMPETENCY) // 핵심역량
 	const [selectedFields, setSelectedFields] = useState<string[]>(INITIAL_FIELDS) // 관심분야
-	const [skills] = useState<Record<string, string[]>>(SKILLS_DATA) // 보유 스킬
+	const [skills] = useState<Record<string, string[]>>(INITIAL_SKILLS) // 보유 스킬
 	const [careers, setCareers] = useState<CareerType[]>(INITIAL_CAREERS) // 경력
 
 	// 저장된 초기값들을 state로 관리 (저장 성공 시 업데이트)
@@ -59,28 +63,6 @@ export const ProfileSettings = () => {
 		return hasIntroductionChanged || hasCompetencyChanged || hasFieldsChanged || hasCareersChanged
 	}, [introduction, coreCompetency, selectedFields, careers, savedData])
 
-	useEffect(() => {
-		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-			if (isDirty) {
-				e.preventDefault()
-				e.returnValue = ''
-			}
-		}
-
-		window.addEventListener('beforeunload', handleBeforeUnload)
-		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-	}, [isDirty])
-
-	// 내부 이동 감지 (뒤로가기, 링크 클릭 등)
-	const blocker = useBlocker(
-		({ currentLocation, nextLocation }) => isDirty && currentLocation.pathname !== nextLocation.pathname
-	)
-
-	// 관심 분야 태그버튼 토글
-	const toggleField = (field: string) => {
-		setSelectedFields(prev => (prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]))
-	}
-
 	// 저장 핸들러
 	const handleSave = useCallback(() => {
 		const profileData = {
@@ -96,11 +78,6 @@ export const ProfileSettings = () => {
 		if (!result.success) {
 			const errors = getErrorMessages(result.error)
 			alert(errors.map((err: { path: string; message: string }) => err.message).join('\n'))
-
-			// 유효성 검사 실패 시, 이동하려던 것이었다면 이동 취소(모달 닫고 현재 페이지 유지)
-			if (blocker.state === 'blocked') {
-				blocker.reset()
-			}
 			return false
 		}
 
@@ -116,32 +93,17 @@ export const ProfileSettings = () => {
 		})
 
 		return true
-	}, [introduction, coreCompetency, selectedFields, skills, careers, blocker])
+	}, [introduction, coreCompetency, selectedFields, skills, careers])
 
-	/*
-		모달 관련 핸들러들
-		- handleLeaveWithoutSaving: 저장하지 않고 나가기
-		- handleSaveAndLeave: 저장 후 나가기
-		- handleCloseModal: 모달 닫기 (취소 or 모달 제외한 영역 누를 경우)
-	*/
-	const handleLeaveWithoutSaving = () => {
-		if (blocker.state === 'blocked') {
-			blocker.proceed() // 이동 진행
-		}
-	}
-	const handleSaveAndLeave = () => {
-		const success = handleSave()
-		if (success) {
-			// 저장 성공 시 이동 진행
-			if (blocker.state === 'blocked') {
-				blocker.proceed()
-			}
-		}
-	}
-	const handleCloseModal = () => {
-		if (blocker.state === 'blocked') {
-			blocker.reset() // 이동을 취소하고 현재 페이지에 머무름
-		}
+	// 페이지 이탈 감지 훅
+	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
+		isDirty,
+		onSave: handleSave,
+	})
+
+	// 관심 분야 태그버튼 토글
+	const toggleField = (field: string) => {
+		setSelectedFields(prev => (prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]))
 	}
 
 	return (
@@ -181,16 +143,16 @@ export const ProfileSettings = () => {
 			</div>
 
 			{/* 페이지 이탈 확인 모달 */}
-			<ConfirmModal
-				isOpen={blocker.state === 'blocked'}
-				onClose={handleCloseModal}
-				title='페이지 이탈하겠습니까?'
-				description='변경사항은 자동 저장되지 않습니다.'
-				cancelText='저장하지 않고 나가기'
-				confirmText='저장 후 나가기'
-				onCancel={handleLeaveWithoutSaving}
-				onConfirm={handleSaveAndLeave}
-			/>
+			{isBlocked && (
+				<CTAModal
+					message='저장되지 않았습니다.'
+					subMessage='저장 후 페이지를 나가시겠습니까?'
+					leftButtonMsg='나가기'
+					rightButtonMsg='저장 후 나가기'
+					onLeftClick={handleLeaveWithoutSaving}
+					onRightClick={handleSaveAndLeave}
+				/>
+			)}
 		</div>
 	)
 }

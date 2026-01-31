@@ -1,11 +1,11 @@
 import { INTEREST_FIELDS } from '@/constants/mypage'
 
-interface IProjectFieldSection {
+interface ISection01ProjectField {
 	selectedFields: string[]
 	onToggleField: (field: string) => void
 }
 
-const ProjectFieldSection = ({ selectedFields, onToggleField }: IProjectFieldSection) => {
+const Section01ProjectField = ({ selectedFields, onToggleField }: ISection01ProjectField) => {
 	const fieldOptions = [...INTEREST_FIELDS.filter(f => f !== '기타'), '직접 작성']
 
 	return (
@@ -40,4 +40,4 @@ const ProjectFieldSection = ({ selectedFields, onToggleField }: IProjectFieldSec
 	)
 }
 
-export default ProjectFieldSection
+export default Section01ProjectField

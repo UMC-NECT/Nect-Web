@@ -1,152 +1,158 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
 import HamburgerIcon from '@/assets/icons/common/hamburger.svg?react'
-import BulletTextArea from '@/components/common/BulletTextArea'
 import Tabbar from './Tabbar'
-import ProjectBasicInfo from './ProjectBasicInfo'
-import ProjectFieldSection from './sections/ProjectFieldSection'
-import RecruitmentInfoSection from './sections/RecruitmentInfoSection'
-import TeamCompositionSection from './sections/TeamCompositionSection'
-import LeaderProfileSection from './sections/LeaderProfileSection'
-import TeamHistorySection from './sections/TeamHistorySection'
-import type { ColorType } from '@/types/mypage/ongoindProject'
-import Section07Portfolio from '../profile-settings/sections/Section07Portfolio'
+import ProjectManagementView from './tab1-project-setting/ProjectManagementView'
+import TeamManagementView from './tab2-team-management/TeamManagementView'
+import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
+import { useOngoingProjectForm } from '@/hooks/mypage/useOngoingProjectForm'
+import type { TabType } from '@/types/mypage/ongoindProject'
 
-interface ProjectData {
-	name: string
-	intro: string
-	startDate: string
-	endDate: string
-	recruitmentStatus: '모집 전' | '모집 중' | '모집 완료'
-	thumbnailUrl?: string
-	selectedFields: string[]
-}
+import CTAModal from '../CTAModal'
+import { MOCK_TEAM_MEMBERS_BY_ROLE } from '@/mocks/ongoingProjectData'
+import { useNavigate } from 'react-router'
+import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 
-interface TeamComposition {
-	role: string
-	count: number
-	positions: { name: string; count: number }[]
-}
-
-interface ProjectHistory {
-	id: number
-	title: string
-	description: string
-	period: string
-	imageUrl?: string
-	tags: string[]
-}
-
-export type TabType = '프로젝트 설정' | '팀원 관리'
-export type RoleType = 'PM' | 'Design' | 'Frontend' | 'Backend'
+/*
+	저장 버튼용
+		- saved(저장되었습니다)
+		- unsaved(저장되지 않았습니다)
+	모집 등록 버튼용
+		- recruitConfirm(프로젝트 모집 등록 하겠습니까?)
+		- recruitComplete(등록 완료 되었습니다)
+	모집 완료 버튼용
+		- recruitEndConfirm(프로젝트 모집 종료 하겠습니까?)
+		- recruitEndComplete(모집 종료 되었습니다)
+*/
+type ModalType = 'saved' | 'recruitConfirm' | 'recruitComplete' | 'recruitEndConfirm' | 'recruitEndComplete' | null
 
 const OngoingProject = () => {
+	// 현재 탭
 	const [activeTab, setActiveTab] = useState<TabType>('프로젝트 설정')
-	const [projectData, setProjectData] = useState<ProjectData>({
-		name: '넥트(Nect)',
-		intro: '아이디어 분석으로 프로젝트 등록, 팀원 매칭, 협업 보드까지, 사이드 프로젝트 웹 플랫폼 개발',
-		startDate: '2025. 11. 13',
-		endDate: '2026. 02. 11',
-		recruitmentStatus: '모집 전',
-		selectedFields: ['IT · 웹/모바일 서비스'],
+	// CTA 모달 (저장 버튼, 모집 등록/종료 버튼)
+	const [modalType, setModalType] = useState<ModalType>(null)
+	// 모집 등록 완료 여부
+	const [isRecruitmentPublished, setIsRecruitmentPublished] = useState(false)
+
+	const navigate = useNavigate()
+
+	// 폼 관련
+	const { control, setValue, handleSubmit, isDirty, projectData, getValues, watch } = useOngoingProjectForm()
+
+	// 페이지 이탈 감지 훅
+	const {
+		isBlocked,
+		handleSaveAndLeave,
+		handleCloseModal: handleCancelNavigation,
+	} = useNavigationBlocker({
+		isDirty,
+		onSave: async () => {
+			const success = await handleSave(false)
+			return success
+		},
 	})
 
-	// 직접 입력 섹션들 상태 관리
-	const [recruitmentInfo, setRecruitmentInfo] = useState<string>('') // 모집
-	const [projectGoal, setProjectGoal] = useState<string>('') // 프로젝트 목표
-	const [mainContent, setMainContent] = useState<string>('') // 주요 내용
-	const [serviceUser, setServiceUser] = useState<string>('') // 서비스 유저
+	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
+	const handleSave = async (showSavedModal = true): Promise<boolean> => {
+		let isValid = false
+		await handleSubmit(
+			data => {
+				console.log('유효성 검사 통과:', data)
+				if (showSavedModal) {
+					setModalType('saved')
+				}
+				isValid = true
+			},
+			errors => {
+				// 첫 번째 에러 필드 찾기
+				const firstErrorKey = Object.keys(errors)[0] as keyof ProjectSettingsType
+				if (firstErrorKey) {
+					// 해당 섹션으로 스크롤
+					const errorFieldMap: Record<keyof ProjectSettingsType, string> = {
+						recruitmentStatus: 'project-basic-info',
+						selectedFields: 'section-01',
+						recruitmentInfo: 'section-02',
+						projectGoal: 'section-04',
+						mainContent: 'section-05',
+						serviceUser: 'section-06',
+						portfolioFiles: 'section-07',
+					}
 
-	// 파트 선택 모달 상태
-	const [isPartModalOpen, setIsPartModalOpen] = useState(false)
-	const [selectedPart, setSelectedPart] = useState<RoleType>('PM')
+					const sectionId = errorFieldMap[firstErrorKey]
+					if (sectionId) {
+						const element = document.getElementById(sectionId)
+						if (element) {
+							element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+						}
+					}
+				}
 
-	/* 더미 데이터 모음
-		- teamComposition: 팀 구성 데이터
-		- projectHistories: 팀원 프로젝트 히스토리
-	*/
-	const teamComposition: TeamComposition[] = [
-		{ role: '기획', count: 1, positions: [{ name: 'PM', count: 1 }] },
-		{ role: '디자인', count: 1, positions: [{ name: 'Design', count: 2 }] },
-		{
-			role: '개발',
-			count: 8,
-			positions: [
-				{ name: 'Frontend', count: 4 },
-				{ name: 'Backend', count: 4 },
-			],
-		},
-	]
-	const projectHistories: ProjectHistory[] = [
-		{
-			id: 1,
-			title: '트리플 UX.UI 개선 및 리브랜딩',
-			description:
-				'사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',
-			period: '2025.10~2025.12',
-			tags: ['PM', 'Backend'],
-		},
-		{
-			id: 2,
-			title: '트리플 UX.UI 개선 및 리브랜딩',
-			description:
-				'사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',
-			period: '2025.10~2025.12',
-			tags: ['Design'],
-		},
-	]
+				// 에러 메시지 재귀적으로 추출 (섹션 02가 배열이라서 에러메시지가 제대로 안잡힘..)
+				const extractMessages = (obj: unknown): string[] => {
+					const messages: string[] = []
+					if (!obj || typeof obj !== 'object') return messages
 
-	// 목록으로 가기
-	const handleGoList = () => {
-		alert('프로젝트 목록으로 가기')
+					const errorObj = obj as Record<string, unknown>
+					if (typeof errorObj.message === 'string') {
+						messages.push(errorObj.message)
+					}
+					Object.values(errorObj).forEach(value => {
+						if (value && typeof value === 'object') {
+							messages.push(...extractMessages(value))
+						}
+					})
+					return messages
+				}
+
+				const errorMessages = extractMessages(errors)
+				alert(errorMessages[0] || '필수 항목을 입력해주세요')
+				isValid = false
+			}
+		)()
+		return isValid
 	}
 
-	const handleSave = () => {
-		console.log('Saving project data...')
+	// (버튼 핸들러) 저장 버튼
+	const handleSaveClick = () => {
+		handleSave(true)
 	}
 
+	// (버튼 핸들러) 모집 등록/종료 버튼
 	const handlePublishRecruitment = () => {
-		console.log('Publishing recruitment...')
-	}
-
-	const toggleField = (field: string) => {
-		setProjectData(prev => ({
-			...prev,
-			selectedFields: prev.selectedFields.includes(field)
-				? prev.selectedFields.filter(f => f !== field)
-				: [...prev.selectedFields, field],
-		}))
-	}
-
-	// 탭바 토글 핸들러
-	const handleActivateTab = (tabName: TabType) => {
-		setActiveTab(tabName)
-	}
-
-	// 파트별로 태그 색상 변환하는 함수
-	const getRoleColor = (partName: string): ColorType => {
-		switch (partName) {
-			case 'PM':
-				return 'purple'
-			case 'Design':
-				return 'pink'
-			case 'Backend':
-				return 'blue'
-			case 'Frontend':
-				return 'green'
-			default:
-				return 'purple'
+		if (isRecruitmentPublished) {
+			setModalType('recruitEndConfirm')
+			return
 		}
+		setModalType('recruitConfirm')
 	}
 
-	// 역할 선택 모달에 전달할 역할/컬러 배열
-	const roleValues: { role: RoleType; color: ColorType }[] = [
-		{ role: 'PM', color: getRoleColor('PM') },
-		{ role: 'Design', color: getRoleColor('Design') },
-		{ role: 'Frontend', color: getRoleColor('Frontend') },
-		{ role: 'Backend', color: getRoleColor('Backend') },
-	]
+	// (모달 버튼 핸들러) 모집 종료 확인
+	const handleConfirmRecruitmentEnd = () => {
+		setModalType('recruitEndComplete')
+	}
+
+	// (모달 버튼 핸들러) 모집 등록 확인
+	const handleConfirmRecruitment = () => {
+		setModalType('recruitComplete')
+		setIsRecruitmentPublished(true)
+	}
+
+	// (모달 버튼 핸들러) 매칭 현황가기
+	const handleGoToMatchingStatus = () => {
+		setModalType(null)
+		navigate('/matching')
+	}
+
+	// (모달 버튼 핸들러) 나가기
+	const handleCloseModal = () => {
+		setModalType(null)
+	}
+
+	// (탭바 핸들러)
+	const handleActivateTab = useCallback((tabName: TabType) => {
+		setActiveTab(tabName)
+	}, [])
 
 	return (
 		<div className='ml-7 w-full'>
@@ -156,7 +162,7 @@ const OngoingProject = () => {
 					<Button
 						color='socialLogin'
 						size='sm'
-						onClick={handleGoList}
+						onClick={() => navigate('/')}
 						className='w-33.75 h-11 px-3 py-2.5 hover:bg-neutral-100'
 					>
 						<div className='flex gap-1.5 justify-center items-center'>
@@ -166,20 +172,20 @@ const OngoingProject = () => {
 					</Button>
 				}
 			/>
-
 			{/* 컨텐츠 전체 컨테이너 */}
 			<div className='rounded-12 bg-neutral-000 border border-neutral-200 px-11.5 py-14'>
-				{/* 타이틀 */}
+				{/* 프로젝트명 + 저장/모집등록 버튼 */}
 				<div className='flex items-center justify-between mb-7'>
-					<h2 className='heading-2 font-bold text-neutral-900'>{projectData.name.replace('Nect', 'NECT')}</h2>
+					<h2 className='heading-2 font-bold text-neutral-900'>{projectData.name}</h2>
 
 					{/* 버튼 2개 */}
 					<div className='flex items-center gap-2'>
-						<Button color='mypage1' onClick={handleSave}>
+						<Button color='mypage1' onClick={handleSaveClick} className=''>
 							저장
 						</Button>
-						<Button color='mypage2' onClick={handlePublishRecruitment}>
-							모집 등록
+
+						<Button color='mypage2' onClick={handlePublishRecruitment} className='hover:bg-primary-500-normal'>
+							{isRecruitmentPublished ? '모집 종료' : '모집 등록'}
 						</Button>
 					</div>
 				</div>
@@ -187,67 +193,90 @@ const OngoingProject = () => {
 				{/* 탭바 */}
 				<Tabbar currentTab={activeTab} onClick={handleActivateTab} />
 
-				{/* 전체 컨테이너 */}
-				<div className='flex flex-col gap-16'>
-					{/* 썸네일 + 기본 정보 */}
-					<ProjectBasicInfo projectData={projectData} />
-
-					{/* 섹션 01. 프로젝트 분야 */}
-					<ProjectFieldSection selectedFields={projectData.selectedFields} onToggleField={toggleField} />
-
-					{/* 섹션 02. 모집 정보 및 필수 스택 */}
-					<RecruitmentInfoSection
-						isPartModalOpen={isPartModalOpen}
-						setIsPartModalOpen={setIsPartModalOpen}
-						selectedPart={selectedPart}
-						setSelectedPart={setSelectedPart}
-						roleValues={roleValues}
-						recruitmentInfo={recruitmentInfo}
-						setRecruitmentInfo={setRecruitmentInfo}
+				{/* 탭 01. 프로젝트 설정 */}
+				{activeTab === '프로젝트 설정' && (
+					<ProjectManagementView
+						projectData={projectData}
+						control={control}
+						getValues={getValues}
+						setValue={setValue}
+						watch={watch}
+						activeTab={activeTab}
+						setActiveTab={setActiveTab}
 					/>
+				)}
 
-					{/* 섹션 03. 프로젝트 파트/팀원 구성 */}
-					<TeamCompositionSection
-						teamComposition={teamComposition}
-						getRoleColor={getRoleColor}
-						onEditClick={() => alert('팀원 관리 탭으로 넘어가게끔..')}
-					/>
-
-					{/* 섹션 04. 프로젝트 목표 */}
-					<BulletTextArea
-						value={projectGoal}
-						onChange={setProjectGoal}
-						sectionTitle='프로젝트 목표'
-						placeholder='프로젝트 목표를 간략하게 작성해주세요.'
-					/>
-
-					{/* 섹션 05. 주요 내용 */}
-					<BulletTextArea
-						value={mainContent}
-						onChange={setMainContent}
-						sectionTitle='주요 내용'
-						placeholder={`프로젝트에서 진행할 주요 활동 / 구현 기능 등을 작성해주세요. (5가지 권장)\nex. 알림 및 채팅, 실시간 커뮤니케이션 기능`}
-					/>
-
-					{/* 섹션 06. 서비스 사용자 */}
-					<BulletTextArea
-						value={serviceUser}
-						onChange={setServiceUser}
-						sectionTitle='서비스 사용자'
-						hasStar={false}
-						placeholder={`서비스의 주요 사용자/사용층을 간략하게 적어주세요.\nex. 대학생 - 공모전, 해커톤, 포트폴리오 프로젝트를 진행하고 싶은 학생`}
-					/>
-
-					{/* 섹션 07. 프로젝트 세부 기획 파일 */}
-					<Section07Portfolio />
-
-					{/* 섹션 08. 리더 프로필 */}
-					<LeaderProfileSection />
-
-					{/* 섹션 09. 팀원들의 프로젝트 히스토리 */}
-					<TeamHistorySection projectHistories={projectHistories} getRoleColor={getRoleColor} />
-				</div>
+				{/* 탭 02. 팀원 관리 */}
+				{activeTab === '팀원 관리' && <TeamManagementView teamMembersByRole={MOCK_TEAM_MEMBERS_BY_ROLE} />}
 			</div>
+
+			{/* 페이지 이탈 감지 모달 */}
+			{isBlocked && (
+				<CTAModal
+					message={`저장되지 않았습니다\n저장 후 페이지를 나가시겠습니까?`}
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='저장 후 나가기'
+					onLeftClick={handleCancelNavigation}
+					onRightClick={handleSaveAndLeave}
+				/>
+			)}
+			{/* (저장 버튼) 저장 완료 모달 */}
+			{modalType === 'saved' && (
+				<CTAModal
+					message='저장되었습니다'
+					isMessageHighlight={true}
+					rightButtonMsg='확인'
+					onRightClick={handleCloseModal}
+				/>
+			)}
+			{/* (모집 등록 버튼 1/2) 모집 등록 하겠습니까? */}
+			{modalType === 'recruitConfirm' && (
+				<CTAModal
+					message='프로젝트 {모집 등록} 하겠습니까?'
+					fixedHeight={true}
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='모집 등록'
+					onLeftClick={handleCloseModal}
+					onRightClick={handleConfirmRecruitment}
+				/>
+			)}
+			{/* (모집 등록 버튼 2/2) 등록 완료 되었습니다 */}
+			{modalType === 'recruitComplete' && (
+				<CTAModal
+					message='등록 완료 되었습니다'
+					isMessageHighlight={true}
+					fixedHeight={true}
+					subMessage='매칭은 매칭 현황에서 확인 할 수 있습니다.'
+					leftButtonMsg='매칭 현황가기'
+					rightButtonMsg='확인'
+					onLeftClick={handleGoToMatchingStatus}
+					onRightClick={handleCloseModal}
+				/>
+			)}
+			{/* (모집 종료 버튼 1/2) 모집 종료 하겠습니까? */}
+			{modalType === 'recruitEndConfirm' && (
+				<CTAModal
+					message='프로젝트 {모집 종료} 하겠습니까?'
+					fixedHeight={true}
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='모집 종료'
+					onLeftClick={handleCloseModal}
+					onRightClick={handleConfirmRecruitmentEnd}
+				/>
+			)}
+			{/* (모집 종료 버튼 2/2) 모집 종료 되었습니다 */}
+			{modalType === 'recruitEndComplete' && (
+				<CTAModal
+					message='모집 종료 되었습니다'
+					isMessageHighlight={true}
+					fixedHeight={true}
+					subMessage='매칭 현황에서 팀원 정보를 확인 할 수 있습니다.'
+					leftButtonMsg='매칭 현황가기'
+					rightButtonMsg='확인'
+					onLeftClick={handleGoToMatchingStatus}
+					onRightClick={handleCloseModal}
+				/>
+			)}
 		</div>
 	)
 }
