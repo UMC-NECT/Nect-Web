@@ -12,6 +12,7 @@ const RecommendationMember = () => {
     // 포지션 색상 매핑
     const getPositionStyle = (position: string) => {
         const positionName = position.toLowerCase();
+
         const styles: Record<string, string> = {
             'pm': 'bg-tag-purple',
             'design': 'bg-tag-pink',
@@ -89,6 +90,7 @@ const RecommendationMember = () => {
                                         </span>
                                     </div>
                                 </div>
+
                                 {/* 하단: 텍스트 정보 영역 */}
                                 <div className="px-4 pt-2 flex flex-col">
                                     <div className="flex pb-2 items-center text-lg font-semibold text-neutral-900 gap-1">
@@ -96,6 +98,7 @@ const RecommendationMember = () => {
                                         <BarIcon className="w-[2px] h-3" />
                                         <span className="text-neutral-500 font-medium">{member.position}</span>
                                     </div>
+
                                     <p className="text-sm text-neutral-700 line-clamp-2 mb-3">
                                         {member.description}
                                     </p>
@@ -140,6 +143,7 @@ const RecommendationMember = () => {
                     border-radius: 50%;
                     transition: all 0.3s;
                 }
+
                 .recommendation-member-swiper .swiper-pagination-bullet-active {
                     background: #595959;
                     width: 22px;

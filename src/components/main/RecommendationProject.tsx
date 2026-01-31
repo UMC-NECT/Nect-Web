@@ -11,6 +11,7 @@ const RecommendationProject = () => {
     // 태그 색상 매핑
     const getTagStyle = (tag: string) => {
         const tagName = tag.split(' ')[0].toLowerCase();
+
         const styles: Record<string, string> = {
             'design': 'bg-tag-pink',
             'frontend': 'bg-tag-green',
@@ -85,6 +86,7 @@ const RecommendationProject = () => {
                                         </div>
                                     </div>
                                 </div>
+
                                 {/* 정보 영역 */}
                                 <div className="p-4">
                                     <div className="flex justify-between items-center mb-2">
@@ -139,6 +141,7 @@ const RecommendationProject = () => {
                     border-radius: 50%;
                     transition: all 0.3s;
                 }
+
                 .recommendation-project-swiper .swiper-pagination-bullet-active {
                     background: #595959;
                     width: 22px;
