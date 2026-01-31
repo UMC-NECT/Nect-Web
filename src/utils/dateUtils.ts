@@ -106,3 +106,29 @@ export const getWeekDates = (weekOffset: number): Date[] => {
 
 	return dates
 }
+
+/**
+ * 종료일까지 남은 일수(D-day) 계산
+ * @param endDate - 종료 날짜 (YYYY.MM.DD 형식)
+ * @returns 남은 일수 (음수일 경우 0 반환)
+ * @example
+ * ```typescript
+ * calculateDDay("2025.12.31")
+ * // 오늘이 2025.12.01이면 출력: 30
+ *
+ * calculateDDay("2025.11.01")
+ * // 오늘이 2025.12.01이면 출력: 0 (이미 지난 날짜)
+ * ```
+ */
+export const calculateDDay = (endDate: string): number => {
+	const today = new Date()
+	today.setHours(0, 0, 0, 0) // 시간을 00:00:00으로 설정하여 날짜만 비교
+
+	const end = parseDate(endDate)
+	end.setHours(0, 0, 0, 0)
+
+	const diffTime = end.getTime() - today.getTime()
+	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+	return diffDays > 0 ? diffDays : 0
+}
