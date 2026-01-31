@@ -112,15 +112,20 @@ const IdeaAnalyzePage = () => {
                                     value={formData.projectName}
                                     onChange={(e) => setFormData({...formData, projectName: e.target.value})}
                                 />
+                                <label className='block mt-4 mb-2'>
+                                    <span className='font-semibold text-lg'>한줄 정의</span>
+                                    <span className='text-red-500 ml-1'>*</span>
+                                </label>
+                                <input 
+                                    type='text' 
+                                    placeholder='이 서비스가 무엇인지 한 문장으로 표현해주세요'
+                                    className={`px-4 py-3 border rounded-lg bg-white placeholder:text-gray-400 placeholder:text-[16px] text-[16px] focus:outline-none focus:border-primary-500-normal focus:border-[1.5px] w-[864px] h-[64px] ${
+                                        errors.projectName ? 'border-red-500 border-[1.5px]' : 'border-gray-300'
+                                    }`}
+                                    value={formData.projectName}
+                                    onChange={(e) => setFormData({...formData, projectName: e.target.value})}
+                                />
                             </div>
-
-                            <FormInput
-                                label="한줄 정의"
-                                placeholder="이 서비스가 무엇인지 한 문장으로 표현해주세요"
-                                value={formData.oneLine}
-                                onChange={(value) => setFormData({...formData, oneLine: value})}
-                                error={errors.oneLine}
-                            />
                         </div>
                     </div>
 
