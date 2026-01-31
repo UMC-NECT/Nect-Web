@@ -16,6 +16,7 @@ import MyPage from './pages/MyPage'
 import { ProfileSettings } from './components/mypage/profile-settings/ProfileSettings'
 import IdeaAnalysis from './components/mypage/idea-analysis/IdeaAnalysis'
 import OngoingProject from './components/mypage/ongoing-project/OngoingProject'
+import ProfileAnalysis from './components/mypage/profile-analysis/ProfileAnalysis'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
 					{
 						path: 'idea-analysis',
 						element: <IdeaAnalysis />,
+					},
+					{
+						path: 'profile-analysis',
+						element: <ProfileAnalysis />,
 					},
 					{
 						path: 'ongoing',

@@ -1,8 +1,8 @@
 import { cn } from '@/utils/cn'
 import React from 'react'
 
-type SizeType = 'sm' | 'md' | 'lg'
-type ColorType = 'auth' | 'socialLogin' | 'onboarding' | 'mypage1' | 'mypage2' | 'text'
+type SizeType = 'sm' | 'md' | 'lg' | 'xl'
+type ColorType = 'auth' | 'socialLogin' | 'onboarding' | 'primary' | 'secondary' | 'mypage1' | 'mypage2' | 'text'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	size?: SizeType
