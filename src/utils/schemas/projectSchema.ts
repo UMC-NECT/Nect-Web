@@ -3,7 +3,7 @@ import { RECRUIT_STATUS } from '@/types/mypage/ongoindProject'
 
 // 섹션 02. 모집 정보 및 필수 스택 스키마
 const recruitmentInfoSchema = z.object({
-	role: z.enum(['', 'PM', 'Design', 'Frontend', 'Backend']).refine(val => val !== '', { message: '직무를 선택해주세요' }),
+	role: z.enum(['PM', 'Design', 'Frontend', 'Backend'], { message: '직무를 선택해주세요' }),
 	description: z.string().min(1, '모집 정보 및 필수 스택을 작성해주세요.'),
 })
 

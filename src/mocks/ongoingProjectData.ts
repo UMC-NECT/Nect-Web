@@ -1,4 +1,5 @@
-import type { ProjectHistory, RecruitType, RoleType, TeamMembersByRole } from '@/types/mypage/ongoindProject'
+import type { ProjectHistory, RecruitType, TeamMembersByRole } from '@/types/mypage/ongoindProject'
+import type { RecruitmentInfoType } from '@/utils/schemas/projectSchema'
 
 /**
  * 프로젝트 기본 정보 타입
@@ -37,14 +38,11 @@ export const MOCK_PROJECT_DATA: ProjectData = {
 /**
  * 섹션 02. 모집 정보 및 필수 스택
  */
-export interface RecruitmentInfo {
-	role: RoleType
-	description: string
-}
+export type RecruitmentInfo = RecruitmentInfoType
 
 export const MOCK_RECRUITMENT_INFO: RecruitmentInfo[] = [
 	{
-		role: '',
+		role: 'PM',
 		description: '',
 	},
 ]

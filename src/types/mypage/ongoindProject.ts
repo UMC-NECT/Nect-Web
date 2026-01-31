@@ -5,7 +5,7 @@ export type ColorType = 'purple' | 'pink' | 'green' | 'blue' | 'gray'
 export type TabType = '프로젝트 설정' | '팀원 관리'
 
 // 역할
-export type RoleType = 'PM' | 'Design' | 'Frontend' | 'Backend' | ''
+export type RoleType = 'PM' | 'Design' | 'Frontend' | 'Backend'
 
 // 프로젝트 모집 상태
 export const RECRUIT_STATUS = ['모집 전', '모집 중', '모집 완료'] as const
