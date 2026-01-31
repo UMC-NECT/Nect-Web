@@ -294,9 +294,6 @@ const IdeaAnalysis = () => {
 							</div>
 
 							{/* 버튼 2개 */}
-							<div className='flex items-center justify-center gap-5 w-full'></div>
-
-							{/* 버튼 2개 */}
 							<div className='flex items-center justify-center gap-5 w-full'>
 								<Button
 									color='text'

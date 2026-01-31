@@ -14,7 +14,7 @@ export const MyPageHeader = ({ action }: MyPageHeaderProps) => {
 	const findCurrentMenuItem = () => {
 		for (const section of MYPAGE_MENU) {
 			for (const item of section.items) {
-				if (currentPath === item.path || currentPath.endsWith(item.path.replace('/my-page', ''))) {
+				if (currentPath === item.path) {
 					return {
 						sectionTitle: section.title,
 						itemLabel: item.label,

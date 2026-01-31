@@ -112,9 +112,8 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 										name={`careers.${careerIndex}.projectName`}
 										control={control}
 										render={({ field }) => (
-											<textarea
+											<input
 												{...field}
-												rows={1}
 												className='w-full title-3 font-semibold resize-none focus:outline-none placeholder:text-neutral-300 bg-transparent'
 												placeholder='프로젝트 및 회사 산업군'
 											/>
@@ -203,9 +202,8 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 											name={`careers.${careerIndex}.industry`}
 											control={control}
 											render={({ field }) => (
-												<textarea
+												<input
 													{...field}
-													rows={1}
 													className='min-w-23.25 bg-transparent resize-none focus:outline-none placeholder:text-neutral-300 text-neutral-900 overflow-hidden whitespace-nowrap'
 													placeholder='분야 (산업체)'
 													style={{ width: `${Math.max(93, field.value.length * 16)}px` }}
@@ -223,12 +221,10 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 											name={`careers.${careerIndex}.role`}
 											control={control}
 											render={({ field }) => (
-												<textarea
+												<input
 													{...field}
-													rows={1}
 													className='min-w-18.25 bg-transparent resize-none focus:outline-none placeholder:text-neutral-300 text-neutral-900 overflow-hidden whitespace-nowrap'
 													placeholder='역할 (직무)'
-													style={{ width: `${Math.max(73, field.value.length * 16)}px` }}
 												/>
 											)}
 										/>
@@ -248,9 +244,8 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 										name={`careers.${careerIndex}.achievements.${achievementIndex}.title`}
 										control={control}
 										render={({ field }) => (
-											<textarea
+											<input
 												{...field}
-												rows={1}
 												className='w-full body-1 font-semibold resize-none focus:outline-none placeholder:text-neutral-300 bg-transparent mb-1.5'
 												placeholder='주요 성과'
 											/>
