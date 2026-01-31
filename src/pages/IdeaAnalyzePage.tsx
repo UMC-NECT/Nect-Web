@@ -101,7 +101,7 @@ const IdeaAnalyzePage = () => {
                             <div className='mt-4'>
                                 <FormInput
                                     label="프로젝트 이름"
-                                    placeholder="영작하고 있는 프로젝트 명을 30자 이내로 입력해주세요"
+                                    placeholder="생각하고 있는 프로젝트 명을 30자 이내로 입력해주세요"
                                     value={formData.projectName}
                                     onChange={(value) => setFormData({...formData, projectName: value})}
                                     error={errors.projectName}
