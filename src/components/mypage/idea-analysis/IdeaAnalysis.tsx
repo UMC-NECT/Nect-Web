@@ -231,7 +231,7 @@ const dummyAnalysisData: IdeaAnalysisData = {
 const IdeaAnalysis = () => {
 	const [openWeeks, setOpenWeeks] = useState<number[]>([])
 	const [hasReport, setHasReport] = useState<boolean>(false)
-	const [analysisData, setAnalysisData] = useState<IdeaAnalysisData>(dummyAnalysisData)
+	const [analysisData] = useState<IdeaAnalysisData>(dummyAnalysisData)
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
 	const navigate = useNavigate()
