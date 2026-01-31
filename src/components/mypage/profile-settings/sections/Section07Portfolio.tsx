@@ -56,11 +56,14 @@ const Section07Portfolio = ({ control, setValue, watch }: ISection07Portfolio) =
 
 		const file = e.dataTransfer.files[0]
 		if (file) {
+			const blobUrl = URL.createObjectURL(file)
 			const reader = new FileReader()
 			reader.onloadend = () => {
 				const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
 				setValue(`portfolios.${index}.title`, nameWithoutExt, { shouldDirty: true })
+				setValue(`portfolios.${index}.link`, blobUrl, { shouldDirty: true })
 				setValue(`portfolios.${index}.file`, { name: file.name, url: reader.result as string }, { shouldDirty: true })
+				setValue(`portfolios.${index}.isCompleted`, true, { shouldDirty: true })
 			}
 			reader.readAsDataURL(file)
 		}
@@ -70,11 +73,14 @@ const Section07Portfolio = ({ control, setValue, watch }: ISection07Portfolio) =
 	const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
 		const file = e.target.files?.[0]
 		if (file) {
+			const blobUrl = URL.createObjectURL(file)
 			const reader = new FileReader()
 			reader.onloadend = () => {
 				const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
 				setValue(`portfolios.${index}.title`, nameWithoutExt, { shouldDirty: true })
+				setValue(`portfolios.${index}.link`, blobUrl, { shouldDirty: true })
 				setValue(`portfolios.${index}.file`, { name: file.name, url: reader.result as string }, { shouldDirty: true })
+				setValue(`portfolios.${index}.isCompleted`, true, { shouldDirty: true })
 			}
 			reader.readAsDataURL(file)
 		}
@@ -123,7 +129,10 @@ const Section07Portfolio = ({ control, setValue, watch }: ISection07Portfolio) =
 											currentIsCompleted ? 'text-neutral-500 underline cursor-pointer' : 'text-neutral-900'
 										}`}
 										placeholder='링크 붙여넣기 및 파일 드래그'
-										{...register(`portfolios.${index}.link`)}
+										value={watch(`portfolios.${index}.link`) || ''}
+										onChange={e =>
+											setValue(`portfolios.${index}.link`, e.target.value, { shouldDirty: true })
+										}
 										onKeyDown={e => handleKeyDown(e, index)}
 										onClick={() => {
 											if (currentIsCompleted) {

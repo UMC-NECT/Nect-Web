@@ -29,7 +29,11 @@ export const portfolioFileSchema = z.object({
 export const portfolioSchema = z.object({
 	id: z.number(),
 	title: z.string(),
-	link: z.string(),
+	link: z
+		.string()
+		.refine(val => val === '' || val.startsWith('blob:') || /^https?:\/\/|^\/\//.test(val), {
+			message: '유효한 URL 또는 파일 미리보기 링크만 입력 가능합니다.',
+		}),
 	file: portfolioFileSchema.optional(),
 	isCompleted: z.boolean().optional(),
 })
