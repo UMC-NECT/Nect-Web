@@ -31,77 +31,77 @@ export const ProfileSettings = () => {
 	const skills = watch('skills')
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
-	const handleSave = useCallback(() => {
-		let isValid = false
+	const handleSave = useCallback(
+		() =>
+			new Promise<boolean>(resolve => {
+				handleSubmit(
+					data => {
+						console.log('유효성 검사 통과 및 저장:', data)
+						reset(data)
+						resolve(true)
+					},
+					errors => {
+						console.log('폼 에러:', errors)
 
-		handleSubmit(
-			data => {
-				console.log('유효성 검사 통과 및 저장:', data)
-				reset(data)
-				isValid = true
-			},
-			errors => {
-				console.log('폼 에러:', errors)
+						// 첫 번째 에러 찾기
+						const fieldOrder: (keyof ProfileFormDataType)[] = [
+							'introduction',
+							'coreCompetency',
+							'interestFields',
+							'skills',
+							'careers',
+							'portfolios',
+							'projectHistory',
+						]
 
-				// 첫 번째 에러 찾기
-				const fieldOrder: (keyof ProfileFormDataType)[] = [
-					'introduction',
-					'coreCompetency',
-					'interestFields',
-					'skills',
-					'careers',
-					'portfolios',
-					'projectHistory',
-				]
+						const firstErrorKey = fieldOrder.find(field => errors[field])
 
-				const firstErrorKey = fieldOrder.find(field => errors[field])
+						if (firstErrorKey) {
+							// 해당 에러 섹션으로 스크롤
+							const errorFieldMap: Record<keyof ProfileFormDataType, string> = {
+								introduction: 'section-01',
+								coreCompetency: 'section-02',
+								interestFields: 'section-04',
+								skills: 'section-05',
+								careers: 'section-06',
+								portfolios: 'section-07',
+								projectHistory: 'section-08',
+							}
 
-				if (firstErrorKey) {
-					// 해당 에러 섹션으로 스크롤
-					const errorFieldMap: Record<keyof ProfileFormDataType, string> = {
-						introduction: 'section-01',
-						coreCompetency: 'section-02',
-						interestFields: 'section-04',
-						skills: 'section-05',
-						careers: 'section-06',
-						portfolios: 'section-07',
-						projectHistory: 'section-08',
-					}
-
-					const sectionId = errorFieldMap[firstErrorKey]
-					if (sectionId) {
-						const element = document.getElementById(sectionId)
-						if (element) {
-							element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+							const sectionId = errorFieldMap[firstErrorKey]
+							if (sectionId) {
+								const element = document.getElementById(sectionId)
+								if (element) {
+									element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+								}
+							}
 						}
-					}
-				}
 
-				// 에러 메시지 재귀적으로 추출 (주요 경력/이력이 배열이라서 에러메시지가 제대로 안잡힘..)
-				const extractMessages = (obj: unknown): string[] => {
-					const messages: string[] = []
-					if (!obj || typeof obj !== 'object') return messages
+						// 에러 메시지 재귀적으로 추출 (주요 경력/이력이 배열이라서 에러메시지가 제대로 안잡힘..)
+						const extractMessages = (obj: unknown): string[] => {
+							const messages: string[] = []
+							if (!obj || typeof obj !== 'object') return messages
 
-					const errorObj = obj as Record<string, unknown>
-					if (typeof errorObj.message === 'string') {
-						messages.push(errorObj.message)
-					}
-					Object.values(errorObj).forEach(value => {
-						if (value && typeof value === 'object') {
-							messages.push(...extractMessages(value))
+							const errorObj = obj as Record<string, unknown>
+							if (typeof errorObj.message === 'string') {
+								messages.push(errorObj.message)
+							}
+							Object.values(errorObj).forEach(value => {
+								if (value && typeof value === 'object') {
+									messages.push(...extractMessages(value))
+								}
+							})
+							return messages
 						}
-					})
-					return messages
-				}
 
-				const errorMessages = extractMessages(errors)
-				alert(errorMessages[0] || '필수 항목을 입력해주세요')
-				isValid = false
-			}
-		)()
-
-		return isValid
-	}, [handleSubmit, reset])
+						const errorMessages = extractMessages(errors)
+						alert(errorMessages[0] || '필수 항목을 입력해주세요')
+						resolve(false)
+					}
+				)()
+			}),
+		[handleSubmit, reset]
+	)
 
 	// 페이지 이탈 감지 훅
 	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
