@@ -8,6 +8,7 @@ import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
 import WeekMissionPage from './pages/WeekMissionPage'
 import WorkStatusPage from './pages/WorkStatusPage'
+import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
 				path: '/work-status',
 				element: <WorkStatusPage />,
 			},
+			{
+				path: '/idea-analyze',
+				element: <IdeaAnalyzePage />,
+			}
 		],
 	},
 	{
