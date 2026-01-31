@@ -99,31 +99,20 @@ const IdeaAnalyzePage = () => {
                             <p className='font-bold text-2xl text-primary-600-normal mt-1'>프로젝트 기본 정보</p>
                             
                             <div className='mt-4'>
-                                <label className='block mt-4 mb-2'>
-                                    <span className='font-semibold text-lg'>프로젝트 이름</span>
-                                    <span className='text-red-500 ml-1'>*</span>
-                                </label>
-                                <input 
-                                    type='text' 
-                                    placeholder='영작하고 있는 프로젝트 명을 30자 이내로 입력해주세요'
-                                    className={`px-4 py-3 border rounded-lg bg-white placeholder:text-gray-400 placeholder:text-[16px] text-[16px] focus:outline-none focus:border-primary-500-normal focus:border-[1.5px] w-[864px] h-[64px] ${
-                                        errors.projectName ? 'border-red-500 border-[1.5px]' : 'border-gray-300'
-                                    }`}
+                                <FormInput
+                                    label="프로젝트 이름"
+                                    placeholder="영작하고 있는 프로젝트 명을 30자 이내로 입력해주세요"
                                     value={formData.projectName}
-                                    onChange={(e) => setFormData({...formData, projectName: e.target.value})}
+                                    onChange={(value) => setFormData({...formData, projectName: value})}
+                                    error={errors.projectName}
                                 />
-                                <label className='block mt-4 mb-2'>
-                                    <span className='font-semibold text-lg'>한줄 정의</span>
-                                    <span className='text-red-500 ml-1'>*</span>
-                                </label>
-                                <input 
-                                    type='text' 
-                                    placeholder='이 서비스가 무엇인지 한 문장으로 표현해주세요'
-                                    className={`px-4 py-3 border rounded-lg bg-white placeholder:text-gray-400 placeholder:text-[16px] text-[16px] focus:outline-none focus:border-primary-500-normal focus:border-[1.5px] w-[864px] h-[64px] ${
-                                        errors.projectName ? 'border-red-500 border-[1.5px]' : 'border-gray-300'
-                                    }`}
-                                    value={formData.projectName}
-                                    onChange={(e) => setFormData({...formData, projectName: e.target.value})}
+
+                                <FormInput
+                                    label="한줄 정의"
+                                    placeholder="이 서비스가 무엇인지 한 문장으로 표현해주세요"
+                                    value={formData.oneLine}
+                                    onChange={(value) => setFormData({...formData, oneLine: value})}
+                                    error={errors.oneLine}
                                 />
                             </div>
                         </div>
