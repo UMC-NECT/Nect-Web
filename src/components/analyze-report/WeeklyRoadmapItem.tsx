@@ -11,9 +11,9 @@ interface WeeklyRoadmapItemProps {
 const WeeklyRoadmapItem = ({ title, details, isExpanded, onToggle }: WeeklyRoadmapItemProps) => {
     return (
         <>
-            <div 
+            <button 
                 onClick={onToggle}
-                className={`bg-white p-4 flex items-center justify-between cursor-pointer h-[60px] border-l border-r border-gray-200 ${
+                className={`bg-white p-4 flex items-center justify-between cursor-pointer w-[800px] h-[60px] border-l border-r border-gray-200 ${
                     isExpanded ? 'rounded-t-lg border-t' : 'rounded-lg border-t border-b'
                 }`}
             >
@@ -23,7 +23,7 @@ const WeeklyRoadmapItem = ({ title, details, isExpanded, onToggle }: WeeklyRoadm
                     alt="toggle" 
                     className='w-5 h-5'
                 />
-            </div>
+            </button>
             {isExpanded && (
                 <div className='bg-primary-50-light border-l border-r border-b border-primary-200-light rounded-b-lg p-6'>
                     {details.map((detail, index) => (

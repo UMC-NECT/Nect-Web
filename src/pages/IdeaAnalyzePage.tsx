@@ -73,7 +73,6 @@ const IdeaAnalyzePage = () => {
         const hasErrors = Object.values(newErrors).some(error => error === true)
         
         if (!hasErrors) {
-            console.log('Submit', formData)
             navigate('/analyze-report')
         }
     }

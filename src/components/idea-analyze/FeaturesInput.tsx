@@ -17,7 +17,7 @@ const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
         return input2Ref
     }
 
-    const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
         if (e.key === 'Enter') {
             e.preventDefault()
             
@@ -48,7 +48,7 @@ const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
                             type='text'
                             value={feature}
                             onChange={(e) => onChange(index, e.target.value)}
-                            onKeyUp={(e) => handleKeyUp(e, index)}
+                            onKeyDown={(e) => handleKeyDown(e, index)}
                             placeholder={index === 0 ? '꼭 들어갔으면 하는 기능 위주로 작성해주세요' : ''}
                             className='flex-1 outline-none text-[16px] placeholder:text-gray-400 placeholder:text-[16px] bg-transparent'
                         />
