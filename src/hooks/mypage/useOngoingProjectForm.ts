@@ -9,6 +9,9 @@ import {
 	MOCK_SERVICE_USER,
 	type ProjectData,
 } from '@/mocks/ongoingProjectData'
+import type { PortfolioFileType } from '@/utils/schemas/projectSchema'
+
+const INITIAL_PORTFOLIOS: PortfolioFileType[] = [{ id: 1, title: '테스트제목', link: '테스트링크', isCompleted: false }]
 
 export const useOngoingProjectForm = () => {
 	const methods = useForm<ProjectSettingsType>({
@@ -29,7 +32,7 @@ export const useOngoingProjectForm = () => {
 			// 섹션 06. 서비스 사용자
 			serviceUser: MOCK_SERVICE_USER,
 			// 섹션 07. 포트폴리오 파일
-			portfolioFiles: [],
+			portfolioFiles: INITIAL_PORTFOLIOS,
 		},
 	})
 
