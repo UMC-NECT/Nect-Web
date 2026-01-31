@@ -12,6 +12,8 @@ import SignupPage from './pages/auth/SignupPage'
 import WorkStatusPage from './pages/WorkStatusPage'
 import ProfileAnalysisPage from './pages/ProfileAnalysisPage'
 import AnalysisLayout from './components/layout/AnalysisLayout'
+import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
+import AnalyzeReportPage from './pages/AnalyzeReportPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -51,6 +53,14 @@ const router = createBrowserRouter([
 				path: '/profile-analysis',
 				element: <ProfileAnalysisPage />,
 			},
+			{
+				path: '/idea-analyze',
+				element: <IdeaAnalyzePage />,
+			},
+			{
+				path: '/analyze-report',
+				element: <AnalyzeReportPage />,
+			}
 		],
 	},
 	{
