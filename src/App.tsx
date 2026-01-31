@@ -7,8 +7,11 @@ import OnboardingPage from './pages/auth/OnboardingPage'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
 import WeekMissionPage from './pages/WeekMissionPage'
+import TeamBoardPage from './pages/TeamBoardPage'
+import SignupPage from './pages/auth/SignupPage'
 import WorkStatusPage from './pages/WorkStatusPage'
-import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
+import ProfileAnalysisPage from './pages/ProfileAnalysisPage'
+import AnalysisLayout from './components/layout/AnalysisLayout'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -32,13 +35,22 @@ const router = createBrowserRouter([
 				element: <WeekMissionPage />,
 			},
 			{
-				path: '/work-status',
-				element: <WorkStatusPage />,
+				path: '/team-board',
+				element: <TeamBoardPage />,
 			},
 			{
-				path: '/idea-analyze',
-				element: <IdeaAnalyzePage />,
+				path: '/work-status',
+				element: <WorkStatusPage />,
 			}
+		],
+	},
+	{
+		element: <AnalysisLayout />,
+		children: [
+			{
+				path: '/profile-analysis',
+				element: <ProfileAnalysisPage />,
+			},
 		],
 	},
 	{
@@ -51,6 +63,10 @@ const router = createBrowserRouter([
 			{
 				path: '/onboarding',
 				element: <OnboardingPage />,
+			},
+			{
+				path: '/signup',
+				element: <SignupPage />,
 			},
 		],
 	},
