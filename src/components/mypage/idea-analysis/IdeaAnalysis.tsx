@@ -10,6 +10,7 @@ import Section04Roadmap from './sections/Section04Roadmap'
 import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
 import CTAModal from '../CTAModal'
 import { useNavigate } from 'react-router'
+import { useCTAModal } from '@/stores/useCTAModal'
 
 // 필드별 색상 매핑
 const getFieldColor = (fieldName: string): string => {
@@ -232,9 +233,9 @@ const IdeaAnalysis = () => {
 	const [openWeeks, setOpenWeeks] = useState<number[]>([])
 	const [hasReport, setHasReport] = useState<boolean>(false)
 	const [analysisData] = useState<IdeaAnalysisData>(dummyAnalysisData)
-	const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
 	const navigate = useNavigate()
+	const { modalType, open, close } = useCTAModal()
 
 	// 주차별 로드맵 토글용
 	const toggleWeek = (week: number) => {
@@ -246,9 +247,14 @@ const IdeaAnalysis = () => {
 		setHasReport(true)
 	}
 
-	// 이동하기 버튼
-	const handleConfirm = () => {
-		setIsModalOpen(false)
+	// 삭제 확인
+	const handleDelete = () => {
+		close()
+	}
+
+	// 프로젝트 등록 후 이동
+	const handleNavigateToProject = () => {
+		close()
 		navigate('/mypage/ongoing')
 	}
 
@@ -259,7 +265,7 @@ const IdeaAnalysis = () => {
 				<EmptyIdeaAnalysis setHasReport={handleReport} />
 			) : (
 				// 리포트 있는 경우
-				<>
+				<div className='flex flex-col items-center'>
 					{/* 브레드크럼 + 타이틀 */}
 					<MyPageHeader
 						action={
@@ -305,18 +311,35 @@ const IdeaAnalysis = () => {
 								<Button
 									color='onboarding'
 									className='px-5 py-4 w-80 h-15 title-3 font-semibold bg-primary-400-normal'
-									onClick={() => setIsModalOpen(true)}
+									onClick={() => open('projectRegister')}
 								>
 									프로젝트 만들기
 								</Button>
 							</div>
 						</div>
 					</div>
-				</>
+
+					{/* 삭제하기 버튼 */}
+					<Button color='text' className='underline mt-6' onClick={() => open('delete')}>
+						삭제하기
+					</Button>
+				</div>
+			)}
+
+			{/* 프로젝트 삭제 모달 */}
+			{modalType === 'delete' && (
+				<CTAModal
+					message='{삭제} 하시겠습니까?'
+					isMessageHighlight={false}
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='삭제'
+					onLeftClick={close}
+					onRightClick={handleDelete}
+				/>
 			)}
 
 			{/* 프로젝트 등록 확인 모달 */}
-			{isModalOpen && (
+			{modalType === 'projectRegister' && (
 				<CTAModal
 					message='프로젝트 등록이 완료 됐습니다!'
 					subMessage='해당 프로젝트 페이지로 이동하시겠습니까?'
@@ -324,8 +347,8 @@ const IdeaAnalysis = () => {
 					fixedHeight={true}
 					leftButtonMsg='돌아가기'
 					rightButtonMsg='이동하기'
-					onLeftClick={() => setIsModalOpen(false)}
-					onRightClick={handleConfirm}
+					onLeftClick={close}
+					onRightClick={handleNavigateToProject}
 				/>
 			)}
 		</div>
