@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 interface BreadcrumbItem {
     label: string
     path?: string
@@ -13,12 +15,12 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
             {items.map((item, index) => (
                 <span key={index}>
                     {item.path ? (
-                        <a 
-                            href={item.path}
+                        <Link 
+                            to={item.path}
                             className="hover:text-neutral-600 hover:underline cursor-pointer transition-colors"
                         >
                             {item.label}
-                        </a>
+                        </Link>
                     ) : (
                         <span>{item.label}</span>
                     )}
