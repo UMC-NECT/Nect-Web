@@ -50,7 +50,7 @@ const ProfileAnalysis = () => {
 						/>
 
 						{/* 콘텐츠 섹션 */}
-						<div className='bg-semantic-gray w-full rounded-12 mt-16 pt-20 pb-24 px-12 shadow-inner-neutral-1'>
+						<div className='bg-semantic-gray w-full rounded-12 mt-16 pt-20 pb-14 px-12 shadow-inner-neutral-1 border border-neutral-200'>
 							<div className='flex flex-col items-center px-60 mb-28'>
 								<div className='flex flex-col items-center gap-4 mb-24'>
 									{/* 상단 타이틀 */}
@@ -128,17 +128,14 @@ const ProfileAnalysis = () => {
 
 							{/* 버튼 2개 */}
 							<div className='flex gap-5 min-w-165 justify-center mx-auto mt-28'>
-								<Button color='secondary' size='xl' fullWidth onClick={() => alert('다시하기')}>
+								<Button color='secondary' size='xl' fullWidth className='w-80' onClick={() => alert('다시하기')}>
 									다시하기
-								</Button>
-								<Button color='primary' size='xl' fullWidth onClick={() => alert('추천 프로젝트 보기')}>
-									추천 프로젝트 보기
 								</Button>
 							</div>
 						</div>
 
-						{/* 삭제하기 */}
-						<Button color='text' className='underline' onClick={() => setIsModalOpen(true)}>
+						{/* 삭제하기 버튼 */}
+						<Button color='text' className='underline mt-1' onClick={() => setIsModalOpen(true)}>
 							삭제하기
 						</Button>
 					</div>
