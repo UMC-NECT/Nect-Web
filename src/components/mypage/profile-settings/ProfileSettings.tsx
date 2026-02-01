@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router'
 
 export const ProfileSettings = () => {
 	const [isOpenRecruit, setIsOpenRecruit] = useState(false) // 공개 매칭 여부
+	const [hasProfileKeyword] = useState(false) // 프로필 분석키워드 리포트 보유여부
 
 	const methods = useProfileSettingsForm()
 	const {
@@ -212,6 +213,33 @@ export const ProfileSettings = () => {
 		}
 	}
 
+	// (버튼 핸들러) 프로필 분석 키워드 불러오기 버튼
+	const handleProfileKeywordRefresh = () => {
+		openCTAModal({
+			message: '불러올 프로필 분석이 없습니다.\n저장 후 {프로필 분석}하러 가시겠습니까?',
+			fixedHeight: true,
+			leftButton: { text: '돌아가기', onClick: closeCTAModal },
+			rightButton: {
+				text: '분석하러 가기',
+				onClick: async () => {
+					// 수정된 내용이 없으면 저장 스킵
+					if (!isDirty) {
+						closeCTAModal()
+						navigate('/profile-analysis')
+						return
+					}
+
+					const success = await handleSave()
+					closeCTAModal()
+
+					if (success) {
+						navigate('/profile-analysis')
+					}
+				},
+			},
+		})
+	}
+
 	// 페이지 이탈 감지 훅
 	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
 		isDirty,
@@ -244,7 +272,7 @@ export const ProfileSettings = () => {
 						</div>
 
 						{/* 섹션 03. 프로필 분석 키워드 (읽기전용) */}
-						<Section03ProfileKeyword />
+						<Section03ProfileKeyword hasProfileKeyword={hasProfileKeyword} onRefresh={handleProfileKeywordRefresh} />
 
 						{/* 섹션 04. 관심분야 */}
 						<div id='section-04'>
