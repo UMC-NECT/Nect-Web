@@ -171,13 +171,34 @@ const OngoingProject = () => {
 		}
 	}
 
+	// (버튼 핸들러) 삭제 버튼
+	const handleDelete = () => {
+		openCTAModal({
+			message: '{삭제} 하시겠습니까?',
+			fixedHeight: false,
+			leftButton: { text: '돌아가기', onClick: closeCTAModal },
+			rightButton: {
+				text: '삭제',
+				onClick: () => {
+					// 삭제 완료 모달
+					openCTAModal({
+						message: '삭제 되었습니다',
+						isMessageHighlight: true,
+						fixedHeight: false,
+						rightButton: { text: '확인', onClick: closeCTAModal },
+					})
+				},
+			},
+		})
+	}
+
 	// (탭바 핸들러)
 	const handleActivateTab = useCallback((tabName: TabType) => {
 		setActiveTab(tabName)
 	}, [])
 
 	return (
-		<div className='ml-7 w-full'>
+		<div className='ml-7 w-full flex flex-col items-center'>
 			{/* 브레드크럼 + 타이틀 */}
 			<MyPageHeader
 				action={
@@ -194,6 +215,7 @@ const OngoingProject = () => {
 					</Button>
 				}
 			/>
+
 			{/* 컨텐츠 전체 컨테이너 */}
 			<div className='rounded-12 bg-neutral-000 border border-neutral-200 px-11.5 py-14'>
 				{/* 프로젝트명 + 저장/모집등록 버튼 */}
@@ -231,6 +253,11 @@ const OngoingProject = () => {
 				{/* 탭 02. 팀원 관리 */}
 				{activeTab === '팀원 관리' && <TeamManagementView teamMembersByRole={MOCK_TEAM_MEMBERS_BY_ROLE} />}
 			</div>
+
+			{/* 삭제하기 버튼 */}
+			<Button color='text' className='underline mt-6' onClick={handleDelete}>
+				삭제하기
+			</Button>
 
 			{/* 페이지 이탈 감지 모달 */}
 			{isBlocked && (
