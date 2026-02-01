@@ -29,7 +29,7 @@ const OngoingProject = () => {
 	const { control, setValue, handleSubmit, isDirty, projectData, getValues, watch, reset } = useOngoingProjectForm()
 
 	// CTA 모달
-	const { open: openCTAModal, close: closeCTAModal } = useCTAModal()
+	const { modalType, open, close } = useCTAModal()
 
 	// 파트 설정 모달
 	const {
@@ -52,12 +52,6 @@ const OngoingProject = () => {
 			document.body.style.overflow = ''
 		}
 	}, [isPartSettingsOpen])
-
-	// 파트 설정 저장 핸들러
-	const handlePartSettingsSave = (updatedParts: typeof partSettingsTeamMembers) => {
-		console.log('저장된 파트:', updatedParts)
-		closePartSettings()
-	}
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
 	const handleSave = useCallback(async (): Promise<boolean> => {
@@ -131,95 +125,51 @@ const OngoingProject = () => {
 	// (버튼 핸들러) 저장 버튼
 	const handleSaveWithModal = useCallback(async () => {
 		const success = await handleSave()
-
 		if (success) {
-			openCTAModal({
-				message: '저장되었습니다',
-				isMessageHighlight: true,
-				rightButton: { text: '확인', onClick: closeCTAModal },
-			})
+			open('save')
 		}
-	}, [handleSave, openCTAModal, closeCTAModal])
+	}, [handleSave, open])
 
 	// (버튼 핸들러) 모집 등록/종료 버튼
 	const handlePublishRecruitment = () => {
 		if (isRecruitmentPublished) {
-			// 모집 종료 확인 모달
-			openCTAModal({
-				message: '프로젝트 {모집 종료} 하겠습니까?',
-				fixedHeight: true,
-				leftButton: { text: '돌아가기', onClick: closeCTAModal },
-				rightButton: {
-					text: '모집 종료',
-					onClick: () => {
-						// 모집 종료 완료 모달
-						openCTAModal({
-							message: '모집 종료 되었습니다',
-							isMessageHighlight: true,
-							fixedHeight: true,
-							subMessage: '매칭 현황에서 팀원 정보를 확인 할 수 있습니다.',
-							leftButton: {
-								text: '매칭 현황가기',
-								onClick: () => {
-									closeCTAModal()
-									navigate('/matching')
-								},
-							},
-							rightButton: { text: '확인', onClick: closeCTAModal },
-						})
-					},
-				},
-			})
+			open('recruitmentEnd')
 		} else {
-			// 모집 등록 확인 모달
-			openCTAModal({
-				message: '프로젝트 {모집 등록} 하겠습니까?',
-				fixedHeight: true,
-				leftButton: { text: '돌아가기', onClick: closeCTAModal },
-				rightButton: {
-					text: '모집 등록',
-					onClick: () => {
-						setIsRecruitmentPublished(true)
-						// 등록 완료 모달
-						openCTAModal({
-							message: '등록 완료 되었습니다',
-							isMessageHighlight: true,
-							fixedHeight: true,
-							subMessage: '매칭은 매칭 현황에서 확인 할 수 있습니다.',
-							leftButton: {
-								text: '매칭 현황가기',
-								onClick: () => {
-									closeCTAModal()
-									navigate('/matching')
-								},
-							},
-							rightButton: { text: '확인', onClick: closeCTAModal },
-						})
-					},
-				},
-			})
+			open('recruitmentRegister')
 		}
 	}
 
 	// (버튼 핸들러) 삭제 버튼
-	const handleDelete = () => {
-		openCTAModal({
-			message: '{삭제} 하시겠습니까?',
-			fixedHeight: false,
-			leftButton: { text: '돌아가기', onClick: closeCTAModal },
-			rightButton: {
-				text: '삭제',
-				onClick: () => {
-					// 삭제 완료 모달
-					openCTAModal({
-						message: '삭제 되었습니다',
-						isMessageHighlight: true,
-						fixedHeight: false,
-						rightButton: { text: '확인', onClick: closeCTAModal },
-					})
-				},
-			},
-		})
+	const handleDeleteClick = () => {
+		open('delete')
+	}
+
+	// (모달 핸들러) 파트 설정 저장
+	const handlePartSettingsSave = (updatedParts: typeof partSettingsTeamMembers) => {
+		console.log('저장된 파트:', updatedParts)
+		closePartSettings()
+	}
+
+	// (모달 핸들러) 모집 종료 확인
+	const handleRecruitmentEnd = () => {
+		open('recruitmentEndComplete')
+	}
+
+	// (모달 핸들러) 모집 등록 확인
+	const handleRecruitmentRegister = () => {
+		setIsRecruitmentPublished(true)
+		open('recruitmentRegisterComplete')
+	}
+
+	// (모달 핸들러) 매칭 현황으로 이동
+	const handleGoToMatching = () => {
+		close()
+		navigate('/matching')
+	}
+
+	// (모달 핸들러) 삭제 확인
+	const handleDeleteConfirm = () => {
+		open('deleteComplete')
 	}
 
 	// (탭바 핸들러)
@@ -283,12 +233,85 @@ const OngoingProject = () => {
 			</div>
 
 			{/* 삭제하기 버튼 */}
-			<Button color='text' className='underline mt-6' onClick={handleDelete}>
+			<Button color='text' className='underline mt-6' onClick={handleDeleteClick}>
 				삭제하기
 			</Button>
 
+			{/* 저장 완료 모달 */}
+			{modalType === 'save' && (
+				<CTAModal message='저장되었습니다' isMessageHighlight={true} rightButtonMsg='확인' onRightClick={close} />
+			)}
+
+			{/* 삭제 확인 모달 */}
+			{modalType === 'delete' && (
+				<CTAModal
+					message='{삭제} 하시겠습니까?'
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='삭제'
+					onLeftClick={close}
+					onRightClick={handleDeleteConfirm}
+				/>
+			)}
+
+			{/* 삭제 완료 모달 */}
+			{modalType === 'deleteComplete' && (
+				<CTAModal message='삭제 되었습니다' isMessageHighlight={true} rightButtonMsg='확인' onRightClick={close} />
+			)}
+
+			{/* 모집 종료 확인 모달 */}
+			{modalType === 'recruitmentEnd' && (
+				<CTAModal
+					message='프로젝트 {모집 종료} 하겠습니까?'
+					fixedHeight={true}
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='모집 종료'
+					onLeftClick={close}
+					onRightClick={handleRecruitmentEnd}
+				/>
+			)}
+
+			{/* 모집 종료 완료 모달 */}
+			{modalType === 'recruitmentEndComplete' && (
+				<CTAModal
+					message='모집 종료 되었습니다'
+					isMessageHighlight={true}
+					fixedHeight={true}
+					subMessage='매칭 현황에서 팀원 정보를 확인 할 수 있습니다.'
+					leftButtonMsg='매칭 현황가기'
+					rightButtonMsg='확인'
+					onLeftClick={handleGoToMatching}
+					onRightClick={close}
+				/>
+			)}
+
+			{/* 모집 등록 확인 모달 */}
+			{modalType === 'recruitmentRegister' && (
+				<CTAModal
+					message='프로젝트 {모집 등록} 하겠습니까?'
+					fixedHeight={true}
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='모집 등록'
+					onLeftClick={close}
+					onRightClick={handleRecruitmentRegister}
+				/>
+			)}
+
+			{/* 모집 등록 완료 모달 */}
+			{modalType === 'recruitmentRegisterComplete' && (
+				<CTAModal
+					message='등록 완료 되었습니다'
+					isMessageHighlight={true}
+					fixedHeight={true}
+					subMessage='매칭은 매칭 현황에서 확인 할 수 있습니다.'
+					leftButtonMsg='매칭 현황가기'
+					rightButtonMsg='확인'
+					onLeftClick={handleGoToMatching}
+					onRightClick={close}
+				/>
+			)}
+
 			{/* 페이지 이탈 감지 모달 */}
-			{isBlocked && (
+			{(isBlocked || modalType === 'unsavedChanges') && (
 				<CTAModal
 					message={`저장되지 않았습니다\n저장 후 페이지를 나가시겠습니까?`}
 					leftButtonMsg='돌아가기'

@@ -9,10 +9,10 @@ import RoleRecommend from '@/components/profile-analysis/RoleRecommend'
 import GrowGuideSection from '@/components/profile-analysis/GrowGuideSection'
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
+import { useCTAModal } from '@/stores/useCTAModal'
 
 const ProfileAnalysis = () => {
 	const [hasReport, setHasReport] = useState<boolean>(false)
-	const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
 	// 프로필 분석 있는 경우
 	const { type, role, tags, radarData } = useCollaboStore()
@@ -20,10 +20,12 @@ const ProfileAnalysis = () => {
 	const { roleRecommend } = useRoleRecommendStore()
 	const { growGuide } = useGrowGuideStore()
 
-	// 이동하기 버튼
-	const handleConfirm = () => {
+	const { modalType, open, close } = useCTAModal()
+
+	// (모달 핸들러) 삭제 확인
+	const handleDelete = () => {
 		alert('삭제되었습니다')
-		setIsModalOpen(false)
+		close()
 	}
 
 	return (
@@ -135,22 +137,22 @@ const ProfileAnalysis = () => {
 						</div>
 
 						{/* 삭제하기 버튼 */}
-						<Button color='text' className='underline mt-1' onClick={() => setIsModalOpen(true)}>
+						<Button color='text' className='underline mt-1' onClick={() => open('delete')}>
 							삭제하기
 						</Button>
 					</div>
 				</>
 			)}
 
-			{/* 프로젝트 삭제 모달 */}
-			{isModalOpen && (
+			{/* 삭제 모달 */}
+			{modalType === 'delete' && (
 				<CTAModal
 					message='{삭제} 하시겠습니까?'
 					isMessageHighlight={false}
 					leftButtonMsg='돌아가기'
 					rightButtonMsg='삭제'
-					onLeftClick={() => setIsModalOpen(false)}
-					onRightClick={handleConfirm}
+					onLeftClick={close}
+					onRightClick={handleDelete}
 				/>
 			)}
 		</div>

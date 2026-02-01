@@ -38,7 +38,7 @@ export const ProfileSettings = () => {
 	const navigate = useNavigate()
 
 	// CTA 모달
-	const { open: openCTAModal, close: closeCTAModal } = useCTAModal()
+	const { modalType, open, close } = useCTAModal()
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
 	const handleSave = useCallback(
@@ -117,68 +117,22 @@ export const ProfileSettings = () => {
 	const handleSaveWithModal = useCallback(async () => {
 		const success = await handleSave()
 		if (success) {
-			openCTAModal({
-				message: '저장되었습니다',
-				isMessageHighlight: true,
-				rightButton: { text: '확인', onClick: closeCTAModal },
-			})
+			open('save')
 		}
-	}, [handleSave, openCTAModal, closeCTAModal])
+	}, [handleSave, open])
 
 	// (버튼 핸들러) 모집 등록/종료 버튼
 	const handlePublishRecruitment = () => {
 		if (!isOpenRecruit) {
-			// 공개 매칭 확인 모달
-			openCTAModal({
-				message: '{공개 매칭} 등록 하겠습니까?',
-				fixedHeight: true,
-				leftButton: { text: '돌아가기', onClick: closeCTAModal },
-				rightButton: {
-					text: '공개 매칭 등록',
-					onClick: () => {
-						setIsOpenRecruit(true) // 비공개 -> 공개
-
-						// 공개 매칭 완료 모달
-						openCTAModal({
-							message: '공개 매칭 등록 되었습니다',
-							isMessageHighlight: true,
-							fixedHeight: true,
-							subMessage: '매칭은 매칭 현황에서 확인 할 수 있습니다.',
-							leftButton: {
-								text: '매칭 현황가기',
-								onClick: () => {
-									closeCTAModal()
-									navigate('/') // 임시로 홈으로 보내둠
-								},
-							},
-							rightButton: { text: '확인', onClick: closeCTAModal },
-						})
-					},
-				},
-			})
+			open('openMatchingRegister')
 		} else {
-			// 비공개 매칭 확인 모달
-			openCTAModal({
-				message: '{비공개 전환}하시겠습니까?',
-				fixedHeight: true,
-				subMessage: '이제 공개 매칭에서 프로필이 내려갑니다.',
-				leftButton: { text: '돌아가기', onClick: closeCTAModal },
-				rightButton: {
-					text: '비공개 전환',
-					onClick: () => {
-						setIsOpenRecruit(false) // 공개 -> 비공개
-
-						// 비공개 매칭 전환완료 모달
-						openCTAModal({
-							message: '비공개로 전환 되었습니다',
-							isMessageHighlight: true,
-							fixedHeight: true,
-							rightButton: { text: '확인', onClick: closeCTAModal },
-						})
-					},
-				},
-			})
+			open('privateMatching')
 		}
+	}
+
+	// (버튼 핸들러) 프로필 분석 키워드 불러오기 버튼
+	const handleProfileKeywordRefresh = () => {
+		open('profileKeywordRefresh')
 	}
 
 	// (버튼 핸들러) 이력/경력 불러오기 버튼
@@ -187,57 +141,44 @@ export const ProfileSettings = () => {
 		const canRefresh = false
 
 		if (canRefresh) {
-			// 불러오기 성공 모달
-			openCTAModal({
-				message: '경력/이력 내역을 갱신했습니다.',
-				fixedHeight: false,
-				rightButton: {
-					text: '확인',
-					onClick: () => {
-						closeCTAModal()
-					},
-				},
-			})
+			open('careerRefreshSuccess')
 		} else {
-			// 불러오기 실패 모달
-			openCTAModal({
-				message: '불러올 주요 경력/이력이 없습니다.',
-				fixedHeight: false,
-				rightButton: {
-					text: '확인',
-					onClick: () => {
-						closeCTAModal()
-					},
-				},
-			})
+			open('careerRefreshFail')
 		}
 	}
 
-	// (버튼 핸들러) 프로필 분석 키워드 불러오기 버튼
-	const handleProfileKeywordRefresh = () => {
-		openCTAModal({
-			message: '불러올 프로필 분석이 없습니다.\n저장 후 {프로필 분석}하러 가시겠습니까?',
-			fixedHeight: true,
-			leftButton: { text: '돌아가기', onClick: closeCTAModal },
-			rightButton: {
-				text: '분석하러 가기',
-				onClick: async () => {
-					// 수정된 내용이 없으면 저장 스킵
-					if (!isDirty) {
-						closeCTAModal()
-						navigate('/profile-analysis')
-						return
-					}
+	// (모달 핸들러) 공개 매칭 확인
+	const handleOpenMatchingRegister = () => {
+		setIsOpenRecruit(true)
+		open('openMatchingRegisterComplete')
+	}
 
-					const success = await handleSave()
-					closeCTAModal()
+	// (모달 핸들러) 비공개 전환 확인
+	const handlePrivateMatching = () => {
+		setIsOpenRecruit(false)
+		open('privateMatchingComplete')
+	}
 
-					if (success) {
-						navigate('/profile-analysis')
-					}
-				},
-			},
-		})
+	// (모달 핸들러) 매칭 현황으로 이동
+	const handleGoToMatching = () => {
+		close()
+		navigate('/')
+	}
+
+	// (모달 핸들러) 프로필 분석으로 이동
+	const handleGoToProfileAnalysis = async () => {
+		if (!isDirty) {
+			close()
+			navigate('/profile-analysis')
+			return
+		}
+
+		const success = await handleSave()
+		close()
+
+		if (success) {
+			navigate('/profile-analysis')
+		}
 	}
 
 	// 페이지 이탈 감지 훅
@@ -305,6 +246,83 @@ export const ProfileSettings = () => {
 						</div>
 					</div>
 				</div>
+
+				{/* 저장 완료 모달 */}
+				{modalType === 'save' && (
+					<CTAModal message='저장되었습니다' isMessageHighlight={true} rightButtonMsg='확인' onRightClick={close} />
+				)}
+
+				{/* 공개 매칭 확인 모달 */}
+				{modalType === 'openMatchingRegister' && (
+					<CTAModal
+						message='{공개 매칭} 등록 하겠습니까?'
+						fixedHeight={true}
+						leftButtonMsg='돌아가기'
+						rightButtonMsg='공개 매칭 등록'
+						onLeftClick={close}
+						onRightClick={handleOpenMatchingRegister}
+					/>
+				)}
+
+				{/* 공개 매칭 완료 모달 */}
+				{modalType === 'openMatchingRegisterComplete' && (
+					<CTAModal
+						message='공개 매칭 등록 되었습니다'
+						isMessageHighlight={true}
+						fixedHeight={true}
+						subMessage='매칭은 매칭 현황에서 확인 할 수 있습니다.'
+						leftButtonMsg='매칭 현황가기'
+						rightButtonMsg='확인'
+						onLeftClick={handleGoToMatching}
+						onRightClick={close}
+					/>
+				)}
+
+				{/* 비공개 전환 확인 모달 */}
+				{modalType === 'privateMatching' && (
+					<CTAModal
+						message='{비공개 전환}하시겠습니까?'
+						fixedHeight={true}
+						subMessage='이제 공개 매칭에서 프로필이 내려갑니다.'
+						leftButtonMsg='돌아가기'
+						rightButtonMsg='비공개 전환'
+						onLeftClick={close}
+						onRightClick={handlePrivateMatching}
+					/>
+				)}
+
+				{/* 비공개 전환 완료 모달 */}
+				{modalType === 'privateMatchingComplete' && (
+					<CTAModal
+						message='비공개로 전환 되었습니다'
+						isMessageHighlight={true}
+						fixedHeight={true}
+						rightButtonMsg='확인'
+						onRightClick={close}
+					/>
+				)}
+
+				{/* 경력/이력 갱신 성공 모달 */}
+				{modalType === 'careerRefreshSuccess' && (
+					<CTAModal message='경력/이력 내역을 갱신했습니다.' rightButtonMsg='확인' onRightClick={close} />
+				)}
+
+				{/* 경력/이력 갱신 실패 모달 */}
+				{modalType === 'careerRefreshFail' && (
+					<CTAModal message='불러올 주요 경력/이력이 없습니다.' rightButtonMsg='확인' onRightClick={close} />
+				)}
+
+				{/* 프로필 분석 키워드 불러오기 모달 */}
+				{modalType === 'profileKeywordRefresh' && (
+					<CTAModal
+						message={`불러올 프로필 분석이 없습니다.\n저장 후 {프로필 분석}하러 가시겠습니까?`}
+						fixedHeight={true}
+						leftButtonMsg='돌아가기'
+						rightButtonMsg='분석하러 가기'
+						onLeftClick={close}
+						onRightClick={handleGoToProfileAnalysis}
+					/>
+				)}
 
 				{/* 페이지 이탈 확인 모달 */}
 				{isBlocked && (

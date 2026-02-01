@@ -247,12 +247,12 @@ const IdeaAnalysis = () => {
 		setHasReport(true)
 	}
 
-	// 삭제 확인
+	// (모달 핸들러) 삭제 확인
 	const handleDelete = () => {
-		close()
+		open('deleteComplete')
 	}
 
-	// 프로젝트 등록 후 이동
+	// (모달 핸들러) 프로젝트 등록 후 이동
 	const handleNavigateToProject = () => {
 		close()
 		navigate('/mypage/ongoing')
@@ -326,7 +326,7 @@ const IdeaAnalysis = () => {
 				</div>
 			)}
 
-			{/* 프로젝트 삭제 모달 */}
+			{/* 삭제 모달 */}
 			{modalType === 'delete' && (
 				<CTAModal
 					message='{삭제} 하시겠습니까?'
@@ -336,6 +336,11 @@ const IdeaAnalysis = () => {
 					onLeftClick={close}
 					onRightClick={handleDelete}
 				/>
+			)}
+
+			{/* 삭제 완료 모달 */}
+			{modalType === 'deleteComplete' && (
+				<CTAModal message='삭제 되었습니다' isMessageHighlight={true} rightButtonMsg='확인' onRightClick={close} />
 			)}
 
 			{/* 프로젝트 등록 확인 모달 */}
