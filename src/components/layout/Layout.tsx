@@ -4,10 +4,13 @@ import { Sidebar } from './sidebar/Sidebar'
 import { useWorkspace } from '@/stores/useWorkspace'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import MissionModal from '@/components/mission-modal/MissionModal'
+import CTAModal from '@/components/mypage/CTAModal'
+import { useCTAModal } from '@/stores/useCTAModal'
 
 export const Layout = () => {
 	const { isWorkspace } = useWorkspace()
 	const { isMissionModalOpen, closeMissionModal } = useMissionModalStore()
+	const { isOpen: isCTAModalOpen, config: ctaModalConfig } = useCTAModal()
 	const location = useLocation()
 	const isMyPage = location.pathname.startsWith('/mypage')
 
@@ -36,6 +39,20 @@ export const Layout = () => {
 						<MissionModal />
 					</div>
 				</div>
+			)}
+
+			{/* CTA 모달 */}
+			{isCTAModalOpen && ctaModalConfig && (
+				<CTAModal
+					message={ctaModalConfig.message}
+					subMessage={ctaModalConfig.subMessage}
+					isMessageHighlight={ctaModalConfig.isMessageHighlight}
+					fixedHeight={ctaModalConfig.fixedHeight}
+					leftButtonMsg={ctaModalConfig.leftButton?.text}
+					rightButtonMsg={ctaModalConfig.rightButton?.text}
+					onLeftClick={ctaModalConfig.leftButton?.onClick}
+					onRightClick={ctaModalConfig.rightButton?.onClick}
+				/>
 			)}
 		</>
 	)

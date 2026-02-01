@@ -3,6 +3,7 @@ import { FormProvider } from 'react-hook-form'
 
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
 import { useProfileSettingsForm } from '@/hooks/mypage/useProfileSettingsForm'
+import { useCTAModal } from '@/stores/useCTAModal'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 import CTAModal from '../CTAModal'
@@ -29,6 +30,9 @@ export const ProfileSettings = () => {
 
 	// 폼 데이터
 	const skills = watch('skills')
+
+	// CTA 모달
+	const { open: openCTAModal, close: closeCTAModal } = useCTAModal()
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
 	const handleSave = useCallback(
@@ -103,6 +107,18 @@ export const ProfileSettings = () => {
 		[handleSubmit, reset]
 	)
 
+	// 저장 버튼 클릭 핸들러 (저장 성공 시 모달 표시)
+	const handleSaveWithModal = useCallback(async () => {
+		const success = await handleSave()
+		if (success) {
+			openCTAModal({
+				message: '저장되었습니다',
+				isMessageHighlight: true,
+				rightButton: { text: '확인', onClick: closeCTAModal },
+			})
+		}
+	}, [handleSave, openCTAModal, closeCTAModal])
+
 	// 페이지 이탈 감지 훅
 	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
 		isDirty,
@@ -117,7 +133,7 @@ export const ProfileSettings = () => {
 				{/* 전체 컨테이너 */}
 				<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>
 					{/* 프사 + 기본 정보 */}
-					<ProfileBasicInfo onSave={handleSave} />
+					<ProfileBasicInfo onSave={handleSaveWithModal} />
 
 					<div className='flex flex-col gap-16'>
 						{/* 섹션 01. 자기소개 */}

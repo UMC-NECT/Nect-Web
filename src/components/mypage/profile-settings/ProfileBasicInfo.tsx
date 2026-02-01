@@ -34,7 +34,7 @@ const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
 				{/* 좌측 - 기본 정보 */}
 				<div className='flex items-center gap-4'>
 					<input type='file' ref={fileInputRef} onChange={handleFileChange} className='hidden' accept='image/*' />
-					<div className='relative cursor-pointer' onClick={handleAvatarClick}>
+					<div className='relative cursor-pointer shrink-0' onClick={handleAvatarClick}>
 						{profileImage ? (
 							<>
 								<img
