@@ -1,16 +1,19 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?react'
 import ProfilePencilIcon from '@/assets/icons/mypage/profile-pencil.svg?react'
 import { useUserStore } from '@/stores/useUserStore'
 import Button from '../../common/Button'
 
 interface ProfileBasicInfoProps {
+	isOpenRecruit: boolean // 공개 매칭 여부 (디폴트: 비공개)
 	onSave: () => void
+	onRecruit: () => void
 }
 
-const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
+const ProfileBasicInfo = ({ isOpenRecruit, onSave, onRecruit }: ProfileBasicInfoProps) => {
 	const { profileImage, userName, userRole, userEmail, setProfileImage } = useUserStore()
 	const fileInputRef = useRef<HTMLInputElement>(null)
+	const [isRecruitButtonHovered, setIsRecruitButtonHovered] = useState(false)
 
 	const handleAvatarClick = () => {
 		fileInputRef.current?.click()
@@ -71,8 +74,18 @@ const ProfileBasicInfo = ({ onSave }: ProfileBasicInfoProps) => {
 					<Button color='mypage1' className='w-32.5' onClick={onSave}>
 						저장
 					</Button>
-					<Button color='mypage2' className='w-32.5 px-2.5'>
-						공개 매칭 등록
+
+					<Button
+						color='mypage2'
+						className={`w-32.5 px-2.5 hover:bg-primary-500 
+							${!isOpenRecruit ? 'hover:bg-primary-600-normal' : ''} 
+							${isOpenRecruit && (isRecruitButtonHovered ? 'text-primary-500-normal bg-primary-300-light' : 'bg-primary-100-light text-primary-500-normal')}
+							`}
+						onClick={onRecruit}
+						onMouseEnter={() => setIsRecruitButtonHovered(true)}
+						onMouseLeave={() => setIsRecruitButtonHovered(false)}
+					>
+						{isOpenRecruit ? (isRecruitButtonHovered ? '비공개 전환' : '공개 매칭 중') : '공개 매칭 등록'}
 					</Button>
 				</div>
 			</div>

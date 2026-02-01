@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { FormProvider } from 'react-hook-form'
 
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
@@ -17,8 +17,12 @@ import Section05Skills from './sections/Section05Skills'
 import Section06CareerHistory from './sections/Section06CareerHistory'
 import Section07Portfolio from './sections/Section07Portfolio'
 import Section08ProjectHistory from './sections/Section08ProjectHistory'
+import { useNavigate } from 'react-router'
 
 export const ProfileSettings = () => {
+	// 공개 매칭 여부
+	const [isOpenRecruit, setIsOpenRecruit] = useState(false)
+
 	const methods = useProfileSettingsForm()
 	const {
 		handleSubmit,
@@ -30,6 +34,8 @@ export const ProfileSettings = () => {
 
 	// 폼 데이터
 	const skills = watch('skills')
+
+	const navigate = useNavigate()
 
 	// CTA 모달
 	const { open: openCTAModal, close: closeCTAModal } = useCTAModal()
@@ -107,7 +113,7 @@ export const ProfileSettings = () => {
 		[handleSubmit, reset]
 	)
 
-	// 저장 버튼 클릭 핸들러 (저장 성공 시 모달 표시)
+	// (버튼 핸들러) 저장 버튼
 	const handleSaveWithModal = useCallback(async () => {
 		const success = await handleSave()
 		if (success) {
@@ -118,6 +124,62 @@ export const ProfileSettings = () => {
 			})
 		}
 	}, [handleSave, openCTAModal, closeCTAModal])
+
+	// (버튼 핸들러) 모집 등록/종료 버튼
+	const handlePublishRecruitment = () => {
+		if (!isOpenRecruit) {
+			// 공개 매칭 확인 모달
+			openCTAModal({
+				message: '{공개 매칭} 등록 하겠습니까?',
+				fixedHeight: true,
+				leftButton: { text: '돌아가기', onClick: closeCTAModal },
+				rightButton: {
+					text: '공개 매칭 등록',
+					onClick: () => {
+						setIsOpenRecruit(true) // 비공개 -> 공개
+
+						// 공개 매칭 완료 모달
+						openCTAModal({
+							message: '공개 매칭 등록 되었습니다',
+							isMessageHighlight: true,
+							fixedHeight: true,
+							subMessage: '매칭은 매칭 현황에서 확인 할 수 있습니다.',
+							leftButton: {
+								text: '매칭 현황가기',
+								onClick: () => {
+									closeCTAModal()
+									navigate('/') // 임시로 홈으로 보내둠
+								},
+							},
+							rightButton: { text: '확인', onClick: closeCTAModal },
+						})
+					},
+				},
+			})
+		} else {
+			// 비공개 매칭 확인 모달
+			openCTAModal({
+				message: '{비공개 전환}하시겠습니까?',
+				fixedHeight: true,
+				subMessage: '이제 공개 매칭에서 프로필이 내려갑니다.',
+				leftButton: { text: '돌아가기', onClick: closeCTAModal },
+				rightButton: {
+					text: '비공개 전환',
+					onClick: () => {
+						setIsOpenRecruit(false) // 공개 -> 비공개
+
+						// 비공개 매칭 전환완료 모달
+						openCTAModal({
+							message: '비공개로 전환 되었습니다',
+							isMessageHighlight: true,
+							fixedHeight: true,
+							rightButton: { text: '확인', onClick: closeCTAModal },
+						})
+					},
+				},
+			})
+		}
+	}
 
 	// 페이지 이탈 감지 훅
 	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
@@ -133,7 +195,11 @@ export const ProfileSettings = () => {
 				{/* 전체 컨테이너 */}
 				<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>
 					{/* 프사 + 기본 정보 */}
-					<ProfileBasicInfo onSave={handleSaveWithModal} />
+					<ProfileBasicInfo
+						isOpenRecruit={isOpenRecruit}
+						onSave={handleSaveWithModal}
+						onRecruit={handlePublishRecruitment}
+					/>
 
 					<div className='flex flex-col gap-16'>
 						{/* 섹션 01. 자기소개 */}
