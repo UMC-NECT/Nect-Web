@@ -1,4 +1,4 @@
-import bar from '@/assets/icons/common/bar.svg';
+import bar from '@/assets/icons/common/Bar.svg';
 import projectIcon from '@/assets/icons/common/project-icon.svg';
 import clip from '@/assets/icons/common/clip.svg';
 

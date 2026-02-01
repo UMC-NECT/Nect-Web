@@ -1,4 +1,4 @@
-import bar from '@/assets/icons/common/bar.svg';
+import bar from '@/assets/icons/common/Bar.svg';
 
 interface LeaderProfileProps {
     getPositionStyle: (position: string) => string;
