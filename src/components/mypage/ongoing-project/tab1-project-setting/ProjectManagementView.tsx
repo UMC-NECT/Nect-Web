@@ -1,6 +1,7 @@
 import { useFieldArray, type Control, type UseFormGetValues, type UseFormSetValue, type UseFormWatch } from 'react-hook-form'
 
-import { MOCK_PROJECT_DATA, MOCK_TEAM_COMPOSITION, type ProjectData } from '@/mocks/ongoingProjectData'
+import { MOCK_PROJECT_DATA, MOCK_TEAM_COMPOSITION, MOCK_TEAM_MEMBERS_BY_ROLE, type ProjectData } from '@/mocks/ongoingProjectData'
+import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import ProjectBasicInfo from './ProjectBasicInfo'
 import Section01ProjectField from './sections/Section01ProjectField'
 import Section02RecruitmentInfo from './sections/Section02RecruitmentInfo'
@@ -8,7 +9,6 @@ import Section03TeamComposition from './sections/Section03TeamComposition'
 import Section08LeaderProfile from './sections/Section08LeaderProfile'
 import FormBulletTextArea from '@/components/common/FormBulletTextArea'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
-import type { TabType } from '@/types/mypage/ongoindProject'
 import Section07ProjectFiles from './sections/Section07ProjectFiles'
 
 interface IProjectManagementView {
@@ -17,12 +17,16 @@ interface IProjectManagementView {
 	getValues: UseFormGetValues<ProjectSettingsType>
 	setValue: UseFormSetValue<ProjectSettingsType>
 	watch: UseFormWatch<ProjectSettingsType>
-	activeTab: TabType
-	setActiveTab: (tab: TabType) => void
 }
 
-const ProjectManagementView = ({ control, getValues, setValue, watch, setActiveTab }: IProjectManagementView) => {
+const ProjectManagementView = ({ control, getValues, setValue, watch }: IProjectManagementView) => {
 	const recruitStatus = watch('recruitmentStatus') ?? '모집 전'
+	const openPartSettings = usePartSettingsModal(state => state.open)
+
+	// 파트 설정 모달 열기
+	const handleOpenPartSettings = () => {
+		openPartSettings(MOCK_TEAM_MEMBERS_BY_ROLE)
+	}
 
 	// 프로젝트 분야 토글
 	const toggleField = (field: string) => {
@@ -70,7 +74,7 @@ const ProjectManagementView = ({ control, getValues, setValue, watch, setActiveT
 			</div>
 
 			{/* 섹션 03. 팀 구성 (읽기전용) */}
-			<Section03TeamComposition teamComposition={MOCK_TEAM_COMPOSITION} onEditClick={() => setActiveTab('팀원 관리')} />
+			<Section03TeamComposition teamComposition={MOCK_TEAM_COMPOSITION} onEditClick={handleOpenPartSettings} />
 
 			{/* 섹션 04. 프로젝트 목표 */}
 			<div id='section-04'>

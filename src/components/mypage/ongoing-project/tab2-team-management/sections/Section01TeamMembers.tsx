@@ -5,7 +5,7 @@ import type { TeamMembersByRole } from '@/types/mypage/ongoindProject'
 
 interface ISection01TeamMembers {
 	data: TeamMembersByRole[]
-	handlePartSettings: (partSetting: boolean) => void
+	handlePartSettings: () => void
 }
 
 const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMembers) => {
@@ -22,7 +22,7 @@ const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMember
 
 				<div className='flex items-center gap-6'>
 					{/* 파트 설정 버튼 */}
-					<Button color='text' onClick={() => handlePartSettings(true)} className='flex gap-1'>
+					<Button color='text' onClick={handlePartSettings} className='flex gap-1'>
 						<SettingIcon className='w-4 h-4' />
 						파트 설정
 					</Button>
@@ -37,7 +37,7 @@ const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMember
 						roleLabel={roleLabel}
 						roleColor={color}
 						members={members}
-						onOpenPartSettings={() => handlePartSettings(true)}
+						onOpenPartSettings={handlePartSettings}
 						onSetLeader={handleSetLeader}
 					/>
 				))}

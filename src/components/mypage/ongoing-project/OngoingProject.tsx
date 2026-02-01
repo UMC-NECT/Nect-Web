@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
 import HamburgerIcon from '@/assets/icons/common/hamburger.svg?react'
@@ -10,10 +10,12 @@ import { useOngoingProjectForm } from '@/hooks/mypage/useOngoingProjectForm'
 import type { TabType } from '@/types/mypage/ongoindProject'
 
 import CTAModal from '../CTAModal'
+import PartSettingsModal from './PartSettingsModal'
 import { MOCK_TEAM_MEMBERS_BY_ROLE } from '@/mocks/ongoingProjectData'
 import { useNavigate } from 'react-router'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import { useCTAModal } from '@/stores/useCTAModal'
+import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 
 const OngoingProject = () => {
 	// 현재 탭
@@ -28,6 +30,34 @@ const OngoingProject = () => {
 
 	// CTA 모달
 	const { open: openCTAModal, close: closeCTAModal } = useCTAModal()
+
+	// 파트 설정 모달
+	const {
+		isOpen: isPartSettingsOpen,
+		teamMembersByRole: partSettingsTeamMembers,
+		close: closePartSettings,
+	} = usePartSettingsModal()
+
+	// 파트 설정 모달 열렸을 때, 백그라운드 스크롤 방지
+	useEffect(() => {
+		if (isPartSettingsOpen) {
+			document.documentElement.style.overflow = 'hidden'
+			document.body.style.overflow = 'hidden'
+		} else {
+			document.documentElement.style.overflow = ''
+			document.body.style.overflow = ''
+		}
+		return () => {
+			document.documentElement.style.overflow = ''
+			document.body.style.overflow = ''
+		}
+	}, [isPartSettingsOpen])
+
+	// 파트 설정 저장 핸들러
+	const handlePartSettingsSave = (updatedParts: typeof partSettingsTeamMembers) => {
+		console.log('저장된 파트:', updatedParts)
+		closePartSettings()
+	}
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
 	const handleSave = useCallback(async (): Promise<boolean> => {
@@ -245,8 +275,6 @@ const OngoingProject = () => {
 						getValues={getValues}
 						setValue={setValue}
 						watch={watch}
-						activeTab={activeTab}
-						setActiveTab={setActiveTab}
 					/>
 				)}
 
@@ -267,6 +295,15 @@ const OngoingProject = () => {
 					rightButtonMsg='저장 후 나가기'
 					onLeftClick={handleCancelNavigation}
 					onRightClick={handleSaveAndLeave}
+				/>
+			)}
+
+			{/* 파트 설정 모달 */}
+			{isPartSettingsOpen && (
+				<PartSettingsModal
+					teamMembersByRole={partSettingsTeamMembers}
+					onClose={closePartSettings}
+					onSave={handlePartSettingsSave}
 				/>
 			)}
 		</div>
