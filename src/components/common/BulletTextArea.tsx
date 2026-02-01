@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
 
 interface IBulletTextArea {
 	value: string
@@ -9,6 +9,23 @@ interface IBulletTextArea {
 	placeholder?: string
 	className?: string
 	minHeight?: string
+}
+
+// 순수 텍스트에 불렛 추가 (ui 출력용)
+const addBullets = (text: string): string => {
+	if (!text) return ''
+	return text
+		.split('\n')
+		.map(line => `• ${line}`)
+		.join('\n')
+}
+
+// 불렛 제거하여 순수 텍스트로 반환 (데이터 저장용)
+const removeBullets = (text: string): string => {
+	return text
+		.split('\n')
+		.map(line => line.replace(/^•\s?/, ''))
+		.join('\n')
 }
 
 const BulletTextArea = ({
@@ -23,6 +40,9 @@ const BulletTextArea = ({
 }: IBulletTextArea) => {
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+	// 외부 value(순수 텍스트)를 불렛이 포함된 display 값으로 변환
+	const displayValue = useMemo(() => addBullets(value), [value])
+
 	// 불렛만 있는지 확인
 	const hasActualContent = (text: string) => {
 		const withoutBullets = text.replace(/•/g, '').replace(/\s/g, '')
@@ -35,18 +55,25 @@ const BulletTextArea = ({
 			textareaRef.current.style.height = 'auto'
 			textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
 		}
-	}, [value])
+	}, [displayValue])
 
 	const handleFocus = () => {
 		if (!value) {
-			onChange('• ')
+			onChange(' ') // 공백을 넣어서 첫 줄 불렛 표시
 		}
+	}
+
+	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const inputValue = e.target.value
+		// 불렛 제거 후 순수 텍스트 전달
+		onChange(removeBullets(inputValue))
 	}
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
 			e.preventDefault()
-			onChange(value + '\n• ')
+			// 새 줄 추가 (불렛은 addBullets에서 자동 추가됨)
+			onChange(value + '\n')
 		}
 	}
 
@@ -63,12 +90,12 @@ const BulletTextArea = ({
 			<textarea
 				ref={textareaRef}
 				className={`w-full ${minHeight} px-5 py-4 text-[16px] leading-[180%] tracking-[-0.5px] resize-none focus:outline-none placeholder:text-[16px] placeholder:text-neutral-300 hover:bg-neutral-50 duration-200 ease-in-out rounded-12 ${
-					hasActualContent(value) ? 'text-neutral-900' : 'text-neutral-300'
+					hasActualContent(displayValue) ? 'text-neutral-900' : 'text-neutral-300'
 				} ${className}`}
 				placeholder={placeholder}
-				value={value}
+				value={displayValue}
 				onFocus={handleFocus}
-				onChange={e => onChange(e.target.value)}
+				onChange={handleChange}
 				onKeyDown={handleKeyDown}
 			/>
 		</section>
