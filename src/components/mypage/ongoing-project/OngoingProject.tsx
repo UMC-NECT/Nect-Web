@@ -13,25 +13,11 @@ import CTAModal from '../CTAModal'
 import { MOCK_TEAM_MEMBERS_BY_ROLE } from '@/mocks/ongoingProjectData'
 import { useNavigate } from 'react-router'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
-
-/*
-	저장 버튼용
-		- saved(저장되었습니다)
-		- unsaved(저장되지 않았습니다)
-	모집 등록 버튼용
-		- recruitConfirm(프로젝트 모집 등록 하겠습니까?)
-		- recruitComplete(등록 완료 되었습니다)
-	모집 완료 버튼용
-		- recruitEndConfirm(프로젝트 모집 종료 하겠습니까?)
-		- recruitEndComplete(모집 종료 되었습니다)
-*/
-type ModalType = 'saved' | 'recruitConfirm' | 'recruitComplete' | 'recruitEndConfirm' | 'recruitEndComplete' | null
+import { useCTAModal } from '@/stores/useCTAModal'
 
 const OngoingProject = () => {
 	// 현재 탭
 	const [activeTab, setActiveTab] = useState<TabType>('프로젝트 설정')
-	// CTA 모달 (저장 버튼, 모집 등록/종료 버튼)
-	const [modalType, setModalType] = useState<ModalType>(null)
 	// 모집 등록 완료 여부
 	const [isRecruitmentPublished, setIsRecruitmentPublished] = useState(false)
 
@@ -40,29 +26,15 @@ const OngoingProject = () => {
 	// 폼 관련
 	const { control, setValue, handleSubmit, isDirty, projectData, getValues, watch, reset } = useOngoingProjectForm()
 
-	// 페이지 이탈 감지 훅
-	const {
-		isBlocked,
-		handleSaveAndLeave,
-		handleCloseModal: handleCancelNavigation,
-	} = useNavigationBlocker({
-		isDirty,
-		onSave: async () => {
-			const success = await handleSave(false)
-			return success
-		},
-	})
+	// CTA 모달
+	const { open: openCTAModal, close: closeCTAModal } = useCTAModal()
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
-	const handleSave = async (showSavedModal = true): Promise<boolean> => {
+	const handleSave = useCallback(async (): Promise<boolean> => {
 		let isValid = false
 		await handleSubmit(
 			data => {
 				console.log('유효성 검사 통과:', data)
-				if (showSavedModal) {
-					setModalType('saved')
-				}
-
 				reset(data)
 				isValid = true
 			},
@@ -114,42 +86,89 @@ const OngoingProject = () => {
 			}
 		)()
 		return isValid
-	}
+	}, [handleSubmit, reset])
+
+	// 페이지 이탈 감지 훅
+	const {
+		isBlocked,
+		handleSaveAndLeave,
+		handleCloseModal: handleCancelNavigation,
+	} = useNavigationBlocker({
+		isDirty,
+		onSave: handleSave,
+	})
 
 	// (버튼 핸들러) 저장 버튼
-	const handleSaveClick = () => {
-		handleSave(true)
-	}
+	const handleSaveWithModal = useCallback(async () => {
+		const success = await handleSave()
+
+		if (success) {
+			openCTAModal({
+				message: '저장되었습니다',
+				isMessageHighlight: true,
+				rightButton: { text: '확인', onClick: closeCTAModal },
+			})
+		}
+	}, [handleSave, openCTAModal, closeCTAModal])
 
 	// (버튼 핸들러) 모집 등록/종료 버튼
 	const handlePublishRecruitment = () => {
 		if (isRecruitmentPublished) {
-			setModalType('recruitEndConfirm')
-			return
+			// 모집 종료 확인 모달
+			openCTAModal({
+				message: '프로젝트 {모집 종료} 하겠습니까?',
+				fixedHeight: true,
+				leftButton: { text: '돌아가기', onClick: closeCTAModal },
+				rightButton: {
+					text: '모집 종료',
+					onClick: () => {
+						// 모집 종료 완료 모달
+						openCTAModal({
+							message: '모집 종료 되었습니다',
+							isMessageHighlight: true,
+							fixedHeight: true,
+							subMessage: '매칭 현황에서 팀원 정보를 확인 할 수 있습니다.',
+							leftButton: {
+								text: '매칭 현황가기',
+								onClick: () => {
+									closeCTAModal()
+									navigate('/matching')
+								},
+							},
+							rightButton: { text: '확인', onClick: closeCTAModal },
+						})
+					},
+				},
+			})
+		} else {
+			// 모집 등록 확인 모달
+			openCTAModal({
+				message: '프로젝트 {모집 등록} 하겠습니까?',
+				fixedHeight: true,
+				leftButton: { text: '돌아가기', onClick: closeCTAModal },
+				rightButton: {
+					text: '모집 등록',
+					onClick: () => {
+						setIsRecruitmentPublished(true)
+						// 등록 완료 모달
+						openCTAModal({
+							message: '등록 완료 되었습니다',
+							isMessageHighlight: true,
+							fixedHeight: true,
+							subMessage: '매칭은 매칭 현황에서 확인 할 수 있습니다.',
+							leftButton: {
+								text: '매칭 현황가기',
+								onClick: () => {
+									closeCTAModal()
+									navigate('/matching')
+								},
+							},
+							rightButton: { text: '확인', onClick: closeCTAModal },
+						})
+					},
+				},
+			})
 		}
-		setModalType('recruitConfirm')
-	}
-
-	// (모달 버튼 핸들러) 모집 종료 확인
-	const handleConfirmRecruitmentEnd = () => {
-		setModalType('recruitEndComplete')
-	}
-
-	// (모달 버튼 핸들러) 모집 등록 확인
-	const handleConfirmRecruitment = () => {
-		setModalType('recruitComplete')
-		setIsRecruitmentPublished(true)
-	}
-
-	// (모달 버튼 핸들러) 매칭 현황가기
-	const handleGoToMatchingStatus = () => {
-		setModalType(null)
-		navigate('/matching')
-	}
-
-	// (모달 버튼 핸들러) 나가기
-	const handleCloseModal = () => {
-		setModalType(null)
 	}
 
 	// (탭바 핸들러)
@@ -183,7 +202,7 @@ const OngoingProject = () => {
 
 					{/* 버튼 2개 */}
 					<div className='flex items-center gap-2'>
-						<Button color='mypage1' onClick={handleSaveClick} className=''>
+						<Button color='mypage1' onClick={handleSaveWithModal} className=''>
 							저장
 						</Button>
 
@@ -221,63 +240,6 @@ const OngoingProject = () => {
 					rightButtonMsg='저장 후 나가기'
 					onLeftClick={handleCancelNavigation}
 					onRightClick={handleSaveAndLeave}
-				/>
-			)}
-			{/* (저장 버튼) 저장 완료 모달 */}
-			{modalType === 'saved' && (
-				<CTAModal
-					message='저장되었습니다'
-					isMessageHighlight={true}
-					rightButtonMsg='확인'
-					onRightClick={handleCloseModal}
-				/>
-			)}
-			{/* (모집 등록 버튼 1/2) 모집 등록 하겠습니까? */}
-			{modalType === 'recruitConfirm' && (
-				<CTAModal
-					message='프로젝트 {모집 등록} 하겠습니까?'
-					fixedHeight={true}
-					leftButtonMsg='돌아가기'
-					rightButtonMsg='모집 등록'
-					onLeftClick={handleCloseModal}
-					onRightClick={handleConfirmRecruitment}
-				/>
-			)}
-			{/* (모집 등록 버튼 2/2) 등록 완료 되었습니다 */}
-			{modalType === 'recruitComplete' && (
-				<CTAModal
-					message='등록 완료 되었습니다'
-					isMessageHighlight={true}
-					fixedHeight={true}
-					subMessage='매칭은 매칭 현황에서 확인 할 수 있습니다.'
-					leftButtonMsg='매칭 현황가기'
-					rightButtonMsg='확인'
-					onLeftClick={handleGoToMatchingStatus}
-					onRightClick={handleCloseModal}
-				/>
-			)}
-			{/* (모집 종료 버튼 1/2) 모집 종료 하겠습니까? */}
-			{modalType === 'recruitEndConfirm' && (
-				<CTAModal
-					message='프로젝트 {모집 종료} 하겠습니까?'
-					fixedHeight={true}
-					leftButtonMsg='돌아가기'
-					rightButtonMsg='모집 종료'
-					onLeftClick={handleCloseModal}
-					onRightClick={handleConfirmRecruitmentEnd}
-				/>
-			)}
-			{/* (모집 종료 버튼 2/2) 모집 종료 되었습니다 */}
-			{modalType === 'recruitEndComplete' && (
-				<CTAModal
-					message='모집 종료 되었습니다'
-					isMessageHighlight={true}
-					fixedHeight={true}
-					subMessage='매칭 현황에서 팀원 정보를 확인 할 수 있습니다.'
-					leftButtonMsg='매칭 현황가기'
-					rightButtonMsg='확인'
-					onLeftClick={handleGoToMatchingStatus}
-					onRightClick={handleCloseModal}
 				/>
 			)}
 		</div>
