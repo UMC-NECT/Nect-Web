@@ -20,8 +20,7 @@ import Section08ProjectHistory from './sections/Section08ProjectHistory'
 import { useNavigate } from 'react-router'
 
 export const ProfileSettings = () => {
-	// 공개 매칭 여부
-	const [isOpenRecruit, setIsOpenRecruit] = useState(false)
+	const [isOpenRecruit, setIsOpenRecruit] = useState(false) // 공개 매칭 여부
 
 	const methods = useProfileSettingsForm()
 	const {
@@ -181,6 +180,38 @@ export const ProfileSettings = () => {
 		}
 	}
 
+	// (버튼 핸들러) 이력/경력 불러오기 버튼
+	const handleCareerHistoryRefresh = () => {
+		// api라고 가정
+		const canRefresh = false
+
+		if (canRefresh) {
+			// 불러오기 성공 모달
+			openCTAModal({
+				message: '경력/이력 내역을 갱신했습니다.',
+				fixedHeight: false,
+				rightButton: {
+					text: '확인',
+					onClick: () => {
+						closeCTAModal()
+					},
+				},
+			})
+		} else {
+			// 불러오기 실패 모달
+			openCTAModal({
+				message: '불러올 주요 경력/이력이 없습니다.',
+				fixedHeight: false,
+				rightButton: {
+					text: '확인',
+					onClick: () => {
+						closeCTAModal()
+					},
+				},
+			})
+		}
+	}
+
 	// 페이지 이탈 감지 훅
 	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
 		isDirty,
@@ -227,7 +258,12 @@ export const ProfileSettings = () => {
 
 						{/* 섹션 06. 주요 경력/이력 */}
 						<div id='section-06'>
-							<Section06CareerHistory control={methods.control} setValue={setValue} watch={watch} />
+							<Section06CareerHistory
+								onRefresh={handleCareerHistoryRefresh}
+								control={methods.control}
+								setValue={setValue}
+								watch={watch}
+							/>
 						</div>
 
 						{/* 섹션 07. 포트폴리오 */}
