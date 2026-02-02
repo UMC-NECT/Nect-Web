@@ -33,6 +33,13 @@ export const useMissionDragResize = ({
 	// 드래그/리사이즈 시작 시점의 원래 위치 저장
 	const dragStartPositionRef = useRef<{ columnStart: number; sectionIndex: number; createdAt: string; dueDate: string; clickOffset: number } | null>(null)
 	const resizeStartPositionRef = useRef<{ columnStart: number; dueDateColumnIndex: number } | null>(null)
+	// 드래그/리사이즈 직후 클릭 방지용 ref
+	const justDraggedRef = useRef<boolean>(false)
+	// 마우스 다운 위치 (드래그 임계값 체크용)
+	const mouseDownPositionRef = useRef<{ x: number; y: number } | null>(null)
+	// 실제 드래그가 발생했는지 여부
+	const hasDraggedRef = useRef<boolean>(false)
+	const DRAG_THRESHOLD = 5
 
 	// 최신 값을 참조하기 위한 ref
 	const positionedMissionsRef = useRef(positionedMissions)
@@ -114,6 +121,9 @@ export const useMissionDragResize = ({
 					clickOffset,
 				}
 			}
+			// 마우스 시작 위치 저장
+			mouseDownPositionRef.current = { x: e.clientX, y: e.clientY }
+			hasDraggedRef.current = false
 			setDraggingMissionId(missionId)
 			setDragTempPosition(null)
 		},
@@ -124,6 +134,16 @@ export const useMissionDragResize = ({
 		(e: MouseEvent, missionId: number) => {
 			if (!draggingMissionId || draggingMissionId !== missionId || !dragStartPositionRef.current) {
 				return
+			}
+
+			// 드래그 임계값 체크 - 충분히 이동했을 때만 드래그로 인식
+			if (mouseDownPositionRef.current && !hasDraggedRef.current) {
+				const dx = Math.abs(e.clientX - mouseDownPositionRef.current.x)
+				const dy = Math.abs(e.clientY - mouseDownPositionRef.current.y)
+				if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
+					return // 아직 임계값을 넘지 않음
+				}
+				hasDraggedRef.current = true // 임계값을 넘었으므로 드래그로 인식
 			}
 
 			const clickColumnIndex = getGridColumnFromX(e.clientX)
@@ -147,7 +167,8 @@ export const useMissionDragResize = ({
 	)
 
 	const handleMissionDragEnd = useCallback(() => {
-		if (draggingMissionId && dragTempPosition && onMissionUpdateRef.current && dragStartPositionRef.current) {
+		// 실제 드래그가 발생한 경우에만 업데이트
+		if (hasDraggedRef.current && draggingMissionId && dragTempPosition && onMissionUpdateRef.current && dragStartPositionRef.current) {
 			const { columnIndex, sectionIndex } = dragTempPosition
 			const newCreatedAt = getDateStringFromIndex(columnIndex)
 
@@ -174,6 +195,16 @@ export const useMissionDragResize = ({
 			}
 		}
 
+		// 실제 드래그가 발생한 경우에만 클릭 방지
+		if (hasDraggedRef.current) {
+			justDraggedRef.current = true
+			setTimeout(() => {
+				justDraggedRef.current = false
+			}, 100)
+		}
+
+		mouseDownPositionRef.current = null
+		hasDraggedRef.current = false
 		dragStartPositionRef.current = null
 		setDragTempPosition(null)
 		setDraggingMissionId(null)
@@ -228,6 +259,12 @@ export const useMissionDragResize = ({
 				})
 			}
 		}
+
+		// 리사이즈 직후 클릭 방지
+		justDraggedRef.current = true
+		setTimeout(() => {
+			justDraggedRef.current = false
+		}, 100)
 
 		resizeStartPositionRef.current = null
 		setResizeTempPosition(null)
@@ -284,5 +321,6 @@ export const useMissionDragResize = ({
 		getResizeStartColumn,
 		handleMissionDragStart,
 		handleMissionResizeStart,
+		justDraggedRef,
 	}
 }

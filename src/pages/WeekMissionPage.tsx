@@ -1,18 +1,21 @@
 import WeekSelector from '@/components/week-mission/WeekSelector'
 import MissionBoard from '@/components/week-mission/MissionBoard'
 import { useMissionStore } from '@/stores/missionStore'
+import { useTeamStore } from '@/stores/teamStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
+import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 
 const WeekMissionPage = () => {
 	const { missions, updateMission } = useMissionStore()
+	const { openMissionModal } = useMissionModalStore()
+	const { roles } = useTeamStore()
 
-	// 섹션 데이터 (기본값)
-	const sections = [
-		{ id: 1, title: '기획' },
-		{ id: 2, title: '디자인' },
-		{ id: 3, title: '개발' },
-	]
+	// 섹션 데이터 (teamStore의 roles 사용)
+	const sections = roles.map(role => ({
+		id: role.id,
+		title: role.name,
+	}))
 
 	return (
 		<div className='flex flex-col pt-16 pb-20'>
@@ -24,7 +27,7 @@ const WeekMissionPage = () => {
 				<WeekSelector />
 				<div className='flex items-center gap-4'>
 					{/* 일정 추가 버튼 */}
-					<button className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors'>
+					<button className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors' onClick={() => openMissionModal()}>
 						<ScheduleAddIcon className='w-6 h-6' />
 					</button>
 				</div>

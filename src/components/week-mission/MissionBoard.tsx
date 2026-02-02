@@ -148,6 +148,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 		getResizeStartColumn,
 		handleMissionDragStart,
 		handleMissionResizeStart,
+		justDraggedRef,
 	} = useMissionDragResize({
 		dates,
 		sections,
@@ -372,7 +373,11 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 											status={mission.status}
 											participants={mission.participants}
 											gridColumnSize={tempColSpan}
-											onClick={mission.onClick}
+											onClick={() => {
+												if (!justDraggedRef.current) {
+													openMissionModal(mission.id)
+												}
+											}}
 											onDragStart={e => handleMissionDragStart(mission.id, e)}
 											onResizeStart={() => handleMissionResizeStart(mission.id)}
 											onStatusChange={newStatus => {

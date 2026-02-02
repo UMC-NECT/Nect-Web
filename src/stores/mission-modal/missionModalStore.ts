@@ -40,6 +40,7 @@ export type { MissionStatus }
 interface MissionModalStore {
 	// 모달 상태
 	isMissionModalOpen: boolean
+	editingMissionId: number | null // 현재 편집 중인 미션 ID (null이면 새 미션 생성)
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: Mission[]
@@ -104,7 +105,7 @@ interface MissionModalStore {
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
-	openMissionModal: () => void
+	openMissionModal: (missionId?: number) => void
 	closeMissionModal: () => void
 }
 
@@ -140,6 +141,7 @@ const initialMissionModalState = {
 export const useMissionModalStore = create<MissionModalStore>(set => ({
 	// 모달 상태
 	isMissionModalOpen: false,
+	editingMissionId: null,
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: initialMissions,
@@ -273,6 +275,6 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션
-	openMissionModal: () => set({ isMissionModalOpen: true }),
-	closeMissionModal: () => set({ isMissionModalOpen: false, ...initialMissionModalState }),
+	openMissionModal: (missionId?: number) => set({ isMissionModalOpen: true, editingMissionId: missionId ?? null }),
+	closeMissionModal: () => set({ isMissionModalOpen: false, editingMissionId: null, ...initialMissionModalState }),
 }))
