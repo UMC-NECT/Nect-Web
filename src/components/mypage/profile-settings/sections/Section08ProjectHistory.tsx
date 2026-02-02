@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useFieldArray, type Control } from 'react-hook-form'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { useProjectHistoryModal } from '@/stores/useProjectHistoryModal'
 import Button from '../../../common/Button'
 import ProjectCard from './ProjectCard'
+import ProjectHistoryModal from '../ProjectHistoryModal'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 interface ISection08ProjectHistory {
@@ -18,8 +21,16 @@ const Section08ProjectHistory = ({ control }: ISection08ProjectHistory) => {
 		name: 'projectHistory',
 	})
 
-	// 새로운 프로젝트 히스토리를 추가 중인지 여부 (폼에 추가되기 전 상태라면 저장 안되게 하기 위함)
+	// 새로운 프로젝트 히스토리를 추가 중인지 여부
 	const [isAddingNew, setIsAddingNew] = useState(false)
+
+	// 우클릭시 모달 관련
+	const { isOpen, position, open, close } = useProjectHistoryModal()
+	const sectionRef = useRef<HTMLElement>(null)
+	const menuRef = useRef<HTMLDivElement>(null)
+
+	// 메뉴 외부 클릭 시 닫기
+	useClickOutside(menuRef, close, isOpen)
 
 	// (버튼 핸들러) 프로젝트 추가
 	const addProject = () => {
@@ -45,8 +56,17 @@ const Section08ProjectHistory = ({ control }: ISection08ProjectHistory) => {
 		setIsAddingNew(false)
 	}
 
+	// 카드 우클릭 핸들러
+	const handleContextMenu = (e: React.MouseEvent, index: number) => {
+		e.preventDefault()
+		const rect = sectionRef.current?.getBoundingClientRect()
+		if (rect) {
+			open({ x: e.clientX - rect.left, y: e.clientY - rect.top }, index)
+		}
+	}
+
 	return (
-		<section className='ml-5'>
+		<section ref={sectionRef} className='relative ml-5'>
 			<div className='flex items-center justify-between mb-4'>
 				<h2 className='title-2 font-bold text-neutral-900'>프로젝트 히스토리</h2>
 
@@ -65,6 +85,7 @@ const Section08ProjectHistory = ({ control }: ISection08ProjectHistory) => {
 						date={project.date}
 						isEditable={!project.title && !project.description && !project.date}
 						onSave={data => saveProject(index, data)}
+						onContextMenu={e => handleContextMenu(e, index)}
 					/>
 				))}
 
@@ -81,6 +102,13 @@ const Section08ProjectHistory = ({ control }: ISection08ProjectHistory) => {
 					/>
 				)}
 			</div>
+
+			{/* 우클릭 모달 */}
+			{isOpen && position && (
+				<div ref={menuRef} className='absolute z-10' style={{ left: position.x, top: position.y }}>
+					<ProjectHistoryModal />
+				</div>
+			)}
 		</section>
 	)
 }
