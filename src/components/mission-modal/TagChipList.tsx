@@ -4,7 +4,7 @@ import { useMissionModalStore, type Person, type Role, type Mission } from '@/st
 import PersonTagChip from './PersonTagChip'
 import RoleTagChip from './RoleTagChip'
 import MissionTagChip from './MissionTagChip'
-import SettingIcon from '@/assets/icons/common/setting.svg?react'
+import SettingIcon from '@/assets/icons/common/settings.svg?react'
 import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 
 type TagChipListVariant = 'person' | 'role' | 'mission'
@@ -228,7 +228,7 @@ const TagChipList = ({
 		>
 			<div className='flex items-center  justify-between'>
 				<p className='pl-0.5 caption-1 font-medium text-neutral-500'>{displayTitle}</p>
-				{variant !== 'mission' && <SettingIcon className='hover:cursor-pointer' onClick={handleSettingClick} />}
+				{variant !== 'mission' && <SettingIcon className='hover:cursor-pointer w-4 h-4' onClick={handleSettingClick} />}
 			</div>
 			{renderChips()}
 		</div>
