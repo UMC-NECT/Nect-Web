@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router'
 import { Layout } from './components/layout/Layout'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -12,6 +12,11 @@ import SignupPage from './pages/auth/SignupPage'
 import WorkStatusPage from './pages/WorkStatusPage'
 import ProfileAnalysisPage from './pages/ProfileAnalysisPage'
 import AnalysisLayout from './components/layout/AnalysisLayout'
+import MyPage from './pages/MyPage'
+import { ProfileSettings } from './components/mypage/profile-settings/ProfileSettings'
+import IdeaAnalysis from './components/mypage/idea-analysis/IdeaAnalysis'
+import OngoingProject from './components/mypage/ongoing-project/OngoingProject'
+import ProfileAnalysis from './components/mypage/profile-analysis/ProfileAnalysis'
 import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
 import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
@@ -54,6 +59,31 @@ const router = createBrowserRouter([
 				path: '/matching-available',
 				element: <MatchingAvailablePage />
 			}
+				path: '/mypage',
+				element: <MyPage />,
+				children: [
+					{
+						index: true,
+						element: <Navigate to='/mypage/profile' replace />,
+					},
+					{
+						path: 'profile',
+						element: <ProfileSettings />,
+					},
+					{
+						path: 'idea-analysis',
+						element: <IdeaAnalysis />,
+					},
+					{
+						path: 'profile-analysis',
+						element: <ProfileAnalysis />,
+					},
+					{
+						path: 'ongoing',
+						element: <OngoingProject />,
+					},
+				],
+			},
 		],
 	},
 	{
@@ -70,7 +100,7 @@ const router = createBrowserRouter([
 			{
 				path: '/analyze-report',
 				element: <AnalyzeReportPage />,
-			}
+			},
 		],
 	},
 	{
