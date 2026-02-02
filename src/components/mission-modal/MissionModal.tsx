@@ -13,6 +13,7 @@ import SortableTaskItem from './SortableTaskItem'
 import FeedbackItem from './FeedbackItem'
 import FileItem from './FileItem'
 import WorkContentInput from './WorkContentInput'
+import RoleTaskPanel from './RoleTaskPanel'
 import StatusChip from '@/components/common/StatusChip'
 import StatusChipList from '@/components/common/StatusChipList'
 import Tooltip from '@/components/common/Tooltip'
@@ -22,9 +23,11 @@ import InfoIcon from '@/assets/icons/common/info.svg?react'
 
 interface MissionModalProps {
 	className?: string
+	variant?: 'default' | 'leader' // 기본 모달 또는 리더형 모달
 }
 
-const MissionModal = ({ className }: MissionModalProps) => {
+const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
+	const isLeader = variant === 'leader'
 	const {
 		missionNumber,
 		title,
@@ -210,7 +213,7 @@ const MissionModal = ({ className }: MissionModalProps) => {
 					},
 				}}
 			>
-				<div className='flex flex-col w-[924px] max-h-full'>
+				<div className={cn('flex flex-col max-h-full',  'w-[924px]')}>
 					{/* Mission Tag - 고정 위치 */}
 
 					{/* 스크롤 가능한 콘텐츠 영역 */}
@@ -224,7 +227,160 @@ const MissionModal = ({ className }: MissionModalProps) => {
 							onChange={e => setTitle(e.target.value)}
 						/>
 
-						<div className='flex flex-col gap-6'>
+						{isLeader ? (
+							/* 리더형 모달 레이아웃 */
+							<div className='flex gap-8'>
+								{/* Left: Form Fields + Files */}
+								<div className='flex flex-col gap-6 w-[342px]'>
+									<div className='flex flex-col gap-2.5 w-full' ref={dropdownRef}>
+										{/* 담당자 */}
+										<div className='flex gap-1.5 items-center relative'>
+											<span className='body-2 font-medium text-neutral-500 w-[70px]'>담당자</span>
+											<PartSelector
+												variant='person'
+												selectedPersons={selectedAssignees}
+												onPersonRemove={removeSelectedAssignee}
+												onClick={() => toggleDropdown('assignees')}
+											/>
+											{openDropdown === 'assignees' && (
+												<div className='absolute top-full left-[76px] mt-1 z-10'>
+													<TagChipList
+														variant='person'
+														title='담당자 선택'
+														disabledPersonIds={selectedAssignees.map(a => a.id)}
+														onPersonSelect={person => {
+															addSelectedAssignee(person)
+														}}
+														className='w-[130px]'
+													/>
+												</div>
+											)}
+										</div>
+
+										{/* 진행 기간 */}
+										<div className='flex gap-1.5 items-center relative'>
+											<span className='body-2 font-medium text-neutral-500 w-[70px]'>진행 기간</span>
+											<input
+												type='text'
+												value={startDate && deadline ? `${startDate} ~ ${deadline}` : startDate || ''}
+												onChange={e => {
+													const value = e.target.value.replace(/[^0-9]/g, '')
+													let formatted = ''
+
+													for (let i = 0; i < value.length && i < 16; i++) {
+														if (i === 4 || i === 6 || i === 12 || i === 14) {
+															formatted += '.'
+														}
+														if (i === 8) {
+															formatted += ' ~ '
+														}
+														formatted += value[i]
+													}
+
+													const parts = formatted.split(' ~ ')
+													setStartDate(parts[0] || '')
+													setDeadline(parts[1] || '')
+												}}
+												placeholder='입력해주세요'
+												className={cn(
+													'flex min-h-[28px] py-0.5 rounded-[6px] w-[266px] items-center',
+													'transition-colors',
+													!(startDate || deadline) && 'bg-neutral-50 hover:bg-neutral-100 shadow-inner-neutral-2 px-2',
+													(startDate || deadline) && 'hover:bg-neutral-100',
+													'button-1 font-medium text-neutral-700 placeholder:text-neutral-300',
+													'outline-none border-none'
+												)}
+											/>
+										</div>
+
+										{/* 작업 상태 */}
+										<div className='flex gap-2.5 items-center relative'>
+											<span className='body-2 font-medium text-neutral-500 w-[70px]'>작업 상태</span>
+											<div onClick={() => toggleDropdown('status')}>
+												<StatusChip state={missionStatus} hover={true} />
+											</div>
+											{openDropdown === 'status' && (
+												<div className='absolute top-full left-[76px] mt-1 z-10'>
+													<StatusChipList
+														onStatusChange={status => {
+															setMissionStatus(status)
+															setOpenDropdown(null)
+														}}
+													/>
+												</div>
+											)}
+										</div>
+									</div>
+
+									{/* 업로드 파일 & 링크 */}
+									<div className='flex flex-col gap-3 h-full'>
+										{/* Header */}
+										<div className='flex items-center justify-between px-1'>
+											<p className='text-[16px] font-semibold text-neutral-900 tracking-[-0.32px]'>
+												업로드 파일 & 링크
+											</p>
+											<button
+												className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-[6px] shadow-inner-neutral-2'
+												onClick={() => setIsAddingFile(true)}
+											>
+												<PlusIcon className='w-4 h-4 stroke-neutral-400' />
+												<span className='body-3 font-medium text-neutral-400 tracking-[-0.26px]'>추가</span>
+											</button>
+										</div>
+
+										{/* Content */}
+										<div className='bg-neutral-50 border py-2 border-neutral-100 rounded-[6px] min-h-[206px] overflow-y-auto h-full'>
+											<div className='flex flex-col'>
+												{files.map(file => (
+													<FileItem
+														key={file.id}
+														data={file}
+														onClick={() => {
+															if (file.url) {
+																const url =
+																	file.url.startsWith('http://') || file.url.startsWith('https://')
+																		? file.url
+																		: `https://${file.url}`
+																window.open(url, '_blank')
+															}
+														}}
+														onDelete={() => removeFile(file.id)}
+														onDownload={() => {
+															if (file.url && file.fileName) {
+																const link = document.createElement('a')
+																link.href = file.url
+																link.download = file.fileName
+																document.body.appendChild(link)
+																link.click()
+																document.body.removeChild(link)
+															}
+														}}
+													/>
+												))}
+												{isAddingFile && (
+													<FileItem
+														isEditing
+														onSave={fileData => {
+															addFile({
+																id: Date.now(),
+																...fileData,
+															})
+															setIsAddingFile(false)
+														}}
+														onCancel={() => setIsAddingFile(false)}
+													/>
+												)}
+											</div>
+										</div>
+									</div>
+								</div>
+
+								{/* Right: Role Task Panel */}
+								<RoleTaskPanel />
+							</div>
+						) : (
+							/* 기본 모달 레이아웃 */
+							<div className='flex flex-col gap-6'>
 							{/* Top Section: Form Fields + Work Content */}
 							<div className='flex gap-4'>
 								{/* Left: Form Fields */}
@@ -510,6 +666,7 @@ const MissionModal = ({ className }: MissionModalProps) => {
 								</div>
 							</div>
 						</div>
+						)}
 					</div>
 				</div>
 			</OverlayScrollbarsComponent>

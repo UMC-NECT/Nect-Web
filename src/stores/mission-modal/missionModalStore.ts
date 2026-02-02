@@ -15,6 +15,14 @@ export interface Task {
 	isComplete: boolean
 }
 
+// 역할별 태스크 (리더형 모달용)
+export interface RoleTask {
+	id: number
+	roleId: number
+	content: string
+	isComplete: boolean
+}
+
 export interface Feedback {
 	id: number
 	partName: string
@@ -41,6 +49,7 @@ interface MissionModalStore {
 	// 모달 상태
 	isMissionModalOpen: boolean
 	editingMissionId: number | null // 현재 편집 중인 미션 ID (null이면 새 미션 생성)
+	editingSectionIndex: number | null // 현재 편집 중인 미션의 섹션 인덱스 (0이면 리더형 모달)
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: Mission[]
@@ -61,6 +70,7 @@ interface MissionModalStore {
 	feedbacks: Feedback[]
 	mentionedPersons: Person[]
 	files: FileItem[]
+	roleTasks: RoleTask[] // 역할별 태스크 (리더형 모달용)
 
 	// 기존 액션
 	setSelectedPersons: (persons: Person[]) => void
@@ -102,10 +112,16 @@ interface MissionModalStore {
 	addFile: (file: FileItem) => void
 	updateFile: (fileId: number, updates: Partial<FileItem>) => void
 	removeFile: (fileId: number) => void
+	// 역할별 태스크 액션 (리더형 모달용)
+	setRoleTasks: (tasks: RoleTask[]) => void
+	addRoleTask: (task: RoleTask) => void
+	updateRoleTask: (taskId: number, updates: Partial<RoleTask>) => void
+	removeRoleTask: (taskId: number) => void
+	toggleRoleTask: (taskId: number) => void
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number) => void
+	openMissionModal: (missionId?: number, sectionIndex?: number) => void
 	closeMissionModal: () => void
 }
 
@@ -122,6 +138,7 @@ const initialMissions: Mission[] = [
 const initialTasks: Task[] = []
 const initialFeedbacks: Feedback[] = []
 const initialFiles: FileItem[] = []
+const initialRoleTasks: RoleTask[] = []
 
 const initialMissionModalState = {
 	missionNumber: 1,
@@ -136,12 +153,14 @@ const initialMissionModalState = {
 	feedbacks: initialFeedbacks,
 	mentionedPersons: [] as Person[],
 	files: initialFiles,
+	roleTasks: initialRoleTasks,
 }
 
 export const useMissionModalStore = create<MissionModalStore>(set => ({
 	// 모달 상태
 	isMissionModalOpen: false,
 	editingMissionId: null,
+	editingSectionIndex: null,
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: initialMissions,
@@ -272,9 +291,31 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		set(state => ({
 			files: state.files.filter(f => f.id !== fileId),
 		})),
+	// 역할별 태스크 액션 (리더형 모달용)
+	setRoleTasks: tasks => set({ roleTasks: tasks }),
+	addRoleTask: task =>
+		set(state => ({
+			roleTasks: [...state.roleTasks, task],
+		})),
+	updateRoleTask: (taskId, updates) =>
+		set(state => ({
+			roleTasks: state.roleTasks.map(t => (t.id === taskId ? { ...t, ...updates } : t)),
+		})),
+	removeRoleTask: taskId =>
+		set(state => ({
+			roleTasks: state.roleTasks.filter(t => t.id !== taskId),
+		})),
+	toggleRoleTask: taskId =>
+		set(state => ({
+			roleTasks: state.roleTasks.map(t => (t.id === taskId ? { ...t, isComplete: !t.isComplete } : t)),
+		})),
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number) => set({ isMissionModalOpen: true, editingMissionId: missionId ?? null }),
-	closeMissionModal: () => set({ isMissionModalOpen: false, editingMissionId: null, ...initialMissionModalState }),
+	openMissionModal: (missionId?: number, sectionIndex?: number) => set({ 
+		isMissionModalOpen: true, 
+		editingMissionId: missionId ?? null,
+		editingSectionIndex: sectionIndex ?? null,
+	}),
+	closeMissionModal: () => set({ isMissionModalOpen: false, editingMissionId: null, editingSectionIndex: null, ...initialMissionModalState }),
 }))

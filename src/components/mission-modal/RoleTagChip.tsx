@@ -8,9 +8,10 @@ interface RoleTagChipProps {
 	roleName: string
 	state: 'default' | 'clear' | 'disabled' | 'edit'
 	onClick?: (e?: React.MouseEvent) => void
+	className?: string
 }
 
-const RoleTagChip = ({ roleId, roleName, state, onClick }: RoleTagChipProps) => {
+const RoleTagChip = ({ roleId, roleName, state, onClick, className }: RoleTagChipProps) => {
 	const roleColor = getRoleColorById(roleId)
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'
@@ -25,7 +26,7 @@ const RoleTagChip = ({ roleId, roleName, state, onClick }: RoleTagChipProps) => 
 					isClear ? 'pl-2 pr-1' : 'px-2',
 					isDisabled
 						? cn(roleColor, 'bg-[linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5))]', 'cursor-default')
-						: cn(roleColor, 'shadow-drop-neutral-2', 'hover:cursor-pointer')
+						: cn(roleColor, 'shadow-drop-neutral-2', 'hover:cursor-pointer', className)
 				)}
 				onClick={!isDisabled && !isClear ? onClick : undefined}
 			>

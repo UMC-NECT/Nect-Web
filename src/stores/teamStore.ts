@@ -49,9 +49,8 @@ const initialPersons: Person[] = [
 const initialRoles: Role[] = [
 	{ id: 1, name: 'PM' },
 	{ id: 2, name: 'Design' },
-	{ id: 3, name: 'Backend' },
-	{ id: 4, name: 'Frontend' },
-	{ id: 5, name: 'QA' },
+	{ id: 3, name: 'Frontend' },
+	{ id: 4, name: 'Backend' }
 ]
 
 export const useTeamStore = create<TeamStore>(set => ({

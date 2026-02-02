@@ -219,7 +219,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 				<div className='flex flex-col flex-1 min-w-0 gap-0.5'>
 					<input
 						type='text'
-						className='caption-1 font-semibold text-neutral-800 bg-transparent outline-none placeholder:text-neutral-400 w-full'
+						className='caption-1 text-[13px]! font-semibold text-neutral-800 bg-transparent outline-none placeholder:text-neutral-400 w-full'
 						placeholder='제목'
 						value={editName}
 						onChange={e => setEditName(e.target.value)}
@@ -269,7 +269,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 
 			{/* 텍스트 정보 */}
 			<div className='flex flex-col flex-1 min-w-0'>
-				<p className='caption-1 font-semibold text-neutral-800 truncate'>{data.name}</p>
+				<p className='caption-1 text-[13px]! font-semibold text-neutral-800 truncate'>{data.name}</p>
 				<p className={cn('text-[9px] leading-[1.4] text-neutral-400 truncate', data.type === 'link' && ' underline')}>
 					{detailText}
 				</p>

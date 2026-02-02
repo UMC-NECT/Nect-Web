@@ -375,7 +375,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 											gridColumnSize={tempColSpan}
 											onClick={() => {
 												if (!justDraggedRef.current) {
-													openMissionModal(mission.id)
+													openMissionModal(mission.id, mission.sectionIndex)
 												}
 											}}
 											onDragStart={e => handleMissionDragStart(mission.id, e)}

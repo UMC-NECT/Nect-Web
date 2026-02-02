@@ -7,7 +7,10 @@ import MissionModal from '@/components/mission-modal/MissionModal'
 
 export const Layout = () => {
 	const { isWorkspace } = useWorkspace()
-	const { isMissionModalOpen, closeMissionModal } = useMissionModalStore()
+	const { isMissionModalOpen, closeMissionModal, editingSectionIndex } = useMissionModalStore()
+
+	// sectionIndex가 0이면 리더형 모달
+	const modalVariant = editingSectionIndex === 0 ? 'leader' : 'default'
 
 	return (
 		<>
@@ -21,7 +24,7 @@ export const Layout = () => {
 			{isMissionModalOpen && (
 				<div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50' onClick={closeMissionModal}>
 					<div onClick={e => e.stopPropagation()}>
-						<MissionModal />
+						<MissionModal variant={modalVariant} />
 					</div>
 				</div>
 			)}
