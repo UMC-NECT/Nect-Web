@@ -225,7 +225,7 @@ export const ProfileSettings = () => {
 
 						{/* 섹션 08. 프로젝트 히스토리 */}
 						<div id='section-08'>
-							<Section08ProjectHistory control={methods.control} setValue={setValue} />
+							<Section08ProjectHistory control={methods.control} />
 						</div>
 					</div>
 				</div>
