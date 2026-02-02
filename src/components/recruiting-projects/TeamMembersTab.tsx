@@ -150,7 +150,6 @@ const TeamMembersTab = ({ getPositionStyle }: TeamMembersTabProps) => {
                 isOpen={selectedMember !== null}
                 onClose={() => setSelectedMember(null)}
                 member={selectedMember || memberDetailData}
-                getPositionStyle={getPositionStyle}
             />
         </div>
     );
