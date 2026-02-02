@@ -14,6 +14,7 @@ import ProfileAnalysisPage from './pages/ProfileAnalysisPage'
 import AnalysisLayout from './components/layout/AnalysisLayout'
 import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
+import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
 			{
 				path: '/work-status',
 				element: <WorkStatusPage />,
+			},
+			{
+				path: '/recruiting-projects',
+				element: <RecruitingProjectsPage />,
 			}
 		],
 	},

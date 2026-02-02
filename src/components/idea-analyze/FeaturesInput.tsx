@@ -7,24 +7,15 @@ interface FeaturesInputProps {
 }
 
 const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
-    const input0Ref = useRef<HTMLInputElement>(null)
-    const input1Ref = useRef<HTMLInputElement>(null)
-    const input2Ref = useRef<HTMLInputElement>(null)
-
-    const getInputRef = (index: number) => {
-        if (index === 0) return input0Ref
-        if (index === 1) return input1Ref
-        return input2Ref
-    }
+    const inputRefs = useRef<HTMLInputElement[]>([])
 
     const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
         if (e.key === 'Enter') {
             e.preventDefault()
             
-            if (index === 0 && input1Ref.current) {
-                input1Ref.current.focus()
-            } else if (index === 1 && input2Ref.current) {
-                input2Ref.current.focus()
+            const nextIndex = index + 1
+            if (nextIndex < features.length && inputRefs.current[nextIndex]) {
+                inputRefs.current[nextIndex]?.focus()
             }
         }
     }
@@ -44,7 +35,9 @@ const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
                             {index + 1}.
                         </span>
                         <input 
-                            ref={getInputRef(index)}
+                            ref={(el) => {
+                                if (el) inputRefs.current[index] = el
+                            }}
                             type='text'
                             value={feature}
                             onChange={(e) => onChange(index, e.target.value)}
