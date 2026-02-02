@@ -58,7 +58,8 @@ const router = createBrowserRouter([
 			{
 				path: '/matching-available',
 				element: <MatchingAvailablePage />
-			}
+			},
+			{
 				path: '/mypage',
 				element: <MyPage />,
 				children: [
