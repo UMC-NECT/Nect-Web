@@ -185,6 +185,7 @@ const TagChipList = ({
 		<div className='flex flex-col gap-2 w-full mt-2'>
 			{roles.map(role => (
 				<RoleTagChip
+					key={role.id}
 					roleId={role.id}
 					roleName={role.name}
 					state={getRoleState(role)}
