@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
 import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
 import SideNotificationModal from '@/components/notification/SideNotificationModal'
-import SideChatModal from '@/components/chat/SideChatModal'
+import ChatModal from '@/components/chat/ChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
 export const Sidebar = () => {
@@ -111,8 +111,8 @@ export const Sidebar = () => {
 				</div>
 			)}
 			{showChatModal && (
-				<div ref={chatModalRef} className='fixed top-[148px] left-16 z-40'>
-					<SideChatModal />
+				<div ref={chatModalRef} className='fixed top-[130px] left-16 z-40 h-[calc(100vh-130px-20px)]'>
+					<ChatModal />
 				</div>
 			)}
 		</>
