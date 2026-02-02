@@ -5,16 +5,20 @@ import Breadcrumb from '@/components/common/Breadcrumb';
 import ProjectInfoTab from '@/components/recruiting-projects/ProjectInfoTab';
 import TeamMembersTab from '@/components/recruiting-projects/TeamMembersTab';
 import MatchingRequestModal from '@/components/recruiting-projects/MatchingRequestModal';
+import MatchingRequestConfirmModal from '@/components/matching-available/MatchingRequestConfirmModal';
+import MatchingSuccessModal from '@/components/recruiting-projects/MatchingSuccessModal';
 import MatchingCancelModal from '@/components/recruiting-projects/MatchingCancelModal';
 import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlockedModal';
 
 const RecruitingProjectsPage = () => {
     const [activeTab, setActiveTab] = useState<'info' | 'members'>('info');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
     const [isMatching, setIsMatching] = useState(false);
-    const [isCancelled, setIsCancelled] = useState(false); // 취소된 상태 추가
+    const [isCancelled, setIsCancelled] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
 
     // 포지션 색상 매핑
@@ -32,11 +36,6 @@ const RecruitingProjectsPage = () => {
         };
 
         return styles[positionName] || 'bg-tag-yellow';
-    };
-
-    const handleMatchingComplete = () => {
-        setIsMatching(true);
-        setIsModalOpen(false);
     };
 
     const handleMatchingButtonClick = () => {
@@ -61,20 +60,20 @@ const RecruitingProjectsPage = () => {
 
                 <div className="w-[916px]">
                     <div className="mt-[36px]">
-                    <Breadcrumb 
-                        items={[
-                            { label: '홈', path: '/' },
-                            { label: '모집 중인 프로젝트', path: '/recruiting-projects' },
-                            { label: '넥트(NECT)' }
-                        ]} 
-                    />
-                </div>
+                        <Breadcrumb 
+                            items={[
+                                { label: '홈', path: '/' },
+                                { label: '모집 중인 프로젝트', path: '/recruiting-projects' },
+                                { label: '넥트(NECT)' }
+                            ]} 
+                        />
+                    </div>
                     <div className=' mt-8 flex items-center justify-between'>
                         <h1 className="text-3xl font-bold mt-1">모집 중인 프로젝트</h1>
-                    <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-md">
-                        <img src={hamburger} alt="Menu" />
-                        <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
-                    </button>
+                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-md">
+                            <img src={hamburger} alt="Menu" />
+                            <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
+                        </button>
                     </div>
                 </div>
 
@@ -114,25 +113,6 @@ const RecruitingProjectsPage = () => {
                                 >
                                     {isMatching && isHovered ? '신청 취소' : isMatching ? '매칭 신청 중' : '매칭 신청'}
                                 </button>
-
-                                {/* 모달들 */}
-                                <MatchingRequestModal 
-                                    isOpen={isModalOpen}
-                                    onClose={() => setIsModalOpen(false)}
-                                    onMatchingComplete={handleMatchingComplete}
-                                    getPositionStyle={getPositionStyle}
-                                />
-
-                                <MatchingCancelModal 
-                                    isOpen={isCancelModalOpen}
-                                    onClose={() => setIsCancelModalOpen(false)}
-                                    onConfirm={handleCancelConfirm}
-                                />
-
-                                <MatchingBlockedModal 
-                                    isOpen={isBlockedModalOpen}
-                                    onClose={() => setIsBlockedModalOpen(false)}
-                                />
                             </div>
                         </div>
                     </div>
@@ -169,8 +149,52 @@ const RecruitingProjectsPage = () => {
                         {activeTab === 'members' && <TeamMembersTab getPositionStyle={getPositionStyle} />}
                     </div>
                 </div>
-                </div>
+
+                {/* 모달들 */}
+                {/* 1단계: 파트 선택 */}
+                <MatchingRequestModal 
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onMatchingComplete={() => {
+                        setIsModalOpen(false);
+                        setIsConfirmModalOpen(true);
+                    }}
+                    getPositionStyle={getPositionStyle}
+                />
+
+                {/* 2단계: 매칭 요청 확인 */}
+                <MatchingRequestConfirmModal 
+                    isOpen={isConfirmModalOpen}
+                    onClose={() => setIsConfirmModalOpen(false)}
+                    onConfirm={() => {
+                        setIsConfirmModalOpen(false);
+                        setIsSuccessModalOpen(true);
+                    }}
+                    memberName="프로젝트"
+                    position="Design"
+                />
+
+                {/* 3단계: 매칭 완료 */}
+                <MatchingSuccessModal 
+                    isOpen={isSuccessModalOpen}
+                    onClose={() => {
+                        setIsSuccessModalOpen(false);
+                        setIsMatching(true);
+                    }}
+                />
+
+                <MatchingCancelModal 
+                    isOpen={isCancelModalOpen}
+                    onClose={() => setIsCancelModalOpen(false)}
+                    onConfirm={handleCancelConfirm}
+                />
+
+                <MatchingBlockedModal 
+                    isOpen={isBlockedModalOpen}
+                    onClose={() => setIsBlockedModalOpen(false)}
+                />
             </div>
+        </div>
     );
 };
 

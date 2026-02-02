@@ -15,6 +15,7 @@ import AnalysisLayout from './components/layout/AnalysisLayout'
 import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
 import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
+import MatchingAvailablePage from './pages/MatchingAvailablePage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
 			{
 				path: '/recruiting-projects',
 				element: <RecruitingProjectsPage />,
+			},
+			{
+				path: '/matching-available',
+				element: <MatchingAvailablePage />
 			}
 		],
 	},
