@@ -21,6 +21,7 @@ interface TodoBlockProps {
 	attachments?: number // 첨부파일 개수
 	variant?: 'Default' | 'Minimum' | 'Edit'
 	isEdit?: boolean
+	onClick?: () => void
 }
 
 const TodoBlock = ({
@@ -33,6 +34,7 @@ const TodoBlock = ({
     attachments,
 	variant = 'Default',
 	isEdit = false,
+	onClick,
 }: TodoBlockProps) => {
 	const isMinimum = variant === 'Minimum'
 	const isDefault = variant === 'Default'
@@ -52,13 +54,14 @@ const TodoBlock = ({
 
 	return (
 		<div
-			className={`bg-neutral-50 border border-solid flex flex-col items-start pl-[14px] pr-[12px] relative rounded-12  shadow-drop-neutral-3 w-[208px] ${
+			className={`bg-neutral-50 border border-solid flex flex-col items-start pl-[14px] pr-[12px] relative rounded-12 shadow-drop-neutral-3 w-[208px] cursor-pointer ${
 				isMinimum
 					? 'border-neutral-200 pb-[12px] pt-[10px]'
 					: isEdit
 						? 'border-semantic-500 py-[10px]'
 						: 'border-neutral-200 py-[10px]'
 			}`}
+			onClick={onClick}
 		>
 			<div className='flex flex-col gap-[12px] items-start relative shrink-0 w-full'>
 				{/* 헤더: 라벨 + 제목 */}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
@@ -19,6 +19,7 @@ import { useWorkStatusFilter } from '@/hooks/work-status/useWorkStatusFilter'
 import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
+import { useTeamStore } from '@/stores/teamStore'
 
 // Droppable 컬럼 컴포넌트
 interface DroppableColumnProps {
@@ -38,17 +39,35 @@ const DroppableColumn = ({ id, children }: DroppableColumnProps) => {
 interface SortableTodoBlockProps {
 	item: WorkStatusItem
 	status: MissionStatus
+	onItemClick: (itemId: number) => void
 }
 
-const SortableTodoBlock = ({ item, status }: SortableTodoBlockProps) => {
+const SortableTodoBlock = ({ item, status, onItemClick }: SortableTodoBlockProps) => {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
 		id: item.id,
 	})
+	const wasDraggingRef = useRef(false)
+
+	// 드래그 상태 변화 감지
+	useEffect(() => {
+		if (isDragging) {
+			wasDraggingRef.current = true
+		}
+	}, [isDragging])
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
 		transition,
 		opacity: isDragging ? 0.5 : 1,
+	}
+
+	const handleClick = () => {
+		// 드래그 직후에는 클릭 무시
+		if (wasDraggingRef.current) {
+			wasDraggingRef.current = false
+			return
+		}
+		onItemClick(item.id)
 	}
 
 	return (
@@ -64,6 +83,7 @@ const SortableTodoBlock = ({ item, status }: SortableTodoBlockProps) => {
 				attachments={item.attachments}
 				variant={status === 'backlog' ? 'Minimum' : 'Default'}
 				isEdit={item.isEdit}
+				onClick={handleClick}
 			/>
 		</div>
 	)
@@ -71,7 +91,8 @@ const SortableTodoBlock = ({ item, status }: SortableTodoBlockProps) => {
 
 const WorkStatusPage = () => {
 	const [selectedSegment, setSelectedSegment] = useState('Team')
-	const segments = ['Team', 'PM', 'Design', 'Backend', 'Frontend']
+	const { roles } = useTeamStore()
+	const segments = ['Team', ...roles.map(role => role.name)]
 	const statuses: MissionStatus[] = ['planning', 'in_progress', 'completed', 'backlog']
 	const { openMissionModal } = useMissionModalStore()
 
@@ -111,7 +132,6 @@ const WorkStatusPage = () => {
 						segments={segments}
 						defaultValue={selectedSegment}
 						onChange={setSelectedSegment}
-						editable={true}
 					/>
 				</div>
 
@@ -152,7 +172,12 @@ const WorkStatusPage = () => {
 									<div className='flex flex-col gap-2 items-start relative shrink-0 w-[224px]'>
 										<TodoSection status={status}>
 											{items.map(item => (
-												<SortableTodoBlock key={item.id} item={item} status={status} />
+												<SortableTodoBlock
+													key={item.id}
+													item={item}
+													status={status}
+													onItemClick={(itemId) => openMissionModal(itemId)}
+												/>
 											))}
 										</TodoSection>
 									</div>
@@ -183,7 +208,7 @@ const WorkStatusPage = () => {
 			</div>
 
 			{/* 오른쪽 사이드바 */}
-			<div className='flex flex-col gap-16 items-start relative shrink-0 w-auto h-full mt-[104px] ml-[6px] px-10 border-l border-neutral-200 overflow-y-auto WorkStatusScrollbar'>
+			<div className='flex flex-col gap-16 items-start relative shrink-0 w-auto h-[calc(100%-104px)] mt-[104px] ml-[6px] px-10 pb-8 border-l border-neutral-200 overflow-y-auto WorkStatusScrollbar'>
 				{/* 팀 작업 진행률 */}
 				<div className='flex flex-col gap-[14px] items-start relative shrink-0 w-full'>
 					<h2 className='title-2 text-neutral-900 font-bold relative shrink-0 w-full'>팀 작업 진행률</h2>
