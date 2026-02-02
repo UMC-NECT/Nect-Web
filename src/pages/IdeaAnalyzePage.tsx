@@ -57,15 +57,15 @@ const IdeaAnalyzePage = () => {
 
     const handleSubmit = () => {
         const newErrors: IdeaErrors = {
-            projectName: !formData.projectName,
-            oneLine: !formData.oneLine,
-            targetUser: !formData.targetUser,
-            problem: !formData.problem,
+            projectName: !formData.projectName.trim(),
+            oneLine: !formData.oneLine.trim(),
+            targetUser: !formData.targetUser.trim(),
+            problem: !formData.problem.trim(),
             features: !formData.features.every(f => f.trim() !== ''),
-            platform: !formData.platform,
-            competitor: !formData.competitor,
-            challenge: !formData.challenge,
-            deadline: !formData.deadline
+            platform: !formData.platform.trim(),
+            competitor: !formData.competitor.trim(),
+            challenge: !formData.challenge.trim(),
+            deadline: !formData.deadline.trim()
         }
 
         setErrors(newErrors)
@@ -73,7 +73,6 @@ const IdeaAnalyzePage = () => {
         const hasErrors = Object.values(newErrors).some(error => error === true)
         
         if (!hasErrors) {
-            console.log('Submit', formData)
             navigate('/analyze-report')
         }
     }

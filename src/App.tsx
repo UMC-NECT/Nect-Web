@@ -19,6 +19,7 @@ import OngoingProject from './components/mypage/ongoing-project/OngoingProject'
 import ProfileAnalysis from './components/mypage/profile-analysis/ProfileAnalysis'
 import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
+import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
 			{
 				path: '/work-status',
 				element: <WorkStatusPage />,
+			},
+			{
+				path: '/recruiting-projects',
+				element: <RecruitingProjectsPage />,
 			},
 			{
 				path: '/mypage',
@@ -91,7 +96,7 @@ const router = createBrowserRouter([
 			{
 				path: '/analyze-report',
 				element: <AnalyzeReportPage />,
-			}
+			},
 		],
 	},
 	{
