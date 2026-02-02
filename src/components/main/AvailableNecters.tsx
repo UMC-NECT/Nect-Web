@@ -54,7 +54,7 @@ const RecommendedProjects = () => {
                 </p>
             </div>  
             
-            <div className="grid grid-cols-2 gap-3 bg-white">
+            <div className="grid grid-cols-2 gap-3">
                 {projects.map((project) => (
                     <div 
                         key={project.id} 

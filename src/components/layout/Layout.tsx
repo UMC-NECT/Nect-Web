@@ -1,22 +1,37 @@
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
 import Header from '../header/Header'
 import { Sidebar } from './sidebar/Sidebar'
 import { useWorkspace } from '@/stores/useWorkspace'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import MissionModal from '@/components/mission-modal/MissionModal'
+import CTAModal from '@/components/mypage/CTAModal'
+import { useCTAModal } from '@/stores/useCTAModal'
 
 export const Layout = () => {
 	const { isWorkspace } = useWorkspace()
 	const { isMissionModalOpen, closeMissionModal, editingSectionIndex } = useMissionModalStore()
-
 	// sectionIndex가 0이면 리더형 모달
 	const modalVariant = editingSectionIndex === 0 ? 'leader' : 'default'
+
+	const { isOpen: isCTAModalOpen, config: ctaModalConfig } = useCTAModal()
+	const location = useLocation()
+	const isMyPage = location.pathname.startsWith('/mypage')
+
+	const getContentClassName = () => {
+		// 마이 페이지 레이아웃
+		if (isMyPage) {
+			return 'w-full pt-[124px] bg-neutral-50'
+		}
+
+		// 작업실 or 메인 레이아웃
+		return `w-full max-w-main mx-auto px-[72px] ${isWorkspace ? 'pt-[66px]' : 'pt-[132px]'}`
+	}
 
 	return (
 		<>
 			<Header />
 			{isWorkspace && <Sidebar />}
-			<div className={`w-full max-w-main mx-auto px-[72px] ${isWorkspace ? 'pt-[66px]' : 'pt-[132px]'}`}>
+			<div className={getContentClassName()}>
 				<Outlet />
 			</div>
 
@@ -27,6 +42,20 @@ export const Layout = () => {
 						<MissionModal variant={modalVariant} />
 					</div>
 				</div>
+			)}
+
+			{/* CTA 모달 */}
+			{isCTAModalOpen && ctaModalConfig && (
+				<CTAModal
+					message={ctaModalConfig.message}
+					subMessage={ctaModalConfig.subMessage}
+					isMessageHighlight={ctaModalConfig.isMessageHighlight}
+					fixedHeight={ctaModalConfig.fixedHeight}
+					leftButtonMsg={ctaModalConfig.leftButton?.text}
+					rightButtonMsg={ctaModalConfig.rightButton?.text}
+					onLeftClick={ctaModalConfig.leftButton?.onClick}
+					onRightClick={ctaModalConfig.rightButton?.onClick}
+				/>
 			)}
 		</>
 	)
