@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
 import HamburgerIcon from '@/assets/icons/common/hamburger.svg?react'
-import Tabbar from './Tabbar'
+import SegmentTabButton from '../SegmentTabButton'
 import ProjectManagementView from './tab1-project-setting/ProjectManagementView'
 import TeamManagementView from './tab2-team-management/TeamManagementView'
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
@@ -212,7 +212,18 @@ const OngoingProject = () => {
 				</div>
 
 				{/* 탭바 */}
-				<Tabbar currentTab={activeTab} onClick={handleActivateTab} />
+				<div className='flex items-center mb-7'>
+					<SegmentTabButton
+						label='프로젝트 설정'
+						isActive={activeTab === '프로젝트 설정'}
+						onClick={() => handleActivateTab('프로젝트 설정')}
+					/>
+					<SegmentTabButton
+						label='팀원 관리'
+						isActive={activeTab === '팀원 관리'}
+						onClick={() => handleActivateTab('팀원 관리')}
+					/>
+				</div>
 
 				{/* 탭 01. 프로젝트 설정 */}
 				{activeTab === '프로젝트 설정' && (

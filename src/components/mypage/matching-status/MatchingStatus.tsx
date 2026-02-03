@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { MyPageHeader } from '../MyPageHeader'
-import { cn } from '@/utils/cn'
 import ProjectCard from './ProjectCard'
 import ProfileCard from './ProfileCard'
 import MatchingTimerCard from './MatchingTimerCard'
@@ -8,6 +7,7 @@ import MatchingNotice from './MatchingNotice'
 import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import { RECEIVED_REQUEST_NOTICES, SENT_REQUEST_NOTICES } from '@/constants/matchingNotice'
 import CTAModal from '@/components/common/CTAModal'
+import SegmentTabButton from '../SegmentTabButton'
 
 type TabType = 'received' | 'sent'
 
@@ -148,51 +148,18 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 			<div className='w-[916px] px-11.5 py-11.5 rounded-12 bg-white border border-neutral-200'>
 				{/* 탭 영역 */}
 				<div className='flex items-center gap-1 mb-[38px]'>
-					{/* 받은 요청 탭 */}
-					<button
-						type='button'
+					<SegmentTabButton
+						label='받은 요청'
+						count={receivedCount}
+						isActive={activeTab === 'received'}
 						onClick={() => setActiveTab('received')}
-						className='flex flex-col gap-3 w-30 pt-2.5'
-					>
-						<div
-							className={cn(
-								'title-3 font-semibold text-center flex items-center justify-center gap-1.5',
-								activeTab === 'received' ? 'text-primary-500-normal' : 'text-neutral-400'
-							)}
-						>
-							<span>받은 요청</span>
-							<span>{receivedCount}</span>
-						</div>
-						<div
-							className={cn(
-								'h-0.75 w-full',
-								activeTab === 'received' ? 'bg-primary-400-normal' : 'bg-neutral-300'
-							)}
-						/>
-					</button>
-
-					{/* 보낸 요청 탭 */}
-					<button
-						type='button'
+					/>
+					<SegmentTabButton
+						label='보낸 요청'
+						count={sentCount}
+						isActive={activeTab === 'sent'}
 						onClick={() => setActiveTab('sent')}
-						className='flex flex-col gap-3 w-30 pt-2.5'
-					>
-						<div
-							className={cn(
-								'title-3 font-semibold text-center flex items-center justify-center gap-1.5',
-								activeTab === 'sent' ? 'text-primary-500-normal' : 'text-neutral-400'
-							)}
-						>
-							<span>보낸 요청</span>
-							<span>{sentCount}</span>
-						</div>
-						<div
-							className={cn(
-								'h-0.75 w-full',
-								activeTab === 'sent' ? 'bg-primary-400-normal' : 'bg-neutral-300'
-							)}
-						/>
-					</button>
+					/>
 				</div>
 
 				{/* 탭 컨텐츠 */}
