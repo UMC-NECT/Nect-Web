@@ -17,6 +17,7 @@ import { ProfileSettings } from './components/mypage/profile-settings/ProfileSet
 import IdeaAnalysis from './components/mypage/idea-analysis/IdeaAnalysis'
 import OngoingProject from './components/mypage/ongoing-project/OngoingProject'
 import ProfileAnalysis from './components/mypage/profile-analysis/ProfileAnalysis'
+import { MatchingStatus } from './components/mypage/matching-status/MatchingStatus'
 import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
 import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
@@ -94,6 +95,10 @@ const router = createBrowserRouter([
 					{
 						path: 'ongoing',
 						element: <OngoingProject />,
+					},
+					{
+						path: 'matching',
+						element: <MatchingStatus />,
 					},
 				],
 			},

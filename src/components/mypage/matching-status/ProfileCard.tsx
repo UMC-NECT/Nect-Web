@@ -20,7 +20,7 @@ const ProfileCard = ({ imageUrl, nickname, part, introduction, onMessageClick, c
 	return (
 		<div
 			className={cn(
-				'bg-neutral-000 border-[1.5px] border-neutral-200 rounded-12 flex flex-col h-[124px] items-start px-[16px] py-[14px] w-[484px]',
+				'bg-neutral-000 border-[1.5px] border-neutral-200 rounded-12 flex flex-col h-[124px] items-start px-[14px] py-[14px] w-[478px]',
 				className
 			)}
 		>

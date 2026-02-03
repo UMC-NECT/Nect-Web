@@ -1,11 +1,14 @@
 import { cn } from '@/utils/cn'
+import type { NoticeItem } from '@/constants/matchingNotice'
 
 interface MatchingNoticeProps {
+	/** 유의사항 항목 목록 */
+	items: NoticeItem[]
 	/** 추가 클래스명 */
 	className?: string
 }
 
-const MatchingNotice = ({ className }: MatchingNoticeProps) => {
+const MatchingNotice = ({ items, className }: MatchingNoticeProps) => {
 	return (
 		<div
 			className={cn(
@@ -13,40 +16,47 @@ const MatchingNotice = ({ className }: MatchingNoticeProps) => {
 				className
 			)}
 		>
-			{/* 규칙 1 */}
-			<div className="flex flex-col items-start relative shrink-0 w-full">
-				<p className="title-3 font-semibold text-primary-600-normal h-6 justify-center leading-[1.4] w-full">
-					<span className="text-neutral-900">1. </span>
-					<span>대기 만료 시, 매칭이 자동 거절 처리</span>
-				</p>
-			</div>
-
-			{/* 규칙 2 */}
-			<div className="flex flex-col items-start relative shrink-0 w-full">
-				<p className="title-3 font-semibold text-primary-600-normal h-6 justify-center leading-[1.4] w-full">
-					<span className="text-neutral-900">2. </span>
-					<span>24시간 동안의 매칭 취소 </span>
-					<span className="body-1 font-medium">/</span>
-					<span> 거절 </span>
-					<span className="body-1 font-medium">/ </span>
-					<span>수락은 번복 불가</span>
-				</p>
-			</div>
-
-			{/* 규칙 3 */}
-			<div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-				<p className="title-3 font-semibold text-primary-600-normal h-6 justify-center leading-[1.4] w-full">
-					<span className="text-neutral-900">3. </span>
-					<span>리더가 직접 보내는 요청은 파트당 최대 3명까지 가능 (24시간 동안)</span>
-				</p>
-				<div className="flex flex-col body-1 font-medium text-neutral-700 tracking-[-0.08px] w-full whitespace-pre-wrap">
-					<p className="mb-0 leading-[1.5]">
-						리더는 24시간동안 한 프로젝트의 파트당 최대 3명에게{' '}
-						<span className="font-bold">매칭 요청을 직접 보낼 수 있습니다.</span>
+			{items.map((item, index) => (
+				<div
+					key={index}
+					className={cn(
+						'flex flex-col items-start relative shrink-0 w-full',
+						item.subText && 'gap-3'
+					)}
+				>
+					{/* 규칙 메인 텍스트 */}
+					<p className="title-3 font-semibold text-primary-600-normal h-6 justify-center leading-[1.4] w-full">
+						<span className="text-neutral-900">{item.number}. </span>
+						{/* 텍스트 내부의 "/" 처리 */}
+						{item.text.split(/(\/)/).map((part, partIndex) => {
+							if (part === '/') {
+								return <span key={partIndex} className="body-1 font-medium">{part}</span>
+							}
+							return <span key={partIndex}>{part}</span>
+						})}
 					</p>
-					<p className="leading-[1.5]">이때, 유저가 보내오는 프로젝트 매칭 요청은 포함되지 않습니다.</p>
+
+					{/* 규칙 하위 설명 텍스트 */}
+					{item.subText && (
+						<div className="flex flex-col body-1 font-medium text-neutral-700 tracking-[-0.08px] w-full whitespace-pre-wrap">
+							{item.subText.split('\n').map((line, lineIndex) => (
+								<p key={lineIndex} className={lineIndex === 0 ? 'mb-0 leading-[1.5]' : 'leading-[1.5]'}>
+									{line.split(/(\*\*.*?\*\*)/).map((segment, segIndex) => {
+										if (segment.startsWith('**') && segment.endsWith('**')) {
+											return (
+												<span key={segIndex} className="font-bold">
+													{segment.slice(2, -2)}
+												</span>
+											)
+										}
+										return <span key={segIndex}>{segment}</span>
+									})}
+								</p>
+							))}
+						</div>
+					)}
 				</div>
-			</div>
+			))}
 		</div>
 	)
 }

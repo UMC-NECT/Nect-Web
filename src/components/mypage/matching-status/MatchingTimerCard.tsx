@@ -66,7 +66,7 @@ const MatchingTimerCard = ({
 	return (
 		<div
 			className={cn(
-				'bg-neutral-000 border-[1.5px] border-neutral-200 rounded-12 flex flex-col h-[124px] items-start p-[14px] w-[316px]',
+				'bg-neutral-000 border-[1.5px] border-neutral-200 rounded-12 flex flex-col h-[124px] items-start p-[14px] w-[302px]',
 				className
 			)}
 		>

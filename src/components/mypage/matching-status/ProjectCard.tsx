@@ -21,7 +21,7 @@ const ProjectCard = ({ projectName, category, description, currentMembers, total
 	return (
 		<div
 			className={cn(
-				'bg-neutral-000 border-[1.5px] border-neutral-200 border-solid flex flex-col items-start overflow-clip px-[22px] py-4 relative rounded-12 w-[484px] h-[124px] cursor-pointer',
+				'bg-neutral-000 border-[1.5px] border-neutral-200 border-solid flex flex-col items-start overflow-clip px-[22px] py-4 relative rounded-12 w-[478px] h-[124px] cursor-pointer',
 				onClick && 'hover:border-primary-400-normal transition-colors',
 				className
 			)}
