@@ -26,7 +26,7 @@ const SelectMultipleProjectModal = ({ isOpen, onClose, onConfirm }: SelectMultip
                 className='w-[600px] h-[376px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col border border-neutral-200'
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className='text-[20px] font-sembold text-center mb-12'>
+                <h2 className='text-[20px] font-semibold text-center mb-12'>
                     팀원 매칭 할 프로젝트를 선택해주세요.
                 </h2>
 

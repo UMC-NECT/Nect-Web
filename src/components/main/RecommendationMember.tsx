@@ -50,7 +50,7 @@ const RecommendationMember = () => {
                         disableOnInteraction: false,
                     }}
                     loop={true}
-                    className="pt-3! recommendation-member-swiper"
+                    className="!pt-3 recommendation-member-swiper"
                 >
                     {recommendationMembers.map((member) => (
                         <SwiperSlide key={member.id}>
@@ -151,7 +151,6 @@ const RecommendationMember = () => {
                     opacity: 0.3;
                     cursor: not-allowed;
                     pointer-events: none;
-                }
 
                 .recommendation-member-swiper > .swiper-pagination {
                     display: none !important;

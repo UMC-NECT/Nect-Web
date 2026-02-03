@@ -1,23 +1,6 @@
 import clip from '@/assets/icons/common/clip.svg';
 import projectIcon from '@/assets/icons/common/project-icon.svg';
-
-interface Member {
-    name: string;
-    role: string;
-    position: string;
-    email: string;
-    profileImage?: string;
-    isRecruiting?: boolean;
-    jobTitle: string;
-    field: string;
-    experience: string;
-    introduction: string;
-    coreCompetencies: string[];
-    portfolioKeywords: string[];
-    designTools: string[];
-    recordTools: string[];
-    etcTools: string[];
-}
+import type { Member } from '@/types/member';
 
 interface MemberProfileDetailProps {
     member: Member;

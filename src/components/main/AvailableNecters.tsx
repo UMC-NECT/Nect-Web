@@ -69,7 +69,7 @@ const RecommendedProjects = () => {
                             
                             {/* 프로필 이미지 + 매칭 가능 버튼 */}
                             <div className="absolute top-18.5 left-3 right-3 w-62">
-                                <div className='flex justify-between items-end'>
+                                <div className="flex justify-between items-end">
                                     <img 
                                         src={project.character} 
                                         alt="character"

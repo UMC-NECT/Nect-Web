@@ -43,10 +43,10 @@ const Slider = () => {
                     }}
                     navigation={false}
                     pagination={{ clickable: true }}
-                    className="mySwiper overflow-visible! cursor-pointer w-282"
+                    className="mySwiper !overflow-visible cursor-pointer w-282"
                 >
                     {slides.map((slide, index) => (
-                        <SwiperSlide key={`${slide.id}-${index}`} className="w-282!">
+                        <SwiperSlide key={`${slide.id}-${index}`} className="!w-282">
                             <div className="relative w-282 h-87.5 rounded-2xl overflow-hidden">
                                 <img 
                                     src={slide.image} 

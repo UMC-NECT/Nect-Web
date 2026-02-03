@@ -13,4 +13,5 @@ export const getTagStyle = (tag: string): string => {
     };
 
     return styles[tagName] || 'bg-tag-none';
+
 };

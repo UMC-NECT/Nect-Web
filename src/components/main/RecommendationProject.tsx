@@ -49,7 +49,7 @@ const RecommendationProject = () => {
                         disableOnInteraction: false,
                     }}
                     loop={true}
-                    className="pt-3! recommendation-project-swiper"
+                    className="!pt-3 recommendation-project-swiper"
                 >
                     {recommendationProjects.map((project) => (
                         <SwiperSlide key={project.id}>

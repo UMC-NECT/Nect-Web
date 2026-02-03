@@ -13,6 +13,7 @@ import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlock
 import MemberProfileHeader from '@/components/recruiting-projects/MemberProfileHeader';
 import MemberProfileDetail from '@/components/recruiting-projects/MemberProfileDetail';
 import type { Member } from '@/types/member';
+import { getTagStyle } from '@/utils/tagStyles';
 
 const MatchingAvailablePage = () => {
     const member: Member = {
@@ -47,20 +48,6 @@ const MatchingAvailablePage = () => {
     const [matchingCount, setMatchingCount] = useState(0); // 신청 횟수
     const [isMatching, setIsMatching] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
-
-    const getPositionStyle = (position: string) => {
-        const positionName = position.toLowerCase();
-        const styles: Record<string, string> = {
-            'pm': 'bg-tag-purple',
-            'design': 'bg-tag-pink',
-            'frontend': 'bg-tag-green',
-            'backend': 'bg-tag-blue',
-            'develop': 'bg-tag-blue',
-            'server': 'bg-tag-orange',
-            'data': 'bg-tag-yellow',
-        };
-        return styles[positionName] || 'bg-tag-yellow';
-    };
 
     const handleMatchingButtonClick = () => {
         if (isMatching) {
@@ -189,7 +176,7 @@ const MatchingAvailablePage = () => {
                         setIsRequestModalOpen(false);
                         setIsConfirmModalOpen(true);
                     }}
-                    getPositionStyle={getPositionStyle}
+                    getPositionStyle={getTagStyle}
                 />
 
                 {/* 매칭 요청 확인 */}

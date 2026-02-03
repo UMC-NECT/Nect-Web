@@ -1,12 +1,5 @@
 import bar from '@/assets/icons/common/Bar.svg';
-
-interface Member {
-    name: string;
-    position: string;
-    email: string;
-    profileImage?: string;
-    isRecruiting?: boolean;
-}
+import type { Member } from '@/types/member';
 
 interface MemberProfileHeaderProps {
     member: Member;

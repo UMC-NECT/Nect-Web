@@ -14,7 +14,7 @@ const MainPage = () => {
     return (
         <div className="relative">
             {/* 배경 레이어 - 뷰포트 전체 너비 */}
-            <div className="fixed top-16.5 left-0 right-0 bottom-0 bg-bg-gray -z-10" />
+            <div className="fixed top-[64px] left-0 right-0 bottom-0 bg-bg-gray -z-10" />
             
             <div className="relative mt-16.5 z-0">
                 {/* 슬라이더 */}
