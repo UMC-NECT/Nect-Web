@@ -8,7 +8,7 @@ interface SegmentsBarProps {
 	editable?: boolean
 }
 
-const SegmentsBar = ({ segments, defaultValue, onChange, editable }: SegmentsBarProps) => {
+const SegmentsBar = ({ segments, defaultValue, onChange }: SegmentsBarProps) => {
 	const [activeSegment, setActiveSegment] = useState<string>(defaultValue || segments[0] || '')
 
 	const handleSegmentClick = (segment: string) => {
