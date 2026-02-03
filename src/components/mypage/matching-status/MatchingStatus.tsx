@@ -18,7 +18,7 @@ interface MatchingStatusProps {
 
 export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingStatusProps) => {
 	const [activeTab, setActiveTab] = useState<TabType>('received')
-	const [modalType, setModalType] = useState<'reject' | 'accept' | 'cancel' | null>(null)
+	const [modalType, setModalType] = useState<'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null>(null)
 
 	// 받은 요청 데이터 (임시)
 	const receivedProjects = [
@@ -374,6 +374,20 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					onLeftClick={() => setModalType(null)}
 					onRightClick={() => {
 						console.log('매칭 거절 확인')
+						setModalType('rejectSuccess')
+					}}
+				/>
+			)}
+
+			{/* 매칭 거절 성공 모달 */}
+			{modalType === 'rejectSuccess' && (
+				<CTAModal
+					message='매칭 요청이 거절 되었습니다'
+					subMessage=''
+					isMessageHighlight={true}
+					buttonMsg='확인'
+					onButtonClick={() => {
+						console.log('매칭 거절 성공 확인')
 						setModalType(null)
 					}}
 				/>
@@ -389,6 +403,20 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					onLeftClick={() => setModalType(null)}
 					onRightClick={() => {
 						console.log('매칭 수락 확인')
+						setModalType('acceptSuccess')
+					}}
+				/>
+			)}
+
+			{/* 매칭 수락 성공 모달 */}
+			{modalType === 'acceptSuccess' && (
+				<CTAModal
+					message='매칭이 수락 되었습니다'
+					subMessage='넥트가 응원할게요 !'
+					isMessageHighlight={true}
+					buttonMsg='확인'
+					onButtonClick={() => {
+						console.log('매칭 수락 성공 확인')
 						setModalType(null)
 					}}
 				/>
@@ -404,6 +432,20 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					onLeftClick={() => setModalType(null)}
 					onRightClick={() => {
 						console.log('매칭 취소 확인')
+						setModalType('cancelSuccess')
+					}}
+				/>
+			)}
+
+			{/* 매칭 취소 성공 모달 */}
+			{modalType === 'cancelSuccess' && (
+				<CTAModal
+					message='매칭 요청이 취소 되었습니다'
+					subMessage=''
+					isMessageHighlight={true}
+					buttonMsg='확인'
+					onButtonClick={() => {
+						console.log('매칭 취소 성공 확인')
 						setModalType(null)
 					}}
 				/>
