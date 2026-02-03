@@ -20,15 +20,21 @@ const TeamMemberSection = ({ role, members, onOpenPartSettings, onSetLeader }: I
 	// 모달이 열리면 백그라운드 스크롤 방지
 	useEffect(() => {
 		if (openDropdownId) {
+			// 스크롤바 너비 계산
+			const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
 			document.documentElement.style.overflow = 'hidden'
 			document.body.style.overflow = 'hidden'
+			document.body.style.paddingRight = `${scrollbarWidth}px`
 		} else {
 			document.documentElement.style.overflow = ''
 			document.body.style.overflow = ''
+			document.body.style.paddingRight = ''
 		}
 		return () => {
 			document.documentElement.style.overflow = ''
 			document.body.style.overflow = ''
+			document.body.style.paddingRight = ''
 		}
 	}, [openDropdownId])
 
