@@ -1,35 +1,42 @@
+import { useState } from 'react'
 import XIcon from '@/assets/icons/common/X-small.svg?react'
 import { cn } from '@/utils/cn'
+import { getRoleColorById } from '@/utils/roleColor'
 
 interface PersonTagChipProps {
 	personName: string
-	personColor?: string
+	roleId: number
 	personImage: string
 	state: 'default' | 'filter' | 'clear' | 'disabled'
 	onClick?: () => void
 }
 
-const PersonTagChip = ({ personName, personColor, personImage, state, onClick }: PersonTagChipProps) => {
-	const isDefault = state === 'default'
+const PersonTagChip = ({ personName, roleId, personImage, state, onClick }: PersonTagChipProps) => {
+	const [isHovered, setIsHovered] = useState(false)
+	const personColor = getRoleColorById(roleId)
 	const isFilter = state === 'filter'
 	const isClear = state === 'clear'
 	const isDisabled = state === 'disabled'
 
-	// filter, clear, disabled 상태에서만 personColor 사용
-	const useColor = isFilter
+	// 배경색 결정: disabled > filter > (default + hover)
+	const getBgClass = () => {
+		if (isDisabled) return 'bg-[linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5))]'
+		if (isFilter) return personColor
+		if (isHovered) return personColor
+		return ''
+	}
 
 	return (
 		<div
 			className={cn(
-				'group relative rounded-100 py-0.5 pl-0.5 w-fit h-7 flex items-center gap-1.5',
+				'group relative rounded-100 py-0.5 pl-0.5 w-fit h-7 flex items-center gap-1.5 transition-colors',
 				isClear ? 'pr-1' : 'pr-2.5',
-				isDisabled
-					? cn( 'bg-[linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5))]', 'cursor-default')
-					: isDefault
-						? cn('hover:bg-neutral-100', 'hover:cursor-pointer')
-						: cn(useColor && personColor, 'hover:cursor-pointer')
+				getBgClass(),
+				!isDisabled && 'cursor-pointer'
 			)}
 			onClick={!isDisabled && !isClear ? onClick : undefined}
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}
 		>
 			{/* 흰색 오버레이 - filter 상태에서만, hover시 사라짐 */}
 			{isFilter && (

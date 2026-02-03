@@ -9,7 +9,10 @@ import { useCTAModal } from '@/stores/useCTAModal'
 
 export const Layout = () => {
 	const { isWorkspace } = useWorkspace()
-	const { isMissionModalOpen, closeMissionModal } = useMissionModalStore()
+	const { isMissionModalOpen, closeMissionModal, editingSectionIndex } = useMissionModalStore()
+	// sectionIndex가 0이면 리더형 모달
+	const modalVariant = editingSectionIndex === 0 ? 'leader' : 'default'
+
 	const { isOpen: isCTAModalOpen, config: ctaModalConfig } = useCTAModal()
 	const location = useLocation()
 	const isMyPage = location.pathname.startsWith('/mypage')
@@ -36,7 +39,7 @@ export const Layout = () => {
 			{isMissionModalOpen && (
 				<div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50' onClick={closeMissionModal}>
 					<div onClick={e => e.stopPropagation()}>
-						<MissionModal />
+						<MissionModal variant={modalVariant} />
 					</div>
 				</div>
 			)}

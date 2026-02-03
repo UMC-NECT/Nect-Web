@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { cn } from '@/utils/cn'
-import { useMissionModalStore, type Person } from '@/stores/mission-modal/missionModalStore'
+import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
+import { useTeamStore, type Person } from '@/stores/teamStore'
 import TagChipList from './TagChipList'
 import getCaretCoordinates from 'textarea-caret'
 
@@ -30,7 +31,8 @@ const WorkContentInput = ({
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const textareaContainerRef = useRef<HTMLDivElement>(null)
 
-	const { persons, addMentionedPerson } = useMissionModalStore()
+	const { persons } = useTeamStore()
+	const { addMentionedPerson } = useMissionModalStore()
 
 	const formatTimestamp = () => {
 		const now = new Date()

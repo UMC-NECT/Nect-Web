@@ -21,6 +21,7 @@ interface TodoBlockProps {
 	attachments?: number // 첨부파일 개수
 	variant?: 'Default' | 'Minimum' | 'Edit'
 	isEdit?: boolean
+	onClick?: () => void
 }
 
 const TodoBlock = ({
@@ -33,6 +34,7 @@ const TodoBlock = ({
     attachments,
 	variant = 'Default',
 	isEdit = false,
+	onClick,
 }: TodoBlockProps) => {
 	const isMinimum = variant === 'Minimum'
 	const isDefault = variant === 'Default'
@@ -52,13 +54,14 @@ const TodoBlock = ({
 
 	return (
 		<div
-			className={`bg-neutral-50 border border-solid flex flex-col items-start pl-[14px] pr-[12px] relative rounded-[12px] shadow-drop-neutral-3 w-[208px] ${
+			className={`bg-neutral-50 border border-solid flex flex-col items-start pl-[14px] pr-[12px] relative rounded-12 shadow-drop-neutral-3 w-[208px] cursor-pointer ${
 				isMinimum
 					? 'border-neutral-200 pb-[12px] pt-[10px]'
 					: isEdit
 						? 'border-semantic-500 py-[10px]'
 						: 'border-neutral-200 py-[10px]'
 			}`}
+			onClick={onClick}
 		>
 			<div className='flex flex-col gap-[12px] items-start relative shrink-0 w-full'>
 				{/* 헤더: 라벨 + 제목 */}
@@ -85,6 +88,7 @@ const TodoBlock = ({
 
 								// 최대 2개까지 표시
 								const displayLinks = linksArray.slice(0, 2)
+								const remainingCount = linksArray.length - 2
 
 								if (displayLinks.length > 0) {
 									return (
@@ -92,6 +96,11 @@ const TodoBlock = ({
 											{displayLinks.map((link, index) => (
 												<LinkChip key={index} app={link} />
 											))}
+											{remainingCount > 0 && (
+												<span className='body-3 text-status-info-cool-gray-deep font-medium'>
+													+{remainingCount}
+												</span>
+											)}
 										</div>
 									)
 								} else if (attachments) {
@@ -101,7 +110,7 @@ const TodoBlock = ({
 												<LinkIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
 											</div>
 											<div className='flex items-center relative shrink-0'>
-												<p className='body-3 text-status-info font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
+												<p className='body-3 text-status-info-cool-gray-deep font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
 													{attachments}
 												</p>
 											</div>
@@ -117,7 +126,7 @@ const TodoBlock = ({
 									<DoIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
 								</div>
 								<div className='flex items-center relative shrink-0'>
-									<p className='body-3 text-status-info font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
+									<p className='body-3 text-status-info-cool-gray-deep font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
 										{`${todo.done}/${todo.total}`}
 									</p>
 								</div>

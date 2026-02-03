@@ -7,6 +7,7 @@ import ProfileIcon from '@/assets/icons/header/Profile.svg?react'
 import PortfolioIcon from '@/assets/icons/header/Portfolio.svg?react'
 import NotificationDropdown from '@/components/notification/NotificationDropdown'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { Link, useNavigate } from 'react-router'
 
 interface ExploreHeaderProps {
 	onNavigate: () => void
@@ -17,7 +18,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [showNotifications, setShowNotifications] = useState(false)
 	const [showMessages, setShowMessages] = useState(false)
 	const [isScrolled, setIsScrolled] = useState(false)
-
+	const navigate = useNavigate()
 	// 읽지 않은 알림 개수 (더미 데이터)
 	const unreadNotifications = 3
 
@@ -70,9 +71,9 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 			<div className='h-[66px] px-[92px]'>
 				<div className='mx-auto flex h-full items-center gap-9 px-6 relative'>
 					{/* 로고 */}
-					<div className='flex items-center cursor-pointer'>
+					<Link to='/' className='flex items-center cursor-pointer'>
 						<LogoIcon className='h-10 w-auto' />
-					</div>
+					</Link>
 
 					{/* 네비게이션 */}
 					<nav className='flex items-center gap-4'>
@@ -81,7 +82,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						</button>
 						<BarIcon />
 						<button
-							onClick={onNavigate}
+							onClick={() => {
+								onNavigate()
+								navigate('/team-board')
+							}}
 							className='text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
 						>
 							팀 작업실

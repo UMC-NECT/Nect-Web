@@ -68,7 +68,7 @@ const FeedbackItem = ({
 	}
 
 	return (
-		<div className='flex gap-2 items-start py-1.5 w-[292px]'>
+		<div className='flex gap-2 items-start py-1.5 w-full border-b border-neutral-100'>
 			{/* Checkbox */}
 			<div className='flex items-center py-0.5'>{renderCheckbox()}</div>
 
