@@ -7,6 +7,7 @@ import MatchingTimerCard from './MatchingTimerCard'
 import MatchingNotice from './MatchingNotice'
 import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import { RECEIVED_REQUEST_NOTICES, SENT_REQUEST_NOTICES } from '@/constants/matchingNotice'
+import CTAModal from '@/components/common/CTAModal'
 
 type TabType = 'received' | 'sent'
 
@@ -17,6 +18,7 @@ interface MatchingStatusProps {
 
 export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingStatusProps) => {
 	const [activeTab, setActiveTab] = useState<TabType>('received')
+	const [modalType, setModalType] = useState<'reject' | 'accept' | 'cancel' | null>(null)
 
 	// 받은 요청 데이터 (임시)
 	const receivedProjects = [
@@ -218,8 +220,8 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 												requestType='received'
 												status='default'
 												timerText={project.timerText}
-												onAccept={() => console.log('수락')}
-												onReject={() => console.log('거절')}
+												onAccept={() => setModalType('accept')}
+												onReject={() => setModalType('reject')}
 											/>
 										</div>
 									))}
@@ -254,8 +256,8 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 															requestType='received'
 															status={member.status || 'default'}
 															timerText={member.timerText}
-															onAccept={() => console.log('수락')}
-															onReject={() => console.log('거절')}
+															onAccept={() => setModalType('accept')}
+															onReject={() => setModalType('reject')}
 														/>
 													</div>
 												))}
@@ -301,7 +303,7 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 												requestType='sent'
 												status='default'
 												timerText={project.timerText}
-												onCancel={() => console.log('매칭 취소')}
+												onCancel={() => setModalType('cancel')}
 											/>
 										</div>
 									))}
@@ -336,7 +338,7 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 															requestType='sent'
 															status='default'
 															timerText={member.timerText}
-															onCancel={() => console.log('매칭 취소')}
+															onCancel={() => setModalType('cancel')}
 														/>
 													</div>
 												))}
@@ -361,6 +363,51 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					)}
 				</div>
 			</div>
+
+			{/* 매칭 거절 확인 모달 */}
+			{modalType === 'reject' && (
+				<CTAModal
+					message='매칭 요청을 {거절} 하시겠습니까?'
+					subMessage='거절 후 되돌릴 수 없습니다.'
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='매칭 거절'
+					onLeftClick={() => setModalType(null)}
+					onRightClick={() => {
+						console.log('매칭 거절 확인')
+						setModalType(null)
+					}}
+				/>
+			)}
+
+			{/* 매칭 수락 확인 모달 */}
+			{modalType === 'accept' && (
+				<CTAModal
+					message='매칭 요청을 {수락} 하시겠습니까?'
+					subMessage='수락 후 번복 할 수 없습니다.'
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='매칭 수락'
+					onLeftClick={() => setModalType(null)}
+					onRightClick={() => {
+						console.log('매칭 수락 확인')
+						setModalType(null)
+					}}
+				/>
+			)}
+
+			{/* 매칭 취소 확인 모달 */}
+			{modalType === 'cancel' && (
+				<CTAModal
+					message='매칭 요청을 {취소} 하시겠습니까?'
+					subMessage='취소 후 24시간 동안 해당 프로젝트 매칭 신청이 제한됩니다.'
+					leftButtonMsg='돌아가기'
+					rightButtonMsg='매칭 취소'
+					onLeftClick={() => setModalType(null)}
+					onRightClick={() => {
+						console.log('매칭 취소 확인')
+						setModalType(null)
+					}}
+				/>
+			)}
 		</div>
 	)
 }

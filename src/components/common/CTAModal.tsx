@@ -1,6 +1,6 @@
 import Button from './Button'
 
-interface ICTAModal {
+interface CTAModalProps {
 	message: string
 	subMessage?: string
 	isMessageHighlight?: boolean
@@ -20,7 +20,7 @@ const CTAModal = ({
 	rightButtonMsg,
 	onLeftClick,
 	onRightClick,
-}: ICTAModal) => {
+}: CTAModalProps) => {
 	// {텍스트} 형식 부분만 보라색으로 하이라이팅
 	const parseMessage = (text: string) => {
 		const parts = text.split(/(\{[^}]+\})/g)
