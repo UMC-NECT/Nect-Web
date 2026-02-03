@@ -1,23 +1,9 @@
 import More from '@/assets/icons/common/chevron-right.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 
+import { getTagStyle } from '@/utils/tagStyles';
+
 const UrgentProjects = () => {
-    // 태그 색상 매핑
-    const getTagStyle = (tag: string) => {
-        const tagName = tag.split(' ')[0].toLowerCase();
-        
-        const styles: Record<string, string> = {
-            'design': 'bg-tag-pink',
-            'frontend': 'bg-tag-green',
-            'backend': 'bg-tag-blue',
-            'server': 'bg-tag-orange',
-            'data': 'bg-tag-yellow',
-            'video': 'bg-tag-green',
-            'music': 'bg-tag-blue',
-        };
-        
-        return styles[tagName];
-    };
 
     const projects = [
         {
@@ -59,33 +45,33 @@ const UrgentProjects = () => {
     ];
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl text-neutral-900 font-bold">모집 중인 프로젝트</h2>
-                <p className="flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md">
+        <div className="w-138 h-142.5">
+            <div className="flex justify-between items-center mb-5 w-138 h-7.5">
+                <h2 className="text-[22px] text-neutral-900 font-bold">모집 중인 프로젝트</h2>
+                <p className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700">
                     더보기
-                    <More className="w-4 h-4 color-neutral-500 mr-1" />
+                    <More className="w-4 h-4 stroke-neutral-500 mr-1" />
                 </p>
             </div>  
             
             {/* 프로젝트 리스트 */}
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
                 {projects.map((project) => (
                     <div 
                         key={project.id} 
-                        className="w-[552px] h-[124px] p-3 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors"
+                        className="w-138 h-31 px-5.5 py-4 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors"
                     >
                         {/* 상단: 제목 + 날짜 */}
-                        <div className="flex justify-between items-start mb-3">
-                            <div className="flex flex-col gap-1 font-semibold">
+                        <div className="flex justify-between items-start mb-3 h-13.25">
+                            <div className="flex flex-col gap-1.5">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="text-lg text-neutral-900">{project.title}</h3>
-                                    <BarIcon className="w-[2px] h-4" />
-                                    <span className="text-md text-neutral-500">{project.category}</span>
+                                    <h3 className="text-[16px] text-neutral-900 font-semibold">{project.title}</h3>
+                                    <BarIcon className="w-0.5 h-3" />
+                                    <span className="text-[14px] text-neutral-500 font-semibold">{project.category}</span>
                                 </div>
-                                <p className="text-sm text-neutral-800">{project.description}</p>
+                                <p className="text-sm font-medium text-neutral-600">{project.description}</p>
                             </div>
-                            <span className="text-xl font-bold text-purple-600 whitespace-nowrap ml-4">
+                            <span className="text-xl font-bold text-purple-500 whitespace-nowrap ml-4">
                                 {project.dDay}
                             </span>
                         </div>
@@ -96,13 +82,13 @@ const UrgentProjects = () => {
                                 {project.tags.map((tag, index) => (
                                     <span 
                                         key={index}
-                                        className={`px-3 py-1 text-sm text-neutral-800 rounded-lg ${getTagStyle(tag)}`}
+                                        className={`px-2 py-1 gap-0.5 text-sm text-neutral-800 rounded-md h-6 flex justify-center items-center ${getTagStyle(tag)}`}
                                     >
                                         {tag}
                                     </span>
                                 ))}
                             </div>
-                            <span className="text-md text-neutral-500 whitespace-nowrap ml-4">
+                            <span className="text-[16px] text-neutral-500 whitespace-nowrap w-14.75 h-6">
                                 팀원 <p className="inline text-neutral-700">{project.members}</p>
                             </span>
                         </div>

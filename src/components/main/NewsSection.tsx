@@ -22,8 +22,8 @@ const NewsSection = () => {
     };
 
     return (
-        <div className="w-[1233px] mx-auto mb-[50px] relative">
-            <h2 className="text-[32px] font-bold text-center mb-[66px]">
+        <div className="w-308.25 h-184 mx-auto mb-12.5 relative">
+            <h2 className="text-[32px] font-bold text-center mb-16.5">
                 넥트에서 협업의 전 과정을<br />
                 A부터 Z까지
             </h2>
@@ -52,7 +52,7 @@ const NewsSection = () => {
                     {repeatedNewsItems.map((item, index) => (
                         <SwiperSlide key={`news-${index}`}>
                             <div 
-                                className="w-full h-[322px] border-2 rounded-2xl p-8"
+                                className="w-full h-80.5 border-2 rounded-2xl p-8"
                                 style={{
                                     backgroundColor: item.bgColor,
                                     borderColor: item.borderColor
@@ -68,7 +68,7 @@ const NewsSection = () => {
                                     {item.description}
                                 </p>
 
-                                <div className="w-[140px] h-[140px] ml-auto mt-[12px] mb-6 overflow-hidden">
+                                <div className="w-35 h-35 ml-auto mt-3 mb-6 overflow-hidden">
                                     <img 
                                         src={item.image} 
                                         alt={item.title}

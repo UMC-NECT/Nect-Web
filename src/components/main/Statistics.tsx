@@ -23,14 +23,14 @@ const Statistics = () => {
     ];
 
     return (
-        <div className="w-[1128px] mx-auto">
+        <div className="w-282 mx-auto mb-17">
             <h2 className="text-[24px] font-bold mb-11">사이드프로젝트는 NECT에서</h2>
             
             {/* 통계 */}
             <div className="flex items-center">
                 {stats.map((stat, index) => (
                     <>
-                        <div key={index} className="ml-8 mr-25 w-[252px]">
+                        <div key={index} className="ml-8 mr-25 w-63">
                             <div className={`text-[40px] font-bold mb-2 ${
                                 stat.isPrimary ? 'text-primary-500-normal' : 'text-neutral-900'
                             }`}>
@@ -41,7 +41,7 @@ const Statistics = () => {
                             </div>
                         </div>
                         {index < stats.length - 1 && (
-                            <div className="w-[1px] h-20 bg-neutral-300 mx-auto"/>
+                            <div className="w-px h-20 bg-neutral-300 mx-auto"/>
                         )}
                     </>
                 ))}

@@ -17,10 +17,10 @@ const Footer = () => {
     ];
 
     return (
-        <footer className="w-full bg-white pl-13 mb-50">
-            <div className="w-[1128px] mx-auto py-12">
+        <footer className="w-full h-89.25 bg-white pl-13 pt-6.75">
+            <div className="w-282 mx-auto py-12">
                 {/* 로고 */}
-                <img src={logo} alt="NECT Logo" className="w-[113px] h-[20px] mb-6" />
+                <img src={logo} alt="NECT Logo" className="w-28.25 h-5 mb-6" />
                 
                 {/* 회사 정보 */}
                 <div className="mt-10">

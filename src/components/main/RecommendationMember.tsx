@@ -1,47 +1,28 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
+import { useRef } from 'react';
 
-import More from '@/assets/icons/common/chevron-right.svg?react';
-import Bookmark from '@/assets/icons/main/bookmark.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { recommendationMembers } from '@/constants/RecommendationMembers';
 import { useLocation } from 'react-router';
+import { getTagStyle } from '@/utils/tagStyles';
+
 
 const RecommendationMember = () => {
-    // 포지션 색상 매핑
-    const getPositionStyle = (position: string) => {
-        const positionName = position.toLowerCase();
-
-        const styles: Record<string, string> = {
-            'pm': 'bg-tag-purple',
-            'design': 'bg-tag-pink',
-            'frontend': 'bg-tag-green',
-            'backend': 'bg-tag-blue',
-            'develop': 'bg-tag-blue',
-            'server': 'bg-tag-orange',
-            'data': 'bg-tag-yellow',
-        };
-
-        return styles[positionName] || 'bg-tag-yellow';
-    };
-
+    const paginationRef = useRef<HTMLDivElement>(null);
     const location = useLocation()
     const isProfileAnalysisPage = location.pathname === '/profile-analysis'
 
     return (
-        <div className="w-[1233px] mx-auto mb-[50px] relative">
+        <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative -ml-11.5">
             {!isProfileAnalysisPage && (
-                <div className="w-[1128px] mx-auto flex justify-between items-center mb-8">
-                <h2 className="text-2xl text-neutral-900 font-semibold">나와 연관된 추천 팀원</h2>
-                <p className="flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md">
-                    더보기
-                    <More className="w-4 h-4 color-neutral-500 mr-1" />
-                    </p>
+                <div className="w-282 mx-auto mb-4">
+                    <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 팀원</h2>
                 </div>
             )}
 
-            <div className="w-[1128px] mx-auto">
+            <div className="w-282 mx-auto">
                 <Swiper
                     modules={[Navigation, Pagination, Autoplay]}
                     slidesPerView={3}
@@ -51,29 +32,36 @@ const RecommendationMember = () => {
                         nextEl: '.member-custom-next',
                         prevEl: '.member-custom-prev',
                     }}
-                    pagination={{ clickable: true }}
+                    pagination={{ 
+                        clickable: true,
+                    }}
+                    onSwiper={(swiper) => {
+                        setTimeout(() => {
+                            if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object') {
+                                swiper.params.pagination.el = paginationRef.current;
+                                swiper.pagination?.init();
+                                swiper.pagination?.render();
+                                swiper.pagination?.update();
+                            }
+                        }, 0);
+                    }}
                     autoplay={{
                         delay: 5000,
                         disableOnInteraction: false,
                     }}
                     loop={true}
-                    className="pb-12 !pt-3 recommendation-member-swiper"
+                    className="pt-3! recommendation-member-swiper"
                 >
                     {recommendationMembers.map((member) => (
                         <SwiperSlide key={member.id}>
-                            <div className="w-[360px] h-[360px] mt-2 mb-13 rounded-2xl overflow-hidden cursor-pointer bg-white border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300">
+                            <div className={`w-90 ${member.description.length > 40 ? 'h-85' : 'h-80'} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
                                 {/* 상단: 배경 + 캐릭터 영역 */}
-                                <div className="relative h-[180px]">
+                                <div className="relative h-45">
                                     <img
                                         src={member.background}
                                         alt="background"
-                                        className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+                                        className="absolute inset-0 w-full h-full object-cover rounded-t-xl"
                                     />
-                                    <div className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-full p-2 cursor-pointer group">
-                                        <Bookmark
-                                            className="w-full h-full [&>path]:stroke-white [&>path]:fill-none [&>path]:transition-all [&>path]:duration-200 group-hover:[&>path]:stroke-primary-500-normal group-hover:[&>path]:fill-primary-500-normal"
-                                        />
-                                    </div>
                                     <img
                                         src={member.character}
                                         alt="character"
@@ -83,19 +71,19 @@ const RecommendationMember = () => {
 
                                 {/* 매칭 가능 태그 */}
                                 <div className="flex justify-end px-4 pt-2">
-                                    <div className="flex items-center gap-1 border border-primary-200-light rounded-2xl w-fit px-3 py-1">
-                                        <span className="w-[10px] h-[10px] bg-primary-500-normal rounded-full"></span>
-                                        <span className="text-sm text-neutral-700 font-semibold">
+                                    <div className="flex items-center justify-center gap-1 border border-primary-200-light rounded-2xl w-21.5 h-6.5">
+                                        <span className="w-2.5 h-2.5 bg-primary-500-normal rounded-full"></span>
+                                        <span className="text-[14px] text-neutral-700 font-semibold">
                                             {member.category}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* 하단: 텍스트 정보 영역 */}
-                                <div className="px-4 pt-2 flex flex-col">
-                                    <div className="flex pb-2 items-center text-lg font-semibold text-neutral-900 gap-1">
+                                <div className="flex flex-col px-5">
+                                    <div className="flex h-6.5 items-center text-lg font-semibold text-neutral-900 gap-1.5 mb-1.5">
                                         <span>{member.name}</span>
-                                        <BarIcon className="w-[2px] h-3" />
+                                        <BarIcon className="w-0.5 h-3" />
                                         <span className="text-neutral-500 font-medium">{member.position}</span>
                                     </div>
 
@@ -104,11 +92,11 @@ const RecommendationMember = () => {
                                     </p>
 
                                     {/* 포지션 태그 */}
-                                    <div className="flex gap-2 flex-wrap">
+                                    <div className="flex gap-2 flex-wrap h-6">
                                         {member.tags.map((tag, index) => (
                                             <span
                                                 key={index}
-                                                className={`px-3 py-1 text-sm text-neutral-700 rounded-lg ${getPositionStyle(tag)}`}
+                                                className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(tag)}`}
                                             >
                                                 {tag}
                                             </span>
@@ -119,43 +107,54 @@ const RecommendationMember = () => {
                         </SwiperSlide>
                     ))}
                 </Swiper>
+                {/* 페이지네이션을 Swiper 밖으로 */}
+                <div ref={paginationRef} className="custom-pagination mt-6 flex justify-center"></div>
             </div>
 
             {/* 화살표 버튼 */}
-            <div className="member-custom-prev absolute left-[5px] top-[198px] z-10 w-10 h-10 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-300 hover:rounded-4xl">
+            <div className="member-custom-prev absolute left-1.25 top-49.5 z-10 w-10 h-10 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-300 hover:rounded-4xl">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 18L9 12L15 6" stroke="#333333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
             </div>
-            <div className="member-custom-next absolute right-[5px] top-[198px] z-10 w-10 h-10 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-300 hover:rounded-4xl">
+            <div className="member-custom-next absolute right-1.25 top-49.5 z-10 w-10 h-10 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-300 hover:rounded-4xl">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M9 18L15 12L9 6" stroke="#333333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
             </div>
 
             <style>{`
-                /* 페이지네이션 스타일 */
-                .recommendation-member-swiper .swiper-pagination-bullet {
-                    width: 10px;
-                    height: 10px;
-                    background: #CCCCCC;
-                    opacity: 1;
-                    border-radius: 50%;
-                    transition: all 0.3s;
+                .custom-pagination {
+                    display: flex;
+                    gap: 8px;
+                    height: auto;
                 }
 
-                .recommendation-member-swiper .swiper-pagination-bullet-active {
-                    background: #595959;
-                    width: 22px;
-                    border-radius: 6px;
+                .custom-pagination .swiper-pagination-bullet {
+                    width: 10px !important;
+                    height: 10px !important;
+                    background: #CCCCCC !important;
+                    opacity: 1 !important;
+                    border-radius: 50% !important;
+                    transition: all 0.3s !important;
+                    margin: 0 !important;
                 }
 
-                /* Custom 버튼 disabled 상태 */
+                .custom-pagination .swiper-pagination-bullet-active {
+                    background: #595959 !important;
+                    width: 22px !important;
+                    border-radius: 6px !important;
+                }
+
                 .member-custom-prev.swiper-button-disabled,
                 .member-custom-next.swiper-button-disabled {
                     opacity: 0.3;
                     cursor: not-allowed;
                     pointer-events: none;
+                }
+
+                .recommendation-member-swiper > .swiper-pagination {
+                    display: none !important;
                 }
             `}</style>
         </div>
