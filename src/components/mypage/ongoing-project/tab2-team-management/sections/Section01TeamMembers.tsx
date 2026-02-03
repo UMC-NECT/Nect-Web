@@ -2,6 +2,7 @@ import SettingIcon from '@/assets/icons/common/setting.svg?react'
 import Button from '@/components/common/Button'
 import TeamMemberSection from '../TeamMemberSection'
 import type { TeamMembersByRole } from '@/types/mypage/ongoindProject'
+import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 
 interface ISection01TeamMembers {
 	data: TeamMembersByRole[]
@@ -9,9 +10,11 @@ interface ISection01TeamMembers {
 }
 
 const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMembers) => {
-	// 팀원 관리 핸들러들
-	const handleSetLeader = (memberId: string) => {
-		alert(`파트장 설정:  ${memberId}`)
+	const setLeader = useTeamMembersStore(state => state.setLeader)
+
+	// 팀원 리더 설정 핸들러
+	const handleSetLeader = (role: string, memberId: string) => {
+		setLeader(role, memberId)
 	}
 
 	return (
@@ -31,10 +34,10 @@ const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMember
 
 			{/* 역할별 멤버 섹션 */}
 			<div className='flex flex-col gap-12 px-5'>
-				{data.map(({ role, roleLabel, color, members }) => (
+				{data.map(({ role, color, members }) => (
 					<TeamMemberSection
 						key={role}
-						roleLabel={roleLabel}
+						role={role}
 						roleColor={color}
 						members={members}
 						onOpenPartSettings={handlePartSettings}

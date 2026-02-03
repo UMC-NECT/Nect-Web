@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form'
+import { useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { projectSettingsSchema, type ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import {
@@ -47,15 +48,22 @@ export const useOngoingProjectForm = () => {
 		watch,
 	} = methods
 
-	const projectData: ProjectData = {
-		name: MOCK_PROJECT_DATA.name,
-		intro: MOCK_PROJECT_DATA.intro,
-		startDate: MOCK_PROJECT_DATA.startDate,
-		endDate: MOCK_PROJECT_DATA.endDate,
-		recruitmentStatus: MOCK_PROJECT_DATA.recruitmentStatus,
-		thumbnailUrl: MOCK_PROJECT_DATA.thumbnailUrl,
-		selectedFields: getValues('selectedFields') || MOCK_PROJECT_DATA.selectedFields,
-	}
+	// watch를 사용하여 selectedFields의 변화를 추적
+	const selectedFields = watch('selectedFields')
+
+	// projectData를 useMemo로 메모이제이션하여 무한 루프 방지
+	const projectData: ProjectData = useMemo(
+		() => ({
+			name: MOCK_PROJECT_DATA.name,
+			intro: MOCK_PROJECT_DATA.intro,
+			startDate: MOCK_PROJECT_DATA.startDate,
+			endDate: MOCK_PROJECT_DATA.endDate,
+			recruitmentStatus: MOCK_PROJECT_DATA.recruitmentStatus,
+			thumbnailUrl: MOCK_PROJECT_DATA.thumbnailUrl,
+			selectedFields: selectedFields || MOCK_PROJECT_DATA.selectedFields,
+		}),
+		[selectedFields]
+	)
 
 	return {
 		control,

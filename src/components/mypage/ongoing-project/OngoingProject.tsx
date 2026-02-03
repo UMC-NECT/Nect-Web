@@ -11,11 +11,11 @@ import type { TabType } from '@/types/mypage/ongoindProject'
 
 import CTAModal from '../CTAModal'
 import PartSettingsModal from './PartSettingsModal'
-import { MOCK_TEAM_MEMBERS_BY_ROLE } from '@/mocks/ongoingProjectData'
 import { useNavigate } from 'react-router'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import { useCTAModal } from '@/stores/useCTAModal'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
+import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 
 const OngoingProject = () => {
 	// 현재 탭
@@ -25,18 +25,15 @@ const OngoingProject = () => {
 
 	const navigate = useNavigate()
 
+	// 팀원 데이터
+	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
+
 	// 폼 관련
 	const { control, setValue, handleSubmit, isDirty, projectData, getValues, watch, reset } = useOngoingProjectForm()
 
-	// CTA 모달
-	const { modalType, open, close } = useCTAModal()
-
-	// 파트 설정 모달
-	const {
-		isOpen: isPartSettingsOpen,
-		teamMembersByRole: partSettingsTeamMembers,
-		close: closePartSettings,
-	} = usePartSettingsModal()
+	// 모달
+	const { modalType, open, close } = useCTAModal() // CTA
+	const { isOpen: isPartSettingsOpen } = usePartSettingsModal() // 파트 설정 모달
 
 	// 파트 설정 모달 열렸을 때, 백그라운드 스크롤 방지
 	useEffect(() => {
@@ -144,12 +141,6 @@ const OngoingProject = () => {
 		open('delete')
 	}
 
-	// (모달 핸들러) 파트 설정 저장
-	const handlePartSettingsSave = (updatedParts: typeof partSettingsTeamMembers) => {
-		console.log('저장된 파트:', updatedParts)
-		closePartSettings()
-	}
-
 	// (모달 핸들러) 모집 종료 확인
 	const handleRecruitmentEnd = () => {
 		open('recruitmentEndComplete')
@@ -229,7 +220,7 @@ const OngoingProject = () => {
 				)}
 
 				{/* 탭 02. 팀원 관리 */}
-				{activeTab === '팀원 관리' && <TeamManagementView teamMembersByRole={MOCK_TEAM_MEMBERS_BY_ROLE} />}
+				{activeTab === '팀원 관리' && <TeamManagementView teamMembersByRole={teamMembersByRole} />}
 			</div>
 
 			{/* 삭제하기 버튼 */}
@@ -322,13 +313,7 @@ const OngoingProject = () => {
 			)}
 
 			{/* 파트 설정 모달 */}
-			{isPartSettingsOpen && (
-				<PartSettingsModal
-					teamMembersByRole={partSettingsTeamMembers}
-					onClose={closePartSettings}
-					onSave={handlePartSettingsSave}
-				/>
-			)}
+			{isPartSettingsOpen && <PartSettingsModal />}
 		</div>
 	)
 }

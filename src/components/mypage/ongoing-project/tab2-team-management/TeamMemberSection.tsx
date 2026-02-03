@@ -5,15 +5,15 @@ import type { ColorType, TeamMember } from '@/types/mypage/ongoindProject'
 import TeamMemberModal from './modals/TeamMemberModal'
 
 interface ITeamMemberSection {
-	roleLabel: string
+	role: string
 	roleColor: ColorType
 	members: TeamMember[]
 	onOpenPartSettings?: () => void
-	onSetLeader?: (memberId: string) => void
+	onSetLeader?: (role: string, memberId: string) => void
 	onKickMember?: (memberId: string) => void
 }
 
-const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader }: ITeamMemberSection) => {
+const TeamMemberSection = ({ role, members, onOpenPartSettings, onSetLeader }: ITeamMemberSection) => {
 	const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
 	const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | undefined>(undefined)
 
@@ -56,7 +56,7 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 	return (
 		<div className='flex flex-col gap-3 w-full'>
 			{/* 역할 태그 */}
-			<RoleTag role={roleLabel} showTotal={false} />
+			<RoleTag role={role} showTotal={false} />
 
 			{/* 멤버 카드 그리드 */}
 			<div className='flex flex-wrap gap-3 w-full'>
@@ -66,16 +66,13 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 							className='relative'
 							onContextMenu={e => {
 								e.preventDefault()
-								if (!member.isMatching) {
-									handleContextMenu(member.id, e)
-								}
+								handleContextMenu(member.id, e)
 							}}
 						>
 							<ProfileCard
 								profileImage={member.profileImage}
 								isLeader={member.isLeader}
-								highlighted={roleLabel === 'PM' && member.isLeader}
-								isMatching={member.isMatching}
+								highlighted={role === 'PM' && member.isLeader}
 								nickname={member.nickname}
 								part={member.part}
 								introduction={member.introduction}
@@ -87,7 +84,7 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 							<TeamMemberModal
 								onClose={() => setOpenDropdownId(null)}
 								onChangeRole={handleChangeRole}
-								onSetLeader={() => onSetLeader?.(member.id)}
+								onSetLeader={() => onSetLeader?.(role, member.id)}
 								position={dropdownPosition}
 							/>
 						)}
