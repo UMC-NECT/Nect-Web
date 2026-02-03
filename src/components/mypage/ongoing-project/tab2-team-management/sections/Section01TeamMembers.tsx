@@ -2,7 +2,6 @@ import SettingIcon from '@/assets/icons/common/setting.svg?react'
 import Button from '@/components/common/Button'
 import TeamMemberSection from '../TeamMemberSection'
 import type { TeamMembersByRole } from '@/types/mypage/ongoindProject'
-import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 
 interface ISection01TeamMembers {
 	data: TeamMembersByRole[]
@@ -10,13 +9,6 @@ interface ISection01TeamMembers {
 }
 
 const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMembers) => {
-	const setLeader = useTeamMembersStore(state => state.setLeader)
-
-	// 팀원 리더 설정 핸들러
-	const handleSetLeader = (role: string, memberId: string) => {
-		setLeader(role, memberId)
-	}
-
 	return (
 		<div className='flex flex-col gap-6 w-full'>
 			{/* 헤더 */}
@@ -41,7 +33,6 @@ const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMember
 						roleColor={color}
 						members={members}
 						onOpenPartSettings={handlePartSettings}
-						onSetLeader={handleSetLeader}
 					/>
 				))}
 			</div>

@@ -3,19 +3,22 @@ import RoleTag from '@/components/mypage/RoleTag'
 import ProfileCard from '@/components/mypage/ProfileCard'
 import type { ColorType, TeamMember } from '@/types/mypage/ongoindProject'
 import TeamMemberModal from './modals/TeamMemberModal'
+import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 
 interface ITeamMemberSection {
 	role: string
 	roleColor: ColorType
 	members: TeamMember[]
 	onOpenPartSettings?: () => void
-	onSetLeader?: (role: string, memberId: string) => void
-	onKickMember?: (memberId: string) => void
 }
 
-const TeamMemberSection = ({ role, members, onOpenPartSettings, onSetLeader }: ITeamMemberSection) => {
+const TeamMemberSection = ({ role, members, onOpenPartSettings }: ITeamMemberSection) => {
 	const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
 	const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | undefined>(undefined)
+
+	// 팀원 관리용
+	const setLeader = useTeamMembersStore(state => state.setLeader)
+	const removeMember = useTeamMembersStore(state => state.removeMember)
 
 	// 모달이 열리면 백그라운드 스크롤 방지
 	useEffect(() => {
@@ -90,7 +93,8 @@ const TeamMemberSection = ({ role, members, onOpenPartSettings, onSetLeader }: I
 							<TeamMemberModal
 								onClose={() => setOpenDropdownId(null)}
 								onChangeRole={handleChangeRole}
-								onSetLeader={() => onSetLeader?.(role, member.id)}
+								onSetLeader={() => setLeader(role, member.id)}
+								onKickMember={() => removeMember(role, member.id)}
 								position={dropdownPosition}
 							/>
 						)}
