@@ -6,7 +6,7 @@ import { useProfileSettingsForm } from '@/hooks/mypage/useProfileSettingsForm'
 import { useCTAModal } from '@/stores/useCTAModal'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
-import CTAModal from '../CTAModal'
+import CTAModal from '../../common/CTAModal'
 import { MyPageHeader } from '../MyPageHeader'
 import ProfileBasicInfo from './ProfileBasicInfo'
 import Section01Introduction from './sections/Section01Introduction'

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import CTAModal from '../CTAModal'
+import CTAModal from '../../common/CTAModal'
 import EmptyProfileAnalysis from './EmptyProfileAnalysis'
 import { useCollaboStore, useGrowGuideStore, useRoleRecommendStore, useSkillStore } from '@/stores/profileAnalysisStore'
 import ProfileRadarChart from '@/components/profile-analysis/ProfileRadarChart'

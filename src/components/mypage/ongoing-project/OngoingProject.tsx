@@ -9,7 +9,7 @@ import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
 import { useOngoingProjectForm } from '@/hooks/mypage/useOngoingProjectForm'
 import type { TabType } from '@/types/mypage/ongoindProject'
 
-import CTAModal from '../CTAModal'
+import CTAModal from '../../common/CTAModal'
 import PartSettingsModal from './PartSettingsModal'
 import { useNavigate } from 'react-router'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
