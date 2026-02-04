@@ -54,7 +54,7 @@ const AnalysisHeader = ({ onNavigate }: AnalysisHeaderProps) => {
 
 					{/* 오른쪽 아이콘들 */}
 					<div className='flex items-center gap-4'>
-						<div ref={notificationRef}>
+						<div ref={notificationRef} className='relative'>
 							<button
 								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
 									showNotifications ? 'bg-neutral-100' : 'hover:bg-neutral-100'
@@ -70,10 +70,10 @@ const AnalysisHeader = ({ onNavigate }: AnalysisHeaderProps) => {
 									<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-semantic-600 rounded-full'></div>
 								)}
 							</button>
-							{showNotifications && <NotificationDropdown defaultTab='all' />}
+							{showNotifications && <NotificationDropdown defaultTab='team' />}
 						</div>
 
-						<div ref={messageRef}>
+						<div ref={messageRef} className='relative'>
 							<button
 								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
 									showMessages ? 'bg-neutral-100' : 'hover:bg-neutral-100'
@@ -86,7 +86,7 @@ const AnalysisHeader = ({ onNavigate }: AnalysisHeaderProps) => {
 							>
 								<MessageIcon className='h-6 w-6 text-neutral-700' />
 							</button>
-							{showMessages && <NotificationDropdown defaultTab='messages' />}
+							{showMessages && <NotificationDropdown defaultTab='team' />}
 						</div>
 
 						<button
