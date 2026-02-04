@@ -29,7 +29,7 @@ const ProjectShowcase = () => {
             />
             
             <div className="relative mt-28">
-                <h2 className="text-[32px] font-bold mb-12 text-center text-white">
+                <h2 className="text-[32px] font-bold mb-14 text-center text-white">
                     완주한 프로젝트의<br />
                     프로젝트를 넥트에서 확인해보세요 !
                 </h2>
@@ -37,17 +37,17 @@ const ProjectShowcase = () => {
                 {/* 첫 번째 줄 - 왼쪽으로 흐름 */}
                 <div className="flex gap-10.75 mb-8">
                     <div 
-                        className={`flex gap-10.75 ${hoveredRow === 1 ? '' : 'animate-scroll-left'}`}
+                        className={`flex gap-3 ${hoveredRow === 1 ? '' : 'animate-scroll-left'}`}
                         onMouseEnter={() => setHoveredRow(1)}
                         onMouseLeave={() => setHoveredRow(null)}
                     >
                         {firstRowProjects.map((project, index) => (
                             <div 
                                 key={`first-${index}`}
-                                className="w-103.5 h-72.5 rounded-xl cursor-pointer shrink-0 transition-transform duration-300 hover:-translate-y-4"
+                                className="w-[434px] h-[264px] rounded-xl cursor-pointer shrink-0 transition-transform duration-300 hover:-translate-y-4"
                             >
                                 <div
-                                    className="w-full h-57.5 rounded-xl"
+                                    className="w-[414px] h-[230px] rounded-xl"
                                     style={{
                                         backgroundImage: `url(${portfolio})`,
                                         backgroundSize: 'cover',
@@ -65,19 +65,19 @@ const ProjectShowcase = () => {
                 </div>
                 
                 {/* 두 번째 줄 - 오른쪽으로 흐름 */}
-                <div className="flex gap-10.75 mb-14">
+                <div className="flex gap-10.75 mb-8">
                     <div 
-                        className={`flex gap-10.75 ${hoveredRow === 2 ? '' : 'animate-scroll-right'}`}
+                        className={`flex gap-3 ${hoveredRow === 2 ? '' : 'animate-scroll-right'}`}
                         onMouseEnter={() => setHoveredRow(2)}
                         onMouseLeave={() => setHoveredRow(null)}
                     >
                         {secondRowProjects.map((project, index) => (
                             <div 
                                 key={`second-${index}`}
-                                className="w-103.5 h-72.5 rounded-xl cursor-pointer shrink-0 transition-transform duration-300 hover:-translate-y-4"
+                                className="w-[434px] h-[264px] rounded-xl cursor-pointer shrink-0 transition-transform duration-300 hover:-translate-y-4"
                             >
                                 <div
-                                    className="w-full h-57.5 rounded-xl"
+                                    className="w-[414px] h-[230px] rounded-xl"
                                     style={{
                                         backgroundImage: `url(${portfolio})`,
                                         backgroundSize: 'cover',
