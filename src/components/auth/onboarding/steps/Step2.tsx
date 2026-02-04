@@ -2,8 +2,8 @@ import ChipButton from '@/components/common/ChipButton'
 import { useFormContext } from 'react-hook-form'
 import type { OnboardingFormType } from '@/utils/validate'
 import DividerLine from '@/components/common/DividerLine'
-import { useRef } from 'react'
-import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
+import { useRef, useEffect } from 'react'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 
 const Step2 = () => {
 	const { setValue, watch } = useFormContext<OnboardingFormType>()
@@ -12,6 +12,13 @@ const Step2 = () => {
 
 	// 값 감시
 	const selectedRole = watch('role') || ''
+
+	// 첫 렌더 시 역할이 비어 있으면 첫 번째 역할을 선택해 탭 활성화 + 해당 직종 리스트 표시
+	useEffect(() => {
+		if (roles.length > 0 && !selectedRole) {
+			setValue('role', roles[0].value, { shouldValidate: true })
+		}
+	}, [roles, selectedRole, setValue])
 	const selectedFields = watch('fields') || []
 	const customFieldInput = watch('customField') || ''
 

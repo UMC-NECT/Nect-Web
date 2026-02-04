@@ -7,7 +7,7 @@ import type { OnboardingFormType } from '@/utils/validate'
 import { useMemo, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
-import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import type { EnumItem } from '@/types/api/enums'
 
 const Step3 = () => {

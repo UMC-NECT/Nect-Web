@@ -2,7 +2,7 @@ import BackButton from '@/components/common/BackButton'
 import ProgressBar from '@/components/common/ProgressBar'
 import Step1 from './steps/Step1'
 import { useOnboardingForm } from '@/hooks/useForm'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Button from '@/components/common/Button'
 import type { OnboardingFormType } from '@/utils/validate'
 import { FormProvider, type Path } from 'react-hook-form'
@@ -11,8 +11,8 @@ import Step3 from './steps/Step3'
 import Step4 from './steps/Step4'
 import Step5 from './steps/Step5'
 import Step6 from './steps/Step6'
-import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
-import { postSetup } from '@/api/users'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { postCheck, postSetup } from '@/api/users'
 import type { RequestSetupDto } from '@/types/api/users'
 import { useNavigate } from 'react-router'
 
@@ -84,14 +84,9 @@ const OnboardingMain = () => {
 	const [isNicknameChecked, setIsNicknameChecked] = useState<boolean>(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const navigate = useNavigate()
-	const { fetchAll, skillCategories, skillsByCategory } = useOnboardingEnums()
+	const { skillCategories, skillsByCategory } = useOnboardingEnums()
 
 	const methods = useOnboardingForm() // 온보딩 1~6단계용 커스텀 useForm
-
-	// 마운트 시 enum API 호출 후 스토어에 저장
-	useEffect(() => {
-		fetchAll()
-	}, [fetchAll])
 
 	// 값 감시 (버튼 비활성화용)
 	const {
@@ -113,25 +108,34 @@ const OnboardingMain = () => {
 			return !value || (typeof value === 'string' && value.trim() === '')
 		})
 		const hasError = currentFields.some(field => !!errors[field as keyof OnboardingFormType])
+		// 1단계: 닉네임 중복 확인 완료 전에는 다음 비활성화
+		const needNicknameCheck = currentStep === 1 && !isNicknameChecked
 
-		return isEmptyFieldExist || hasError
+		return isEmptyFieldExist || hasError || needNicknameCheck
 	}
 
 	// 닉네임 중복 확인
 	const handleCheckNickname = async () => {
-		const nickname = methods.getValues('nickname')
+		const nickname = methods.getValues('nickname')?.trim()
+		if (!nickname) return false
 
-		// 나중에 api나오면 고치기
-		console.log('닉네임중복 테스트 콘솔', nickname)
+		try {
+			const response = await postCheck({
+				type: 'NICKNAME',
+				value: nickname,
+			})
 
-		const isAvailable = true
-		if (isAvailable) {
-			setIsNicknameChecked(true)
-			methods.clearErrors('nickname')
-			return true
-		} else {
+			if (response.body?.available === true) {
+				setIsNicknameChecked(true)
+				methods.clearErrors('nickname')
+				return true
+			}
+
 			setIsNicknameChecked(false)
 			methods.setError('nickname', { message: '중복된 닉네임 사용 불가' })
+			return false
+		} catch {
+			methods.setError('nickname', { message: '중복 확인에 실패했습니다. 다시 시도해주세요.' })
 			return false
 		}
 	}
@@ -140,7 +144,13 @@ const OnboardingMain = () => {
 	const renderStep = () => {
 		switch (currentStep) {
 			case 1:
-				return <Step1 setIsNicknameChecked={setIsNicknameChecked} isNicknameChecked={isNicknameChecked} />
+				return (
+					<Step1
+						setIsNicknameChecked={setIsNicknameChecked}
+						isNicknameChecked={isNicknameChecked}
+						onCheckNickname={handleCheckNickname}
+					/>
+				)
 			case 2:
 				return <Step2 />
 			case 3:
@@ -165,13 +175,8 @@ const OnboardingMain = () => {
 		const isStepValid = await methods.trigger(fieldsToValidate)
 
 		if (isStepValid) {
-			// 닉네임 중복검사 안했다면 제한
-			if (currentStep === 1) {
-				if (!isNicknameChecked) {
-					const isApiPass = await handleCheckNickname()
-					if (!isApiPass) return
-				}
-			}
+			// 1단계: 닉네임 중복검사 완료된 경우에만 다음 허용 (검사는 onBlur에서 수행)
+			if (currentStep === 1 && !isNicknameChecked) return
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
 			} else {

@@ -1,7 +1,7 @@
 import ChipButton from '@/components/common/ChipButton'
 import type { OnboardingFormType } from '@/utils/validate'
 import { useFormContext } from 'react-hook-form'
-import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 
 const Step5 = () => {
 	const { setValue, watch } = useFormContext<OnboardingFormType>()

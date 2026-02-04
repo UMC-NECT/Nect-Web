@@ -2,18 +2,20 @@ import Dropdown from '@/components/common/Dropdown'
 import Input from '@/components/common/Input'
 import type { OnboardingFormType } from '@/utils/validate'
 import { useFormContext } from 'react-hook-form'
-import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 
 interface IStep1 {
 	isNicknameChecked: boolean
 	setIsNicknameChecked: (isNicknameChecked: boolean) => void
+	onCheckNickname?: () => void | Promise<unknown>
 }
 
-const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
+const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked, onCheckNickname }: IStep1) => {
 	const {
 		register,
 		setValue,
 		watch,
+		getValues,
 		formState: { errors },
 	} = useFormContext<OnboardingFormType>()
 	const { jobs } = useOnboardingEnums()
@@ -44,6 +46,9 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 							onChange: e => {
 								setValue('nickname', e.target.value, { shouldValidate: true })
 								setIsNicknameChecked(false)
+							},
+							onBlur: () => {
+								if (getValues('nickname')?.trim()) onCheckNickname?.()
 							},
 						})}
 					/>
