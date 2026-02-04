@@ -23,7 +23,7 @@ const Statistics = () => {
     ];
 
     return (
-        <div className="w-282 h-[150px] mx-auto mb-17">
+        <div className="w-282 h-[150px] mx-auto mb-16">
             <h2 className="text-[22px] font-bold mb-11">사이드프로젝트는 NECT에서</h2>
             
             {/* 통계 */}
