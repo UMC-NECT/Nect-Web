@@ -136,10 +136,10 @@ const NameStep = () => {
 							<Button
 								color='auth'
 								className='w-40 h-14 title-2 px-5.5 py-3.5'
-								disabled={!name || !phone || !!errors.phone || isCheckingPhone}
+								disabled={!name || !phone || !!errors.phone || isCheckingPhone || isCertificated}
 								onClick={handleCertificatePhone}
 							>
-								{isCheckingPhone ? '확인 중...' : isCertificated ? '확인 완료' : '중복 확인'}
+								중복 확인
 							</Button>
 						</div>
 					</FormField>
