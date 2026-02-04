@@ -9,9 +9,10 @@ interface RoleTagChipProps {
 	state: 'default' | 'clear' | 'disabled' | 'edit'
 	onClick?: (e?: React.MouseEvent) => void
 	className?: string
+	count?: number
 }
 
-const RoleTagChip = ({ roleId, roleName, state, onClick, className }: RoleTagChipProps) => {
+const RoleTagChip = ({ roleId, roleName, state, onClick, className, count }: RoleTagChipProps) => {
 	const roleColor = getRoleColorById(roleId)
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'
@@ -33,6 +34,7 @@ const RoleTagChip = ({ roleId, roleName, state, onClick, className }: RoleTagChi
 				<p className={cn('button-1 font-medium text-center', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
 					{roleName}
 				</p>
+				{count && <span className='button-1 text-neutral-700'>{count}</span>}
 				{isClear && !isDisabled && <XIcon className='cursor-pointer' onClick={onClick} />}
 			</div>
 		</div>
