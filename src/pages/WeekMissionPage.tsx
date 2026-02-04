@@ -5,11 +5,14 @@ import { useTeamStore } from '@/stores/teamStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
+import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 
 const WeekMissionPage = () => {
 	const { missions, updateMission } = useMissionStore()
 	const { openMissionModal } = useMissionModalStore()
 	const { roles } = useTeamStore()
+	const { data: projectUsersData } = useGetProjectUsers()
+	const projectId = projectUsersData?.body?.[0]?.projectId != null ? String(projectUsersData.body[0].projectId) : undefined
 
 	// 섹션 데이터 (teamStore의 roles 사용)
 	const sections = roles.map(role => ({
@@ -33,9 +36,14 @@ const WeekMissionPage = () => {
 				</div>
 			</div>
 
-			{/* MissionBoard */}
+			{/* MissionBoard - useGetProjectUsers의 projectId로 기존 미션(processId) 클릭 시 모달에 상세 데이터 채움 */}
 			<div className='w-full mt-6'>
-				<MissionBoard missions={missions} sections={sections} onMissionUpdate={updateMission} />
+				<MissionBoard
+					missions={missions}
+					sections={sections}
+					projectId={projectId}
+					onMissionUpdate={updateMission}
+				/>
 			</div>
 		</div>
 	)

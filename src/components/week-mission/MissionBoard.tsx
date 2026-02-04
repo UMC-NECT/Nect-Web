@@ -40,13 +40,14 @@ export interface Section {
 interface MissionBoardProps {
 	missions: Mission[]
 	sections?: Section[] // 섹션 제목 배열 (기본: 4개)
+	projectId?: string // 기존 미션 조회 시 프로세스 상세 API용 (있으면 모달에 데이터 채움)
 	onMissionUpdate?: (
 		missionId: number,
 		updates: { createdAt?: string; dueDate?: string; sectionIndex?: number; status?: MissionStatus }
 	) => void
 }
 
-const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoardProps) => {
+const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: MissionBoardProps) => {
 	// 공유 스크롤 컨테이너 ref
 	const boardScrollRef = useRef<HTMLDivElement>(null)
 	const weekDatesRef = useRef<HTMLDivElement>(null)
@@ -375,7 +376,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 											gridColumnSize={tempColSpan}
 											onClick={() => {
 												if (!justDraggedRef.current) {
-													openMissionModal(mission.id, mission.sectionIndex)
+													openMissionModal(mission.id, mission.sectionIndex, projectId)
 												}
 											}}
 											onDragStart={e => handleMissionDragStart(mission.id, e)}
@@ -422,7 +423,7 @@ const MissionBoard = ({ missions, sections = [], onMissionUpdate }: MissionBoard
 													pointerEvents: isHovered ? 'auto' : 'none',
 												}}
 											>
-												<PlusBlock onClick={() => {openMissionModal()}} />
+												<PlusBlock onClick={() => openMissionModal()} />
 											</div>
 										</div>
 									)

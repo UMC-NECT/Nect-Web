@@ -5,6 +5,9 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import 'overlayscrollbars/overlayscrollbars.css'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
+import { useProcessDetailQuery } from '@/hooks/process/useProcessApi'
+import { useTeamStore } from '@/stores/teamStore'
+import type { MissionStatus } from '@/types/missionStatus'
 import MissionTagChip from './MissionTagChip'
 import PartSelector from './PartSelector'
 import TagChipList from './TagChipList'
@@ -26,9 +29,17 @@ interface MissionModalProps {
 	variant?: 'default' | 'leader' // 기본 모달 또는 리더형 모달
 }
 
+const formatDateForDisplay = (dateStr: string) => {
+	if (!dateStr) return ''
+	return dateStr.replace(/-/g, '.')
+}
+
 const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
 	const isLeader = variant === 'leader'
+	const { roles } = useTeamStore()
 	const {
+		editingMissionId,
+		projectId,
 		missionNumber,
 		title,
 		selectedParts,
@@ -42,6 +53,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		files,
 		setMissionNumber,
 		setTitle,
+		setSelectedParts,
+		setSelectedAssignees,
 		addSelectedPart,
 		removeSelectedPart,
 		addSelectedAssignee,
@@ -50,6 +63,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setDeadline,
 		setMissionStatus,
 		setWorkContent,
+		setTasks,
+		setFeedbacks,
+		setFiles,
 		addTask,
 		updateTask,
 		toggleTask,
@@ -60,6 +76,75 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		addFile,
 		removeFile,
 	} = useMissionModalStore()
+
+	const isEditMode = editingMissionId != null && projectId != null
+	const { data: processDetail } = useProcessDetailQuery(
+		projectId ?? '',
+		String(editingMissionId ?? '')
+	)
+
+	const appliedDetailKeyRef = useRef<string | null>(null)
+	useEffect(() => {
+		if (!isEditMode || !processDetail?.body) return
+		const key = `${projectId}-${editingMissionId}`
+		if (appliedDetailKeyRef.current === key) return
+		appliedDetailKeyRef.current = key
+		const body = processDetail.body
+		setTitle(body.process_title ?? '')
+		setWorkContent(body.process_content ?? '')
+		setStartDate(formatDateForDisplay(body.start_date ?? ''))
+		setDeadline(formatDateForDisplay(body.dead_line ?? ''))
+		const status = (body.process_status ?? 'planning') as MissionStatus
+		setMissionStatus(status)
+
+		const partNames = (body.role_fields ?? []) as string[]
+		const matchedParts = partNames
+			.map(name => roles.find(r => r.name === name))
+			.filter((r): r is NonNullable<typeof r> => r != null)
+		setSelectedParts(matchedParts)
+
+		const assignees = (body.assignees ?? []).map(a => ({
+			id: a.user_id,
+			name: a.user_name,
+			roleId: 0,
+			image: a.user_image ?? '',
+		}))
+		setSelectedAssignees(assignees)
+
+		const taskItems = (body.task_items ?? []).map(t => ({
+			id: t.task_item_id,
+			content: t.content,
+			isComplete: t.is_done,
+		}))
+		setTasks(taskItems)
+
+		const feedbackList = (body.feedbacks ?? []).map(f => ({
+			id: f.feedback_id,
+			partName: f.created_by?.role_fields?.[0] ?? '',
+			authorName: f.created_by?.user_name ?? '',
+			content: f.content,
+			timestamp: f.created_at,
+			state: (f.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
+		}))
+		setFeedbacks(feedbackList)
+
+		const fileItems = [
+			...(body.file_ids ?? []).map(f => ({
+				id: f.file_id,
+				type: 'file' as const,
+				name: f.file_name,
+				url: f.file_url,
+				fileName: f.file_name,
+			})),
+			...(body.links ?? []).map(l => ({
+				id: l.link_id,
+				type: 'link' as const,
+				name: l.url,
+				url: l.url,
+			})),
+		]
+		setFiles(fileItems)
+	}, [isEditMode, processDetail, projectId, editingMissionId, setTitle, setWorkContent, setStartDate, setDeadline, setMissionStatus, setSelectedParts, setSelectedAssignees, setTasks, setFeedbacks, setFiles, roles])
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {

@@ -1,6 +1,8 @@
-import type { CommonResponse } from "../commonResponse";
+import type { CommonResponse } from '../commonResponse'
 
-export type ResponseProjectUsersDto = CommonResponse<{
-    project_id: number
-    memberType: string
-}[]>
+export interface ProjectUserItem {
+	projectId: number
+	memberType: string
+}
+
+export type ResponseProjectUsersDto = CommonResponse<ProjectUserItem[]>
