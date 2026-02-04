@@ -4,75 +4,65 @@ import DividerLine from '@/components/common/DividerLine'
 import Input from '@/components/common/Input'
 import TagButton from '@/components/common/TagButton'
 import type { OnboardingFormType } from '@/utils/validate'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
-import { SKILL_CATEGORIES, SKILLS_BY_CATEGORY } from '@/constants/skills'
+import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
+import type { EnumItem } from '@/types/api/enums'
 
 const Step3 = () => {
-	const [inputValue, setInputValue] = useState('') // 직접 입력 필드용
+	const [inputValue, setInputValue] = useState('')
 
-	// 유효성 검사용
 	const {
 		setValue,
 		watch,
 		formState: { errors },
 	} = useFormContext<OnboardingFormType>()
+	const { skillCategories, skillsByCategory } = useOnboardingEnums()
 
-	// 폼 데이터 감시
+	// 폼에는 스킬 value 저장
 	const selectedSkills = watch('skill') || []
 
-	// 스킬 선택 (왼쪽꺼)
-	const handleSelectSkill = (skill: string) => {
-		const isAlreadySelected = selectedSkills.includes(skill)
-
-		if (isAlreadySelected) {
-			// 이미 선택한 항목 해제는 허용
-			const newFields = selectedSkills.filter(f => f !== skill)
-			setValue('skill', newFields, { shouldValidate: true })
+	const handleSelectSkill = (skillValue: string) => {
+		if (selectedSkills.includes(skillValue)) {
+			setValue(
+				'skill',
+				selectedSkills.filter(f => f !== skillValue),
+				{ shouldValidate: true }
+			)
 		} else {
-			// 새로 추가
-			setValue('skill', [...selectedSkills, skill], { shouldValidate: true })
+			setValue('skill', [...selectedSkills, skillValue], { shouldValidate: true })
 		}
 	}
 
-	// 직접 입력한 스킬 추가 (엔터누르면 추가됨)
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
 			e.preventDefault()
-			const trimmedValue = inputValue.trim()
-
-			if (!trimmedValue) return
-
-			// 중복 방지 체크해서 추가
-			if (!selectedSkills.includes(trimmedValue)) {
-				setValue('skill', [...selectedSkills, trimmedValue], { shouldValidate: true })
-				setInputValue('')
-			}
+			const trimmed = inputValue.trim()
+			if (!trimmed || selectedSkills.includes(trimmed)) return
+			setValue('skill', [...selectedSkills, trimmed], { shouldValidate: true })
+			setInputValue('')
 		}
 	}
 
-	// 카테고리별로 선택된 스킬을 그룹화
-	const groupedSkills = SKILL_CATEGORIES.reduce(
-		(acc, title) => {
-			const categorySkills = SKILLS_BY_CATEGORY[title]?.filter(skill => selectedSkills.includes(skill)) || []
-
-			// "기타" 카테고리에 직접 입력한 스킬 추가
-			if (title === '기타') {
-				const customSkills = selectedSkills.filter(skill => {
-					return !Object.values(SKILLS_BY_CATEGORY).flat().includes(skill)
-				})
-				const allSkills = [...categorySkills, ...customSkills]
-				if (allSkills.length > 0) {
-					acc[title] = allSkills
-				}
-			} else if (categorySkills.length > 0) {
-				acc[title] = categorySkills
-			}
-			return acc
-		},
-		{} as Record<string, string[]>
+	const allPredefinedValues = useMemo(
+		() => new Set(skillCategories.flatMap(c => (skillsByCategory[c.value] ?? []).map(s => s.value))),
+		[skillCategories, skillsByCategory]
 	)
+
+	const groupedSkills = (() => {
+		const acc: Record<string, EnumItem[]> = {}
+		for (const cat of skillCategories) {
+			const skills = skillsByCategory[cat.value] ?? []
+			const selectedInCat = skills.filter(s => selectedSkills.includes(s.value))
+			if (selectedInCat.length > 0) acc[cat.label] = selectedInCat
+		}
+		const customValues = selectedSkills.filter(v => !allPredefinedValues.has(v))
+		if (customValues.length > 0) {
+			acc['직접 입력'] = customValues.map(value => ({ value, label: value }))
+		}
+		return acc
+	})()
 
 	return (
 		<div className='flex flex-col justify-center items-center'>
@@ -88,18 +78,18 @@ const Step3 = () => {
 			<div className='sm:w-150 md:w-250 lg:w-350 flex justify-center items-start ml-24'>
 				{/* 왼쪽 */}
 				<div className='max-w-85.75 sm:w-50 md:w-60 lg:w-80 flex flex-col gap-1.5'>
-					{SKILL_CATEGORIES.map(title => (
+					{skillCategories.map(cat => (
 						<Accordion
-							key={title}
-							title={title}
+							key={cat.value}
+							title={cat.label}
 							children={
 								<>
-									{SKILLS_BY_CATEGORY[title]?.map(skill => (
+									{(skillsByCategory[cat.value] ?? []).map(skill => (
 										<CheckboxItem
-											key={skill}
-											label={skill}
-											checked={selectedSkills.includes(skill)}
-											onChange={handleSelectSkill}
+											key={skill.value}
+											label={skill.label}
+											checked={selectedSkills.includes(skill.value)}
+											onChange={() => handleSelectSkill(skill.value)}
 										/>
 									))}
 								</>
@@ -131,17 +121,17 @@ const Step3 = () => {
 								<div key={category} className='flex flex-col gap-3'>
 									<div className='body-1 font-semibold text-neutral-800'>{category}</div>
 									<div className='flex flex-wrap gap-2'>
-										{skills.map(skill => {
-											// "Adobe"로 시작하면 어도비 제거하고 표시함
-											const displayText = skill.startsWith('Adobe ') ? skill.replace('Adobe ', '') : skill
-											return (
-												<TagButton
-													key={skill}
-													text={displayText}
-													onClick={() => handleSelectSkill(skill)}
-												/>
-											)
-										})}
+										{skills.map(skill => (
+											<TagButton
+												key={skill.value}
+												text={
+													skill.label.startsWith('Adobe ')
+														? skill.label.replace('Adobe ', '')
+														: skill.label
+												}
+												onClick={() => handleSelectSkill(skill.value)}
+											/>
+										))}
 									</div>
 								</div>
 							))

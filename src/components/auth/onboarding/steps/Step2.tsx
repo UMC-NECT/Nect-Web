@@ -3,37 +3,21 @@ import { useFormContext } from 'react-hook-form'
 import type { OnboardingFormType } from '@/utils/validate'
 import DividerLine from '@/components/common/DividerLine'
 import { useRef } from 'react'
-
-const roles = ['디자이너', '개발자', '기획자', '마케터', '기타']
-
-const roleFields: Record<string, string[]> = {
-	디자이너: ['UX/UI', '3D/모션', '일러스트/그래픽', '웹툰/이모티콘', '제품', '공간', '사진/영상', '출판', '사운드'],
-	개발자: [
-		'프론트엔드',
-		'백엔드',
-		'풀스택',
-		'IOS/안드로이드',
-		'게임',
-		'데이터 엔지니어',
-		'하드웨어',
-		'AI/머신러닝',
-		'보안/네트워크',
-	],
-	기획자: ['서비스', 'UX', '앱/웹', '비즈니스', '공연/행사'],
-	마케터: ['콘텐츠 제작', '광고/바이럴', '퍼포먼스', '라이브커머스', 'CRM', '데이터 분석', '브랜드 마케팅'],
-	기타: ['운영/CS', '세무/법무/노무', '영업/제휴', '창업 컨설팅', '영상/음악 감독', '번역/통역', '원고 컨설턴트'],
-}
+import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
 
 const Step2 = () => {
 	const { setValue, watch } = useFormContext<OnboardingFormType>()
 	const isDeactivatingRef = useRef(false)
+	const { roles, roleFields } = useOnboardingEnums()
 
 	// 값 감시
 	const selectedRole = watch('role') || ''
 	const selectedFields = watch('fields') || []
 	const customFieldInput = watch('customField') || ''
 
-	const displayRole = selectedRole || '디자이너' // 초기값은 디자이너
+	// 분야 목록 키: form에는 role value 저장, roleFields는 value로 키됨
+	const displayRoleValue = selectedRole || (roles[0]?.value ?? '')
+	const currentRoleFields = roleFields[displayRoleValue] ?? []
 
 	// 직접입력 필드가 선택되었는지 확인용
 	const isCustomFieldSelected = selectedFields.some(f => f.startsWith('직접입력:'))
@@ -114,10 +98,10 @@ const Step2 = () => {
 					<div className='w-73 flex flex-col gap-3'>
 						{roles.map(role => (
 							<ChipButton
-								key={role}
-								text={role}
-								isChecked={selectedRole === role}
-								onClick={() => handleRoleClick(role)}
+								key={role.value}
+								text={role.label}
+								isChecked={selectedRole === role.value}
+								onClick={() => handleRoleClick(role.value)}
 							/>
 						))}
 					</div>
@@ -136,13 +120,13 @@ const Step2 = () => {
 					</div>
 
 					<div className='w-82.5 grid grid-cols-2 gap-3'>
-						{roleFields[displayRole].map(field => (
+						{currentRoleFields.map(field => (
 							<ChipButton
-								key={field}
-								text={field}
-								isChecked={selectedFields.includes(field)}
-								onClick={() => handleFieldClick(field)}
 								className='body-1 w-full'
+								key={field.value}
+								text={field.label}
+								isChecked={selectedFields.includes(field.value)}
+								onClick={() => handleFieldClick(field.value)}
 							/>
 						))}
 

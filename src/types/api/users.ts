@@ -23,26 +23,19 @@ export type RequestSignupDto = {
 }
 
 export type RequestSetupDto = {
-    nickname: string
-    birthDate: string
-    job: string
-    role: string
-    fields: [
-        field: string,
-        customField: string | null
-    ]
-    skills: [
-        skillCategory: string,
-        skill: string,
-        customSkillName: string | null
-    ]
-    interests: string[]
-    firstGoal: string
-    collaborationStyle: {
-        planning: number
-        logic: number
-        leadership: number
-    }
+	nickname: string
+	birthDate: string
+	job: string
+	role: string
+	fields: { field: string; customField: string | null }[]
+	skills: { skillCategory: string; skill: string; customSkillName: string | null }[]
+	interests: string[]
+	firstGoal: string
+	collaborationStyle: {
+		planning: number
+		logic: number
+		leadership: number
+	}
 }
 
 export type RequestAgreeDto = {

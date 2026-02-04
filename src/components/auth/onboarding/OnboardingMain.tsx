@@ -2,7 +2,7 @@ import BackButton from '@/components/common/BackButton'
 import ProgressBar from '@/components/common/ProgressBar'
 import Step1 from './steps/Step1'
 import { useOnboardingForm } from '@/hooks/useForm'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Button from '@/components/common/Button'
 import type { OnboardingFormType } from '@/utils/validate'
 import { FormProvider, type Path } from 'react-hook-form'
@@ -11,6 +11,10 @@ import Step3 from './steps/Step3'
 import Step4 from './steps/Step4'
 import Step5 from './steps/Step5'
 import Step6 from './steps/Step6'
+import { useOnboardingEnums } from '@/stores/useOnboardingEnums'
+import { postSetup } from '@/api/users'
+import type { RequestSetupDto } from '@/types/api/users'
+import { useNavigate } from 'react-router'
 
 type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
@@ -24,11 +28,70 @@ const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
 	6: [],
 }
 
+// 폼 데이터 -> RequestSetupDto (form에는 이미 API value 저장됨)
+const toRequestSetupDto = (
+	data: OnboardingFormType,
+	skillCategories: { value: string }[],
+	skillsByCategory: Record<string, { value: string }[]>
+): RequestSetupDto => {
+	const birthStr = data.birth || ''
+	const birthDate = birthStr.length === 8 ? birthStr : ''
+
+	const fields = (data.fields || []).map(f => {
+		if (f.startsWith('직접입력:')) {
+			const customValue = f.replace('직접입력:', '').trim() || null
+			return { field: 'CUSTOM', customField: customValue }
+		}
+		return { field: f, customField: null }
+	})
+
+	const skills = (data.skill || []).map(skillValue => {
+		let skillCategory = 'OTHER'
+		for (const cat of skillCategories) {
+			const list = skillsByCategory[cat.value] ?? []
+			if (list.some(s => s.value === skillValue)) {
+				skillCategory = cat.value
+				break
+			}
+		}
+		const isCustom = !skillCategories.some(cat => (skillsByCategory[cat.value] ?? []).some(s => s.value === skillValue))
+		return {
+			skillCategory,
+			skill: skillValue,
+			customSkillName: isCustom ? skillValue : null,
+		}
+	})
+
+	return {
+		nickname: data.nickname || '',
+		birthDate,
+		job: data.job || '',
+		role: data.role || '',
+		fields,
+		skills,
+		interests: data.interest || [],
+		firstGoal: (data.goal || [])[0] || '',
+		collaborationStyle: {
+			planning: data.workStyle ?? 3,
+			logic: data.communicationStyle ?? 3,
+			leadership: data.teamworkStyle ?? 3,
+		},
+	}
+}
+
 const OnboardingMain = () => {
 	const [currentStep, setCurrentStep] = useState<STEPS>(1)
 	const [isNicknameChecked, setIsNicknameChecked] = useState<boolean>(false)
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const navigate = useNavigate()
+	const { fetchAll, skillCategories, skillsByCategory } = useOnboardingEnums()
 
 	const methods = useOnboardingForm() // 온보딩 1~6단계용 커스텀 useForm
+
+	// 마운트 시 enum API 호출 후 스토어에 저장
+	useEffect(() => {
+		fetchAll()
+	}, [fetchAll])
 
 	// 값 감시 (버튼 비활성화용)
 	const {
@@ -111,9 +174,18 @@ const OnboardingMain = () => {
 			}
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
-				console.log(`현재 폼에 입력된 값들(${currentStep}): `, methods.getValues())
 			} else {
-				console.log('최종 제출', methods.getValues())
+				setIsSubmitting(true)
+				try {
+					const formData = methods.getValues()
+					const body = toRequestSetupDto(formData, skillCategories, skillsByCategory)
+					await postSetup(body)
+					navigate('/')
+				} catch {
+					console.error('프로필 설정에 실패했습니다. 다시 시도해주세요.')
+				} finally {
+					setIsSubmitting(false)
+				}
 			}
 		}
 	}
@@ -146,8 +218,8 @@ const OnboardingMain = () => {
 
 				{/* 다음 버튼 */}
 				<div className='absolute bottom-34 left-1/2 -translate-x-1/2'>
-					<Button size='lg' onClick={handleNext} disabled={isNextDisabled()}>
-						다음
+					<Button size='lg' onClick={handleNext} disabled={isNextDisabled() || isSubmitting}>
+						{currentStep === 6 && isSubmitting ? '저장 중...' : '다음'}
 					</Button>
 				</div>
 			</form>
