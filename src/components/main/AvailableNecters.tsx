@@ -91,7 +91,7 @@ const RecommendedProjects = () => {
                                         <span className="text-neutral-500 font-medium">{project.position}</span>
                                     </div>
                                     
-                                    <p className="text-[13px] text-neutral-600 line-clamp-2">
+                                    <p className="text-[13px] font-medium text-neutral-600 line-clamp-2">
                                         {project.description}
                                     </p>
                                 </div>

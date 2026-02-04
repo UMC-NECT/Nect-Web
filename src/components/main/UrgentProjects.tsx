@@ -71,7 +71,7 @@ const UrgentProjects = () => {
                                 </div>
                                 <p className="text-sm font-medium text-neutral-600">{project.description}</p>
                             </div>
-                            <span className="text-xl font-bold text-purple-500 whitespace-nowrap ml-4">
+                            <span className="text-xl font-bold text-primary-500-normal whitespace-nowrap ml-4">
                                 {project.dDay}
                             </span>
                         </div>

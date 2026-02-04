@@ -5,13 +5,12 @@ import { useRef } from 'react';
 
 import { recommendationProjects } from '@/constants/RecommendationProjects';
 import { useLocation } from 'react-router';
-import { getTagStyle } from '@/utils/tagStyles';
+import RecommendationProjectCard from '@/components/common/RecommendationProjectCard';
 
 const RecommendationProject = () => {
     const paginationRef = useRef<HTMLDivElement>(null);
-
-    const location = useLocation()
-    const isProfileAnalysisPage = location.pathname === '/profile-analysis'
+    const location = useLocation();
+    const isProfileAnalysisPage = location.pathname === '/profile-analysis';
 
     return (
         <div className="w-308.25 h-111.75 mx-auto mb-12.5 relative -ml-11.5">
@@ -53,58 +52,11 @@ const RecommendationProject = () => {
                 >
                     {recommendationProjects.map((project) => (
                         <SwiperSlide key={project.id}>
-                            <div className={`w-90 ${project.description.length > 40 ? 'h-85' : 'h-80'} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
-                                {/* 이미지 영역 */}
-                                <div className="relative w-90 h-50 rounded-xl">
-                                    <img
-                                        src={project.image}
-                                        alt={project.title}
-                                    />
-
-                                    {/* 모집 중 태그 */}
-                                    <div className="absolute bottom-2 right-3">
-                                        <div className="flex items-center justify-center gap-1 bg-neutral-000 border border-neutral-100 rounded-2xl w-18.5 h-6.5">
-                                            <span className="w-2.5 h-2.5 bg-primary-500-normal rounded-full"></span>
-                                            <span className="text-[14px] text-neutral-700 font-semibold">
-                                                {project.status}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* 정보 영역 */}
-                                <div className="gap-3 mx-5 mt-3.5">
-                                    <div className="flex justify-between items-center mt-3 mb-2">
-                                        <div className="flex items-center gap-1.5 flex-1 h-6.5">
-                                            <h3 className="text-lg font-semibold text-neutral-900 truncate">{project.title}</h3>
-                                            <div className='flex items-center justify-between gap-5 mt-0.75'>
-                                                <span className="text-sm font-semibold text-neutral-700">{project.subtitle}</span>
-                                                <span className="text-neutral-500 text-sm">{project.part}</span>
-                                            </div>
-                                        </div>
-                                        <span className="text-lg font-semibold text-primary-500-normal whitespace-nowrap">{project.dDay}</span>
-                                    </div>
-
-                                    <p className="text-sm text-neutral-700 mb-3 line-clamp-2">
-                                        {project.description}
-                                    </p>
-
-                                    <div className="flex gap-2 flex-wrap h-6">
-                                        {project.tags.map((tag, index) => (
-                                            <span
-                                                key={index}
-                                                className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(tag)}`}
-                                            >
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
+                            <RecommendationProjectCard project={project} />
                         </SwiperSlide>
                     ))}
                 </Swiper>
-                {/* 페이지네이션을 Swiper 밖으로 */}
+                {/* 페이지네이션 */}
                 <div ref={paginationRef} className="custom-pagination mt-6 flex justify-center"></div>
             </div>
 

@@ -21,8 +21,8 @@ const ProjectShowcase = () => {
     return (
         <div className="w-full h-237 -mx-4 relative overflow-hidden">
             {/* SVG 배경 */}
-            <div 
-                className="absolute inset-0 bg-neutral-900"
+            <div
+                className="absolute inset-0 [background:linear-gradient(127.97deg,rgba(102,15,216,0.16),rgba(102,15,216,0)_40%),linear-gradient(180deg,rgba(102,15,216,0.16),rgba(102,15,216,0)_40%),linear-gradient(180deg,rgba(102,15,216,0)_60%,rgba(102,15,216,0.2)),linear-gradient(#000,#000)]"
                 style={{
                     backgroundImage: `url(${BgPattern})`,
                 }}

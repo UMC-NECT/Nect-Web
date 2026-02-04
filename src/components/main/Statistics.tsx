@@ -23,15 +23,15 @@ const Statistics = () => {
     ];
 
     return (
-        <div className="w-282 mx-auto mb-17">
-            <h2 className="text-[24px] font-bold mb-11">사이드프로젝트는 NECT에서</h2>
+        <div className="w-282 h-[150px] mx-auto mb-17">
+            <h2 className="text-[22px] font-bold mb-11">사이드프로젝트는 NECT에서</h2>
             
             {/* 통계 */}
-            <div className="flex items-center">
+            <div className="h-20 flex items-center">
                 {stats.map((stat, index) => (
                     <>
-                        <div key={index} className="ml-8 mr-25 w-63">
-                            <div className={`text-[40px] font-bold mb-2 ${
+                        <div key={index} className="w-[252px] h-[79px] px-5 gap-[6px]">
+                            <div className={`text-[40px] font-bold ${
                                 stat.isPrimary ? 'text-primary-500-normal' : 'text-neutral-900'
                             }`}>
                                 {stat.number}
@@ -41,7 +41,9 @@ const Statistics = () => {
                             </div>
                         </div>
                         {index < stats.length - 1 && (
-                            <div className="w-px h-20 bg-neutral-300 mx-auto"/>
+                            <div className="w-10 flex justify-center">
+                                <div className="w-px h-20 bg-neutral-300"/>
+                            </div>
                         )}
                     </>
                 ))}
