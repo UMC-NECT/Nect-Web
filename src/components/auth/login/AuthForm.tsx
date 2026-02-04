@@ -7,7 +7,7 @@ import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 
 import { useState } from 'react'
 import { useLoginForm } from '@/hooks/useForm'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 
 const AuthForm = () => {
 	const [showPassword, setShowPassword] = useState<boolean>(false)
@@ -108,7 +108,7 @@ const AuthForm = () => {
 			<div className='mt-4.5 flex justify-center items-center gap-4.5 '>
 				<span className='body-1 text-neutral-500 cursor-pointer hover:underline'>아이디/비밀번호 찾기</span>
 				<span className='text-neutral-300'>|</span>
-				<span className='body-1 text-primary-400-normal cursor-pointer hover:underline'>회원가입</span>
+				<Link to={'/signup'} className='body-1 text-primary-400-normal cursor-pointer hover:underline'>회원가입</Link>
 			</div>
 		</div>
 	)

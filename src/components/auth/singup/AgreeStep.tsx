@@ -2,11 +2,16 @@ import Button from '@/components/common/Button'
 import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 import CheckboxIcon from '@/assets/icons/auth/checkbox.svg?react'
 import { useSignup } from '@/stores/useSignup'
+import { useSignupStep } from '@/contexts/SignupStepContext'
 import { useAgreeForm } from '@/hooks/useForm'
+import { postSignup, postAgree } from '@/api/users'
+import { useState } from 'react'
 
 const AgreeStep = () => {
-	const textEmail = 'Next2u@naver.com'
-	const { setCurrentStep } = useSignup()
+	const { signupData } = useSignup()
+	const { setCurrentStep } = useSignupStep()
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
 
 	// 유효성 검사 관련
 	const { register, watch, setValue, handleSubmit } = useAgreeForm()
@@ -31,8 +36,29 @@ const AgreeStep = () => {
 		setValue('agree4', newValue)
 	}
 
-	const onSubmit = () => {
-		setCurrentStep('done')
+	const onSubmit = async () => {
+		setIsSubmitting(true)
+		setErrorMessage('')
+
+		try {
+			await postSignup({
+				email: signupData.email,
+				password: signupData.password,
+				passwordConfirm: signupData.passwordConfirm,
+				name: signupData.name,
+				phoneNumber: signupData.phoneNumber,
+			})
+			await postAgree({
+				termsAgreed: agree2,
+				privacyAgreed: agree3,
+				marketingAgreed: agree4 ?? false,
+			})
+			setCurrentStep('done')
+		} catch {
+			setErrorMessage('회원가입에 실패했습니다. 다시 시도해주세요.')
+		} finally {
+			setIsSubmitting(false)
+		}
 	}
 
 	return (
@@ -42,8 +68,9 @@ const AgreeStep = () => {
 				<div className='flex flex-col justify-center items-center'>
 					<div className='heading-2 text-neutral-900 font-bold mb-11'>계정 확인 및 약관 동의</div>
 					<div className='title-2 text-neutral-900 px-30 py-4.5 bg-primary-100-light rounded-12 mb-8.5'>
-						{textEmail}
+						{signupData.email}
 					</div>
+					{errorMessage && <div className='title-2 text-danger-700 mb-4'>{errorMessage}</div>}
 				</div>
 
 				{/* 모두 동의합니다. */}
@@ -110,8 +137,8 @@ const AgreeStep = () => {
 				</div>
 
 				{/* 가입하기 */}
-				<Button onClick={handleSubmit(onSubmit)} disabled={!isRequiredAgree} fullWidth className='h-14'>
-					가입하기
+				<Button onClick={handleSubmit(onSubmit)} disabled={!isRequiredAgree || isSubmitting} fullWidth className='h-14'>
+					{isSubmitting ? '가입 중...' : '가입하기'}
 				</Button>
 			</div>
 		</div>

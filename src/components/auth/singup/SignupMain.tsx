@@ -5,11 +5,11 @@ import Button from '@/components/common/Button'
 import OR from '@/components/common/OR'
 
 import { useNavigate } from 'react-router'
-import { useSignup } from '@/stores/useSignup'
+import { useSignupStep } from '@/contexts/SignupStepContext'
 
 const SignupMain = () => {
 	const navigate = useNavigate()
-	const { setCurrentStep } = useSignup()
+	const { setCurrentStep } = useSignupStep()
 
 	// 테스트용
 	const handleSocialLogin = () => {
