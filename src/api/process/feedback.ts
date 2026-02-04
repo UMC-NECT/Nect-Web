@@ -1,4 +1,4 @@
-import type { RequestFeedbackPatchDto, RequestFeedbackPostDto, ResponseFeedbackDeleteDto, ResponseFeedbackPatchDto, ResponseFeedbackPostDto } from "@/types/api/feedback";
+import type { RequestFeedbackPatchDto, RequestFeedbackPostDto, ResponseFeedbackDeleteDto, ResponseFeedbackPatchDto, ResponseFeedbackPostDto } from "@/types/api/process/feedback";
 import { api } from "@/utils/AxiosInstance";
 
 /** 프로세스(카드)에 피드백을 생성합니다. */

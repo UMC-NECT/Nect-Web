@@ -1,4 +1,4 @@
-import type { RequestAttachmentFilePostDto, RequestAttachmentLinksPostDto, RequestUploadAttachment, ResponseAttachmentFilePostDto, ResponseAttachmentLinksPostDto, ResponseUploadAttachmentPostDto } from "@/types/api/attachment"
+import type { RequestAttachmentFilePostDto, RequestAttachmentLinksPostDto, RequestUploadAttachment, ResponseAttachmentFilePostDto, ResponseAttachmentLinksPostDto, ResponseUploadAttachmentPostDto } from "@/types/api/process/attachment"
 import type { CommonResponse } from "@/types/api/commonResponse"
 import { api } from "@/utils/AxiosInstance"
 

@@ -1,5 +1,5 @@
 import type { CommonResponse } from '@/types/api/commonResponse'
-import type { RequestProcessOrderPatchDto, RequestProcessPatchDto, RequestProcessPostDto, RequestProcessStatusPatchDto, ResponseProcessDetailDto, ResponseProcessOrderPatchDto, ResponseProcessPartDto, ResponseProcessPatchDto, ResponseProcessPostDto, ResponseProcessStatusPatchDto, ResponseProcessWeekDto } from '@/types/api/process'
+import type { RequestProcessOrderPatchDto, RequestProcessPatchDto, RequestProcessPostDto, RequestProcessStatusPatchDto, ResponseProcessDetailDto, ResponseProcessOrderPatchDto, ResponseProcessPartDto, ResponseProcessPatchDto, ResponseProcessPostDto, ResponseProcessStatusPatchDto, ResponseProcessWeekDto } from '@/types/api/process/process'
 import { api } from '@/utils/AxiosInstance'
 import { toQueryString } from '@/utils/queryString'
 
