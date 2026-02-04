@@ -6,7 +6,7 @@ import { useSignupStep } from '@/contexts/SignupStepContext'
 import { useSignupForm1 } from '@/hooks/useForm'
 import FormField from '@/components/auth/common/FormField'
 import FieldMessage from '@/components/auth/common/FieldMessage'
-import { postCheck } from '@/api/users'
+import { useCheckMutation } from '@/hooks/auth/useUsersApi'
 
 const NameStep = () => {
 	// 전역 상태
@@ -14,7 +14,7 @@ const NameStep = () => {
 	const { setCurrentStep } = useSignupStep()
 	// 지역 상태
 	const [isCertificated, setIsCertificated] = useState<boolean>(false) // 전화번호 중복 확인 완료
-	const [isCheckingPhone, setIsCheckingPhone] = useState<boolean>(false) // 중복 확인 API 호출 중
+	const checkMutation = useCheckMutation()
 
 	// 유효성 검사 관련
 	const { register, watch, handleSubmit, errors, setValue, setError, clearErrors } = useSignupForm1()
@@ -40,11 +40,10 @@ const NameStep = () => {
 		const phoneNumber = phone?.replace(/-/g, '') ?? ''
 		if (!phoneNumber) return
 
-		setIsCheckingPhone(true)
 		clearErrors('phone')
 
 		try {
-			const response = await postCheck({
+			const response = await checkMutation.mutateAsync({
 				type: 'PHONE',
 				value: phoneNumber,
 			})
@@ -57,8 +56,6 @@ const NameStep = () => {
 			setIsCertificated(true)
 		} catch {
 			setError('phone', { type: 'manual', message: '중복 확인에 실패했습니다. 다시 시도해주세요.' })
-		} finally {
-			setIsCheckingPhone(false)
 		}
 	}
 
@@ -136,7 +133,7 @@ const NameStep = () => {
 							<Button
 								color='auth'
 								className='w-40 h-14 title-2 px-5.5 py-3.5'
-								disabled={!name || !phone || !!errors.phone || isCheckingPhone || isCertificated}
+								disabled={!name || !phone || !!errors.phone || checkMutation.isPending || isCertificated}
 								onClick={handleCertificatePhone}
 							>
 								중복 확인

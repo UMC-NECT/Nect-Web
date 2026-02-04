@@ -9,8 +9,7 @@ import {
 	getInterestFields,
 	getGoals,
 } from '@/api/enums'
-
-const ONBOARDING_ENUMS_QUERY_KEY = ['onboardingEnums'] as const
+import { QUERY_KEY } from '@/constants/key'
 
 const fetchOnboardingEnums = async () => {
 	const [jobsRes, rolesRes, skillCategoriesRes, interestRes, goalsRes] = await Promise.all([
@@ -56,7 +55,7 @@ const fetchOnboardingEnums = async () => {
 
 export const useOnboardingEnums = () => {
 	const { data, isLoading, error } = useQuery({
-		queryKey: ONBOARDING_ENUMS_QUERY_KEY,
+		queryKey: QUERY_KEY.onboardingEnums,
 		queryFn: fetchOnboardingEnums,
 		staleTime: Infinity,
 		gcTime: Infinity,

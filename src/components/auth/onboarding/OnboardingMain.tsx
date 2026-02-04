@@ -12,7 +12,7 @@ import Step4 from './steps/Step4'
 import Step5 from './steps/Step5'
 import Step6 from './steps/Step6'
 import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
-import { postCheck, postSetup } from '@/api/users'
+import { useCheckMutation, useSetupMutation } from '@/hooks/auth/useUsersApi'
 import type { RequestSetupDto } from '@/types/api/users'
 import { useNavigate } from 'react-router'
 
@@ -83,9 +83,11 @@ const toRequestSetupDto = (
 const OnboardingMain = () => {
 	const [currentStep, setCurrentStep] = useState<STEPS>(1)
 	const [isNicknameChecked, setIsNicknameChecked] = useState<boolean>(false)
-	const [isSubmitting, setIsSubmitting] = useState(false)
 	const navigate = useNavigate()
 	const { skillCategories, skillsByCategory } = useOnboardingEnums()
+	const checkMutation = useCheckMutation()
+	const setupMutation = useSetupMutation()
+	const isSubmitting = setupMutation.isPending
 
 	const methods = useOnboardingForm() // 온보딩 1~6단계용 커스텀 useForm
 
@@ -121,7 +123,7 @@ const OnboardingMain = () => {
 		if (!nickname) return false
 
 		try {
-			const response = await postCheck({
+			const response = await checkMutation.mutateAsync({
 				type: 'NICKNAME',
 				value: nickname,
 			})
@@ -181,17 +183,14 @@ const OnboardingMain = () => {
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
 			} else {
-				setIsSubmitting(true)
 				try {
 					const formData = methods.getValues()
 					const body = toRequestSetupDto(formData, skillCategories, skillsByCategory)
-					await postSetup(body)
+					await setupMutation.mutateAsync(body)
 					navigate('/')
 				} catch {
 					console.error('프로필 설정에 실패했습니다. 다시 시도해주세요.')
 					alert('프로필 설정에 실패했습니다. 다시 시도해주세요.')
-				} finally {
-					setIsSubmitting(false)
 				}
 			}
 		}

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSignupForm2 } from '@/hooks/useForm'
 import FormField from '@/components/auth/common/FormField'
 import FieldMessage from '@/components/auth/common/FieldMessage'
-import { postCheck } from '@/api/users'
+import { useCheckMutation } from '@/hooks/auth/useUsersApi'
 
 const EmailStep = () => {
 	// 전역 상태
@@ -15,7 +15,7 @@ const EmailStep = () => {
 	// 지역 상태
 	const [checkedEmail, setCheckedEmail] = useState<string>('') // 중복 확인한 이메일
 	const [isSameEmail, setIsSameEmail] = useState<boolean>(false) // 이메일 중복인지
-	const [isCheckingEmail, setIsCheckingEmail] = useState<boolean>(false) // 중복 확인 API 호출 중
+	const checkMutation = useCheckMutation()
 
 	const handleSignupComplete = () => {
 		setSignupData({ email, password, passwordConfirm: password2 ?? '' })
@@ -49,11 +49,10 @@ const EmailStep = () => {
 	const handleSameEmail = async () => {
 		if (!email) return
 
-		setIsCheckingEmail(true)
 		clearErrors('email')
 
 		try {
-			const response = await postCheck({
+			const response = await checkMutation.mutateAsync({
 				type: 'EMAIL',
 				value: email,
 			})
@@ -66,8 +65,6 @@ const EmailStep = () => {
 			}
 		} catch {
 			setError('email', { type: 'manual', message: '중복 확인에 실패했습니다. 다시 시도해주세요.' })
-		} finally {
-			setIsCheckingEmail(false)
 		}
 	}
 
@@ -121,9 +118,9 @@ const EmailStep = () => {
 								color='auth'
 								className='w-40 h-14 title-2 px-5.5 py-3.5'
 								onClick={handleSameEmail}
-								disabled={!email || !!errors.email || isCheckingEmail}
+								disabled={!email || !!errors.email || checkMutation.isPending}
 							>
-								{isCheckingEmail ? '확인 중...' : '중복 확인'}
+								중복 확인
 							</Button>
 						</div>
 					</FormField>

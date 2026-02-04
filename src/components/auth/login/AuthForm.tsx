@@ -8,17 +8,17 @@ import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 import { useState } from 'react'
 import { useLoginForm } from '@/hooks/useForm'
 import { Link, useNavigate } from 'react-router'
-import { postLogin } from '@/api/users'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
+import { useLoginMutation } from '@/hooks/auth/useUsersApi'
 
 const AuthForm = () => {
 	const [showPassword, setShowPassword] = useState<boolean>(false)
 	const [loginError, setLoginError] = useState<string>('')
-	const [isSubmitting, setIsSubmitting] = useState(false)
 	const navigate = useNavigate()
 	const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+	const loginMutation = useLoginMutation()
 
 	// 유효성 검사용
 	const { register, handleSubmit, errors, watch } = useLoginForm()
@@ -36,10 +36,9 @@ const AuthForm = () => {
 		if (!email || !password) return
 
 		setLoginError('')
-		setIsSubmitting(true)
 
 		try {
-			const response = await postLogin({
+			const response = await loginMutation.mutateAsync({
 				email,
 				password,
 				autoLoginEnabled: isAuthLogin ?? false,
@@ -55,8 +54,6 @@ const AuthForm = () => {
 			}
 		} catch {
 			setLoginError('가입되지 않은 계정이거나, 아이디/비밀번호가 일치하지 않습니다.')
-		} finally {
-			setIsSubmitting(false)
 		}
 	}
 
@@ -117,8 +114,8 @@ const AuthForm = () => {
 				)}
 
 				{/* 로그인 버튼 */}
-				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled || isSubmitting}>
-					{isSubmitting ? '로그인 중...' : '로그인'}
+				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled || loginMutation.isPending}>
+					로그인
 				</Button>
 			</form>
 

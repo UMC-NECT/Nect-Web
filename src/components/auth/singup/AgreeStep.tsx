@@ -4,14 +4,16 @@ import CheckboxIcon from '@/assets/icons/auth/checkbox.svg?react'
 import { useSignup } from '@/stores/useSignup'
 import { useSignupStep } from '@/contexts/SignupStepContext'
 import { useAgreeForm } from '@/hooks/useForm'
-import { postSignup, postAgree } from '@/api/users'
 import { useState } from 'react'
+import { useSignupMutation, useAgreeMutation } from '@/hooks/auth/useUsersApi'
 
 const AgreeStep = () => {
 	const { signupData } = useSignup()
 	const { setCurrentStep } = useSignupStep()
-	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
+	const signupMutation = useSignupMutation()
+	const agreeMutation = useAgreeMutation()
+	const isSubmitting = signupMutation.isPending || agreeMutation.isPending
 
 	// 유효성 검사 관련
 	const { register, watch, setValue, handleSubmit } = useAgreeForm()
@@ -37,18 +39,17 @@ const AgreeStep = () => {
 	}
 
 	const onSubmit = async () => {
-		setIsSubmitting(true)
 		setErrorMessage('')
 
 		try {
-			await postSignup({
+			await signupMutation.mutateAsync({
 				email: signupData.email,
 				password: signupData.password,
 				passwordConfirm: signupData.passwordConfirm,
 				name: signupData.name,
 				phoneNumber: signupData.phoneNumber,
 			})
-			await postAgree({
+			await agreeMutation.mutateAsync({
 				termsAgreed: agree2,
 				privacyAgreed: agree3,
 				marketingAgreed: agree4 ?? false,
@@ -56,8 +57,6 @@ const AgreeStep = () => {
 			setCurrentStep('done')
 		} catch {
 			setErrorMessage('회원가입에 실패했습니다. 다시 시도해주세요.')
-		} finally {
-			setIsSubmitting(false)
 		}
 	}
 
