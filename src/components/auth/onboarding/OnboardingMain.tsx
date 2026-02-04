@@ -47,18 +47,19 @@ const toRequestSetupDto = (
 
 	const skills = (data.skill || []).map(skillValue => {
 		let skillCategory = 'OTHER'
+		let isPredefined = false
 		for (const cat of skillCategories) {
 			const list = skillsByCategory[cat.value] ?? []
 			if (list.some(s => s.value === skillValue)) {
 				skillCategory = cat.value
+				isPredefined = true
 				break
 			}
 		}
-		const isCustom = !skillCategories.some(cat => (skillsByCategory[cat.value] ?? []).some(s => s.value === skillValue))
 		return {
 			skillCategory,
 			skill: skillValue,
-			customSkillName: isCustom ? skillValue : null,
+			customSkillName: isPredefined ? skillValue : null,
 		}
 	})
 
@@ -188,6 +189,7 @@ const OnboardingMain = () => {
 					navigate('/')
 				} catch {
 					console.error('프로필 설정에 실패했습니다. 다시 시도해주세요.')
+					alert('프로필 설정에 실패했습니다. 다시 시도해주세요.')
 				} finally {
 					setIsSubmitting(false)
 				}
