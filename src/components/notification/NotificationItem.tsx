@@ -12,11 +12,11 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
 					{/* 알림 상단 (카테고리, 시간, 읽음 표시) */}
 					<div className='flex items-center justify-between relative shrink-0 w-full'>
 						{/* 카테고리 */}
-						<span className='caption-1 text-neutral-400'>{notification.category}</span>
+						<span className='caption-1 text-neutral-400 font-medium'>{notification.category}</span>
 
 						{/* 시간 및 읽음 표시 */}
 						<div className='flex items-center gap-1.5 relative shrink-0'>
-							<span className='caption-1 text-neutral-400 text-right'>{notification.time}</span>
+							<span className='caption-1 text-neutral-400 font-medium'>{notification.time}</span>
 							{/* 안 읽은 알림 표시 점 */}
 							{!notification.isRead && (
 								<div className='w-1.5 h-1.5 bg-primary-500-normal rounded-full shrink-0' />
@@ -26,7 +26,7 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
 
 					{/* 알림 내용 */}
 					<div
-						className={`body-2 font-medium overflow-hidden relative shrink-0 w-full line-clamp-2 ${
+						className={`body-2 font-regular overflow-hidden relative shrink-0 w-full line-clamp-2 ${
 							notification.isRead ? 'text-neutral-400' : 'text-neutral-900'
 						}`}
 					>

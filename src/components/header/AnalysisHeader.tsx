@@ -6,6 +6,7 @@ import ProfileIcon from '@/assets/icons/header/Profile.svg?react'
 import { useRef, useState } from 'react'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import NotificationDropdown from '../notification/NotificationDropdown'
+import MessageDropdown from '../chat/MessageDropdown'
 
 interface AnalysisHeaderProps {
 	onNavigate: () => void
@@ -86,7 +87,7 @@ const AnalysisHeader = ({ onNavigate }: AnalysisHeaderProps) => {
 							>
 								<MessageIcon className='h-6 w-6 text-neutral-700' />
 							</button>
-							{showMessages && <NotificationDropdown defaultTab='team' />}
+							{showMessages && <MessageDropdown defaultTab='team' />}
 						</div>
 
 						<button

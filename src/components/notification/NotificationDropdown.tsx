@@ -73,16 +73,16 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 	const lastWeekDividerIndex = 4
 
 	return (
-		<div className='absolute top-full -right-[128px] mt-2 bg-white flex flex-col gap-4 items-start justify-start pt-6 rounded-6 shadow-drop-neutral-1 w-[380px] h-[682px] overflow-hidden z-50'>
+		<div className='absolute top-full -right-[128px] mt-2 bg-white flex flex-col items-start justify-start pt-6 rounded-6 shadow-drop-neutral-1 w-[380px] h-[682px] overflow-hidden z-50'>
 			{/* 헤더 */}
-			<div className='flex flex-col items-start px-[22px] py-0.5 relative shrink-0 w-full'>
+			<div className='flex flex-col items-start px-[22px] py-0.5 relative shrink-0 w-full mb-[18px]'>
 				<div className='flex items-center px-0.5 relative shrink-0 w-full'>
 					<h2 className='title-2 font-semibold text-neutral-900'>최근 알림</h2>
 				</div>
 			</div>
 
 			{/* 세그먼트 바 */}
-			<div className='flex items-center justify-center px-[22px] relative shrink-0 w-full'>
+			<div className='flex items-center justify-center px-[22px] relative shrink-0 w-full mb-[12px]'>
 				<SegmentsBarLg
 					segments={['NECT 탐색', '팀 작업실']}
 					defaultValue={activeTab === 'nect' ? 'NECT 탐색' : '팀 작업실'}
@@ -107,7 +107,7 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 										</div>
 									</div>
 									<div className='bg-white flex items-center px-2 py-1 relative -mt-3'>
-										<span className='caption-1 text-neutral-400'>지난주</span>
+										<span className='caption-1 text-neutral-400 font-medium'>지난주</span>
 									</div>
 								</div>
 							)}

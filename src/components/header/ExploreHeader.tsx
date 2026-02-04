@@ -6,6 +6,7 @@ import NotificationIcon from '@/assets/icons/common/notification.svg?react'
 import ProfileIcon from '@/assets/icons/header/Profile.svg?react'
 import PortfolioIcon from '@/assets/icons/header/Portfolio.svg?react'
 import NotificationDropdown from '@/components/notification/NotificationDropdown'
+import MessageDropdown from '@/components/chat/MessageDropdown'
 import ProfileDropdown from '@/components/header/ProfileDropdown'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { Link, useNavigate } from 'react-router'
@@ -134,7 +135,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 							>
 								<MessageIcon className='h-6 w-6 text-neutral-700' />
 							</button>
-							{showMessages && <NotificationDropdown defaultTab='team' />}
+							{showMessages && <MessageDropdown defaultTab='team' />}
 						</div>
 
 						<div ref={profileRef} className='relative'>
