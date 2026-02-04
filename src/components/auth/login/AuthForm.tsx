@@ -8,11 +8,17 @@ import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 import { useState } from 'react'
 import { useLoginForm } from '@/hooks/useForm'
 import { Link, useNavigate } from 'react-router'
+import { postLogin } from '@/api/users'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { LOCAL_STORAGE_KEY } from '@/constants/key'
 
 const AuthForm = () => {
 	const [showPassword, setShowPassword] = useState<boolean>(false)
 	const [loginError, setLoginError] = useState<string>('')
+	const [isSubmitting, setIsSubmitting] = useState(false)
 	const navigate = useNavigate()
+	const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+	const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
 
 	// 유효성 검사용
 	const { register, handleSubmit, errors, watch } = useLoginForm()
@@ -26,19 +32,31 @@ const AuthForm = () => {
 	const isFormFilled = email && password
 
 	// 폼 제출 (로그인 버튼 클릭)
-	const onSubmit = () => {
-		setLoginError('')
+	const onSubmit = async () => {
+		if (!email || !password) return
 
-		// 나중에 api연결로 대체
+		setLoginError('')
+		setIsSubmitting(true)
+
 		try {
-			if (email === 'test@naver.com' && password === 'qwerty1!') {
-				console.log('로그인 성공!', email, password)
+			const response = await postLogin({
+				email,
+				password,
+				autoLoginEnabled: isAuthLogin ?? false,
+			})
+
+			const tokenData = response.body
+			if (tokenData?.accessToken && tokenData?.refreshToken) {
+				setAccessToken(tokenData.accessToken)
+				setRefreshToken(tokenData.refreshToken)
 				navigate('/')
 			} else {
-				setLoginError('가입되지 않은 계정이거나, 아이디/비밀번호가 일치하지 않습니다.')
+				setLoginError('로그인에 실패했습니다. 다시 시도해주세요.')
 			}
 		} catch {
 			setLoginError('가입되지 않은 계정이거나, 아이디/비밀번호가 일치하지 않습니다.')
+		} finally {
+			setIsSubmitting(false)
 		}
 	}
 
@@ -99,8 +117,8 @@ const AuthForm = () => {
 				)}
 
 				{/* 로그인 버튼 */}
-				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled}>
-					로그인
+				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled || isSubmitting}>
+					{isSubmitting ? '로그인 중...' : '로그인'}
 				</Button>
 			</form>
 
@@ -108,7 +126,9 @@ const AuthForm = () => {
 			<div className='mt-4.5 flex justify-center items-center gap-4.5 '>
 				<span className='body-1 text-neutral-500 cursor-pointer hover:underline'>아이디/비밀번호 찾기</span>
 				<span className='text-neutral-300'>|</span>
-				<Link to={'/signup'} className='body-1 text-primary-400-normal cursor-pointer hover:underline'>회원가입</Link>
+				<Link to={'/signup'} className='body-1 text-primary-400-normal cursor-pointer hover:underline'>
+					회원가입
+				</Link>
 			</div>
 		</div>
 	)
