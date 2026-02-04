@@ -1,4 +1,4 @@
-import type { CommonResponse } from "./commonResponse"
+import type { CommonResponse } from "../commonResponse"
 
 export interface Feedback{
     feedback_id: number

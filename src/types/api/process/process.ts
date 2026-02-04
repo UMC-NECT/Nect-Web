@@ -1,9 +1,9 @@
-import type { Assignees } from "./assignees"
-import type { CommonResponse } from "./commonResponse"
-import type { Feedback } from "./feedback"
-import type { Files } from "./file"
-import type { Links } from "./links"
+import type { Assignees } from "../assignees"
+import type { CommonResponse } from "../commonResponse"
+import type { Files } from "../file"
 import type { TaskItems } from "./taskItems"
+import type { Feedback } from "./feedback"
+import type { Links } from "./links"
 
 export interface RequestProcessPostDto {
     process_title: string

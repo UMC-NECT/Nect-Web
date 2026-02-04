@@ -1,5 +1,5 @@
-import type { CommonResponse } from "./commonResponse"
-import type { Files } from "./file"
+import type { CommonResponse } from "../commonResponse"
+import type { Files } from "../file"
 
 export type RequestAttachmentFilePostDto = {
     file_id: number
