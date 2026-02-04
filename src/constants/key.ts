@@ -16,5 +16,11 @@ export const QUERY_KEY = {
 	},
 	onboardingEnums: ['onboardingEnums'] as const,
     ACCESS_TOKEN: 'accessToken',
-    REFRESH_TOKEN: 'refreshToken'
+    REFRESH_TOKEN: 'refreshToken',
+	process: {
+		part: (projectId: string, fieldId?: string) => ['processes', projectId, 'part', fieldId] as const,
+		week: (projectId: string, startDate?: string) => ['processes', projectId, 'week', startDate] as const,
+		detail: (projectId: string, processId: string) => ['processes', projectId, 'detail', processId] as const,
+		list: (projectId: string) => ['processes', projectId] as const,
+	},
 }
