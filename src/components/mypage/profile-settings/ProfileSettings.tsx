@@ -69,6 +69,9 @@ export const ProfileSettings = () => {
 						if (firstErrorKey) {
 							// 해당 에러 섹션으로 스크롤
 							const errorFieldMap: Record<keyof ProfileFormDataType, string> = {
+								interestJob: 'profile-basic-info',
+								interestOccupation: 'profile-basic-info',
+								userCareer: 'profile-basic-info',
 								introduction: 'section-01',
 								coreCompetency: 'section-02',
 								interestFields: 'section-04',
@@ -183,11 +186,14 @@ export const ProfileSettings = () => {
 				{/* 전체 컨테이너 */}
 				<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>
 					{/* 프사 + 기본 정보 */}
-					<ProfileBasicInfo
-						isOpenRecruit={isOpenRecruit}
-						onSave={handleSaveWithModal}
-						onRecruit={handlePublishRecruitment}
-					/>
+					<div id='profile-basic-info'>
+						<ProfileBasicInfo
+							control={methods.control}
+							isOpenRecruit={isOpenRecruit}
+							onSave={handleSaveWithModal}
+							onRecruit={handlePublishRecruitment}
+						/>
+					</div>
 
 					<div className='flex flex-col gap-16'>
 						{/* 섹션 01. 자기소개 */}

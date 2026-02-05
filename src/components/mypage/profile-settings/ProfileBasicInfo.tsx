@@ -5,14 +5,17 @@ import { useUserStore } from '@/stores/useUserStore'
 import Button from '../../common/Button'
 import UserStatusModal from '@/components/common/UserStatusModal'
 import { useUserStatusStore } from '@/stores/useUserStatusStore'
+import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
+import { Controller, type Control } from 'react-hook-form'
 
 interface ProfileBasicInfoProps {
+	control: Control<ProfileFormDataType>
 	isOpenRecruit: boolean // 공개 매칭 여부 (디폴트: 비공개)
 	onSave: () => void
 	onRecruit: () => void
 }
 
-const ProfileBasicInfo = ({ isOpenRecruit, onSave, onRecruit }: ProfileBasicInfoProps) => {
+const ProfileBasicInfo = ({ control, isOpenRecruit, onSave, onRecruit }: ProfileBasicInfoProps) => {
 	const [isRecruitButtonHovered, setIsRecruitButtonHovered] = useState(false) // 버튼 호버하면 텍스트 변경되게 하려고
 
 	// 유저 전역 상태
@@ -104,14 +107,48 @@ const ProfileBasicInfo = ({ isOpenRecruit, onSave, onRecruit }: ProfileBasicInfo
 				</div>
 			</div>
 
-			{/* 관심 분야 / 관심 직종 / 경력 */}
+			{/* 관심 분야 */}
 			<div className='grid grid-cols-[100px_1fr] gap-y-3 body-1 mb-12 ml-5'>
 				<span className='text-neutral-600'>관심 직무</span>
-				<span className='text-neutral-900'>UX/UI Product Designer / UX researcher</span>
+				<Controller
+					name='interestJob'
+					control={control}
+					render={({ field }) => (
+						<input
+							{...field}
+							placeholder='관심 직무를 입력해주세요.'
+							className='body-1 text-neutral-900 focus:outline-none placeholder:text-neutral-300'
+						/>
+					)}
+				/>
+
+				{/* 관심 직종 */}
 				<span className='text-neutral-600'>관심 직종</span>
-				<span className='text-neutral-900'>UX/UI 브랜딩/채용</span>
+				<Controller
+					name='interestOccupation'
+					control={control}
+					render={({ field }) => (
+						<input
+							{...field}
+							placeholder='관심 직종을 작성해세요.'
+							className='body-1 text-neutral-900 focus:outline-none placeholder:text-neutral-300'
+						/>
+					)}
+				/>
+
+				{/* 경력 */}
 				<span className='text-neutral-600'>경력</span>
-				<span className='text-neutral-900'>6개월</span>
+				<Controller
+					name='userCareer'
+					control={control}
+					render={({ field }) => (
+						<input
+							{...field}
+							placeholder='경력 기간을 작성해세요.'
+							className='body-1 text-neutral-900 focus:outline-none placeholder:text-neutral-300'
+						/>
+					)}
+				/>
 			</div>
 		</>
 	)
