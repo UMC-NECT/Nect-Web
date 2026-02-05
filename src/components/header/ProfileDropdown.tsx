@@ -4,6 +4,7 @@ import { useClickOutside } from '@/hooks/useClickOutside'
 import MyIcon from '@/assets/icons/header/my.svg?react'
 import ProjectIcon from '@/assets/icons/header/project.svg?react'
 import MatchingIcon from '@/assets/icons/header/matching.svg?react'
+import { useLogoutMutation } from '@/hooks/auth/useUsersApi'
 
 interface ProfileDropdownProps {
 	isOpen: boolean
@@ -13,7 +14,7 @@ interface ProfileDropdownProps {
 const ProfileDropdown = ({ isOpen, onClose }: ProfileDropdownProps) => {
 	const navigate = useNavigate()
 	const dropdownRef = useRef<HTMLDivElement>(null)
-
+	const { mutate: logout } = useLogoutMutation()
 	useClickOutside(dropdownRef, () => onClose(), isOpen)
 
 	const handleMenuClick = (path: string) => {
@@ -22,8 +23,7 @@ const ProfileDropdown = ({ isOpen, onClose }: ProfileDropdownProps) => {
 	}
 
 	const handleLogout = () => {
-		// TODO: 로그아웃 로직 구현
-		console.log('로그아웃')
+		logout()
 		onClose()
 	}
 

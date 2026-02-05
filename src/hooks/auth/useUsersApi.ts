@@ -14,6 +14,8 @@ import {
 	postAgree,
 	postCheck,
 } from '@/api/users'
+import { LOCAL_STORAGE_KEY } from '@/constants/key'
+import { useNavigate } from 'react-router'
 
 export const useLoginMutation = () => {
 	return useMutation({
@@ -22,8 +24,15 @@ export const useLoginMutation = () => {
 }
 
 export const useLogoutMutation = () => {
+	const navigate = useNavigate()
+
 	return useMutation({
 		mutationFn: () => postLogout(),
+		onSuccess: () => {
+			localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+			localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+			navigate('/')
+		},
 	})
 }
 
