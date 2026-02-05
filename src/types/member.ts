@@ -14,5 +14,4 @@ export type Member = {
     designTools: string[];
     recordTools: string[];
     etcTools: string[];
-    
 }
