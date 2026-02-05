@@ -1,3 +1,4 @@
+import HistoryCard from '@/components/mypage/HistoryCard'
 import RoleTag from '@/components/mypage/RoleTag'
 
 interface ProjectHistory {
@@ -28,17 +29,7 @@ const Section02TeamHistory = ({ projectHistories }: ISection02TeamHistory) => {
 							))}
 						</div>
 
-						<div className='border-[3px] border-transparent hover:border-primary-400-normal rounded-16 transition-colors cursor-pointer overflow-hidden'>
-							{/* 썸네일 */}
-							<div className='w-full h-52 bg-neutral-600'></div>
-
-							{/* 프로젝트 정보 */}
-							<div className='flex flex-col gap-1 p-4'>
-								<h4 className='body-1 font-semibold text-neutral-900'>{project.title}</h4>
-								<p className='body-2 text-neutral-600 line-clamp-2'>{project.description}</p>
-								<span className='caption-1 text-neutral-400'>{project.period}</span>
-							</div>
-						</div>
+						<HistoryCard title={project.title} description={project.description} period={project.period} />
 					</div>
 				))}
 			</div>

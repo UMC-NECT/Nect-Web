@@ -1,8 +1,9 @@
 import { create } from 'zustand'
-import type { TeamMembersByRole, TeamMember } from '@/types/mypage/ongoindProject'
+import type { TeamMembersByRole, TeamMember, ProjectHistory } from '@/types/mypage/ongoindProject'
 
 interface TeamMembersState {
 	teamMembersByRole: TeamMembersByRole[]
+	teamMembersHistory: ProjectHistory[]
 
 	// 팀원 관련
 	setTeamMembersByRole: (data: TeamMembersByRole[]) => void
@@ -104,10 +105,30 @@ const initialTeamMembers: TeamMembersByRole[] = [
 		],
 	},
 ]
+// 초기 팀원 히스토리 데이터
+const initialTeamHistory: ProjectHistory[] = [
+	{
+		id: 1,
+		title: '넥트',
+		description: '아이디어 분석으로 프로젝트 등록, 팀원 매칭, 협업 보드까지 어쩌고',
+		period: '2025.10~2025.12',
+		tags: ['PM', 'Backend'],
+	},
+	{
+		id: 2,
+		title: '트리플 UX.UI 개선 및 리브랜딩',
+		description:
+			'사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',
+		period: '2025.10~2025.12',
+		tags: ['Design'],
+	},
+]
 
 export const useTeamMembersStore = create<TeamMembersState>(set => ({
 	// 초기 팀원 데이터
 	teamMembersByRole: initialTeamMembers,
+	// 초기 팀원 히스토리 데이터
+	teamMembersHistory: initialTeamHistory,
 
 	// 초기 세팅
 	setTeamMembersByRole: data => set({ teamMembersByRole: data }),
