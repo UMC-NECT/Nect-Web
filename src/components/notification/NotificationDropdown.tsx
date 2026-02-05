@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { NotificationItem } from './NotificationItem'
 import { type Notification } from '@/types/notification'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
+import { groupNotificationsByDate, flattenGroupedNotifications } from '@/utils/notificationUtils'
 
 interface NotificationDropdownProps {
 	defaultTab?: 'nect' | 'team'
@@ -69,8 +70,11 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 		},
 	]
 
-	// 지난주 구분선 위치 (id 5 이후)
-	const lastWeekDividerIndex = 4
+	// 날짜별로 그룹화된 알림을 렌더링용 배열로 변환
+	const flattenedNotifications = useMemo(() => {
+		const grouped = groupNotificationsByDate(notifications)
+		return flattenGroupedNotifications(grouped)
+	}, [notifications])
 
 	return (
 		<div className='absolute top-full -right-[128px] mt-2 bg-white flex flex-col items-start justify-start pt-6 rounded-6 shadow-drop-neutral-1 w-[380px] h-[682px] overflow-hidden z-50'>
@@ -95,24 +99,27 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 			{/* 알림 리스트 - 스크롤 영역 */}
 			<div className='flex flex-col gap-0 h-[556px] items-center relative shrink-0 w-full overflow-y-auto notification-scroll'>
 				<div className='flex flex-col items-start relative shrink-0 w-full'>
-					{notifications.map((notification, index) => (
-						<div key={notification.id} className='w-full'>
-							<NotificationItem notification={notification} />
-							{/* 지난주 구분선 */}
-							{index === lastWeekDividerIndex && (
-								<div className='flex flex-col items-center justify-center relative shrink-0 w-full my-0'>
+					{flattenedNotifications.map((item, index) => {
+						if (item.type === 'divider') {
+							return (
+								<div key={`divider-${index}`} className='flex flex-col items-center justify-center relative shrink-0 w-full my-0'>
 									<div className='relative w-full h-0'>
 										<div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[343px] h-px'>
 											<div className='absolute inset-0 border-t border-neutral-200' />
 										</div>
 									</div>
 									<div className='bg-white flex items-center px-2 py-1 relative -mt-3'>
-										<span className='caption-1 text-neutral-400 font-medium'>지난주</span>
+										<span className='caption-1 text-neutral-400 font-medium'>{item.label}</span>
 									</div>
 								</div>
-							)}
-						</div>
-					))}
+							)
+						}
+						return (
+							<div key={item.notification.id} className='w-full'>
+								<NotificationItem notification={item.notification} />
+							</div>
+						)
+					})}
 				</div>
 			</div>
 
