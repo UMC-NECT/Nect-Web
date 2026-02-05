@@ -2,6 +2,7 @@ import { useState } from 'react'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
 import { MessageItem } from './MessageItem'
 import { type ChatMessage } from '@/types/message'
+import NectChatRoom from './NectChatRoom'
 
 interface MessageDropdownProps {
 	defaultTab?: 'matching' | 'team'
@@ -11,6 +12,8 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const [activeTab, setActiveTab] = useState<'matching' | 'team'>(defaultTab)
 	const [selectedFilter, setSelectedFilter] = useState<'nect' | 'triple'>('nect')
 	const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null)
+	const [showChatRoom, setShowChatRoom] = useState(false)
+	const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null)
 
 	const messages: ChatMessage[] = [
 		{
@@ -77,6 +80,22 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 		},
 	]
 
+	// 채팅방이 열려있으면 채팅방만 표시
+	if (showChatRoom && selectedMessage) {
+		return (
+			<div className='absolute top-full -right-[74px] mt-2 z-50'>
+				<NectChatRoom
+					roomName={selectedMessage.senderName}
+					memberCount={selectedMessage.memberCount}
+					onClose={() => {
+						setShowChatRoom(false)
+						setSelectedMessage(null)
+					}}
+				/>
+			</div>
+		)
+	}
+
 	return (
 		<div className='absolute top-full -right-[74px] mt-2 bg-white flex flex-col items-start justify-start pt-6 rounded-6 shadow-drop-neutral-1 w-[380px] h-[656px] overflow-hidden z-50'>
 			{/* 헤더 */}
@@ -131,7 +150,11 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 						key={message.id}
 						message={message}
 						isSelected={selectedMessageId === message.id}
-						onClick={() => setSelectedMessageId(message.id)}
+						onClick={() => {
+							setSelectedMessageId(message.id)
+							setSelectedMessage(message)
+							setShowChatRoom(true)
+						}}
 					/>
 				))}
 			</div>
