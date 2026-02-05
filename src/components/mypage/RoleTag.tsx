@@ -29,11 +29,11 @@ const RoleTag = ({ role = '역할', showTotal = true, total = 0, className, ...p
 	const color = getRoleColor(role)
 
 	const colorStyles = {
-		purple: 'bg-[var(--color-semantic-purple)]',
-		pink: 'bg-[var(--color-semantic-pink)]',
-		green: 'bg-[var(--color-semantic-green)]',
-		blue: 'bg-[var(--color-semantic-blue)]',
-		gray: 'bg-[var(--color-semantic-gray)]',
+		purple: 'bg-[var(--color-roletag-purple)]',
+		pink: 'bg-[var(--color-roletag-pink)]',
+		green: 'bg-[var(--color-roletag-green)]',
+		blue: 'bg-[var(--color-roletag-blue)]',
+		gray: 'bg-[var(--color-roletag-gray)]',
 	}
 
 	return (

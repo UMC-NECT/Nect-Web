@@ -58,7 +58,7 @@ const TodoBlock = ({
 				isMinimum
 					? 'border-neutral-200 pb-[12px] pt-[10px]'
 					: isEdit
-						? 'border-semantic-500 py-[10px]'
+						? 'border-danger-500 py-[10px]'
 						: 'border-neutral-200 py-[10px]'
 			}`}
 			onClick={onClick}

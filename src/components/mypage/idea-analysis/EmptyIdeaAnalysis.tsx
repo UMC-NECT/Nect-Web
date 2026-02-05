@@ -17,7 +17,7 @@ const EmptyIdeaAnalysis = ({ setHasReport }: EmptyIdeaAnalysisProps) => {
 			<MyPageHeader />
 
 			{/* 컨텐츠 컨테이너 */}
-			<div className='w-full flex items-center justify-center bg-semantic-gray border border-neutral-200 rounded-12 px-11.5 py-14'>
+			<div className='w-full flex items-center justify-center bg-bg-gray border border-neutral-200 rounded-12 px-11.5 py-14'>
 				<div className='flex flex-col items-center gap-8 w-full'>
 					{/* 설명글 */}
 					<div className='flex flex-col items-center gap-4 w-full'>

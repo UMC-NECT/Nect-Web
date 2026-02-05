@@ -52,7 +52,7 @@ const ProfileAnalysis = () => {
 						/>
 
 						{/* 콘텐츠 섹션 */}
-						<div className='bg-semantic-gray w-full rounded-12 mt-16 pt-20 pb-14 px-12 shadow-inner-neutral-1 border border-neutral-200'>
+						<div className='bg-bg-gray w-full rounded-12 mt-16 pt-20 pb-14 px-12 shadow-inner-neutral-1 border border-neutral-200'>
 							<div className='flex flex-col items-center px-60 mb-28'>
 								<div className='flex flex-col items-center gap-4 mb-24'>
 									{/* 상단 타이틀 */}
@@ -66,7 +66,7 @@ const ProfileAnalysis = () => {
 									{/* 태그 섹션 */}
 									<div className='flex items-center gap-4 mt-2'>
 										{/* 직무 태그 */}
-										<span className='title-2 px-4 py-1.5 bg-tag-purple text-neutral-700 font-bold rounded-md'>
+										<span className='title-2 px-4 py-1.5 bg-roletag-purple text-neutral-700 font-bold rounded-md'>
 											{role}
 										</span>
 

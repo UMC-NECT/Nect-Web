@@ -302,7 +302,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 							</button>
 						)}
 						<button
-							className='w-full px-4 py-1.5 text-left caption-1 text-semantic-700 hover:bg-neutral-50 transition-colors'
+							className='w-full px-4 py-1.5 text-left caption-1 text-danger-700 hover:bg-neutral-50 transition-colors'
 							onClick={e => {
 								e.stopPropagation()
 								onDelete?.()

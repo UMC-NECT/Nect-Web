@@ -11,6 +11,25 @@ const RecommendationMember = () => {
     const paginationRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
     const isProfileAnalysisPage = location.pathname === '/profile-analysis';
+    // 포지션 색상 매핑
+    const getPositionStyle = (position: string) => {
+        const positionName = position.toLowerCase();
+
+        const styles: Record<string, string> = {
+            'pm': 'bg-roletag-purple',
+            'design': 'bg-roletag-pink',
+            'frontend': 'bg-roletag-green',
+            'backend': 'bg-roletag-blue',
+            'develop': 'bg-roletag-blue',
+            'server': 'bg-roletag-orange',
+            'data': 'bg-roletag-yellow',
+        };
+
+        return styles[positionName] || 'bg-roletag-yellow';
+    };
+
+    const location = useLocation()
+    const isProfileAnalysisPage = location.pathname === '/profile-analysis'
 
     return (
         <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative -ml-11.5">

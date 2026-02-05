@@ -115,7 +115,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 							>
 								<NotificationIcon className='h-6 w-6 text-neutral-700' />
 								{unreadNotifications > 0 && (
-									<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-semantic-600 rounded-full'></div>
+									<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-danger-600 rounded-full'></div>
 								)}
 							</button>
 							{showNotifications && <NotificationDropdown defaultTab='team' />}
