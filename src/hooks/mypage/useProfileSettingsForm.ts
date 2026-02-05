@@ -43,6 +43,9 @@ export const useProfileSettingsForm = () => {
 		mode: 'onChange',
 		shouldFocusError: false,
 		defaultValues: {
+			interestJob: '',
+			interestOccupation: '',
+			userCareer: '',
 			introduction: '',
 			coreCompetency: '',
 			interestFields: INITIAL_FIELDS,
