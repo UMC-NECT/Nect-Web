@@ -27,7 +27,10 @@ const MatchingAvailablePage = () => {
         introduction: '디자인 프로젝트 경험이 많고 꼼꼼한 UX.UI 디자이너 입니다!\nUX리서치/ 브랜딩/ 패키지/ 그래픽 및 일러스트 모두 가능합니다.',
         coreCompetencies: [
             '사용자 경험을 기반으로 한 UX 전략 도출 및 서비스 프로토타입 설계 가능',
-            'UX 리서치 및 데이터 드리븐을 통한 가설 설정, 지표 개선 경험'
+            'UX 리서치 및 데이터 드리븐을 통한 가설 설정, 지표 개선 경험',
+            '기획 / 개발 / 비즈니스 / 마케팅 직군과의 커뮤니케이션 능숙',
+            '다양한 디바이스 환경(웹 접근성, 반응형, 웹 앱 등)에 대한 높은 이해도',
+            '디자인 시스템 구축 및 실 서비스에 활용 경험 보유'
         ],
         portfolioKeywords: ['#프트폴리오 집중', '#신중한 설계자'],
         designTools: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
@@ -143,7 +146,7 @@ const MatchingAvailablePage = () => {
                         <h1 className="text-3xl font-bold mt-1">지금 매칭 가능한 넥터</h1>
                         <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-xl">
                             <img src={hamburger} alt="Menu" />
-                            <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
+                            <p className='text-[14px] text-neutral-400 bg-neutral-100'>목록으로 가기</p>
                         </button>
                     </div>
                 </div>

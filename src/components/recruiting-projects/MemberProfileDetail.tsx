@@ -27,7 +27,7 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
     return (
         <>
             {/* 관심 직무/직종 */}
-            <div className='mb-[48px]'>
+            <div className='mb-[48px] font-medium'>
                 <div className='flex gap-[60px] text-[16px]'>
                     <div className='flex gap-4'>
                         <span className='text-neutral-600 w-[100px] mr-[20px]'>관심 직무</span>
@@ -59,7 +59,7 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
             {/* 핵심역량 */}
             <div className='mb-[64px]'>
                 <h3 className='text-[20px] font-bold mb-4'>핵심역량</h3>
-                <ul className='space-y-2 list-disc list-inside text-[16px] text-neutral-900'>
+                <ul className='space-y-2 list-disc list-outside text-[16px] font-medium text-neutral-900 pl-5'>
                     {member.coreCompetencies.map((competency, index) => (
                         <li key={index}>{competency}</li>
                     ))}
@@ -70,9 +70,9 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
             <div className='mb-[64px]'>
                 <h3 className='text-[20px] font-bold mb-4'>프로필 분석 키워드</h3>
                 <div className='mb-2'>
-                    <a href="#" className='text-[16px] text-primary-500-normal'>
+                    <p className='text-[16px] font-medium text-primary-500-normal'>
                         [설세한 서포터형] 티업
-                    </a>
+                    </p>
                 </div>
                 <div className='flex flex-wrap gap-2'>
                     {member.portfolioKeywords.map((keyword, index) => (
@@ -119,7 +119,7 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
                         <div className='flex h-[112px] ml-[20px] items-center'>
                             <div>
                                 <h3 className='text-[18px] font-semibold mb-2'>트리플 UX.UI 개선 및 리브랜딩</h3>
-                                <p className='text-[14px] text-neutral-900'>
+                                <p className='text-[16px] text-neutral-900'>
                                     2025.9 - 2025.12 (3개월) | UXUI / 브랜딩 | 리드 디자이너
                                 </p>
                             </div>
@@ -129,7 +129,7 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
                     <div className='px-[20px] ml-[40px] h-[165px] text-neutral-900 flex items-center'>
                         <div>
                             <h4 className='text-[16px] font-bold mb-3'>디자인 시스템 컴포넌트 개선</h4>
-                            <ul className='space-y-2 list-disc list-inside text-[14px]'>
+                            <ul className='space-y-2 list-disc list-outside text-[16px] font-medium pl-5'>
                                 <li>피그마를 활용한 UI 컴포넌트 제작 및 관리</li>
                                 <li>통일되지 않은 컬러, 타이포그래피 정리</li>
                                 <li>디자인 시스템 활용률 기존 대비 60% 증가</li>
@@ -140,7 +140,7 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
                     <div className='px-[20px] ml-[40px] h-[165px] text-neutral-900 flex items-center'>
                         <div>
                             <h4 className='text-[16px] font-bold mb-3'>여플 IA 구조 재정리 및 Bottom Navi Bar 도입</h4>
-                            <ul className='space-y-2 list-disc list-inside text-[14px]'>
+                            <ul className='space-y-2 list-disc list-outside text-[16px] font-medium pl-5'>
                                 <li>혼란했던 기능들과 복잡한 네임들을 구조적으로 개선</li>
                                 <li>기능의 조제를 모르거나 적은 사용률의 문제를 해결하기 위해 바텀 네비바 제작</li>
                                 <li>페이지 이동 Deapth를 줄여 편리하게 하고, 핵심 기능의 노출도를 높임</li>
@@ -151,7 +151,7 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
                     <div className='px-[20px] ml-[40px] h-[136px] text-neutral-900 flex items-center'>
                         <div>
                             <h4 className='text-[16px] font-bold mb-3'>사용자 체류 시간을 늘리기 위한 극대화 전략 제안</h4>
-                            <ul className='space-y-2 list-disc list-inside text-[14px]'>
+                            <ul className='space-y-2 list-disc list-outside text-[16px] font-medium pl-5'>
                                 <li>여행 전 중심의 Flow에서 여행 전.중.후 전반에 활동 될 수 있게 UX 개선</li>
                                 <li>유저의 주사용 기능과 서비스 목적의 바탕으로 사용자 친화적 UX 재설계 & 기능 노출</li>
                             </ul>
@@ -183,7 +183,7 @@ const MemberProfileDetail = ({ member }: MemberProfileDetailProps) => {
                         <h4 className='font-semibold text-[18px] mt-[14px] mb-[6px]'>
                             트리플 UX.UI 개선 및 리브랜딩
                         </h4>
-                        <p className='text-[14px] text-neutral-600 mb-[6px] line-clamp-2'>
+                        <p className='text-[14px] font-medium text-neutral-600 mb-[6px] line-clamp-2'>
                             사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 <br />
                             / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작
                         </p>
