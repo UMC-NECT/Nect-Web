@@ -35,11 +35,7 @@ const RecruitingProjectsPage = () => {
             'data': 'bg-roletag-yellow',
         };
 
-<<<<<<< HEAD
-        return styles[positionName] || 'bg-tag-yellow';
-=======
         return styles[positionName] || 'bg-roletag-yellow';
->>>>>>> 68c2c1e584e1754f63e52ca973f54ff3fff9197a
     };
 
     const handleMatchingButtonClick = () => {

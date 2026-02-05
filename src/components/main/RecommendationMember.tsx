@@ -35,21 +35,11 @@ const RecommendationMember = () => {
                     }}
                     onSwiper={(swiper) => {
                         setTimeout(() => {
-<<<<<<< HEAD
                             if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object') {
                                 swiper.params.pagination.el = paginationRef.current;
                                 swiper.pagination?.init();
                                 swiper.pagination?.render();
                                 swiper.pagination?.update();
-=======
-                            if (paginationRef.current && swiper.params?.pagination && typeof swiper.params.pagination === 'object') {
-                                swiper.params.pagination.el = paginationRef.current;
-                                if (swiper.pagination) {
-                                    swiper.pagination.init();
-                                    swiper.pagination.render();
-                                    swiper.pagination.update();
-                                }
->>>>>>> 68c2c1e584e1754f63e52ca973f54ff3fff9197a
                             }
                         }, 0);
                     }}
@@ -83,7 +73,6 @@ const RecommendationMember = () => {
             </div>
 
             <style>{`
-<<<<<<< HEAD
                 .recommendation-member-swiper ~ .custom-pagination {
                     display: flex;
                     gap: 8px;
@@ -108,43 +97,13 @@ const RecommendationMember = () => {
 
                 .recommendation-member-swiper .member-custom-prev.swiper-button-disabled,
                 .recommendation-member-swiper .member-custom-next.swiper-button-disabled {
-=======
-                .custom-pagination {
-                    display: flex;
-                    gap: 8px;
-                    height: auto;
-                }
-
-                .custom-pagination .swiper-pagination-bullet {
-                    width: 10px !important;
-                    height: 10px !important;
-                    background: #CCCCCC !important;
-                    opacity: 1 !important;
-                    border-radius: 50% !important;
-                    transition: all 0.3s !important;
-                    margin: 0 !important;
-                }
-
-                .custom-pagination .swiper-pagination-bullet-active {
-                    background: #595959 !important;
-                    width: 22px !important;
-                    border-radius: 6px !important;
-                }
-
-                .member-custom-prev.swiper-button-disabled,
-                .member-custom-next.swiper-button-disabled {
->>>>>>> 68c2c1e584e1754f63e52ca973f54ff3fff9197a
                     opacity: 0.3;
                     cursor: not-allowed;
                     pointer-events: none;
                 }
 
                 .recommendation-member-swiper > .swiper-pagination {
-<<<<<<< HEAD
                     display: none;
-=======
-                    display: none !important;
->>>>>>> 68c2c1e584e1754f63e52ca973f54ff3fff9197a
                 }
             `}</style>
         </div>

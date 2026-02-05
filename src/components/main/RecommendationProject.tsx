@@ -35,21 +35,11 @@ const RecommendationProject = () => {
                     }}
                     onSwiper={(swiper) => {
                         setTimeout(() => {
-<<<<<<< HEAD
                             if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object') {
                                 swiper.params.pagination.el = paginationRef.current;
                                 swiper.pagination?.init();
                                 swiper.pagination?.render();
                                 swiper.pagination?.update();
-=======
-                            if (paginationRef.current && swiper.params?.pagination && typeof swiper.params.pagination === 'object') {
-                                swiper.params.pagination.el = paginationRef.current;
-                                if (swiper.pagination) {
-                                    swiper.pagination.init();
-                                    swiper.pagination.render();
-                                    swiper.pagination.update();
-                                }
->>>>>>> 68c2c1e584e1754f63e52ca973f54ff3fff9197a
                             }
                         }, 0);
                     }}
