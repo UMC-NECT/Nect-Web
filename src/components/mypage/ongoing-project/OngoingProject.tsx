@@ -322,7 +322,7 @@ const OngoingProject = () => {
 			{(isBlocked || modalType === 'unsavedChanges') && (
 				<CTAModal
 					message={`저장되지 않았습니다\n저장 후 페이지를 나가시겠습니까?`}
-					leftButtonMsg='돌아가기'
+					leftButtonMsg='나가기'
 					rightButtonMsg='저장 후 나가기'
 					onLeftClick={handleCancelNavigation}
 					onRightClick={handleSaveAndLeave}
