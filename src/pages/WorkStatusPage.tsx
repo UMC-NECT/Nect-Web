@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
@@ -20,6 +20,9 @@ import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useTeamStore } from '@/stores/teamStore'
+import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
+import { useProgressSummaryQuery } from '@/hooks/process/useProcessApi'
+import type { Progress } from '@/types/progress'
 
 // Droppable 컬럼 컴포넌트
 interface DroppableColumnProps {
@@ -99,14 +102,65 @@ const WorkStatusPage = () => {
 	// 커스텀 훅들
 	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
 	const { isScrolling, scrollContainerRef } = useWorkStatusScroll()
-	const { statusCounts, progressData, historyItems } = useWorkStatusData()
+	const { statusCounts, historyItems } = useWorkStatusData()
+	const { data: projectUsersData } = useGetProjectUsers()
+	const projectId = projectUsersData?.body?.[0]?.projectId != null ? String(projectUsersData.body[0].projectId) : undefined
+	const { data: progressSummaryData } = useProgressSummaryQuery(projectId ?? '')
+
+	// 진행률: 초기값은 API, 변경분은 드래그 시 deltas로만 반영 (effect 없이 파생)
+	const progressFromApi = useMemo(
+		() =>
+			progressSummaryData?.body?.lanes?.length
+				? progressSummaryData.body.lanes.reduce(
+						(acc, lane) => {
+							acc[lane.lane_name] = {
+								planning: lane.planning,
+								inProgress: lane.in_progress,
+								completed: lane.done,
+							}
+							return acc
+						},
+						{} as Record<string, Progress>
+					)
+				: {},
+		[progressSummaryData]
+	)
+	type ProgressDelta = { team: string; prevStatus: MissionStatus; newStatus: MissionStatus }
+	const [deltas, setDeltas] = useState<ProgressDelta[]>([])
+	const workStatusItems = useWorkStatusStore(s => s.workStatusItems)
+	const progressData = useMemo(() => {
+		const base: Record<string, Progress> = {}
+		for (const [name, p] of Object.entries(progressFromApi)) {
+			base[name] = { planning: p.planning, inProgress: p.inProgress, completed: p.completed }
+		}
+		const toKey = (s: MissionStatus): keyof Progress | null =>
+			s === 'backlog' ? null : s === 'in_progress' ? 'inProgress' : s === 'completed' ? 'completed' : 'planning'
+		for (const { team, prevStatus, newStatus } of deltas) {
+			const lane = base[team]
+			if (!lane) continue
+			const next: Progress = { ...lane }
+			const prevKey = toKey(prevStatus)
+			const newKey = toKey(newStatus)
+			if (prevKey) next[prevKey] = Math.max(0, next[prevKey] - 1)
+			if (newKey) next[newKey] = next[newKey] + 1
+			base[team] = next
+		}
+		return base
+	}, [progressFromApi, deltas])
+	const updateProgressOnMove = useCallback((team: string, prevStatus: MissionStatus, newStatus: MissionStatus) => {
+		setDeltas(prev => [...prev, { team, prevStatus, newStatus }])
+	}, [])
+
 	const { activeId, sensors, handleDragStart, handleDragEnd } = useWorkStatusDragAndDrop({
 		statuses,
 		getFilteredItemsByStatus,
+		onStatusChange: (activeId, prevStatus, newStatus) => {
+			const item = workStatusItems.find(i => i.id === activeId)
+			if (item) updateProgressOnMove(item.team, prevStatus, newStatus)
+		},
 	})
 
 	// 드래그 중인 아이템 찾기 (필터링 없이 전체 아이템에서 찾음)
-	const { workStatusItems } = useWorkStatusStore()
 	const activeItem = activeId ? workStatusItems.find(item => item.id === activeId) : undefined
 
 	return (

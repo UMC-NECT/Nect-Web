@@ -1,5 +1,5 @@
 import type { CommonResponse } from '@/types/api/commonResponse'
-import type { RequestProcessOrderPatchDto, RequestProcessPatchDto, RequestProcessPostDto, RequestProcessStatusPatchDto, ResponseProcessDetailDto, ResponseProcessOrderPatchDto, ResponseProcessPartDto, ResponseProcessPatchDto, ResponseProcessPostDto, ResponseProcessStatusPatchDto, ResponseProcessWeekDto } from '@/types/api/process/process'
+import type { RequestProcessOrderPatchDto, RequestProcessPatchDto, RequestProcessPostDto, RequestProcessStatusPatchDto, ResponseProcessDetailDto, ResponseProcessOrderPatchDto, ResponseProcessPartDto, ResponseProcessPatchDto, ResponseProcessPostDto, ResponseProcessStatusPatchDto, ResponseProcessWeekDto, ResponseProgressSummaryDto } from '@/types/api/process/process'
 import { api } from '@/utils/AxiosInstance'
 import { toQueryString } from '@/utils/queryString'
 
@@ -53,5 +53,11 @@ export const patchProcessOrder = async (projectId: string, processId: string, bo
 /** 프로세스의 작업 상태(ProcessStatus)를 변경합니다. */
 export const patchProcessStatus = async (projectId: string, processId: string, body: RequestProcessStatusPatchDto): Promise<ResponseProcessStatusPatchDto> => {
     const {data} = await api.patch(`/api/v1/projects/${projectId}/processes/${processId}/status`, body)
+    return data
+}
+
+/** 프로젝트의 ROLE/CUSTOM 레인별 프로세스 상태 진행률(PLANNING/IN_PROGRESS/DONE)을 요약 조회합니다. */
+export const getProgressSummary = async (projectId: string): Promise<ResponseProgressSummaryDto> => {
+    const {data} = await api.get(`/api/v1/projects/${projectId}/processes/parts/progress-summary`)
     return data
 }

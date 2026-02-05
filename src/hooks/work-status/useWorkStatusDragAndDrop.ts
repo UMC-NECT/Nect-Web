@@ -7,9 +7,15 @@ import type { WorkStatusItem } from '@/stores/work-status/workStatusStore'
 interface UseWorkStatusDragAndDropProps {
 	statuses: MissionStatus[]
 	getFilteredItemsByStatus: (status: MissionStatus) => WorkStatusItem[]
+	/** 상태 변경 시 콜백 (프론트 진행률 등 로컬 동기화용) */
+	onStatusChange?: (activeId: number, prevStatus: MissionStatus, newStatus: MissionStatus) => void
 }
 
-export const useWorkStatusDragAndDrop = ({ statuses, getFilteredItemsByStatus }: UseWorkStatusDragAndDropProps) => {
+export const useWorkStatusDragAndDrop = ({
+	statuses,
+	getFilteredItemsByStatus,
+	onStatusChange,
+}: UseWorkStatusDragAndDropProps) => {
 	const [activeId, setActiveId] = useState<number | null>(null)
 	const { moveWorkStatusItem } = useWorkStatusStore()
 
@@ -50,7 +56,7 @@ export const useWorkStatusDragAndDrop = ({ statuses, getFilteredItemsByStatus }:
 		if (typeof overId === 'string' && statuses.includes(overId as MissionStatus)) {
 			const newStatus = overId as MissionStatus
 			if (activeStatus !== newStatus) {
-				// 다른 컬럼으로 이동
+				onStatusChange?.(activeId, activeStatus, newStatus)
 				moveWorkStatusItem(activeId, newStatus, 0)
 			}
 			return
@@ -78,12 +84,12 @@ export const useWorkStatusDragAndDrop = ({ statuses, getFilteredItemsByStatus }:
 					// 같은 컬럼 내에서 순서 변경
 					const oldIndex = items.findIndex(item => item.id === activeId)
 					if (oldIndex !== newIndex) {
-						// 이동 방향에 따라 인덱스 조정
 						const adjustedIndex = oldIndex < newIndex ? newIndex : newIndex
 						moveWorkStatusItem(activeId, targetStatus, adjustedIndex)
 					}
 				} else {
 					// 다른 컬럼으로 이동
+					onStatusChange?.(activeId, activeStatus, targetStatus)
 					moveWorkStatusItem(activeId, targetStatus, newIndex)
 				}
 			}

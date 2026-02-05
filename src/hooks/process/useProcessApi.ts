@@ -4,6 +4,7 @@ import {
 	getProcessPart,
 	getProcessWeek,
 	getProcessDetail,
+	getProgressSummary,
 	deleteProcess,
 	patchProcess,
 	patchProcessOrder,
@@ -41,6 +42,15 @@ export const useProcessDetailQuery = (projectId: string, processId: string) => {
 		queryKey: QUERY_KEY.process.detail(projectId, processId),
 		queryFn: () => getProcessDetail(projectId, processId),
 		enabled: !!projectId && !!processId,
+	})
+}
+
+/** 레인별 프로세스 진행률 요약 조회 (PLANNING / IN_PROGRESS / DONE) */
+export const useProgressSummaryQuery = (projectId: string) => {
+	return useQuery({
+		queryKey: QUERY_KEY.process.progressSummary(projectId),
+		queryFn: () => getProgressSummary(projectId),
+		enabled: !!projectId,
 	})
 }
 

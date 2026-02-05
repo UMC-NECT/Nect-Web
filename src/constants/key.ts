@@ -21,6 +21,7 @@ export const QUERY_KEY = {
 		part: (projectId: string, fieldId?: string) => ['processes', projectId, 'part', fieldId] as const,
 		week: (projectId: string, startDate?: string) => ['processes', projectId, 'week', startDate] as const,
 		detail: (projectId: string, processId: string) => ['processes', projectId, 'detail', processId] as const,
+		progressSummary: (projectId: string) => ['processes', projectId, 'progressSummary'] as const,
 		list: (projectId: string) => ['processes', projectId] as const,
 	},
 }

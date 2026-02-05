@@ -11,7 +11,7 @@ export interface RequestProcessPostDto {
     process_status: string
     assignee_ids: string[]
     role_fields: string[]
-    custom_field_name: string[]
+    custom_field_name: string | null
     start_date: string
     dead_line: string
     mention_user_ids: []
@@ -47,7 +47,7 @@ export type ResponseProcessDetailDto = CommonResponse<{
     custom_fields: string[]
     assignees: Assignees[]
     mention_user_ids: number[]
-    file_ids: Files[]
+    files: Files[]
     links: Links[]
     task_items: TaskItems[]
     feedbacks: Feedback[]
@@ -106,4 +106,21 @@ export type ResponseProcessStatusPatchDto = CommonResponse<{
     process_id: number
     status: string
     updated_at: string
+}>
+
+type Lane = {
+    lane_key: string
+    lane_type: string
+    lane_name: string
+    planning: number
+    in_progress: number
+    done: number
+    total: number
+    planning_rate: number
+    in_progress_rate: number
+    done_rate: number
+}
+
+export type ResponseProgressSummaryDto = CommonResponse<{
+    lanes: Lane[]
 }>
