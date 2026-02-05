@@ -23,7 +23,7 @@ const ProjectHistory = ({ getPositionStyle }: ProjectHistoryProps) => {
                         
                         <div className='pl-[20px] pr-[20px]'>
                             <h4 className='font-semibold text-[18px] mt-[14px] mb-[6px]'>트리플 UX.UI 개선 및 리브랜딩</h4>
-                            <p className='text-[14px] text-neutral-600 mb-[6px] line-clamp-2'>
+                            <p className='text-[14px] text-neutral-600 mb-[6px] font-medium line-clamp-2'>
                                 사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 <br />
                                 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작
                             </p>
@@ -44,7 +44,7 @@ const ProjectHistory = ({ getPositionStyle }: ProjectHistoryProps) => {
                         
                         <div className='pl-[20px] pr-[20px]'>
                             <h4 className='font-semibold text-[18px] mt-[14px] mb-[6px]'>트리플 UX.UI 개선 및 리브랜딩</h4>
-                            <p className='text-[14px] text-neutral-600 mb-[6px] line-clamp-2'>
+                            <p className='text-[14px] text-neutral-600 mb-[6px] font-medium line-clamp-2'>
                                 사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 <br />
                                 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작
                             </p>
