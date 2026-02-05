@@ -2,8 +2,9 @@ import More from '@/assets/icons/common/chevron-right.svg?react';
 import projectBg from '@/assets/icons/main/nugu.svg'; 
 import profile from '@/assets//icons/main/profile.svg';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
+import { Link } from 'react-router';
 
-const RecommendedProjects = () => {
+const AvailableNecters = () => {
     const projects = [
         {
             id: 1,
@@ -47,10 +48,13 @@ const RecommendedProjects = () => {
         <div className="w-138 h-142.5">
             <div className="flex justify-between items-center mb-5 w-138 h-7.5">
                 <h2 className="text-[22px] text-neutral-900 font-bold">지금 매칭 가능한 넥터</h2>
-                <p className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700">
+                <Link 
+                    to="/necterList"
+                    className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700"
+                >
                     더보기
                     <More className="w-4 h-4 stroke-neutral-500 hover:stroke-neutral-700 mr-1" />
-                </p>
+                </Link>
             </div>  
             
             <div className="grid grid-cols-2 gap-2">
@@ -106,4 +110,4 @@ const RecommendedProjects = () => {
     );
 };
 
-export default RecommendedProjects;
+export default AvailableNecters;
