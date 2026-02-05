@@ -30,9 +30,9 @@ const MatchingAvailablePage = () => {
             'UX 리서치 및 데이터 드리븐을 통한 가설 설정, 지표 개선 경험'
         ],
         portfolioKeywords: ['#프트폴리오 집중', '#신중한 설계자'],
-        designTools: ['Figma', 'Photoshop'],
+        designTools: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
         recordTools: ['Notion', 'UX Research'],
-        etcTools: ['Claude']
+        etcTools: ['Claude', 'consecutive interpretation']
     };
 
     const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
@@ -113,7 +113,7 @@ const MatchingAvailablePage = () => {
                 onClick={handleMatchingButtonClick}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className={`w-[130px] h-[48px] rounded-lg font-semibold text-[16px] transition-colors
+                className={`w-[130px] h-[48px] rounded-xl font-semibold text-[16px] transition-colors
                     ${isMatching && isHovered
                         ? 'bg-primary-300-light text-primary-500-normal hover:bg-primary-300-light'
                         : isMatching 
@@ -141,7 +141,7 @@ const MatchingAvailablePage = () => {
                     </div>
                     <div className='mt-8 flex items-center justify-between'>
                         <h1 className="text-3xl font-bold mt-1">지금 매칭 가능한 넥터</h1>
-                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-md">
+                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-xl">
                             <img src={hamburger} alt="Menu" />
                             <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
                         </button>
