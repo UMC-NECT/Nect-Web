@@ -10,6 +10,9 @@ import GrowGuideSection from '@/components/profile-analysis/GrowGuideSection'
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
 import { useCTAModal } from '@/stores/useCTAModal'
+import ChevronLeftIcon from '@/assets/icons/common/chevron-left.svg?react'
+import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
+import { useNavigate } from 'react-router'
 
 const ProfileAnalysis = () => {
 	const [hasReport, setHasReport] = useState<boolean>(false)
@@ -22,9 +25,10 @@ const ProfileAnalysis = () => {
 
 	const { modalType, open, close } = useCTAModal()
 
+	const navigate = useNavigate()
+
 	// (모달 핸들러) 삭제 확인
 	const handleDelete = () => {
-		alert('삭제되었습니다')
 		close()
 	}
 
@@ -129,10 +133,18 @@ const ProfileAnalysis = () => {
 							</div>
 
 							{/* 버튼 2개 */}
-							<div className='flex gap-5 min-w-165 justify-center mx-auto mt-28'>
-								<Button color='secondary' size='xl' fullWidth className='w-80' onClick={() => alert('다시하기')}>
+							<div className='flex gap-5 min-w-165 mx-auto mt-28 justify-between items-center w-full'>
+								<ChevronLeftIcon className='w-10 h-10 px-2 py-2 cursor-pointer text-neutral-700 hover:bg-neutral-000 rounded-12 duration-200 ease-in-out' />
+								<Button
+									color='secondary'
+									size='xl'
+									fullWidth
+									className='w-80'
+									onClick={() => navigate('/onboarding')}
+								>
 									다시하기
 								</Button>
+								<ChevronRightIcon className='w-10 h-10 px-2 py-2 cursor-pointer text-neutral-700 hover:bg-neutral-000 rounded-12 duration-200 ease-in-out' />
 							</div>
 						</div>
 
