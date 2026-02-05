@@ -51,7 +51,7 @@ const NecterListPage = () => {
     }, []);
 
     return (
-        <div className="py-16 pb-32">
+        <div className="py-16">
             <div className="my-9 w-[912px] h-[86px] mx-auto">
                 <div className='ml-7'>
                     <Breadcrumb 
@@ -86,7 +86,7 @@ const NecterListPage = () => {
                     </div>
 
                     {/* 넥터 카드 그리드 */}
-                    <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px] pb-12">
+                    <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px]">
                         {mockNecters.map(necter => (
                             <RecommendationMemberCard 
                                 key={necter.id}

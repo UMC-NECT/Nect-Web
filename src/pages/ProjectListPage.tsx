@@ -28,8 +28,9 @@ const mockProject = {
     subtitle: '작성자',
     part: 'Part',
     dDay: 'D-22',
-    description: '프로젝트 설명 (2줄까지 보여짐) 프로젝트 설명 (2줄까지 보여짐) 프로젝트 설명 (2줄까지 보여짐) 프로젝트 설명 (2줄까지 보여짐)',
-    tags: ['Design (1)', 'Frontend (2)', 'Backend (1)']
+    description: '프로젝트 설명 (2줄까지 보여짐) 프로젝트 설명 (2줄까지 보여짐)... 프로젝트 설명 (2줄까지 보여짐) 프로젝트 설명 (2줄까지 보여짐)',
+    tags: ['Design (1)', 'Frontend (2)', 'Backend (1)'],
+    members: '5/10'
 };
 
 const mockProjects = Array.from({ length: 16 }, (_, index) => ({
@@ -81,7 +82,7 @@ const ProjectListPage = () => {
                         </div>
 
                         {/* 프로젝트 카드 그리드 */}
-                        <div className="mt-6 mx-5 grid grid-cols-2 gap-x-[12px] gap-y-[14px] pb-12">
+                        <div className="mt-6 mx-5 grid grid-cols-2 gap-x-[12px] gap-y-[14px]">
                             {mockProjects.map(project => (
                                 <RecommendationProjectCard 
                                     key={project.id}

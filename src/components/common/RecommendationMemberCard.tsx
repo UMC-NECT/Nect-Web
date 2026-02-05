@@ -62,13 +62,13 @@ const RecommendationMemberCard = ({ member, variant = 'default' }: Recommendatio
 
             {/* 하단: 텍스트 정보 영역 */}
             <div className="flex flex-col px-5 mt-[5px]">
-                <div className="flex h-6.5 items-center text-[16px] font-medium text-neutral-900 gap-1.5 mb-1.5">
-                    <span>{member.name}</span>
+                <div className="flex h-6.5 items-center text-[16px] text-neutral-900 gap-1.5 mb-1.5">
+                    <span className='font-semibold'>{member.name}</span>
                     <BarIcon className="w-0.5 h-3" />
                     <span className="text-neutral-500 font-medium">{member.position}</span>
                 </div>
 
-                <p className="text-[13px] text-neutral-700 line-clamp-2 mb-3">
+                <p className="text-[13px] text-neutral-600 line-clamp-2 mb-3">
                     {member.description}
                 </p>
 
