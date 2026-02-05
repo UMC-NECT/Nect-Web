@@ -6,7 +6,7 @@ import { useProfileSettingsForm } from '@/hooks/mypage/useProfileSettingsForm'
 import { useCTAModal } from '@/stores/useCTAModal'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
-import CTAModal from '../CTAModal'
+import CTAModal from '../../common/CTAModal'
 import { MyPageHeader } from '../MyPageHeader'
 import ProfileBasicInfo from './ProfileBasicInfo'
 import Section01Introduction from './sections/Section01Introduction'
@@ -135,18 +135,6 @@ export const ProfileSettings = () => {
 		open('profileKeywordRefresh')
 	}
 
-	// (버튼 핸들러) 이력/경력 불러오기 버튼
-	const handleCareerHistoryRefresh = () => {
-		// api라고 가정
-		const canRefresh = false
-
-		if (canRefresh) {
-			open('careerRefreshSuccess')
-		} else {
-			open('careerRefreshFail')
-		}
-	}
-
 	// (모달 핸들러) 공개 매칭 확인
 	const handleOpenMatchingRegister = () => {
 		setIsOpenRecruit(true)
@@ -227,12 +215,7 @@ export const ProfileSettings = () => {
 
 						{/* 섹션 06. 주요 경력/이력 */}
 						<div id='section-06'>
-							<Section06CareerHistory
-								onRefresh={handleCareerHistoryRefresh}
-								control={methods.control}
-								setValue={setValue}
-								watch={watch}
-							/>
+							<Section06CareerHistory control={methods.control} setValue={setValue} watch={watch} />
 						</div>
 
 						{/* 섹션 07. 포트폴리오 */}
@@ -242,7 +225,7 @@ export const ProfileSettings = () => {
 
 						{/* 섹션 08. 프로젝트 히스토리 */}
 						<div id='section-08'>
-							<Section08ProjectHistory control={methods.control} setValue={setValue} />
+							<Section08ProjectHistory control={methods.control} />
 						</div>
 					</div>
 				</div>
@@ -300,16 +283,6 @@ export const ProfileSettings = () => {
 						rightButtonMsg='확인'
 						onRightClick={close}
 					/>
-				)}
-
-				{/* 경력/이력 갱신 성공 모달 */}
-				{modalType === 'careerRefreshSuccess' && (
-					<CTAModal message='경력/이력 내역을 갱신했습니다.' rightButtonMsg='확인' onRightClick={close} />
-				)}
-
-				{/* 경력/이력 갱신 실패 모달 */}
-				{modalType === 'careerRefreshFail' && (
-					<CTAModal message='불러올 주요 경력/이력이 없습니다.' rightButtonMsg='확인' onRightClick={close} />
 				)}
 
 				{/* 프로필 분석 키워드 불러오기 모달 */}

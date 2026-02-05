@@ -2,118 +2,68 @@ import { useEffect, useRef, useState } from 'react'
 import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
 import { useSignup } from '@/stores/useSignup'
+import { useSignupStep } from '@/contexts/SignupStepContext'
 import { useSignupForm1 } from '@/hooks/useForm'
-import type { SignupForm1Type } from '@/utils/validate'
 import FormField from '@/components/auth/common/FormField'
 import FieldMessage from '@/components/auth/common/FieldMessage'
+import { useCheckMutation } from '@/hooks/auth/useUsersApi'
 
 const NameStep = () => {
 	// 전역 상태
-	const { setCurrentStep } = useSignup()
+	const { setSignupData } = useSignup()
+	const { setCurrentStep } = useSignupStep()
 	// 지역 상태
-	const [isCertificated, setIsCertificated] = useState<boolean>(false) // 인증 요청 유무
-	const [certNumber, setCertNumber] = useState<string>('') // 임시 인증번호
-	const [isCorrect, setIsCorrect] = useState<boolean>(false) // 인증번호 일치 여부
-	const [timer, setTimer] = useState<number>(180) // 타이머
-	const isTimerExpired = timer === 0 && isCertificated // 타이머 만료 여부
+	const [isCertificated, setIsCertificated] = useState<boolean>(false) // 전화번호 중복 확인 완료
+	const checkMutation = useCheckMutation()
 
 	// 유효성 검사 관련
-	const { register, watch, handleSubmit, errors, setValue, setError } = useSignupForm1()
+	const { register, watch, handleSubmit, errors, setValue, setError, clearErrors } = useSignupForm1()
 	const name = watch('name')
 	const phone = watch('phone')
-	const certificationNumber = watch('certificationNumber')
 
 	// 포커싱용 ref
 	const nameInputRef = useRef<HTMLInputElement>(null) // 이름 필드
-	const certInputRef = useRef<HTMLInputElement>(null) // 인증번호 필드
 
 	// ref 분리 (이름 필드 포커싱과 useForm 사용시 ref가 겹침)
 	const { ref: nameHookRef, ...nameRestRef } = register('name')
-	const { ref: certificateHookRef, ...certificateRestRef } = register('certificationNumber', {
-		onChange: e => {
-			const output = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
-			e.target.value = output
-
-			// 6자리 입력 시 인증번호 검증
-			if (output.length === 6) {
-				if (output === certNumber) {
-					setIsCorrect(true)
-				} else {
-					setIsCorrect(false)
-				}
-			} else {
-				// 6자리 미만일 때는 에러 상태 초기화
-				setIsCorrect(false)
-			}
-		},
-	})
 
 	// 다음으로 버튼 활성/비활성
-	const isNextAvailable =
-		!name ||
-		!phone ||
-		!certificationNumber ||
-		!!errors.name ||
-		!!errors.phone ||
-		!!errors.certificationNumber ||
-		!isCertificated ||
-		!isCorrect ||
-		isTimerExpired
+	const isNextAvailable = !name || !phone || !!errors.name || !!errors.phone || !isCertificated
 
 	// 초기 렌더링 시, 이름에 자동 포커싱
 	useEffect(() => {
 		nameInputRef.current?.focus()
 	}, [])
 
-	// 타이머 카운트다운
-	useEffect(() => {
-		if (isCertificated && timer > 0 && !isCorrect) {
-			const countdown = setInterval(() => {
-				setTimer(prev => prev - 1)
-			}, 1000)
+	// 전화번호 중복 확인
+	const handleCertificatePhone = async () => {
+		const phoneNumber = phone?.replace(/-/g, '') ?? ''
+		if (!phoneNumber) return
 
-			return () => clearInterval(countdown)
+		clearErrors('phone')
+
+		try {
+			const response = await checkMutation.mutateAsync({
+				type: 'PHONE',
+				value: phoneNumber,
+			})
+
+			if (response.body?.available === false) {
+				setError('phone', { type: 'manual', message: '이미 사용 중인 전화번호입니다.' })
+				return
+			}
+
+			setIsCertificated(true)
+		} catch {
+			setError('phone', { type: 'manual', message: '중복 확인에 실패했습니다. 다시 시도해주세요.' })
 		}
-	}, [isCertificated, timer, isCorrect])
-
-	// 타이머를 mm:ss 형식으로 변환
-	const formatTimer = (seconds: number) => {
-		const minutes = Math.floor(seconds / 60)
-		const secs = seconds % 60
-		return `${minutes}:${secs.toString().padStart(2, '0')}`
-	}
-
-	// 전화번호 인증요청시
-	const handleCertificatePhone = () => {
-		// 추후 api로 변경
-		const certNumber = '112233'
-		setCertNumber(certNumber)
-		alert(`인증 요청 버튼 클릭함.\n 전번: ${phone} | 인증번호: ${certNumber}`)
-		setIsCertificated(true)
-
-		// 타이머 리셋
-		setTimer(180)
-		setIsCorrect(false)
-		setValue('certificationNumber', '')
-
-		// 인증 번호 입력 필드로 포커싱
-		setTimeout(() => {
-			certInputRef.current?.focus()
-		}, 0)
 	}
 
 	// 전체 폼 제출시
-	const onSubmit = (data: SignupForm1Type) => {
-		console.log('폼 데이터:', data)
-
-		// 추후 api로 대체
-		if (certificationNumber === certNumber) {
-			setCurrentStep('form2')
-		} else {
-			setError('certificationNumber', {
-				type: 'manual',
-			})
-		}
+	const onSubmit = () => {
+		const phoneNumber = phone?.replace(/-/g, '') ?? ''
+		setSignupData({ name: name ?? '', phoneNumber })
+		setCurrentStep('form2')
 	}
 
 	return (
@@ -144,9 +94,7 @@ const NameStep = () => {
 					{/* 전화번호 */}
 					<FormField
 						label='전화번호'
-						messageArea={
-							errors.phone && !isTimerExpired && <FieldMessage type='error' message={errors.phone.message || ''} />
-						}
+						messageArea={errors.phone && <FieldMessage type='error' message={errors.phone.message || ''} />}
 					>
 						<div className='flex gap-1.5 w-full'>
 							<Input
@@ -176,8 +124,8 @@ const NameStep = () => {
 												numbers.slice(0, 3) + '-' + numbers.slice(3, 7) + '-' + numbers.slice(7, 11)
 										}
 
-										// 폼 값 업데이트
 										setValue('phone', formatted)
+										setIsCertificated(false) // 전화번호 변경 시 중복 확인 초기화
 									},
 								})}
 							/>
@@ -185,57 +133,11 @@ const NameStep = () => {
 							<Button
 								color='auth'
 								className='w-40 h-14 title-2 px-5.5 py-3.5'
-								disabled={!name || !phone || !!errors.phone}
+								disabled={!name || !phone || !!errors.phone || checkMutation.isPending || isCertificated}
 								onClick={handleCertificatePhone}
 							>
-								{isCertificated ? '다시 요청' : '인증 요청'}
+								중복 확인
 							</Button>
-						</div>
-					</FormField>
-
-					{/* 인증번호 */}
-					<FormField
-						label='인증번호'
-						messageArea={
-							<div className='w-full flex items-center mt-1.5'>
-								{/* 성공 */}
-								{isCorrect && <FieldMessage type='success' message='인증이 완료되었습니다.' />}
-
-								{/* 인증시간 만료 or 인증번호 일치 x */}
-								{certificationNumber?.length === 6 && !isCorrect && (
-									<FieldMessage
-										type='error'
-										message={isTimerExpired ? '인증 시간 만료' : '인증번호가 일치하지 않습니다.'}
-									/>
-								)}
-
-								<span className='ml-auto body-2 text-neutral-400 underline cursor-pointer'>
-									인증 번호가 안오시나요?
-								</span>
-							</div>
-						}
-					>
-						<div className='relative w-full'>
-							<Input
-								category='auth'
-								placeholder='6자리'
-								maxLength={6}
-								className='placeholder:text-neutral-300 placeholder:title-2'
-								disabled={!isCertificated || isTimerExpired}
-								{...certificateRestRef}
-								ref={e => {
-									certificateHookRef(e)
-									certInputRef.current = e // 포커스용 ref 연결
-								}}
-							/>
-							{/* 타이머 표시 */}
-							{isCertificated && (
-								<div
-									className={`absolute right-4 top-1/2 -translate-y-1/2 title-2 ${isTimerExpired ? 'text-danger-700' : 'text-primary-500-normal'}`}
-								>
-									{formatTimer(timer)}
-								</div>
-							)}
 						</div>
 					</FormField>
 				</div>

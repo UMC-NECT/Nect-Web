@@ -6,8 +6,7 @@ import type { RoleType } from '@/types/mypage/ongoindProject'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import RoleSelectModal from '../RoleSelectModal'
 import RoleTag from '@/components/mypage/RoleTag'
-
-const ROLE_VALUES: { role: RoleType }[] = [{ role: 'PM' }, { role: 'Design' }, { role: 'Frontend' }, { role: 'Backend' }]
+import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 
 interface ISection02RecruitmentInfo {
 	control: Control<ProjectSettingsType>
@@ -17,13 +16,20 @@ interface ISection02RecruitmentInfo {
 
 const Section02RecruitmentInfo = ({ control, fields, onAddItem }: ISection02RecruitmentInfo) => {
 	const [openModalIndex, setOpenModalIndex] = useState<number | null>(null)
+	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
+
+	// 역할별 targetCount 가져오기
+	const getTargetCount = (role: RoleType) => {
+		const team = teamMembersByRole.find(t => t.role === role)
+		return team?.targetCount ?? 0
+	}
 
 	return (
 		<div className='flex flex-col gap-4 pl-5'>
 			{/* 타이틀 */}
 			<div className='flex items-center justify-between'>
 				<h3 className='title-2 font-bold text-neutral-900'>
-					모집 정보 및 필수 스택 <span className='text-semantic-700'>*</span>
+					모집 정보 및 필수 스택 <span className='text-danger-700'>*</span>
 				</h3>
 
 				<Button color='text' size='sm' className='flex gap-1.25' onClick={onAddItem}>
@@ -42,14 +48,14 @@ const Section02RecruitmentInfo = ({ control, fields, onAddItem }: ISection02Recr
 							<div className='relative shrink-0 mt-5 w-25'>
 								<RoleTag
 									role={value || '직무 선택'}
-									showTotal={false}
+									showTotal={value ? true : false}
+									total={value ? getTargetCount(value as RoleType) : 0}
 									onClick={() => setOpenModalIndex(index)}
 									className='cursor-pointer hover:opacity-80 transition-opacity'
 								/>
 								<RoleSelectModal
 									isOpen={openModalIndex === index}
 									onClose={() => setOpenModalIndex(null)}
-									values={ROLE_VALUES}
 									onSelect={role => {
 										onChange(role)
 										setOpenModalIndex(null)

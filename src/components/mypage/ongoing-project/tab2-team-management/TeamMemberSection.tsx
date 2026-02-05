@@ -3,32 +3,41 @@ import RoleTag from '@/components/mypage/RoleTag'
 import ProfileCard from '@/components/mypage/ProfileCard'
 import type { ColorType, TeamMember } from '@/types/mypage/ongoindProject'
 import TeamMemberModal from './modals/TeamMemberModal'
+import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 
 interface ITeamMemberSection {
-	roleLabel: string
+	role: string
 	roleColor: ColorType
 	members: TeamMember[]
 	onOpenPartSettings?: () => void
-	onSetLeader?: (memberId: string) => void
-	onKickMember?: (memberId: string) => void
 }
 
-const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader }: ITeamMemberSection) => {
+const TeamMemberSection = ({ role, members, onOpenPartSettings }: ITeamMemberSection) => {
 	const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
 	const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | undefined>(undefined)
+
+	// 팀원 관리용
+	const setLeader = useTeamMembersStore(state => state.setLeader)
+	const removeMember = useTeamMembersStore(state => state.removeMember)
 
 	// 모달이 열리면 백그라운드 스크롤 방지
 	useEffect(() => {
 		if (openDropdownId) {
+			// 스크롤바 너비 계산
+			const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
 			document.documentElement.style.overflow = 'hidden'
 			document.body.style.overflow = 'hidden'
+			document.body.style.paddingRight = `${scrollbarWidth}px`
 		} else {
 			document.documentElement.style.overflow = ''
 			document.body.style.overflow = ''
+			document.body.style.paddingRight = ''
 		}
 		return () => {
 			document.documentElement.style.overflow = ''
 			document.body.style.overflow = ''
+			document.body.style.paddingRight = ''
 		}
 	}, [openDropdownId])
 
@@ -56,7 +65,7 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 	return (
 		<div className='flex flex-col gap-3 w-full'>
 			{/* 역할 태그 */}
-			<RoleTag role={roleLabel} showTotal={false} />
+			<RoleTag role={role} showTotal={false} />
 
 			{/* 멤버 카드 그리드 */}
 			<div className='flex flex-wrap gap-3 w-full'>
@@ -66,16 +75,13 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 							className='relative'
 							onContextMenu={e => {
 								e.preventDefault()
-								if (!member.isMatching) {
-									handleContextMenu(member.id, e)
-								}
+								handleContextMenu(member.id, e)
 							}}
 						>
 							<ProfileCard
 								profileImage={member.profileImage}
 								isLeader={member.isLeader}
-								highlighted={roleLabel === 'PM' && member.isLeader}
-								isMatching={member.isMatching}
+								highlighted={role === 'PM' && member.isLeader}
 								nickname={member.nickname}
 								part={member.part}
 								introduction={member.introduction}
@@ -87,7 +93,8 @@ const TeamMemberSection = ({ roleLabel, members, onOpenPartSettings, onSetLeader
 							<TeamMemberModal
 								onClose={() => setOpenDropdownId(null)}
 								onChangeRole={handleChangeRole}
-								onSetLeader={() => onSetLeader?.(member.id)}
+								onSetLeader={() => setLeader(role, member.id)}
+								onKickMember={() => removeMember(role, member.id)}
 								position={dropdownPosition}
 							/>
 						)}

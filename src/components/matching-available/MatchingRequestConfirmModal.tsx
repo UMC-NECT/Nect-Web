@@ -1,4 +1,4 @@
-interface SendMatchingRequestModalProps {
+interface MatchingRequestConfirmModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
@@ -6,7 +6,7 @@ interface SendMatchingRequestModalProps {
     position: string;
 }
 
-const MatchingRequestConfirmModal = ({ isOpen, onClose, onConfirm, memberName, position }: SendMatchingRequestModalProps) => {
+const MatchingRequestConfirmModal = ({ isOpen, onClose, onConfirm, memberName, position }: MatchingRequestConfirmModalProps) => {
     if (!isOpen) return null;
 
     return (

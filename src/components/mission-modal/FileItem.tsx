@@ -169,10 +169,13 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 		if (!editName.trim()) return
 
 		if (droppedFile) {
+			// 파일을 Blob URL로 변환하여 저장 (다운로드를 위해)
+			const blobUrl = URL.createObjectURL(droppedFile)
 			onSave?.({
 				type: 'file',
 				name: editName.trim(),
 				fileName: droppedFile.name,
+				url: blobUrl,
 			})
 		} else if (editUrl.trim()) {
 			onSave?.({
@@ -216,7 +219,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 				<div className='flex flex-col flex-1 min-w-0 gap-0.5'>
 					<input
 						type='text'
-						className='caption-1 font-semibold text-neutral-800 bg-transparent outline-none placeholder:text-neutral-400 w-full'
+						className='caption-1 text-[13px]! font-semibold text-neutral-800 bg-transparent outline-none placeholder:text-neutral-400 w-full'
 						placeholder='제목'
 						value={editName}
 						onChange={e => setEditName(e.target.value)}
@@ -266,7 +269,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 
 			{/* 텍스트 정보 */}
 			<div className='flex flex-col flex-1 min-w-0'>
-				<p className='caption-1 font-semibold text-neutral-800 truncate'>{data.name}</p>
+				<p className='caption-1 text-[13px]! font-semibold text-neutral-800 truncate'>{data.name}</p>
 				<p className={cn('text-[9px] leading-[1.4] text-neutral-400 truncate', data.type === 'link' && ' underline')}>
 					{detailText}
 				</p>
@@ -299,7 +302,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 							</button>
 						)}
 						<button
-							className='w-full px-4 py-1.5 text-left caption-1 text-semantic-700 hover:bg-neutral-50 transition-colors'
+							className='w-full px-4 py-1.5 text-left caption-1 text-danger-700 hover:bg-neutral-50 transition-colors'
 							onClick={e => {
 								e.stopPropagation()
 								onDelete?.()

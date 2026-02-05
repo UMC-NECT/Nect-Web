@@ -22,13 +22,13 @@ const NewsSection = () => {
     };
 
     return (
-        <div className="w-[1233px] mx-auto mb-[50px] relative">
-            <h2 className="text-[32px] font-bold text-center mb-[66px]">
+        <div className="w-308.25 h-184 mx-auto mb-12.5 relative">
+            <h2 className="text-[32px] font-bold text-center mb-16.5">
                 넥트에서 협업의 전 과정을<br />
                 A부터 Z까지
             </h2>
             
-            <div className="w-full relative">
+            <div className="w-[1128px] relative mx-auto">
                 <Swiper
                     modules={[Navigation, Pagination]}
                     slidesPerView={3}
@@ -52,23 +52,25 @@ const NewsSection = () => {
                     {repeatedNewsItems.map((item, index) => (
                         <SwiperSlide key={`news-${index}`}>
                             <div 
-                                className="w-full h-[322px] border-2 rounded-2xl p-8"
+                                className="w-90 h-80.5 border-2 rounded-xl p-10"
                                 style={{
                                     backgroundColor: item.bgColor,
                                     borderColor: item.borderColor
                                 }}
                             >
-                                <h3 className={`text-[24px] font-bold mb-3 ${
-                                    item.isActive ? 'text-primary-600-normal' : 'text-neutral-900'
-                                }`}>
-                                    {item.title}
-                                </h3>
-                                
-                                <p className="text-[18px] leading-relaxed text-neutral-600 whitespace-pre-line">
-                                    {item.description}
+                                <div className='h-[91px] gap-[3px]'>
+                                    <h3 className={`text-[24px] font-bold ${
+                                        item.isActive ? 'text-primary-600-normal' : 'text-neutral-900'
+                                    }`}>
+                                        {item.title}
+                                    </h3>
+                                    
+                                    <p className="h-[50px] text-[18px] text-neutral-600 whitespace-pre-line">
+                                        {item.description}
                                 </p>
+                                </div>
 
-                                <div className="w-[140px] h-[140px] ml-auto mt-[12px] mb-6 overflow-hidden">
+                                <div className="w-35 h-35 ml-auto mt-3 mb-6 overflow-hidden">
                                     <img 
                                         src={item.image} 
                                         alt={item.title}
@@ -81,13 +83,13 @@ const NewsSection = () => {
                 </Swiper>
 
                 {/* 화살표 버튼 */}
-                <div className="news-custom-prev absolute left-[-50px] top-[138px] z-10 w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-100 hover:rounded-full">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="news-custom-prev absolute left-[-50px] top-[138px] z-10 w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-100 hover:rounded-full text-neutral-700">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                </div>
-                <div className="news-custom-next absolute right-[-50px] top-[138px] z-10 w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-100 hover:rounded-full">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                </div>          
+                <div className="news-custom-next absolute right-[-50px] top-[138px] z-10 w-12 h-12 flex items-center justify-center cursor-pointer transition-all hover:bg-neutral-100 hover:rounded-full text-neutral-700">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                 </div>

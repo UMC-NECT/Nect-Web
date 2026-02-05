@@ -8,12 +8,9 @@ const phone = z
 	.min(1, '전화번호를 입력해주세요.')
 	.regex(/^010-\d{4}-\d{4}$/, '올바르지 않은 전화번호입니다.')
 	.length(13)
-const certificationNumber = z.string().length(6)
-
 export const signupForm1Schema = z.object({
 	name: name,
 	phone: phone,
-	certificationNumber: certificationNumber,
 })
 export type SignupForm1Type = z.infer<typeof signupForm1Schema>
 

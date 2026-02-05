@@ -1,19 +1,24 @@
 import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
 import { useSignup } from '@/stores/useSignup'
+import { useSignupStep } from '@/contexts/SignupStepContext'
 import { useEffect, useRef, useState } from 'react'
 import { useSignupForm2 } from '@/hooks/useForm'
 import FormField from '@/components/auth/common/FormField'
 import FieldMessage from '@/components/auth/common/FieldMessage'
+import { useCheckMutation } from '@/hooks/auth/useUsersApi'
 
 const EmailStep = () => {
 	// 전역 상태
-	const { setCurrentStep } = useSignup()
+	const { setSignupData } = useSignup()
+	const { setCurrentStep } = useSignupStep()
 	// 지역 상태
 	const [checkedEmail, setCheckedEmail] = useState<string>('') // 중복 확인한 이메일
 	const [isSameEmail, setIsSameEmail] = useState<boolean>(false) // 이메일 중복인지
+	const checkMutation = useCheckMutation()
 
 	const handleSignupComplete = () => {
+		setSignupData({ email, password, passwordConfirm: password2 ?? '' })
 		setCurrentStep('agree')
 	}
 
@@ -40,18 +45,26 @@ const EmailStep = () => {
 		emailInputRef.current?.focus()
 	}, [])
 
-	// 이메일(아이디) 중복 확인 체크
-	const handleSameEmail = () => {
-		setCheckedEmail(email)
+	// 이메일(아이디) 중복 확인
+	const handleSameEmail = async () => {
+		if (!email) return
 
-		// 추후 api로 대체
-		const emailSame = email === 'email@naver.com'
-		setIsSameEmail(emailSame)
 		clearErrors('email')
 
-		// 사용 가능한 이메일이라면, 비밀번호로 자동 포커싱
-		if (!emailSame) {
-			passwordInputRef.current?.focus()
+		try {
+			const response = await checkMutation.mutateAsync({
+				type: 'EMAIL',
+				value: email,
+			})
+
+			setCheckedEmail(email)
+			setIsSameEmail(response.body?.available === false)
+
+			if (response.body?.available === true) {
+				passwordInputRef.current?.focus()
+			}
+		} catch {
+			setError('email', { type: 'manual', message: '중복 확인에 실패했습니다. 다시 시도해주세요.' })
 		}
 	}
 
@@ -91,6 +104,13 @@ const EmailStep = () => {
 									emailInputRef.current = e // 포커스용 ref 연결
 								}}
 								{...emailRestRef}
+								onChange={e => {
+									emailRestRef.onChange?.(e)
+									if (checkedEmail) {
+										setCheckedEmail('')
+										setIsSameEmail(false)
+									}
+								}}
 							/>
 
 							{/* 중복 확인 버튼 */}
@@ -98,7 +118,7 @@ const EmailStep = () => {
 								color='auth'
 								className='w-40 h-14 title-2 px-5.5 py-3.5'
 								onClick={handleSameEmail}
-								disabled={!email || !!errors.email}
+								disabled={!email || !!errors.email || checkMutation.isPending}
 							>
 								중복 확인
 							</Button>

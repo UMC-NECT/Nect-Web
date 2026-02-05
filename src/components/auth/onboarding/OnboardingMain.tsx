@@ -11,6 +11,10 @@ import Step3 from './steps/Step3'
 import Step4 from './steps/Step4'
 import Step5 from './steps/Step5'
 import Step6 from './steps/Step6'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { useCheckMutation, useSetupMutation } from '@/hooks/auth/useUsersApi'
+import type { RequestSetupDto } from '@/types/api/users'
+import { useNavigate } from 'react-router'
 
 type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
@@ -24,9 +28,66 @@ const STEP_FIELDS: Record<number, Path<OnboardingFormType>[]> = {
 	6: [],
 }
 
+// 폼 데이터 -> RequestSetupDto (form에는 이미 API value 저장됨)
+const toRequestSetupDto = (
+	data: OnboardingFormType,
+	skillCategories: { value: string }[],
+	skillsByCategory: Record<string, { value: string }[]>
+): RequestSetupDto => {
+	const birthStr = data.birth || ''
+	const birthDate = birthStr.length === 8 ? birthStr : ''
+
+	const fields = (data.fields || []).map(f => {
+		if (f.startsWith('직접입력:')) {
+			const customValue = f.replace('직접입력:', '').trim() || null
+			return { field: 'CUSTOM', customField: customValue }
+		}
+		return { field: f, customField: null }
+	})
+
+	const skills = (data.skill || []).map(skillValue => {
+		let skillCategory = 'OTHER'
+		let isPredefined = false
+		for (const cat of skillCategories) {
+			const list = skillsByCategory[cat.value] ?? []
+			if (list.some(s => s.value === skillValue)) {
+				skillCategory = cat.value
+				isPredefined = true
+				break
+			}
+		}
+		return {
+			skillCategory,
+			skill: skillValue,
+			customSkillName: isPredefined ? skillValue : null,
+		}
+	})
+
+	return {
+		nickname: data.nickname || '',
+		birthDate,
+		job: data.job || '',
+		role: data.role || '',
+		fields,
+		skills,
+		interests: data.interest || [],
+		firstGoal: (data.goal || [])[0] || '',
+		collaborationStyle: {
+			planning: data.workStyle ?? 3,
+			logic: data.communicationStyle ?? 3,
+			leadership: data.teamworkStyle ?? 3,
+		},
+	}
+}
+
 const OnboardingMain = () => {
 	const [currentStep, setCurrentStep] = useState<STEPS>(1)
 	const [isNicknameChecked, setIsNicknameChecked] = useState<boolean>(false)
+	const navigate = useNavigate()
+	const { skillCategories, skillsByCategory } = useOnboardingEnums()
+	const checkMutation = useCheckMutation()
+	const setupMutation = useSetupMutation()
+	const isSubmitting = setupMutation.isPending
 
 	const methods = useOnboardingForm() // 온보딩 1~6단계용 커스텀 useForm
 
@@ -50,25 +111,34 @@ const OnboardingMain = () => {
 			return !value || (typeof value === 'string' && value.trim() === '')
 		})
 		const hasError = currentFields.some(field => !!errors[field as keyof OnboardingFormType])
+		// 1단계: 닉네임 중복 확인 완료 전에는 다음 비활성화
+		const needNicknameCheck = currentStep === 1 && !isNicknameChecked
 
-		return isEmptyFieldExist || hasError
+		return isEmptyFieldExist || hasError || needNicknameCheck
 	}
 
 	// 닉네임 중복 확인
 	const handleCheckNickname = async () => {
-		const nickname = methods.getValues('nickname')
+		const nickname = methods.getValues('nickname')?.trim()
+		if (!nickname) return false
 
-		// 나중에 api나오면 고치기
-		console.log('닉네임중복 테스트 콘솔', nickname)
+		try {
+			const response = await checkMutation.mutateAsync({
+				type: 'NICKNAME',
+				value: nickname,
+			})
 
-		const isAvailable = true
-		if (isAvailable) {
-			setIsNicknameChecked(true)
-			methods.clearErrors('nickname')
-			return true
-		} else {
+			if (response.body?.available === true) {
+				setIsNicknameChecked(true)
+				methods.clearErrors('nickname')
+				return true
+			}
+
 			setIsNicknameChecked(false)
 			methods.setError('nickname', { message: '중복된 닉네임 사용 불가' })
+			return false
+		} catch {
+			methods.setError('nickname', { message: '중복 확인에 실패했습니다. 다시 시도해주세요.' })
 			return false
 		}
 	}
@@ -77,7 +147,13 @@ const OnboardingMain = () => {
 	const renderStep = () => {
 		switch (currentStep) {
 			case 1:
-				return <Step1 setIsNicknameChecked={setIsNicknameChecked} isNicknameChecked={isNicknameChecked} />
+				return (
+					<Step1
+						setIsNicknameChecked={setIsNicknameChecked}
+						isNicknameChecked={isNicknameChecked}
+						onCheckNickname={handleCheckNickname}
+					/>
+				)
 			case 2:
 				return <Step2 />
 			case 3:
@@ -102,18 +178,20 @@ const OnboardingMain = () => {
 		const isStepValid = await methods.trigger(fieldsToValidate)
 
 		if (isStepValid) {
-			// 닉네임 중복검사 안했다면 제한
-			if (currentStep === 1) {
-				if (!isNicknameChecked) {
-					const isApiPass = await handleCheckNickname()
-					if (!isApiPass) return
-				}
-			}
+			// 1단계: 닉네임 중복검사 완료된 경우에만 다음 허용 (검사는 onBlur에서 수행)
+			if (currentStep === 1 && !isNicknameChecked) return
 			if (currentStep < 6) {
 				setCurrentStep(prev => (prev + 1) as STEPS)
-				console.log(`현재 폼에 입력된 값들(${currentStep}): `, methods.getValues())
 			} else {
-				console.log('최종 제출', methods.getValues())
+				try {
+					const formData = methods.getValues()
+					const body = toRequestSetupDto(formData, skillCategories, skillsByCategory)
+					await setupMutation.mutateAsync(body)
+					navigate('/')
+				} catch {
+					console.error('프로필 설정에 실패했습니다. 다시 시도해주세요.')
+					alert('프로필 설정에 실패했습니다. 다시 시도해주세요.')
+				}
 			}
 		}
 	}
@@ -146,8 +224,8 @@ const OnboardingMain = () => {
 
 				{/* 다음 버튼 */}
 				<div className='absolute bottom-34 left-1/2 -translate-x-1/2'>
-					<Button size='lg' onClick={handleNext} disabled={isNextDisabled()}>
-						다음
+					<Button size='lg' onClick={handleNext} disabled={isNextDisabled() || isSubmitting}>
+						{currentStep === 6 && isSubmitting ? '저장 중...' : '다음'}
 					</Button>
 				</div>
 			</form>

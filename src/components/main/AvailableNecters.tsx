@@ -1,6 +1,5 @@
 import More from '@/assets/icons/common/chevron-right.svg?react';
 import projectBg from '@/assets/icons/main/nugu.svg'; 
-import Bookmark from '@/assets/icons/main/bookmark.svg?react';
 import profile from '@/assets//icons/main/profile.svg';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 
@@ -8,7 +7,7 @@ const RecommendedProjects = () => {
     const projects = [
         {
             id: 1,
-            background: projectBg, // 배경 이미지
+            background: projectBg,
             character: profile,
             category: '매칭 가능',
             name: '시루',
@@ -45,62 +44,61 @@ const RecommendedProjects = () => {
     ];
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl text-neutral-900 font-bold">지금 매칭 가능한 넥터</h2>
-                <p className="flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md">
+        <div className="w-138 h-142.5">
+            <div className="flex justify-between items-center mb-5 w-138 h-7.5">
+                <h2 className="text-[22px] text-neutral-900 font-bold">지금 매칭 가능한 넥터</h2>
+                <p className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700">
                     더보기
-                    <More className="w-4 h-4 color-neutral-500 mr-1" />
+                    <More className="w-4 h-4 stroke-neutral-500 hover:stroke-neutral-700 mr-1" />
                 </p>
             </div>  
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
                 {projects.map((project) => (
                     <div 
                         key={project.id} 
-                        className="w-[272px] h-[256px] rounded-xl overflow-hidden cursor-pointer bg-white border-neutral-100 border-[1.5px] hover:border-primary-400-normal hover:shadow-lg transition-all duration-200"
+                        className="w-68 h-64 rounded-xl overflow-hidden cursor-pointer bg-white border-neutral-100 border-[1.5px] hover:border-primary-400-normal hover:shadow-lg transition-all duration-200"
                     >
-                        {/* 상단: 배경 + 캐릭터 영역 */}
-                        <div className="relative h-[140px]">
+                        {/* 상단: 배경 + 이미지 영역 */}
+                        <div className="relative h-30">
                             <img 
                                 src={project.background} 
                                 alt="background"
-                                className="absolute inset-0 w-full h-30 object-cover rounded-xl"
+                                className="absolute inset-0 w-full h-full object-cover"
                             />
-                            <div className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-full p-2 cursor-pointer group">
-                                <Bookmark 
-                                    className="w-full h-full [&>path]:stroke-white [&>path]:fill-none [&>path]:transition-all [&>path]:duration-200 group-hover:[&>path]:stroke-primary-500-normal group-hover:[&>path]:fill-primary-500-normal"
-                                />
-                            </div>
-                            <img 
-                                src={project.character} 
-                                alt="character"
-                                className="absolute bottom-5 left-4 w-16 h-16 translate-y-1/2 border-neutral-100 border-[1px] rounded-4xl"
-                            />
-                        </div>
-
-                        {/* 매칭 가능 */}
-                        <div className="flex justify-end px-4">
-                            <div className="flex items-center gap-1 border border-primary-200-light rounded-2xl w-fit px-3 py-1">
-                                <span className="w-[10px] h-[10px] bg-primary-500-normal rounded-full"></span>
-                                <span className="text-sm text-neutral-700 font-semibold">
-                                    {project.category}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        {/* 하단: 텍스트 정보 영역 */}
-                        <div className="px-4 flex flex-col">
-                            <div className="flex pb-[7px] items-center text-lg font-semibold text-neutral-900 gap-1">
-                                <span>{project.name}</span>
-                                <BarIcon className="w-[2px] h-3" />
-                                <span className="text-neutral-500 font-medium">{project.position}</span>
+                            
+                            {/* 프로필 이미지 + 매칭 가능 버튼 */}
+                            <div className="absolute top-18.5 left-3 right-3 w-62">
+                                <div className="flex justify-between items-end">
+                                    <img 
+                                        src={project.character} 
+                                        alt="character"
+                                        className="w-20 h-20 border-neutral-100 border rounded-full object-cover"
+                                    />
+                                    
+                                    <div className="flex items-center justify-center gap-1 border border-primary-200-light rounded-2xl bg-white w-21.5 h-6.5">
+                                        <span className="w-2.5 h-2.5 bg-primary-500-normal rounded-full"></span>
+                                        <span className="text-sm text-neutral-700 font-semibold">
+                                            {project.category}
+                                        </span>
+                                    </div>
+                                </div>
+                                {/* 하단: 텍스트 정보 영역 */}
+                                <div className="px-3 flex flex-col h-18 gap-1.5 mt-2">
+                                    <div className="flex items-center text-lg font-semibold text-neutral-900 gap-1.5">
+                                        <span>{project.name}</span>
+                                        <BarIcon className="w-0.5 h-3" />
+                                        <span className="text-neutral-500 font-medium">{project.position}</span>
+                                    </div>
+                                    
+                                    <p className="text-[13px] font-medium text-neutral-600 line-clamp-2">
+                                        {project.description}
+                                    </p>
+                                </div>
                             </div>
                             
-                            <p className="text-sm text-neutral-700 line-clamp-2 mr-2">
-                                {project.description}
-                            </p>
                         </div>
+
                     </div>
                 ))}
             </div>

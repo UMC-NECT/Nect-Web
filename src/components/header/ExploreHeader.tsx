@@ -6,7 +6,12 @@ import NotificationIcon from '@/assets/icons/common/notification.svg?react'
 import ProfileIcon from '@/assets/icons/header/Profile.svg?react'
 import PortfolioIcon from '@/assets/icons/header/Portfolio.svg?react'
 import NotificationDropdown from '@/components/notification/NotificationDropdown'
+import MessageDropdown from '@/components/chat/MessageDropdown'
+import ProfileDropdown from '@/components/header/ProfileDropdown'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { LOCAL_STORAGE_KEY } from '@/constants/key'
+import { Link, useNavigate } from 'react-router'
 
 interface ExploreHeaderProps {
 	onNavigate: () => void
@@ -16,25 +21,24 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [activeSubMenu, setActiveSubMenu] = useState('프로젝트 찾기')
 	const [showNotifications, setShowNotifications] = useState(false)
 	const [showMessages, setShowMessages] = useState(false)
+	const [showProfile, setShowProfile] = useState(false)
 	const [isScrolled, setIsScrolled] = useState(false)
-
+	const navigate = useNavigate()
+	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	// 읽지 않은 알림 개수 (더미 데이터)
 	const unreadNotifications = 3
 
 	// 외부 클릭 감지를 위한 ref
 	const notificationRef = useRef<HTMLDivElement>(null)
 	const messageRef = useRef<HTMLDivElement>(null)
+	const profileRef = useRef<HTMLDivElement>(null)
 
 	// 외부 클릭 시 드롭다운 닫기
 	useClickOutside(notificationRef, () => setShowNotifications(false), showNotifications)
 	useClickOutside(messageRef, () => setShowMessages(false), showMessages)
+	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
-	const subMenuItems = [
-		{ name: '홈' },
-		{ name: '프로젝트 찾기' },
-		{ name: '팀원 찾기' },
-		{ name: '출시 프로젝트' },
-	]
+	const subMenuItems = [{ name: '홈' }, { name: '프로젝트 찾기' }, { name: '팀원 찾기' }, { name: '출시 프로젝트' }]
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {
@@ -70,9 +74,9 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 			<div className='h-[66px] px-[92px]'>
 				<div className='mx-auto flex h-full items-center gap-9 px-6 relative'>
 					{/* 로고 */}
-					<div className='flex items-center cursor-pointer'>
+					<Link to='/' className='flex items-center cursor-pointer'>
 						<LogoIcon className='h-10 w-auto' />
-					</div>
+					</Link>
 
 					{/* 네비게이션 */}
 					<nav className='flex items-center gap-4'>
@@ -81,7 +85,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						</button>
 						<BarIcon />
 						<button
-							onClick={onNavigate}
+							onClick={() => {
+								onNavigate()
+								navigate('/team-board')
+							}}
 							className='text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
 						>
 							팀 작업실
@@ -93,7 +100,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
 					{/* 오른쪽 아이콘들 */}
 					<div className='flex items-center gap-4'>
-						<div ref={notificationRef}>
+						<div ref={notificationRef} className='relative'>
 							<button
 								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
 									showNotifications ? 'bg-neutral-100' : 'hover:bg-neutral-100'
@@ -106,13 +113,13 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 							>
 								<NotificationIcon className='h-6 w-6 text-neutral-700' />
 								{unreadNotifications > 0 && (
-									<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-semantic-600 rounded-full'></div>
+									<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-danger-600 rounded-full'></div>
 								)}
 							</button>
-							{showNotifications && <NotificationDropdown defaultTab='all' />}
+							{showNotifications && <NotificationDropdown defaultTab='team' />}
 						</div>
 
-						<div ref={messageRef}>
+						<div ref={messageRef} className='relative'>
 							<button
 								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
 									showMessages ? 'bg-neutral-100' : 'hover:bg-neutral-100'
@@ -121,19 +128,34 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 								onClick={() => {
 									setShowMessages(!showMessages)
 									setShowNotifications(false)
+									setShowProfile(false)
 								}}
 							>
 								<MessageIcon className='h-6 w-6 text-neutral-700' />
 							</button>
-							{showMessages && <NotificationDropdown defaultTab='messages' />}
+							{showMessages && <MessageDropdown defaultTab='team' />}
 						</div>
 
-						<button
-							className='flex w-10 h-10 items-center justify-center hover:bg-neutral-100 rounded-[14px] transition-colors'
-							aria-label='프로필'
+						<div ref={profileRef} className='relative'>
+							<button
+								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+									showProfile ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+								}`}
+								aria-label='프로필'
+								onClick={() => {
+									setShowProfile(!showProfile)
+									setShowNotifications(false)
+									setShowMessages(false)
+									const accessToken = getAccessToken()
+									if (!accessToken) {
+										navigate('/login')
+									}
+								}}
 						>
-							<ProfileIcon className='h-6 w-6 text-neutral-700' />
-						</button>
+								<ProfileIcon className='h-6 w-6 text-neutral-700' />
+							</button>
+							<ProfileDropdown isOpen={showProfile} onClose={() => setShowProfile(false)} />
+						</div>
 					</div>
 				</div>
 			</div>

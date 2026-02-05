@@ -40,7 +40,6 @@ export const portfolioSchema = z.object({
 
 // 섹션 08. 프로젝트 히스토리 스키마
 export const projectHistorySchema = z.object({
-	id: z.number(),
 	title: z.string(),
 	description: z.string(),
 	date: z.string(),

@@ -1,24 +1,39 @@
 import Button from '@/components/common/Button'
 import PencilIcon from '@/assets/icons/mypage/edit-pencil.svg?react'
 import RoleTag from '@/components/mypage/RoleTag'
-
-interface TeamComposition {
-	role: string
-	count: number
-	positions: { name: string; count: number }[]
-}
+import type { TeamMembersByRole } from '@/types/mypage/ongoindProject'
 
 interface ISection03TeamComposition {
-	teamComposition: TeamComposition[]
+	teamMembersByRole: TeamMembersByRole[]
 	onEditClick: () => void
 }
 
-const Section03TeamComposition = ({ teamComposition, onEditClick }: ISection03TeamComposition) => {
+const Section03TeamComposition = ({ teamMembersByRole, onEditClick }: ISection03TeamComposition) => {
+	// 카테고리별로 그룹화
+	const categoryMap: Record<string, string> = {
+		PM: '기획',
+		Design: '디자인',
+		Frontend: '프론트',
+		Backend: '백엔드',
+	}
+
+	const categoryGroups: Record<string, TeamMembersByRole[]> = {}
+
+	teamMembersByRole.forEach(team => {
+		const category = categoryMap[team.role] || '기타'
+		if (!categoryGroups[category]) {
+			categoryGroups[category] = []
+		}
+		categoryGroups[category].push(team)
+	})
+
+	const categoryOrder = ['기획', '디자인', '프론트', '백엔드', '기타']
+	const sortedCategories = categoryOrder.filter(category => categoryGroups[category])
 	return (
 		<div className='flex flex-col gap-4 pl-5'>
 			<div className='flex items-center justify-between'>
 				<h3 className='title-2 font-bold text-neutral-900'>
-					프로젝트 파트 / 팀원 구성 <span className='text-semantic-700'>*</span>
+					프로젝트 파트 / 팀원 구성 <span className='text-danger-700'>*</span>
 				</h3>
 				<Button color='text' size='sm' className='flex gap-1.25' onClick={onEditClick}>
 					<PencilIcon className='w-4 h-4 hover:text-neutral-500' />팀 구성 편집
@@ -26,22 +41,27 @@ const Section03TeamComposition = ({ teamComposition, onEditClick }: ISection03Te
 			</div>
 
 			<div className='flex flex-col gap-3.5'>
-				{teamComposition.map((team, index) => (
-					<div key={index} className='flex items-center gap-1.25'>
-						{/* 역할 */}
-						<span className='w-22.5 body-1 text-neutral-900'>{team.role}</span>
+				{sortedCategories.map(category => {
+					const teams = categoryGroups[category]
+					const totalCount = teams.reduce((sum, team) => sum + (team.targetCount ?? team.members.length), 0)
 
-						{/* n명 */}
-						<span className='w-12.5 body-1 text-neutral-900'>{team.count}명</span>
+					return (
+						<div key={category} className='flex items-center gap-1.25'>
+							{/* 역할 */}
+							<span className='w-22.5 body-1 text-neutral-900'>{category}</span>
 
-						{/* 태그들 */}
-						<div className='flex items-center gap-2.5'>
-							{team.positions.map((position, idx) => (
-								<RoleTag key={idx} role={position.name} total={position.count} />
-							))}
+							{/* n명 */}
+							<span className='w-12.5 body-1 text-neutral-900'>{totalCount}명</span>
+
+							{/* 태그들 */}
+							<div className='flex items-center gap-2.5'>
+								{teams.map(team => (
+									<RoleTag key={team.role} role={team.role} showTotal={false} />
+								))}
+							</div>
 						</div>
-					</div>
-				))}
+					)
+				})}
 			</div>
 		</div>
 	)

@@ -70,10 +70,10 @@ const AnalyzeReportPage = () => {
                                     최소 4파트, 총 6명의 팀원이 필요해요!
                                 </h3>
                                 <div className='flex flex-wrap gap-2 h-[24px] text-neutral-700'>
-                                    <span className='px-3 py-1 bg-tag-purple rounded-md text-[14px]'>PM(1)</span>
-                                    <span className='px-3 py-1 bg-tag-pink rounded-md text-[14px]'>Design(1)</span>
-                                    <span className='px-3 py-1 bg-tag-green rounded-md text-[14px]'>Frontend(2)</span>
-                                    <span className='px-3 py-1 bg-tag-blue rounded-md text-[14px]'>Backend(2)</span>
+                                    <span className='px-3 py-1 bg-roletag-purple rounded-md text-[14px]'>PM(1)</span>
+                                    <span className='px-3 py-1 bg-roletag-pink rounded-md text-[14px]'>Design(1)</span>
+                                    <span className='px-3 py-1 bg-roletag-green rounded-md text-[14px]'>Frontend(2)</span>
+                                    <span className='px-3 py-1 bg-roletag-blue rounded-md text-[14px]'>Backend(2)</span>
                                 </div>
                             </div>
                         </div>
