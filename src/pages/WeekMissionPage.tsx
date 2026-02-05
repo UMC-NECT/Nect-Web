@@ -11,8 +11,7 @@ const WeekMissionPage = () => {
 	const { missions, updateMission } = useMissionStore()
 	const { openMissionModal } = useMissionModalStore()
 	const { roles } = useTeamStore()
-	const { data: projectUsersData } = useGetProjectUsers()
-	const projectId = projectUsersData?.body?.[0]?.projectId != null ? String(projectUsersData.body[0].projectId) : undefined
+	const { projectId } = useGetProjectUsers()
 
 	// 섹션 데이터 (teamStore의 roles 사용)
 	const sections = roles.map(role => ({

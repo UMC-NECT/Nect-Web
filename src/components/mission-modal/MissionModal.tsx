@@ -129,7 +129,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setFeedbacks(feedbackList)
 
 		const fileItems = [
-			...(body.file_ids ?? []).map(f => ({
+			...(body.files ?? []).map(f => ({
 				id: f.file_id,
 				type: 'file' as const,
 				name: f.file_name,

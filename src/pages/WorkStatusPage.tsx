@@ -103,8 +103,7 @@ const WorkStatusPage = () => {
 	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
 	const { isScrolling, scrollContainerRef } = useWorkStatusScroll()
 	const { statusCounts, historyItems } = useWorkStatusData()
-	const { data: projectUsersData } = useGetProjectUsers()
-	const projectId = projectUsersData?.body?.[0]?.projectId != null ? String(projectUsersData.body[0].projectId) : undefined
+	const { projectId } = useGetProjectUsers()
 	const { data: progressSummaryData } = useProgressSummaryQuery(projectId ?? '')
 
 	// 진행률: 초기값은 API, 변경분은 드래그 시 deltas로만 반영 (effect 없이 파생)
