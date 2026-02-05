@@ -2,10 +2,11 @@ interface ITeamMemberModal {
 	onClose: () => void
 	onChangeRole: () => void
 	onSetLeader: () => void
+	onKickMember: () => void
 	position?: { top: number; left: number }
 }
 
-const TeamMemberModal = ({ onClose, onChangeRole, onSetLeader, position }: ITeamMemberModal) => {
+const TeamMemberModal = ({ onClose, onChangeRole, onSetLeader, onKickMember, position }: ITeamMemberModal) => {
 	return (
 		<>
 			{/* 백드롭 */}
@@ -38,6 +39,18 @@ const TeamMemberModal = ({ onClose, onChangeRole, onSetLeader, position }: ITeam
 					className='w-full text-left pl-5 py-2 text-[13px] font-medium text-neutral-900 hover:bg-neutral-100'
 				>
 					파트장 설정 (Lead)
+				</button>
+
+				{/* 팀원 강퇴 */}
+				<button
+					type='button'
+					onClick={() => {
+						onKickMember()
+						onClose()
+					}}
+					className='w-full text-left pl-5 py-2 text-[13px] font-medium text-danger-700 hover:bg-neutral-100'
+				>
+					팀원 강퇴
 				</button>
 			</div>
 		</>

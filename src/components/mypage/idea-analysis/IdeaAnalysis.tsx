@@ -8,7 +8,7 @@ import Section02TeamComposition from './sections/Section02TeamComposition'
 import Section03Improvements from './sections/Section03Improvements'
 import Section04Roadmap from './sections/Section04Roadmap'
 import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
-import CTAModal from '../CTAModal'
+import CTAModal from '../../common/CTAModal'
 import { useNavigate } from 'react-router'
 import { useCTAModal } from '@/stores/useCTAModal'
 

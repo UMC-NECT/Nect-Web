@@ -2,17 +2,15 @@ import { useFieldArray, Controller, type Control, type UseFormSetValue, type Use
 import Button from '@/components/common/Button'
 import GoalIcon from '@/assets/icons/week-mission/goal.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
-import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 interface ISection06CareerHistory {
-	onRefresh: () => void
 	control: Control<ProfileFormDataType>
 	setValue: UseFormSetValue<ProfileFormDataType>
 	watch: UseFormWatch<ProfileFormDataType>
 }
 
-const Section06CareerHistory = ({ onRefresh, control, setValue, watch }: ISection06CareerHistory) => {
+const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHistory) => {
 	const { fields: careers, append: appendCareer } = useFieldArray({
 		control,
 		name: 'careers',
@@ -93,15 +91,9 @@ const Section06CareerHistory = ({ onRefresh, control, setValue, watch }: ISectio
 					주요 경력/이력 <span className='text-danger-700'>*</span>
 				</h2>
 
-				<div className='flex'>
-					<Button color='text' size='sm' onClick={addCareer}>
-						+ 경력/이력 추가
-					</Button>
-					<Button color='text' size='sm' onClick={onRefresh}>
-						<RefreshIcon className='w-4 h-4 mr-1' />
-						불러오기
-					</Button>
-				</div>
+				<Button color='text' size='sm' onClick={addCareer}>
+					+ 경력/이력 추가
+				</Button>
 			</div>
 
 			{/* 경력 입력 컨테이너 */}

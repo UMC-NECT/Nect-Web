@@ -4,7 +4,7 @@ import { Sidebar } from './sidebar/Sidebar'
 import { useWorkspace } from '@/stores/useWorkspace'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import MissionModal from '@/components/mission-modal/MissionModal'
-import CTAModal from '@/components/mypage/CTAModal'
+import CTAModal from '@/components/common/CTAModal'
 import { useCTAModal } from '@/stores/useCTAModal'
 
 export const Layout = () => {
