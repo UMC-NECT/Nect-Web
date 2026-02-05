@@ -7,12 +7,18 @@ import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 
 import { useState } from 'react'
 import { useLoginForm } from '@/hooks/useForm'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { LOCAL_STORAGE_KEY } from '@/constants/key'
+import { useLoginMutation } from '@/hooks/auth/useUsersApi'
 
 const AuthForm = () => {
 	const [showPassword, setShowPassword] = useState<boolean>(false)
 	const [loginError, setLoginError] = useState<string>('')
 	const navigate = useNavigate()
+	const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+	const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+	const loginMutation = useLoginMutation()
 
 	// 유효성 검사용
 	const { register, handleSubmit, errors, watch } = useLoginForm()
@@ -26,16 +32,25 @@ const AuthForm = () => {
 	const isFormFilled = email && password
 
 	// 폼 제출 (로그인 버튼 클릭)
-	const onSubmit = () => {
+	const onSubmit = async () => {
+		if (!email || !password) return
+
 		setLoginError('')
 
-		// 나중에 api연결로 대체
 		try {
-			if (email === 'test@naver.com' && password === 'qwerty1!') {
-				console.log('로그인 성공!', email, password)
+			const response = await loginMutation.mutateAsync({
+				email,
+				password,
+				autoLoginEnabled: isAuthLogin ?? false,
+			})
+
+			const tokenData = response.body
+			if (tokenData?.accessToken && tokenData?.refreshToken) {
+				setAccessToken(tokenData.accessToken)
+				setRefreshToken(tokenData.refreshToken)
 				navigate('/')
 			} else {
-				setLoginError('가입되지 않은 계정이거나, 아이디/비밀번호가 일치하지 않습니다.')
+				setLoginError('로그인에 실패했습니다. 다시 시도해주세요.')
 			}
 		} catch {
 			setLoginError('가입되지 않은 계정이거나, 아이디/비밀번호가 일치하지 않습니다.')
@@ -99,7 +114,7 @@ const AuthForm = () => {
 				)}
 
 				{/* 로그인 버튼 */}
-				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled}>
+				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled || loginMutation.isPending}>
 					로그인
 				</Button>
 			</form>
@@ -108,7 +123,9 @@ const AuthForm = () => {
 			<div className='mt-4.5 flex justify-center items-center gap-4.5 '>
 				<span className='body-1 text-neutral-500 cursor-pointer hover:underline'>아이디/비밀번호 찾기</span>
 				<span className='text-neutral-300'>|</span>
-				<span className='body-1 text-primary-400-normal cursor-pointer hover:underline'>회원가입</span>
+				<Link to={'/signup'} className='body-1 text-primary-400-normal cursor-pointer hover:underline'>
+					회원가입
+				</Link>
 			</div>
 		</div>
 	)

@@ -1,6 +1,7 @@
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import axios, { type InternalAxiosRequestConfig } from 'axios'
+import { postRefreshToken } from '@/api/users'
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 	_retry?: boolean
@@ -29,15 +30,16 @@ api.interceptors.request.use(
 )
 
 api.interceptors.response.use(
-	(response) => {
+	response => {
 		return response
 	},
-	async (error) => {
+	async error => {
 		const originalRequest = error.config as CustomAxiosRequestConfig
 
 		if (error.response && error.response.status === 401 && !originalRequest._retry) {
 			originalRequest._retry = true
-			if (originalRequest.url === '/v1/users/refresh') {
+			const isRefreshRequest = originalRequest.url?.includes('/refresh') ?? false
+			if (isRefreshRequest) {
 				const { removeItem: removeAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 				const { removeItem: removeRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
 				removeAccessToken()
@@ -52,34 +54,35 @@ api.interceptors.response.use(
 				refreshPromise = (async () => {
 					const { getItem: getRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
 					const refreshToken = getRefreshToken()
+					if (!refreshToken) throw new Error('No refresh token')
 
-					const { data } = await api.post('/v1/users/refresh', {
-						refresh: refreshToken,
-					})
+					const response = await postRefreshToken({ refreshToken })
+					const tokenData = response.body
+					if (!tokenData?.accessToken || !tokenData?.refreshToken) throw new Error('Invalid refresh response')
 
 					const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 					const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-					setAccessToken(data.data.accessToken)
-					setRefreshToken(data.data.refreshToken)
+					setAccessToken(tokenData.accessToken)
+					setRefreshToken(tokenData.refreshToken)
 
-					return data.data.accessToken
+					return tokenData.accessToken
 				})()
-                .catch((err) => {
-                    const { removeItem: removeAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
-                    const { removeItem: removeRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-                    removeAccessToken()
-                    removeRefreshToken()
-                    throw err
-                })
-                .finally(() => {
-                    refreshPromise = null
-                })
+					.catch(err => {
+						const { removeItem: removeAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+						const { removeItem: removeRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+						removeAccessToken()
+						removeRefreshToken()
+						throw err
+					})
+					.finally(() => {
+						refreshPromise = null
+					})
 			}
 
-            return refreshPromise.then((newAccessToken) => {
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
-                return api.request(originalRequest)
-            })
+			return refreshPromise.then(newAccessToken => {
+				originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+				return api.request(originalRequest)
+			})
 		}
 
 		return Promise.reject(error)

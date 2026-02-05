@@ -2,28 +2,32 @@ import Dropdown from '@/components/common/Dropdown'
 import Input from '@/components/common/Input'
 import type { OnboardingFormType } from '@/utils/validate'
 import { useFormContext } from 'react-hook-form'
-
-const jobs = ['직장인', '대학생', '취업 준비생', '프리랜서', '사업가', '기타']
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 
 interface IStep1 {
 	isNicknameChecked: boolean
 	setIsNicknameChecked: (isNicknameChecked: boolean) => void
+	onCheckNickname?: () => void | Promise<unknown>
 }
 
-const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
+const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked, onCheckNickname }: IStep1) => {
 	const {
 		register,
 		setValue,
 		watch,
+		getValues,
 		formState: { errors },
 	} = useFormContext<OnboardingFormType>()
+	const { jobs } = useOnboardingEnums()
 
-	// 직업 필드 감시
-	const selectedJob = watch('job') || ''
+	// 직업 필드 감시 (form에는 API value 저장)
+	const selectedJobValue = watch('job') || ''
+	const selectedJobLabel = jobs.find(j => j.value === selectedJobValue)?.label ?? ''
 
-	// 직업 선택 핸들러
-	const handleSelectJob = (option: string) => {
-		setValue('job', option, { shouldValidate: true })
+	// 직업 선택 핸들러 (옵션은 label로 표시, 선택 시 value 저장)
+	const handleSelectJob = (label: string) => {
+		const item = jobs.find(j => j.label === label)
+		if (item) setValue('job', item.value, { shouldValidate: true })
 	}
 
 	return (
@@ -42,6 +46,9 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 							onChange: e => {
 								setValue('nickname', e.target.value, { shouldValidate: true })
 								setIsNicknameChecked(false)
+							},
+							onBlur: () => {
+								if (getValues('nickname')?.trim()) onCheckNickname?.()
 							},
 						})}
 					/>
@@ -66,7 +73,12 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked }: IStep1) => {
 							},
 						})}
 					/>
-					<Dropdown options={jobs} placeholder='직업' value={selectedJob} onSelect={handleSelectJob} />
+					<Dropdown
+						options={jobs.map(j => j.label)}
+						placeholder='직업'
+						value={selectedJobLabel}
+						onSelect={handleSelectJob}
+					/>
 				</div>
 			</div>
 		</div>

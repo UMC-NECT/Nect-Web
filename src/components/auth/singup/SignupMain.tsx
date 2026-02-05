@@ -5,11 +5,11 @@ import Button from '@/components/common/Button'
 import OR from '@/components/common/OR'
 
 import { useNavigate } from 'react-router'
-import { useSignup } from '@/stores/useSignup'
+import { useSignupStep } from '@/contexts/SignupStepContext'
 
 const SignupMain = () => {
 	const navigate = useNavigate()
-	const { setCurrentStep } = useSignup()
+	const { setCurrentStep } = useSignupStep()
 
 	// 테스트용
 	const handleSocialLogin = () => {
@@ -52,7 +52,7 @@ const SignupMain = () => {
 				<div className='flex justify-center items-center gap-3'>
 					<span className='body-1 text-neutral-500'>이미 넥트 회원이신가요?</span>
 					<span
-						className='body-1 text-primary-400-normal cursor-pointer'
+						className='body-1 text-primary-400-normal cursor-pointer hover:underline'
 						onClick={() => {
 							//setIsSignup(false)
 							navigate('/login')

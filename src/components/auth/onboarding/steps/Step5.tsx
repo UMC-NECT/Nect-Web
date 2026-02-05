@@ -1,26 +1,23 @@
 import ChipButton from '@/components/common/ChipButton'
 import type { OnboardingFormType } from '@/utils/validate'
 import { useFormContext } from 'react-hook-form'
-
-const goals = ['포트폴리오 제작', '프로젝트 경험 및 팀 협업 능력 향상', '다른 분야의 프로젝트 경험', '기타']
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 
 const Step5 = () => {
-	// 유효성 검사용
 	const { setValue, watch } = useFormContext<OnboardingFormType>()
+	const { goals } = useOnboardingEnums()
 
-	// 폼 데이터 감시
 	const selectedGoals = watch('goal') || []
 
-	const handleSelectGoal = (goal: string) => {
-		const isAlreadySelected = selectedGoals.includes(goal)
-
-		if (isAlreadySelected) {
-			// 이미 선택한 항목 해제는 허용
-			const newFields = selectedGoals.filter(f => f !== goal)
-			setValue('goal', newFields, { shouldValidate: true })
+	const handleSelectGoal = (value: string) => {
+		if (selectedGoals.includes(value)) {
+			setValue(
+				'goal',
+				selectedGoals.filter(f => f !== value),
+				{ shouldValidate: true }
+			)
 		} else {
-			// 새로 추가
-			setValue('goal', [...selectedGoals, goal], { shouldValidate: true })
+			setValue('goal', [...selectedGoals, value], { shouldValidate: true })
 		}
 	}
 
@@ -36,16 +33,14 @@ const Step5 = () => {
 
 			{/* 컨텐츠 */}
 			<div className='flex flex-col justify-center items-center w-98 gap-3'>
-				{goals.map(goal => (
-					<>
-						<ChipButton
-							key={goal}
-							text={goal}
-							isChecked={selectedGoals.includes(goal)}
-							className='title-3 w-full'
-							onClick={() => handleSelectGoal(goal)}
-						/>
-					</>
+				{goals.map(item => (
+					<ChipButton
+						key={item.value}
+						text={item.label}
+						isChecked={selectedGoals.includes(item.value)}
+						className='title-3 w-full'
+						onClick={() => handleSelectGoal(item.value)}
+					/>
 				))}
 			</div>
 		</div>

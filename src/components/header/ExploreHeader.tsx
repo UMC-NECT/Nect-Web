@@ -9,6 +9,8 @@ import NotificationDropdown from '@/components/notification/NotificationDropdown
 import MessageDropdown from '@/components/chat/MessageDropdown'
 import ProfileDropdown from '@/components/header/ProfileDropdown'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { Link, useNavigate } from 'react-router'
 
 interface ExploreHeaderProps {
@@ -22,6 +24,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [showProfile, setShowProfile] = useState(false)
 	const [isScrolled, setIsScrolled] = useState(false)
 	const navigate = useNavigate()
+	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	// 읽지 않은 알림 개수 (더미 데이터)
 	const unreadNotifications = 3
 
@@ -35,12 +38,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	useClickOutside(messageRef, () => setShowMessages(false), showMessages)
 	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
-	const subMenuItems = [
-		{ name: '홈' },
-		{ name: '프로젝트 찾기' },
-		{ name: '팀원 찾기' },
-		{ name: '출시 프로젝트' },
-	]
+	const subMenuItems = [{ name: '홈' }, { name: '프로젝트 찾기' }, { name: '팀원 찾기' }, { name: '출시 프로젝트' }]
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {
@@ -148,8 +146,12 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 									setShowProfile(!showProfile)
 									setShowNotifications(false)
 									setShowMessages(false)
+									const accessToken = getAccessToken()
+									if (!accessToken) {
+										navigate('/login')
+									}
 								}}
-							>
+						>
 								<ProfileIcon className='h-6 w-6 text-neutral-700' />
 							</button>
 							<ProfileDropdown isOpen={showProfile} onClose={() => setShowProfile(false)} />
