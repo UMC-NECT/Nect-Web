@@ -21,6 +21,8 @@ import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
 import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
 import MatchingAvailablePage from './pages/MatchingAvailablePage'
+import ProjectListPage from './pages/ProjectListPage'
+import NecterListPage from './pages/NecterListPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -85,6 +87,14 @@ const router = createBrowserRouter([
 					},
 				],
 			},
+			{
+				path: '/projectList',  // 모집 중인 프로젝트 전체
+				element: <ProjectListPage />,
+			},
+			{
+				path: '/necterList',  // 지금 가능한 넥터 전체
+				element: <NecterListPage />,
+			}
 		],
 	},
 	{
