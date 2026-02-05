@@ -13,7 +13,7 @@ const MatchingConfirmModal = ({ isOpen, onClose, onConfirm, selectedPart }: Matc
         <div className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'>
             <div className='w-[600px] h-[376px] bg-white rounded-3xl p-12 flex flex-col border-neutral-200'>
                 {/* 제목 */}
-                <h2 className='text-[28px] font-bold text-center mb-[18px]'>
+                <h2 className='text-[20px] font-semibold text-center mb-[18px]'>
                     <span className='text-primary-600-normal'>
                         {selectedPart}
                     </span>

@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import MatchingConfirmModal from './MatchingConfirmModal';
-import MatchingSuccessModal from './MatchingSuccessModal';
 
 interface MatchingRequestModalProps {
     isOpen: boolean;
@@ -11,7 +9,6 @@ interface MatchingRequestModalProps {
 
 const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPositionStyle }: MatchingRequestModalProps) => {
     const [selectedParts, setSelectedParts] = useState<string[]>([]);
-    const [step, setStep] = useState<'select' | 'confirm' | 'success'>('select');
 
     if (!isOpen) return null;
 
@@ -29,53 +26,21 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPosition
     };
 
     const handleNext = () => {
-        if (selectedParts.length > 0) {
-            setStep('confirm');
+        if (selectedParts.length > 0 && onMatchingComplete) {
+            onMatchingComplete(); // 다음 단계로
         }
-    };
-
-    const handleConfirm = () => {
-        setStep('success');
     };
 
     const handleClose = () => {
-        if (step === 'success' && onMatchingComplete) {
-            onMatchingComplete();
-        }
-        setStep('select');
         setSelectedParts([]);
         onClose();
     };
 
-    // 2단계: 확인 모달
-    if (step === 'confirm') {
-        return (
-            <MatchingConfirmModal 
-                isOpen={true}
-                onClose={() => setStep('select')}
-                onConfirm={handleConfirm}
-                selectedPart={selectedParts[0]}
-                getPositionStyle={getPositionStyle}
-            />
-        );
-    }
-
-    // 3단계: 완료 모달
-    if (step === 'success') {
-        return (
-            <MatchingSuccessModal 
-                isOpen={true}
-                onClose={handleClose}
-            />
-        );
-    }
-
-    // 1단계: 파트 선택
     return (
         <div className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'>
-            <div className='w-[600px] h-[376px] bg-white rounded-3xl p-12 flex flex-col border-neutral-200'>
+            <div className='w-[600px] h-[376px] bg-white rounded-xl p-12 flex flex-col border-neutral-200'>
                 {/* 제목 */}
-                <h2 className='text-[28px] font-bold text-center mb-[18px]'>
+                <h2 className='text-[20px] font-semibold text-center mb-[18px]'>
                     매칭할 파트를 선택해주세요
                 </h2>
                 
