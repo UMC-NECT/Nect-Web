@@ -11,7 +11,7 @@ const Section01ProjectField = ({ selectedFields, onToggleField }: ISection01Proj
 	return (
 		<div className='flex flex-col gap-4 pl-5'>
 			<h3 className='title-2 font-bold text-neutral-900'>
-				프로젝트 분야 <span className='text-semantic-700'>*</span>
+				프로젝트 분야 <span className='text-danger-700'>*</span>
 			</h3>
 			<div className='flex flex-wrap gap-2'>
 				{fieldOptions.map(field => {

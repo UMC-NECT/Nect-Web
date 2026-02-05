@@ -33,7 +33,7 @@ const Section03TeamComposition = ({ teamMembersByRole, onEditClick }: ISection03
 		<div className='flex flex-col gap-4 pl-5'>
 			<div className='flex items-center justify-between'>
 				<h3 className='title-2 font-bold text-neutral-900'>
-					프로젝트 파트 / 팀원 구성 <span className='text-semantic-700'>*</span>
+					프로젝트 파트 / 팀원 구성 <span className='text-danger-700'>*</span>
 				</h3>
 				<Button color='text' size='sm' className='flex gap-1.25' onClick={onEditClick}>
 					<PencilIcon className='w-4 h-4 hover:text-neutral-500' />팀 구성 편집
