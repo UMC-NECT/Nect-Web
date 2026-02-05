@@ -6,6 +6,8 @@ import NotificationIcon from '@/assets/icons/common/notification.svg?react'
 import ProfileIcon from '@/assets/icons/header/Profile.svg?react'
 import PortfolioIcon from '@/assets/icons/header/Portfolio.svg?react'
 import NotificationDropdown from '@/components/notification/NotificationDropdown'
+import MessageDropdown from '@/components/chat/MessageDropdown'
+import ProfileDropdown from '@/components/header/ProfileDropdown'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { Link, useNavigate } from 'react-router'
 
@@ -17,6 +19,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [activeSubMenu, setActiveSubMenu] = useState('프로젝트 찾기')
 	const [showNotifications, setShowNotifications] = useState(false)
 	const [showMessages, setShowMessages] = useState(false)
+	const [showProfile, setShowProfile] = useState(false)
 	const [isScrolled, setIsScrolled] = useState(false)
 	const navigate = useNavigate()
 	// 읽지 않은 알림 개수 (더미 데이터)
@@ -25,10 +28,12 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	// 외부 클릭 감지를 위한 ref
 	const notificationRef = useRef<HTMLDivElement>(null)
 	const messageRef = useRef<HTMLDivElement>(null)
+	const profileRef = useRef<HTMLDivElement>(null)
 
 	// 외부 클릭 시 드롭다운 닫기
 	useClickOutside(notificationRef, () => setShowNotifications(false), showNotifications)
 	useClickOutside(messageRef, () => setShowMessages(false), showMessages)
+	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
 	const subMenuItems = [
 		{ name: '홈' },
@@ -97,7 +102,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
 					{/* 오른쪽 아이콘들 */}
 					<div className='flex items-center gap-4'>
-						<div ref={notificationRef}>
+						<div ref={notificationRef} className='relative'>
 							<button
 								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
 									showNotifications ? 'bg-neutral-100' : 'hover:bg-neutral-100'
@@ -113,10 +118,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 									<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-semantic-600 rounded-full'></div>
 								)}
 							</button>
-							{showNotifications && <NotificationDropdown defaultTab='all' />}
+							{showNotifications && <NotificationDropdown defaultTab='team' />}
 						</div>
 
-						<div ref={messageRef}>
+						<div ref={messageRef} className='relative'>
 							<button
 								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
 									showMessages ? 'bg-neutral-100' : 'hover:bg-neutral-100'
@@ -125,19 +130,30 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 								onClick={() => {
 									setShowMessages(!showMessages)
 									setShowNotifications(false)
+									setShowProfile(false)
 								}}
 							>
 								<MessageIcon className='h-6 w-6 text-neutral-700' />
 							</button>
-							{showMessages && <NotificationDropdown defaultTab='messages' />}
+							{showMessages && <MessageDropdown defaultTab='team' />}
 						</div>
 
-						<button
-							className='flex w-10 h-10 items-center justify-center hover:bg-neutral-100 rounded-[14px] transition-colors'
-							aria-label='프로필'
-						>
-							<ProfileIcon className='h-6 w-6 text-neutral-700' />
-						</button>
+						<div ref={profileRef} className='relative'>
+							<button
+								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+									showProfile ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+								}`}
+								aria-label='프로필'
+								onClick={() => {
+									setShowProfile(!showProfile)
+									setShowNotifications(false)
+									setShowMessages(false)
+								}}
+							>
+								<ProfileIcon className='h-6 w-6 text-neutral-700' />
+							</button>
+							<ProfileDropdown isOpen={showProfile} onClose={() => setShowProfile(false)} />
+						</div>
 					</div>
 				</div>
 			</div>
