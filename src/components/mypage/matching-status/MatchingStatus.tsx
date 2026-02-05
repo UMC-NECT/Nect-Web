@@ -16,6 +16,17 @@ interface MatchingStatusProps {
 	sentCount?: number
 }
 
+// 역할 이름을 roleId로 매핑
+const getRoleIdByName = (roleName: string): number => {
+	const roleMap: Record<string, number> = {
+		PM: 1,
+		Design: 2,
+		Frontend: 3,
+		Backend: 4,
+	}
+	return roleMap[roleName] || 1
+}
+
 export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingStatusProps) => {
 	const [activeTab, setActiveTab] = useState<TabType>('received')
 	const [modalType, setModalType] = useState<'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null>(null)
@@ -206,8 +217,8 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 									{receivedTeamMembers.map((partGroup, partIndex) => (
 										<div key={partIndex} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 											<RoleTagChip
+												roleId={getRoleIdByName(partGroup.part)}
 												roleName={partGroup.part}
-												roleColor={partGroup.partColor}
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
@@ -288,8 +299,8 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 									{sentTeamMembers.map((partGroup, partIndex) => (
 										<div key={partIndex} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 											<RoleTagChip
+												roleId={getRoleIdByName(partGroup.part)}
 												roleName={partGroup.part}
-												roleColor={partGroup.partColor}
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
