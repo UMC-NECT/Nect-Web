@@ -1,9 +1,5 @@
 interface ChatDateLineProps {
 	date: string
-}
-
-interface ChatDateLineProps {
-	date: string
 	className?: string
 }
 
