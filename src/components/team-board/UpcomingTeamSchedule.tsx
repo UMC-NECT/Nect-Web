@@ -1,5 +1,3 @@
-import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
-
 interface UpcomingTeamScheduleItem {
 	dayOfWeek: string // "Fri", "Wed", "Mon" 등
 	date: number // 12, 17, 19 등
@@ -20,14 +18,9 @@ const UpcomingTeamSchedule = ({ items, className = '' }: UpcomingTeamSchedulePro
 		<div
 			className={`w-[392px] h-[518px] px-5 pt-5 pb-3.5 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 inline-flex justify-center items-start gap-2.5 ${className}`}
 		>
-			<div className="self-stretch inline-flex flex-col justify-start items-start gap-4">
+			<div className="self-stretch inline-flex flex-col justify-start items-start gap-[18Px]">
 				{/* 헤더 */}
-				<div className="self-stretch inline-flex justify-start items-center gap-2">
-					<div className="justify-start text-neutral-900 title-2 font-bold">다가오는 팀 일정</div>
-					<div className="w-4 h-4 flex justify-center items-center gap-2.5">
-						<ChevronRightIcon className="w-4 h-4 text-neutral-700" />
-					</div>
-				</div>
+				<div className="self-stretch text-neutral-900 title-2 font-bold">다가오는 팀 일정</div>
 
 				{/* 일정 리스트 */}
 				<div className="self-stretch flex flex-col justify-start items-start gap-2">
