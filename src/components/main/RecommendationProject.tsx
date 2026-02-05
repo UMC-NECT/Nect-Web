@@ -11,25 +11,6 @@ const RecommendationProject = () => {
     const paginationRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
     const isProfileAnalysisPage = location.pathname === '/profile-analysis';
-    // 태그 색상 매핑
-    const getTagStyle = (tag: string) => {
-        const tagName = tag.split(' ')[0].toLowerCase();
-
-        const styles: Record<string, string> = {
-            'design': 'bg-roletag-pink',
-            'frontend': 'bg-roletag-green',
-            'backend': 'bg-roletag-blue',
-            'server': 'bg-roletag-orange',
-            'data': 'bg-roletag-yellow',
-            'video': 'bg-roletag-green',
-            'music': 'bg-roletag-blue',
-        };
-
-        return styles[tagName] || 'bg-roletag-yellow';
-    };
-
-    const location = useLocation()
-    const isProfileAnalysisPage = location.pathname === '/profile-analysis'
 
     return (
         <div className="w-308.25 h-111.75 mx-auto mb-12.5 relative -ml-11.5">
@@ -54,11 +35,13 @@ const RecommendationProject = () => {
                     }}
                     onSwiper={(swiper) => {
                         setTimeout(() => {
-                            if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object') {
+                            if (paginationRef.current && swiper.params?.pagination && typeof swiper.params.pagination === 'object') {
                                 swiper.params.pagination.el = paginationRef.current;
-                                swiper.pagination?.init();
-                                swiper.pagination?.render();
-                                swiper.pagination?.update();
+                                if (swiper.pagination) {
+                                    swiper.pagination.init();
+                                    swiper.pagination.render();
+                                    swiper.pagination.update();
+                                }
                             }
                         }, 0);
                     }}

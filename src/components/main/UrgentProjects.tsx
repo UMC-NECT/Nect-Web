@@ -4,22 +4,6 @@ import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { getTagStyle } from '@/utils/tagStyles';
 
 const UrgentProjects = () => {
-    // 태그 색상 매핑
-    const getTagStyle = (tag: string) => {
-        const tagName = tag.split(' ')[0].toLowerCase();
-        
-        const styles: Record<string, string> = {
-            'design': 'bg-roletag-pink',
-            'frontend': 'bg-roletag-green',
-            'backend': 'bg-roletag-blue',
-            'server': 'bg-roletag-orange',
-            'data': 'bg-roletag-yellow',
-            'video': 'bg-roletag-green',
-            'music': 'bg-roletag-blue',
-        };
-        
-        return styles[tagName];
-    };
 
     const projects = [
         {
