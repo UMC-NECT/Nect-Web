@@ -14,7 +14,7 @@ const ProjectGoalsSection = () => {
             </h2>
 
             <div className='relative'>
-                <ul className={`space-y-2 list-disc list-inside text-[16px] transition-all ${!isExpanded ? 'max-h-[150px] overflow-hidden' : ''}`}>
+                <ul className={`space-y-2 list-disc list-outside text-[16px] pl-5 transition-all ${!isExpanded ? 'max-h-[150px] overflow-hidden' : ''}`}>
                     <li>사이드 프로젝트를 함께 할 팀원을 신뢰성있고 쉽게 찾을 수 있게함</li>
                     <li>프로젝트 팀 매칭 서비스부터 협업 플랫폼까지 원스톱 생태계 구축</li>
                     <li>팀 중심의 크리에이터에게 새로운 협업 문화 확산</li>
@@ -32,7 +32,7 @@ const ProjectGoalsSection = () => {
                             주요 기능
                             <span className='text-red-500 text-[16px] ml-1'>*</span>
                         </h3>
-                        <ul className='space-y-2 list-disc list-inside text-[16px]'>
+                        <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
                             <li>관심사ㆍ목표 기반 매칭 시스템 (관심분야ㆍ역할ㆍ목표 등 입력)</li>
                             <li>아이디어 분석 기능 (프로젝트 아이디어 입력시, 달성을 위한 목표ㆍ팀구성ㆍ기간 등을 정리해줌)</li>
                             <li>협업 보드 (매칭 후 프로젝트 내에서 역할ㆍ일정ㆍ작업을 한눈에 관리)</li>
@@ -46,7 +46,7 @@ const ProjectGoalsSection = () => {
                             서비스 사용자
                             <span className='text-red-500 text-[16px] ml-1'>*</span>
                         </h3>
-                        <ul className='space-y-2 list-disc list-inside text-[16px]'>
+                        <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
                             <li>대학생 - 공모전, 해커톤, 포트폴리오용 프로젝트를 진행하고 싶은 학생</li>
                             <li>직장인 - 본업 외 사이드프로젝트나 개인 브랜딩을 위해 팀을 구하는 직장인</li>
                             <li>프리랜서/크리에이터 - 새로운 협업 경험을 통해 네트워크를 넓히고 싶은 창작자</li>

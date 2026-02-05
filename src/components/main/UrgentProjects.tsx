@@ -61,9 +61,10 @@ const UrgentProjects = () => {
             {/* 프로젝트 리스트 */}
             <div className="flex flex-col gap-2">
                 {projects.map((project) => (
-                    <div 
-                        key={project.id} 
-                        className="w-138 h-31 px-5.5 py-4 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors"
+                    <Link
+                        key={project.id}
+                        to="/recruiting-projects"
+                        className="w-138 h-31 px-5.5 py-4 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors block"
                     >
                         {/* 상단: 제목 + 날짜 */}
                         <div className="flex justify-between items-start mb-3 h-13.25">
@@ -96,7 +97,7 @@ const UrgentProjects = () => {
                                 팀원 <p className="inline text-neutral-700">{project.members}</p>
                             </span>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
         </div>

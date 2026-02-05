@@ -93,9 +93,11 @@ const RecommendationProjectCard = ({ project, variant = 'default' }: Recommendat
                             </span>
                         )}
                     </div>
-                    <span className="text-[16px] font-medium text-neutral-500 whitespace-nowrap">
-                        팀원 <span className="text-neutral-700">{project.members || '5/10'}</span>
-                    </span>
+                    {project.members && (
+                        <span className="text-[16px] font-medium text-neutral-500 whitespace-nowrap">
+                            팀원 <span className="text-neutral-700">{project.members}</span>
+                        </span>
+                    )}
                 </div>
             </div>
         </div>

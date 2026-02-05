@@ -64,7 +64,7 @@ const ProjectBasicInfo = ({ getPositionStyle }: ProjectBasicInfoProps) => {
                                 Design (1)
                             </span>
                         </div>
-                        <ul className='flex-1 space-y-2 list-disc list-inside text-[16px]'>
+                        <ul className='flex-1 space-y-2 list-disc list-outside text-[16px] pl-5'>
                             <li>사용자 경험을 고려한 플랫폼의 UI/UX 디자인을 담당합니다.</li>
                             <li>UI디자인을 위한 Figma / Illustrator 사용 가능하셔야합니다.</li>
                             <li>개발팀과 협업하여 디자인을 구현합니다.</li>
@@ -77,7 +77,7 @@ const ProjectBasicInfo = ({ getPositionStyle }: ProjectBasicInfoProps) => {
                                 Backend (2)
                             </span>
                         </div>
-                        <ul className='flex-1 space-y-2 list-disc list-inside text-[16px]'>
+                        <ul className='flex-1 space-y-2 list-disc list-outside text-[16px] pl-5'>
                             <li>사용자 경험을 고려한 플랫폼의 UI/UX 디자인을 담당합니다.</li>
                             <li>UI디자인을 위한 Figma / Illustrator 사용 가능하셔야합니다.</li>
                             <li>개발팀과 협업하여 디자인을 구현합니다.</li>
