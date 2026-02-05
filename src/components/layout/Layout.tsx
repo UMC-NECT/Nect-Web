@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import Header from '../header/Header'
 import { Sidebar } from './sidebar/Sidebar'
@@ -17,6 +18,11 @@ export const Layout = () => {
 	const { isOpen: isCTAModalOpen, config: ctaModalConfig } = useCTAModal()
 	const location = useLocation()
 	const isMyPage = location.pathname.startsWith('/mypage')
+
+	// 페이지 전환 시 스크롤 최상위로 이동
+	useEffect(() => {
+		window.scrollTo(0, 0)
+	}, [location.pathname])
 
 	const getContentClassName = () => {
 		// 마이 페이지 레이아웃

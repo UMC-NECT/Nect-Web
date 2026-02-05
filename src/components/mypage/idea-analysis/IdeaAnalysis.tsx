@@ -11,6 +11,8 @@ import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
 import CTAModal from '@/components/common/CTAModal'
 import { useNavigate } from 'react-router'
 import { useCTAModal } from '@/stores/useCTAModal'
+import ChevronLeftIcon from '@/assets/icons/common/chevron-left.svg?react'
+import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
 
 // 필드별 색상 매핑
 const getFieldColor = (fieldName: string): string => {
@@ -273,7 +275,7 @@ const IdeaAnalysis = () => {
 								color='socialLogin'
 								size='sm'
 								className='text-neutral-400 px-3.25 py-2.5 w-38.5 h-11 hover:bg-neutral-100'
-								onClick={() => alert('아이디어 분석 페이지로 이동시킴')}
+								onClick={() => navigate('/idea-analyze')}
 							>
 								+ AI 아이디어 분석
 							</Button>
@@ -283,7 +285,7 @@ const IdeaAnalysis = () => {
 					{/* 전체 컨테이너 */}
 					<div className='flex items-center justify-center w-full bg-bg-gray border border-neutral-200 rounded-12 px-11.5 py-14'>
 						{/* 헤더 + 섹션 1~4 */}
-						<div className='flex flex-col gap-22 w-full max-w-full'>
+						<div className='flex flex-col items-center gap-22 w-full max-w-full'>
 							<div className='flex flex-col gap-22'>
 								{/* 리포트 헤더 */}
 								<ReportHeader analysisData={analysisData} />
@@ -299,22 +301,17 @@ const IdeaAnalysis = () => {
 								<Section04Roadmap analysisData={analysisData} openWeeks={openWeeks} toggleWeek={toggleWeek} />
 							</div>
 
-							{/* 버튼 2개 */}
-							<div className='flex items-center justify-center gap-5 w-full'>
-								<Button
-									color='text'
-									className='bg-primary-50-light border-2 border-primary-300-light px-5 py-4 w-80 h-15 title-3 font-semibold text-primary-400-normal hover:bg-primary-100-light'
-									onClick={() => alert('아이디어 분석 페이지로 이동')}
-								>
-									아이디어 수정하기
-								</Button>
+							{/* 프로젝트 생성하기 */}
+							<div className='flex justify-between items-center w-full'>
+								<ChevronLeftIcon className='w-10 h-10 px-2 py-2 cursor-pointer text-neutral-700 hover:bg-neutral-000 rounded-12 duration-200 ease-in-out' />
 								<Button
 									color='onboarding'
 									className='px-5 py-4 w-80 h-15 title-3 font-semibold bg-primary-400-normal'
 									onClick={() => open('projectRegister')}
 								>
-									프로젝트 만들기
+									프로젝트 생성하기
 								</Button>
+								<ChevronRightIcon className='w-10 h-10 px-2 py-2 cursor-pointer text-neutral-700 hover:bg-neutral-000 rounded-12 duration-200 ease-in-out' />
 							</div>
 						</div>
 					</div>
@@ -346,7 +343,7 @@ const IdeaAnalysis = () => {
 			{/* 프로젝트 등록 확인 모달 */}
 			{modalType === 'projectRegister' && (
 				<CTAModal
-					message='프로젝트 등록이 완료 됐습니다!'
+					message='프로젝트 생성이 완료 됐습니다!'
 					subMessage='해당 프로젝트 페이지로 이동하시겠습니까?'
 					isMessageHighlight={false}
 					fixedHeight={true}
