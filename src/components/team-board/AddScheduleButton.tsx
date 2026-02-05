@@ -9,7 +9,7 @@ const AddScheduleButton = ({ onClick, className = '' }: AddScheduleButtonProps) 
 	return (
 		<button
 			onClick={onClick}
-			className={`self-stretch w-[392px] h-[54px] bg-neutral-50 rounded-xl outline-1 -outline-offset-1 outline-neutral-200 inline-flex justify-start items-center overflow-hidden ${className}`}
+			className={`self-stretch w-[392px] h-[54px] bg-neutral-50 rounded-xl outline-1 -outline-offset-1 outline-neutral-200 hover:bg-neutral-100 inline-flex justify-start items-center overflow-hidden ${className}`}
 		>
 			<div className="flex-1 p-3 inline-flex flex-col justify-start items-start">
 				<div className="self-stretch flex flex-col justify-start items-start">
