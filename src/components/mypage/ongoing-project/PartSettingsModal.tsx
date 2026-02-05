@@ -200,7 +200,7 @@ const PartSettingsModal = () => {
 	const [parts, setParts] = useState<TeamMembersByRole[]>(teamMembersByRole)
 	const modalRef = useRef<HTMLDivElement>(null)
 
-	// 모달 바깥 클릭 시 닫기 (hook은 항상 같은 순서로 호출되어야 함)
+	// 모달 바깥 클릭 시 닫기
 	useClickOutside(modalRef, close, isOpen)
 
 	// 모달이 열리지 않은 경우 렌더링하지 않음

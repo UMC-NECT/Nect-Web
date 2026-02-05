@@ -3,6 +3,8 @@ import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?r
 import ProfilePencilIcon from '@/assets/icons/mypage/profile-pencil.svg?react'
 import { useUserStore } from '@/stores/useUserStore'
 import Button from '../../common/Button'
+import UserStatusModal from '@/components/common/UserStatusModal'
+import { useUserStatusStore } from '@/stores/useUserStatusStore'
 
 interface ProfileBasicInfoProps {
 	isOpenRecruit: boolean // 공개 매칭 여부 (디폴트: 비공개)
@@ -11,14 +13,19 @@ interface ProfileBasicInfoProps {
 }
 
 const ProfileBasicInfo = ({ isOpenRecruit, onSave, onRecruit }: ProfileBasicInfoProps) => {
-	const { profileImage, userName, userRole, userEmail, setProfileImage } = useUserStore()
-	const fileInputRef = useRef<HTMLInputElement>(null)
-	const [isRecruitButtonHovered, setIsRecruitButtonHovered] = useState(false)
+	const [isRecruitButtonHovered, setIsRecruitButtonHovered] = useState(false) // 버튼 호버하면 텍스트 변경되게 하려고
 
+	// 유저 전역 상태
+	const { profileImage, userName, userRole, userStatus, userEmail, setProfileImage } = useUserStore()
+
+	// 유저 상태변경 모달 (재학/구직/재직)
+	const { isOpen, open } = useUserStatusStore()
+
+	// 프사 변경 관련
+	const fileInputRef = useRef<HTMLInputElement>(null)
 	const handleAvatarClick = () => {
 		fileInputRef.current?.click()
 	}
-
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (file) {
@@ -63,9 +70,16 @@ const ProfileBasicInfo = ({ isOpenRecruit, onSave, onRecruit }: ProfileBasicInfo
 						</div>
 						<p className='body-2 text-neutral-500 mb-2'>{userEmail}</p>
 
-						<span className='text-[14px] text-primary-500-normal leading-[140%] font-semibold bg-primary-100-light border border-primary-200-light px-3 py-1 rounded-100'>
-							재학 중
-						</span>
+						<div className='relative inline-block'>
+							<span
+								className='text-[14px] text-primary-500-normal leading-[140%] font-semibold bg-primary-100-light border border-primary-200-light px-3 py-1 rounded-100 cursor-pointer'
+								onClick={open}
+							>
+								{userStatus}
+							</span>
+
+							{isOpen && <UserStatusModal isOpen={isOpen} />}
+						</div>
 					</div>
 				</div>
 
