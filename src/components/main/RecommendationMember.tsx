@@ -73,37 +73,37 @@ const RecommendationMember = () => {
             </div>
 
             <style>{`
-                .custom-pagination {
+                .recommendation-member-swiper ~ .custom-pagination {
                     display: flex;
                     gap: 8px;
                     height: auto;
                 }
 
-                .custom-pagination .swiper-pagination-bullet {
-                    width: 10px !important;
-                    height: 10px !important;
-                    background: #CCCCCC !important;
-                    opacity: 1 !important;
-                    border-radius: 50% !important;
-                    transition: all 0.3s !important;
-                    margin: 0 !important;
+                .recommendation-member-swiper ~ .custom-pagination .swiper-pagination-bullet {
+                    width: 10px;
+                    height: 10px;
+                    background: #CCCCCC;
+                    opacity: 1;
+                    border-radius: 50%;
+                    transition: all 0.3s;
+                    margin: 0;
                 }
 
-                .custom-pagination .swiper-pagination-bullet-active {
-                    background: #595959 !important;
-                    width: 22px !important;
-                    border-radius: 6px !important;
+                .recommendation-member-swiper ~ .custom-pagination .swiper-pagination-bullet-active {
+                    background: #595959;
+                    width: 22px;
+                    border-radius: 6px;
                 }
 
-                .member-custom-prev.swiper-button-disabled,
-                .member-custom-next.swiper-button-disabled {
+                .recommendation-member-swiper .member-custom-prev.swiper-button-disabled,
+                .recommendation-member-swiper .member-custom-next.swiper-button-disabled {
                     opacity: 0.3;
                     cursor: not-allowed;
                     pointer-events: none;
                 }
 
                 .recommendation-member-swiper > .swiper-pagination {
-                    display: none !important;
+                    display: none;
                 }
             `}</style>
         </div>

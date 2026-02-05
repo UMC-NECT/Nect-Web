@@ -42,12 +42,11 @@ const ProjectListPage = () => {
     const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
 
     return (
-        <div className="relative">
-            {/* 전체 배경 - 화면 전체 너비 */}
-            <div className="absolute inset-0 bg-neutral-50 w-screen left-1/2 -translate-x-1/2 h-[3800px]" />
+        <>
+            {/* Body 배경색 설정 (전체 페이지) + neutral-50 컬러 */}
+            <style>{`body { background-color: #FAFAFA; }`}</style>
             
-            {/* 컨텐츠 */}
-            <div className="relative py-16 pb-32">
+            <div className="py-16">
                 <div className="my-9 w-[912px] h-[86px] mx-auto">
                     <div className='ml-7'>
                         <Breadcrumb 
@@ -94,7 +93,7 @@ const ProjectListPage = () => {
                     </ContentBox>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

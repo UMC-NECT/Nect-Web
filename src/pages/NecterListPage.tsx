@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import ContentBox from '@/components/main/ContentBox';
 import TabGroup from '@/components/main/TabGroup';
@@ -40,58 +40,62 @@ const NecterListPage = () => {
     const [selectedTab, setSelectedTab] = useState('디자이너');
     const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
 
+    useEffect(() => {
+        // 페이지 진입 시 body 배경색 변경
+        document.body.style.backgroundColor = '#FAFAFA';
+        
+        // 페이지 이탈 시 원래대로 복구
+        return () => {
+            document.body.style.backgroundColor = '';
+        };
+    }, []);
+
     return (
-        <div className="relative">
-            {/* 전체 배경 - 화면 전체 너비 */}
-            <div className="absolute inset-0 bg-neutral-50 w-screen left-1/2 -translate-x-1/2 h-[2100px]" />
-            
-            {/* 컨텐츠 */}
-            <div className="relative py-16 pb-32">
-                <div className="my-9 w-[912px] h-[86px] mx-auto">
-                    <div className='ml-7'>
-                        <Breadcrumb 
-                            items={[
-                                { label: '홈', path: '/' },
-                                { label: '넥터 찾기', path: '/necters' },
-                                { label: '지금 가능한 넥터' },
-                                { label: selectedCategory }
-                            ]}
+        <div className="py-16 pb-32">
+            <div className="my-9 w-[912px] h-[86px] mx-auto">
+                <div className='ml-7'>
+                    <Breadcrumb 
+                        items={[
+                            { label: '홈', path: '/' },
+                            { label: '넥터 찾기', path: '/necters' },
+                            { label: '지금 가능한 넥터' },
+                            { label: selectedCategory }
+                        ]}
+                    />
+                    
+                    <h1 className="mt-7 text-[40px] font-bold">
+                        지금 가능한 넥터
+                    </h1>
+                </div>
+
+                <ContentBox className="mt-[42px] w-[972px] mx-auto">
+                    {/* 탭 영역 */}
+                    <TabGroup 
+                        tabs={TABS}
+                        activeTab={selectedTab}
+                        onTabChange={setSelectedTab}
+                    />
+
+                    {/* 드롭다운 영역 */}
+                    <div className="mt-[44px] mx-5">
+                        <CategoryDropdown 
+                            categories={CATEGORIES}
+                            selectedCategory={selectedCategory}
+                            onCategoryChange={setSelectedCategory}
                         />
-                        
-                        <h1 className="mt-7 text-[40px] font-bold">
-                            지금 가능한 넥터
-                        </h1>
                     </div>
 
-                    <ContentBox className="mt-[42px] w-[972px] mx-auto">
-                        {/* 탭 영역 */}
-                        <TabGroup 
-                            tabs={TABS}
-                            activeTab={selectedTab}
-                            onTabChange={setSelectedTab}
-                        />
-
-                        {/* 드롭다운 영역 */}
-                        <div className="mt-[44px] mx-5">
-                            <CategoryDropdown 
-                                categories={CATEGORIES}
-                                selectedCategory={selectedCategory}
-                                onCategoryChange={setSelectedCategory}
+                    {/* 넥터 카드 그리드 */}
+                    <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px] pb-12">
+                        {mockNecters.map(necter => (
+                            <RecommendationMemberCard 
+                                key={necter.id}
+                                member={necter} 
+                                variant="list" 
                             />
-                        </div>
-
-                        {/* 넥터 카드 그리드 */}
-                        <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px] pb-12">
-                            {mockNecters.map(necter => (
-                                <RecommendationMemberCard 
-                                    key={necter.id}
-                                    member={necter} 
-                                    variant="list" 
-                                />
-                            ))}
-                        </div>
-                    </ContentBox>
-                </div>
+                        ))}
+                    </div>
+                </ContentBox>
             </div>
         </div>
     );

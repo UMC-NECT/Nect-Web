@@ -1,6 +1,6 @@
 import More from '@/assets/icons/common/chevron-right.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 import { getTagStyle } from '@/utils/tagStyles';
 
