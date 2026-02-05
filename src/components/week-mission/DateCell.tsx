@@ -17,7 +17,7 @@ const DateCell = memo(({ date, index }: DateCellProps) => {
 			{today ? (
 				<div
 					className={`flex items-center justify-center rounded-[12px] w-6 h-6 ${
-						isTodayAndSunday ? 'bg-semantic-600' : 'bg-primary-400-normal'
+						isTodayAndSunday ? 'bg-danger-600' : 'bg-primary-400-normal'
 					}`}
 				>
 					<p className='font-medium text-[13px] leading-gutter text-center text-white'>{day}</p>

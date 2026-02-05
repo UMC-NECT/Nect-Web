@@ -104,7 +104,7 @@ const MissionBlock = memo(
 						onMouseLeave={() => setIsStatusListOpen(false)}
 						onClick={e => e.stopPropagation()}
 					>
-						<StatusChip state={status} gridColumnSize={gridColumnSize} onClick={handleStatusListOpen} />
+						<StatusChip state={status} gridColumnSize={gridColumnSize} hover={true} onClick={handleStatusListOpen} />
 						{isStatusListOpen && (
 							<div ref={statusListRef} className='absolute z-15 top-full'>
 								<StatusChipList

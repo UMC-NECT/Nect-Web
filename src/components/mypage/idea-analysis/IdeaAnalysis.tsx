@@ -8,19 +8,19 @@ import Section02TeamComposition from './sections/Section02TeamComposition'
 import Section03Improvements from './sections/Section03Improvements'
 import Section04Roadmap from './sections/Section04Roadmap'
 import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
-import CTAModal from '../CTAModal'
+import CTAModal from '../../common/CTAModal'
 import { useNavigate } from 'react-router'
 import { useCTAModal } from '@/stores/useCTAModal'
 
 // 필드별 색상 매핑
 const getFieldColor = (fieldName: string): string => {
 	const colorMap: { [key: string]: string } = {
-		PM: 'var(--color-semantic-purple)',
-		Design: 'var(--color-semantic-pink)',
-		Frontend: 'var(--color-semantic-green)',
-		Backend: 'var(--color-semantic-blue)',
+		PM: 'var(--color-roletag-purple)',
+		Design: 'var(--color-roletag-pink)',
+		Frontend: 'var(--color-roletag-green)',
+		Backend: 'var(--color-roletag-blue)',
 	}
-	return colorMap[fieldName] || 'var(--color-semantic-gray)'
+	return colorMap[fieldName] || 'var(--color-bg-gray)'
 }
 
 // 더미 데이터 (추후 API 호출로 대체)
@@ -281,7 +281,7 @@ const IdeaAnalysis = () => {
 					/>
 
 					{/* 전체 컨테이너 */}
-					<div className='flex items-center justify-center w-full bg-semantic-gray border border-neutral-200 rounded-12 px-11.5 py-14'>
+					<div className='flex items-center justify-center w-full bg-bg-gray border border-neutral-200 rounded-12 px-11.5 py-14'>
 						{/* 헤더 + 섹션 1~4 */}
 						<div className='flex flex-col gap-22 w-full max-w-full'>
 							<div className='flex flex-col gap-22'>

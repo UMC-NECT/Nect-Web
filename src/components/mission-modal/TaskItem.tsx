@@ -52,7 +52,7 @@ const TaskItem = ({
 	}
 
 	return (
-		<div className={cn('flex gap-2 items-center py-1.5 w-[318px]', isDragging && 'opacity-50')}>
+		<div className={cn('flex gap-2 items-center py-1.5 w-full border-b border-neutral-100', isDragging && 'opacity-50')}>
 			{/* Checkbox */}
 			{isComplete ? (
 				<PrimaryOnIcon

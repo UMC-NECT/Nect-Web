@@ -30,7 +30,6 @@ const INITIAL_CAREERS: CareerType[] = [
 const INITIAL_PORTFOLIOS: PortfolioType[] = [{ id: 1, title: '', link: '', isCompleted: false }]
 const INITIAL_PROJECT_HISTORY: ProjectHistoryType[] = [
 	{
-		id: 1,
 		title: '트리플 UX.UI 개선 및 리브랜딩',
 		description:
 			'사용 체류 시간을 늘리고 기업 비전에 맞ㄱ게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',

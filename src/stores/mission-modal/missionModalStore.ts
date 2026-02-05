@@ -1,17 +1,8 @@
 import { create } from 'zustand'
+import type { Person, Role } from '@/stores/teamStore'
 
-export interface Person {
-	id: number
-	name: string
-	color: string
-	image: string
-}
-
-export interface Role {
-	id: number
-	name: string
-	color: string
-}
+// Re-export for backward compatibility
+export type { Person, Role }
 
 export interface Mission {
 	id: number
@@ -20,6 +11,14 @@ export interface Mission {
 
 export interface Task {
 	id: number
+	content: string
+	isComplete: boolean
+}
+
+// 역할별 태스크 (리더형 모달용)
+export interface RoleTask {
+	id: number
+	roleId: number
 	content: string
 	isComplete: boolean
 }
@@ -49,10 +48,10 @@ export type { MissionStatus }
 interface MissionModalStore {
 	// 모달 상태
 	isMissionModalOpen: boolean
+	editingMissionId: number | null // 현재 편집 중인 미션 ID (null이면 새 미션 생성)
+	editingSectionIndex: number | null // 현재 편집 중인 미션의 섹션 인덱스 (0이면 리더형 모달)
 
-	// 기존 데이터
-	persons: Person[]
-	roles: Role[]
+	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: Mission[]
 	selectedPersons: Person[]
 	selectedRoles: Role[]
@@ -63,13 +62,15 @@ interface MissionModalStore {
 	title: string
 	selectedParts: Role[]
 	selectedAssignees: Person[]
-	selectedDuration: string
+	startDate: string
+	deadline: string
 	missionStatus: MissionStatus
 	workContent: string
 	tasks: Task[]
 	feedbacks: Feedback[]
 	mentionedPersons: Person[]
 	files: FileItem[]
+	roleTasks: RoleTask[] // 역할별 태스크 (리더형 모달용)
 
 	// 기존 액션
 	setSelectedPersons: (persons: Person[]) => void
@@ -89,7 +90,8 @@ interface MissionModalStore {
 	setSelectedAssignees: (assignees: Person[]) => void
 	addSelectedAssignee: (assignee: Person) => void
 	removeSelectedAssignee: (assigneeId: number) => void
-	setSelectedDuration: (duration: string) => void
+	setStartDate: (date: string) => void
+	setDeadline: (date: string) => void
 	setMissionStatus: (status: MissionStatus) => void
 	setWorkContent: (content: string) => void
 	setTasks: (tasks: Task[]) => void
@@ -110,37 +112,20 @@ interface MissionModalStore {
 	addFile: (file: FileItem) => void
 	updateFile: (fileId: number, updates: Partial<FileItem>) => void
 	removeFile: (fileId: number) => void
+	// 역할별 태스크 액션 (리더형 모달용)
+	setRoleTasks: (tasks: RoleTask[]) => void
+	addRoleTask: (task: RoleTask) => void
+	updateRoleTask: (taskId: number, updates: Partial<RoleTask>) => void
+	removeRoleTask: (taskId: number) => void
+	toggleRoleTask: (taskId: number) => void
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
-	openMissionModal: () => void
+	openMissionModal: (missionId?: number, sectionIndex?: number) => void
 	closeMissionModal: () => void
 }
 
-// 임시 데이터
-const initialPersons: Person[] = [
-	{ id: 1, name: '시루', color: 'bg-roletag-purple', image: 'https://placehold.co/24x24' },
-	{ id: 2, name: '이방토', color: 'bg-roletag-blue', image: 'https://placehold.co/24x24' },
-	{ id: 3, name: '김개발', color: 'bg-roletag-green', image: 'https://placehold.co/24x24' },
-	{ id: 4, name: '박디자인', color: 'bg-roletag-pink', image: 'https://placehold.co/24x24' },
-	{ id: 5, name: '최기획', color: 'bg-roletag-orange', image: 'https://placehold.co/24x24' },
-	{ id: 6, name: '정마케팅', color: 'bg-roletag-yellow', image: 'https://placehold.co/24x24' },
-	{ id: 7, name: '한영업', color: 'bg-roletag-gray', image: 'https://placehold.co/24x24' },
-	{ id: 8, name: '오데이터', color: 'bg-roletag-purple', image: 'https://placehold.co/24x24' },
-	{ id: 9, name: '송보안', color: 'bg-roletag-blue', image: 'https://placehold.co/24x24' },
-	{ id: 10, name: '임인프라', color: 'bg-roletag-green', image: 'https://placehold.co/24x24' },
-	{ id: 11, name: '강리서치', color: 'bg-roletag-pink', image: 'https://placehold.co/24x24' },
-	{ id: 12, name: '윤전략', color: 'bg-roletag-orange', image: 'https://placehold.co/24x24' },
-]
-
-const initialRoles: Role[] = [
-	{ id: 1, name: 'PM', color: 'bg-roletag-purple' },
-	{ id: 2, name: 'Design', color: 'bg-roletag-pink' },
-	{ id: 3, name: 'Backend', color: 'bg-roletag-blue' },
-	{ id: 4, name: 'Frontend', color: 'bg-roletag-green' },
-	{ id: 5, name: 'QA', color: 'bg-roletag-yellow' },
-]
-
+// 임시 데이터 (persons, roles는 teamStore에서 관리)
 const initialMissions: Mission[] = [
 	{ id: 1, missionNumber: 1 },
 	{ id: 2, missionNumber: 2 },
@@ -153,28 +138,31 @@ const initialMissions: Mission[] = [
 const initialTasks: Task[] = []
 const initialFeedbacks: Feedback[] = []
 const initialFiles: FileItem[] = []
+const initialRoleTasks: RoleTask[] = []
 
 const initialMissionModalState = {
 	missionNumber: 1,
 	title: '',
 	selectedParts: [] as Role[],
 	selectedAssignees: [] as Person[],
-	selectedDuration: '',
+	startDate: '',
+	deadline: '',
 	missionStatus: 'planning' as MissionStatus,
 	workContent: '',
 	tasks: initialTasks,
 	feedbacks: initialFeedbacks,
 	mentionedPersons: [] as Person[],
 	files: initialFiles,
+	roleTasks: initialRoleTasks,
 }
 
 export const useMissionModalStore = create<MissionModalStore>(set => ({
 	// 모달 상태
 	isMissionModalOpen: false,
+	editingMissionId: null,
+	editingSectionIndex: null,
 
-	// 기존 데이터
-	persons: initialPersons,
-	roles: initialRoles,
+	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: initialMissions,
 	selectedPersons: [],
 	selectedRoles: [],
@@ -229,7 +217,8 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		set(state => ({
 			selectedAssignees: state.selectedAssignees.filter(a => a.id !== assigneeId),
 		})),
-	setSelectedDuration: duration => set({ selectedDuration: duration }),
+	setStartDate: date => set({ startDate: date }),
+	setDeadline: date => set({ deadline: date }),
 	setMissionStatus: status => set({ missionStatus: status }),
 	setWorkContent: content => set({ workContent: content }),
 	setTasks: tasks => set({ tasks }),
@@ -302,9 +291,31 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		set(state => ({
 			files: state.files.filter(f => f.id !== fileId),
 		})),
+	// 역할별 태스크 액션 (리더형 모달용)
+	setRoleTasks: tasks => set({ roleTasks: tasks }),
+	addRoleTask: task =>
+		set(state => ({
+			roleTasks: [...state.roleTasks, task],
+		})),
+	updateRoleTask: (taskId, updates) =>
+		set(state => ({
+			roleTasks: state.roleTasks.map(t => (t.id === taskId ? { ...t, ...updates } : t)),
+		})),
+	removeRoleTask: taskId =>
+		set(state => ({
+			roleTasks: state.roleTasks.filter(t => t.id !== taskId),
+		})),
+	toggleRoleTask: taskId =>
+		set(state => ({
+			roleTasks: state.roleTasks.map(t => (t.id === taskId ? { ...t, isComplete: !t.isComplete } : t)),
+		})),
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션
-	openMissionModal: () => set({ isMissionModalOpen: true }),
-	closeMissionModal: () => set({ isMissionModalOpen: false, ...initialMissionModalState }),
+	openMissionModal: (missionId?: number, sectionIndex?: number) => set({ 
+		isMissionModalOpen: true, 
+		editingMissionId: missionId ?? null,
+		editingSectionIndex: sectionIndex ?? null,
+	}),
+	closeMissionModal: () => set({ isMissionModalOpen: false, editingMissionId: null, editingSectionIndex: null, ...initialMissionModalState }),
 }))

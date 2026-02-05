@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 
 import { getTagStyle } from '@/utils/tagStyles';
 
+import { getTagStyle } from '@/utils/tagStyles';
+
 const UrgentProjects = () => {
 
     const projects = [
@@ -49,6 +51,7 @@ const UrgentProjects = () => {
         <div className="w-138 h-142.5">
             <div className="flex justify-between items-center mb-5 w-138 h-7.5">
                 <h2 className="text-[22px] text-neutral-900 font-bold">모집 중인 프로젝트</h2>
+<<<<<<< HEAD
                 <Link 
                     to="/projectList"
                     className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700"
@@ -56,6 +59,12 @@ const UrgentProjects = () => {
                     더보기
                     <More className="w-4 h-4 stroke-neutral-500 hover:stroke-neutral-700 mr-1" />
                 </Link>
+=======
+                <p className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700">
+                    더보기
+                    <More className="w-4 h-4 stroke-neutral-500 mr-1" />
+                </p>
+>>>>>>> 68c2c1e584e1754f63e52ca973f54ff3fff9197a
             </div>  
             
             {/* 프로젝트 리스트 */}

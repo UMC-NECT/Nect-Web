@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { cn } from '@/utils/cn'
-import { useMissionModalStore, type Person, type Role, type Mission } from '@/stores/mission-modal/missionModalStore'
+import { useMissionModalStore, type Mission } from '@/stores/mission-modal/missionModalStore'
+import { useTeamStore, type Person, type Role } from '@/stores/teamStore'
 import PersonTagChip from './PersonTagChip'
 import RoleTagChip from './RoleTagChip'
 import MissionTagChip from './MissionTagChip'
@@ -30,9 +31,9 @@ interface TagChipListProps {
 }
 
 const defaultTitles: Record<TagChipListVariant, string> = {
-    person: '담당자 선택',
-    role: '파트 선택',
-    mission: '미션 선택',
+	person: '담당자 선택',
+	role: '파트 선택',
+	mission: '미션 선택',
 }
 
 const TagChipList = ({
@@ -52,9 +53,8 @@ const TagChipList = ({
 	filterQuery = '',
 	filteredPersonIds,
 }: TagChipListProps) => {
+	const { persons, roles } = useTeamStore()
 	const {
-		persons,
-		roles,
 		missions,
 		selectedPersons,
 		selectedRoles,
@@ -161,7 +161,7 @@ const TagChipList = ({
 					<PersonTagChip
 						key={person.id}
 						personName={person.name}
-						personColor={person.color}
+						roleId={person.roleId}
 						personImage={person.image}
 						state={getPersonState(person)}
 						onClick={() => handlePersonClick(person)}
@@ -186,8 +186,8 @@ const TagChipList = ({
 			{roles.map(role => (
 				<RoleTagChip
 					key={role.id}
+					roleId={role.id}
 					roleName={role.name}
-					roleColor={role.color}
 					state={getRoleState(role)}
 					onClick={() => handleRoleClick(role)}
 				/>

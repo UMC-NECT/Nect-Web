@@ -81,7 +81,7 @@ const Calendar = ({
 						<div
 							className={`w-9 h-6 text-center justify-start title-3 font-medium ${
 								weekIndex === 0
-									? 'text-semantic-600'
+									? 'text-danger-600'
 									: weekIndex === 6
 										? 'text-status-complete'
 										: 'text-neutral-400'

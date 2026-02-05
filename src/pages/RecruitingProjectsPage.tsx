@@ -26,16 +26,20 @@ const RecruitingProjectsPage = () => {
         const positionName = position.toLowerCase();
 
         const styles: Record<string, string> = {
-            'pm': 'bg-tag-purple',
-            'design': 'bg-tag-pink',
-            'frontend': 'bg-tag-green',
-            'backend': 'bg-tag-blue',
-            'develop': 'bg-tag-blue',
-            'server': 'bg-tag-orange',
-            'data': 'bg-tag-yellow',
+            'pm': 'bg-roletag-purple',
+            'design': 'bg-roletag-pink',
+            'frontend': 'bg-roletag-green',
+            'backend': 'bg-roletag-blue',
+            'develop': 'bg-roletag-blue',
+            'server': 'bg-roletag-orange',
+            'data': 'bg-roletag-yellow',
         };
 
+<<<<<<< HEAD
         return styles[positionName] || 'bg-tag-yellow';
+=======
+        return styles[positionName] || 'bg-roletag-yellow';
+>>>>>>> 68c2c1e584e1754f63e52ca973f54ff3fff9197a
     };
 
     const handleMatchingButtonClick = () => {

@@ -1,12 +1,14 @@
 import TeamIcon from '@/assets/icons/auth/team.svg?react'
 import Button from '@/components/common/Button'
 import { useNavigate } from 'react-router'
+import { useSignup } from '@/stores/useSignup'
 
 const DoneStep = () => {
-	const textName = '이예원'
+	const { signupData, resetSignupData } = useSignup()
 	const navigate = useNavigate()
 
 	const handleSubmit = () => {
+		resetSignupData()
 		navigate('/login')
 	}
 
@@ -15,7 +17,7 @@ const DoneStep = () => {
 			<div className='flex flex-col justify-center items-center'>
 				{/* 타이틀 */}
 				<div className='flex flex-col justify-center items-center gap-3.5 mb-10.5'>
-					<h1 className='heading-1 text-neutral-800 font-bold'>{textName}님 가입이 완료됐어요!</h1>
+					<h1 className='heading-1 text-neutral-800 font-bold'>{signupData.name}님 가입이 완료됐어요!</h1>
 					<div className='text-[24px] font-semibold text-primary-500-normal tracking-[-2px]'>
 						팀 매칭부터 협업까지 넥트에서 다 가능해요
 					</div>

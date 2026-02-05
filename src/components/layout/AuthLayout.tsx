@@ -1,12 +1,9 @@
 import { Outlet, useLocation } from 'react-router'
 import SignupHeader from '../header/SignupHeader'
-import { useSignup } from '@/stores/useSignup'
 
 export const AuthLayout = () => {
 	const location = useLocation()
-	const { currentStep } = useSignup()
-
-	const showSignupHeader = location.pathname === '/signup' && ['main', 'form1', 'form2', 'agree', 'done'].includes(currentStep)
+	const showSignupHeader = location.pathname === '/signup'
 
 	return (
 		<div className='h-screen overflow-hidden flex flex-col'>
