@@ -182,7 +182,7 @@ const OngoingProject = () => {
 					<Button
 						color='socialLogin'
 						size='sm'
-						onClick={() => navigate('/')}
+						onClick={() => navigate('/mypage/projects')}
 						className='w-33.75 h-11 px-3 py-2.5 hover:bg-neutral-100'
 					>
 						<div className='flex gap-1.5 justify-center items-center'>
