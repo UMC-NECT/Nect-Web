@@ -1,5 +1,6 @@
 import { useFieldArray, Controller, type Control, type UseFormSetValue, type UseFormWatch } from 'react-hook-form'
 import Button from '@/components/common/Button'
+import BulletTextArea from '@/components/common/BulletTextArea'
 import GoalIcon from '@/assets/icons/week-mission/goal.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
@@ -55,32 +56,6 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 			...currentAchievements,
 			{ id: newAchievementId, title: '', content: '' },
 		])
-	}
-
-	// 불렛 리스트 핸들러
-	const handleAchievementFocus = (careerIndex: number, achievementIndex: number) => {
-		const content = watch(`careers.${careerIndex}.achievements.${achievementIndex}.content`)
-		if (!content) {
-			setValue(`careers.${careerIndex}.achievements.${achievementIndex}.content`, '• ')
-		}
-	}
-
-	const handleAchievementKeyDown = (
-		e: React.KeyboardEvent<HTMLTextAreaElement>,
-		careerIndex: number,
-		achievementIndex: number
-	) => {
-		if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-			e.preventDefault()
-			const content = watch(`careers.${careerIndex}.achievements.${achievementIndex}.content`)
-			setValue(`careers.${careerIndex}.achievements.${achievementIndex}.content`, content + '\n• ')
-		}
-	}
-
-	// 불렛만 있는지 확인
-	const hasActualContent = (text: string) => {
-		const withoutBullets = text.replace(/•/g, '').replace(/\s/g, '')
-		return withoutBullets.length > 0
 	}
 
 	return (
@@ -256,24 +231,13 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 										name={`careers.${careerIndex}.achievements.${achievementIndex}.content`}
 										control={control}
 										render={({ field }) => (
-											<textarea
-												{...field}
-												className={`w-full body-1 leading-[180%] tracking-[-0.5px] resize-none focus:outline-none placeholder:text-[16px] placeholder:text-neutral-300 bg-transparent overflow-hidden ${
-													hasActualContent(field.value) ? 'text-neutral-900' : 'text-neutral-300'
-												}`}
+											<BulletTextArea
+												value={field.value || ''}
+												onChange={field.onChange}
+												hasSectionTitle={false}
+												noDecoration
 												placeholder={`업무 경헙을 성과 기반으로 작성해 보세요.\n나의 역할과 기여도, 사용 기술을 포함하는 것을 권장 합니다.`}
-												onFocus={() => handleAchievementFocus(careerIndex, achievementIndex)}
-												onChange={e => {
-													field.onChange(e)
-													e.target.style.height = 'auto'
-													e.target.style.height = `${e.target.scrollHeight}px`
-												}}
-												onKeyDown={e => handleAchievementKeyDown(e, careerIndex, achievementIndex)}
-												onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
-													const target = e.currentTarget
-													target.style.height = 'auto'
-													target.style.height = `${target.scrollHeight}px`
-												}}
+												className='bg-transparent'
 											/>
 										)}
 									/>

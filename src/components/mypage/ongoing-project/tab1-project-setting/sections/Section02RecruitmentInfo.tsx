@@ -25,7 +25,7 @@ const Section02RecruitmentInfo = ({ control, fields, onAddItem }: ISection02Recr
 	}
 
 	return (
-		<div className='flex flex-col gap-4 pl-5'>
+		<div className='flex flex-col pl-5'>
 			{/* 타이틀 */}
 			<div className='flex items-center justify-between'>
 				<h3 className='title-2 font-bold text-neutral-900'>
