@@ -10,7 +10,7 @@ interface BoardListItemProps {
 const BoardListItem = ({ tag, title, author, date, onClick, className = '' }: BoardListItemProps) => {
 	return (
 		<div
-			className={`w-[1224px] flex px-5 items-center cursor-pointer hover:bg-neutral-50 transition-colors ${className}`}
+			className={`w-full flex px-5 items-center cursor-pointer hover:bg-neutral-50 transition-colors ${className}`}
 			onClick={onClick}
 		>
             <div className="flex items-center py-3 gap-[42px] border-b border-neutral-100 border-solid">
