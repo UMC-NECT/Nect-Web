@@ -21,6 +21,7 @@ import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
 import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
 import MatchingAvailablePage from './pages/MatchingAvailablePage'
+import BoardPage from './pages/BoardPage'
 import ProjectListPage from './pages/ProjectListPage'
 import NecterListPage from './pages/NecterListPage'
 
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
 			{
 				path: '/team-board',
 				element: <TeamBoardPage />,
+			},
+			{
+				path: '/board',
+				element: <BoardPage />,
 			},
 			{
 				path: '/work-status',
