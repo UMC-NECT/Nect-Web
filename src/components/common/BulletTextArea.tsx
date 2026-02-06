@@ -82,7 +82,7 @@ const BulletTextArea = ({
 			{hasSectionTitle ? (
 				<h2 className='title-2 font-bold text-neutral-900 mb-2 ml-5'>
 					{sectionTitle}
-					{hasStar ? <span className='text-danger-700'>*</span> : ''}
+					{hasStar ? <span className='text-danger-700'> *</span> : ''}
 				</h2>
 			) : (
 				''

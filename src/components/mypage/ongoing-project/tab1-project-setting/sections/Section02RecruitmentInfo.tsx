@@ -32,8 +32,9 @@ const Section02RecruitmentInfo = ({ control, fields, onAddItem }: ISection02Recr
 					모집 정보 및 필수 스택 <span className='text-danger-700'>*</span>
 				</h3>
 
-				<Button color='text' size='sm' className='flex gap-1.25' onClick={onAddItem}>
-					+ 모집 팀원 추가
+				<Button color='text' size='sm' className='group flex gap-1.25' onClick={onAddItem}>
+					<span className='text-neutral-400 group-hover:text-neutral-500 duration-200'>+</span>
+					<span className='text-neutral-500 group-hover:text-neutral-600 duration-200'>모집 팀원 추가</span>
 				</Button>
 			</div>
 

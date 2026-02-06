@@ -37,10 +37,10 @@ const EmptyProfileAnalysis = ({ setHasReport }: IEmptyProfileAnalysis) => {
 
 					{/* AI 프로필 분석받기 버튼 */}
 					<Button
-						className='font-semibold bg-primary-400-normal text-neutral-50 px-10 py-4 w-[320px] hover:bg-primary-500-normal'
+						className='font-medium bg-primary-400-normal text-neutral-50 px-10 py-4 w-[320px] hover:bg-primary-500-normal'
 						onClick={handleAnalysis}
 					>
-						AI 프로필 분석받기
+						AI 프로필 분석 받기
 					</Button>
 				</div>
 			</div>
