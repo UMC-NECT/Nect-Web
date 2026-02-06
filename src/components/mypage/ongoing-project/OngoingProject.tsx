@@ -183,11 +183,11 @@ const OngoingProject = () => {
 						color='socialLogin'
 						size='sm'
 						onClick={() => navigate('/mypage/projects')}
-						className='w-33.75 h-11 px-3 py-2.5 hover:bg-neutral-100'
+						className='w-33.75 h-11 px-3 py-2.5 hover:bg-neutral-100 border-neutral-200'
 					>
 						<div className='flex gap-1.5 justify-center items-center'>
-							<HamburgerIcon className='w-4 h-4' />
-							<span className='body-1 text-neutral-500'>목록으로 가기</span>
+							<HamburgerIcon className='w-4 h-4 text-neutral-400' />
+							<span className='body-1 text-neutral-400'>목록으로 가기</span>
 						</div>
 					</Button>
 				}
@@ -201,11 +201,15 @@ const OngoingProject = () => {
 
 					{/* 버튼 2개 */}
 					<div className='flex items-center gap-2'>
-						<Button color='mypage1' onClick={handleSaveWithModal} className=''>
+						<Button color='mypage1' onClick={handleSaveWithModal} className='w-32.5'>
 							저장
 						</Button>
 
-						<Button color='mypage2' onClick={handlePublishRecruitment} className='hover:bg-primary-500-normal'>
+						<Button
+							color='mypage2'
+							onClick={handlePublishRecruitment}
+							className='hover:bg-primary-500-normal w-32.5 px-2'
+						>
 							{isRecruitmentPublished ? '모집 종료' : '모집 등록'}
 						</Button>
 					</div>

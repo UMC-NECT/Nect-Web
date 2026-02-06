@@ -20,13 +20,13 @@ const EmptyIdeaAnalysis = ({ setHasReport }: EmptyIdeaAnalysisProps) => {
 			<div className='w-full flex items-center justify-center bg-bg-gray border border-neutral-200 rounded-12 px-11.5 py-14'>
 				<div className='flex flex-col items-center gap-8 w-full'>
 					{/* 설명글 */}
-					<div className='flex flex-col items-center gap-4 w-full'>
+					<div className='flex flex-col items-center gap-5 w-full'>
 						<span className='title-3 font-semibold text-primary-600-normal text-center'>NECT Analysis Report</span>
 						<div className='flex flex-col items-center gap-3 w-full'>
 							<span className='heading-3 font-bold text-neutral-900 text-center'>
 								분석된 아이디어 리포트가 없습니다.
 							</span>
-							<p className='title-3 font-medium text-neutral-600 text-center'>
+							<p className='title-3 text-neutral-600 text-center'>
 								프로젝트 아이디어를 등록하면 AI 분석을 제공해드릴게요!
 							</p>
 						</div>

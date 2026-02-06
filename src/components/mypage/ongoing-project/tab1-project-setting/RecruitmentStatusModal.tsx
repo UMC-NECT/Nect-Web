@@ -24,7 +24,7 @@ const RecruitmentStatusModal = ({ onStatusChange, onClose }: RecruitmentStatusMo
 				<div className='flex flex-col gap-2.5'>
 					{statuses.map(status => (
 						<div key={status} onClick={() => handleStatusClick(status)}>
-							<RecruitmentStatusChip status={status} />
+							<RecruitmentStatusChip status={status} isSelected={false} />
 						</div>
 					))}
 				</div>

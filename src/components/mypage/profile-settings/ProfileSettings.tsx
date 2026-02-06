@@ -1,6 +1,8 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FormProvider } from 'react-hook-form'
+import { useNavigate } from 'react-router'
 
+import { useMypageProfileMutation, useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
 import { useProfileSettingsForm } from '@/hooks/mypage/useProfileSettingsForm'
 import { useCTAModal } from '@/stores/useCTAModal'
@@ -17,10 +19,8 @@ import Section05Skills from './sections/Section05Skills'
 import Section06CareerHistory from './sections/Section06CareerHistory'
 import Section07Portfolio from './sections/Section07Portfolio'
 import Section08ProjectHistory from './sections/Section08ProjectHistory'
-import { useNavigate } from 'react-router'
 
 export const ProfileSettings = () => {
-	const [isOpenRecruit, setIsOpenRecruit] = useState(false) // 공개 매칭 여부
 	const [hasProfileKeyword] = useState(false) // 프로필 분석키워드 리포트 보유여부
 
 	const methods = useProfileSettingsForm()
@@ -34,6 +34,88 @@ export const ProfileSettings = () => {
 
 	// 폼 데이터
 	const skills = watch('skills')
+	const userStatus = watch('userStatus')
+
+	// api - 프로필 조회
+	const { data: profileData } = useMypageProfileQuery()
+	const profile = profileData?.body
+
+	// api - 프로필 수정
+	const { mutateAsync: saveProfile, isPending: isSaving } = useMypageProfileMutation()
+
+	// 공개 매칭 여부
+	const [localIsPublicMatching, localSetIsPublicMatching] = useState<boolean | null>(null)
+	const isOpenRecruit = localIsPublicMatching ?? profile?.isPublicMatching ?? false
+	const setIsOpenRecruit = localSetIsPublicMatching
+
+	const isInitializedRef = useRef(false)
+
+	// 가져온 api 데이터로 폼 데이터 초기화
+	useEffect(() => {
+		if (profile && !isInitializedRef.current) {
+			isInitializedRef.current = true
+
+			reset(
+				{
+					userStatus: profile.userStatus ?? '',
+					interestJob: profile.interestedJob ?? '',
+					interestOccupation: profile.interestedField ?? '',
+					userCareer: profile.careerDuration ?? '',
+					introduction: profile.bio ?? '',
+					coreCompetency: profile.coreCompetencies ?? '',
+					interestFields: profile.interestedField ? [profile.interestedField] : [],
+					skills: profile.skills ?? [],
+					careers:
+						profile.careers?.length > 0
+							? profile.careers.map((career, index) => ({
+									id: index + 1,
+									projectName: career.projectName ?? '',
+									startDate: career.startDate ?? '',
+									endDate: career.endDate ?? '',
+									isInProgress: career.isOngoing ?? false,
+									industry: career.industryField ?? '',
+									role: career.role ?? '',
+									achievements:
+										career.achievements?.map((ach, achIndex) => ({
+											id: achIndex + 1,
+											title: ach.title ?? '',
+											content: ach.content ?? '',
+										})) ?? [],
+								}))
+							: [
+									{
+										id: 1,
+										projectName: '',
+										startDate: '',
+										endDate: '',
+										isInProgress: false,
+										industry: '',
+										role: '',
+										achievements: [{ id: 1, title: '', content: '' }],
+									},
+								],
+					portfolios:
+						profile.portfolios?.length > 0
+							? profile.portfolios.map((portfolio, index) => ({
+									id: index + 1,
+									title: portfolio.title ?? '',
+									link: portfolio.link ?? portfolio.fileUrl ?? '',
+									isCompleted: !!(portfolio.title && (portfolio.link || portfolio.fileUrl)),
+								}))
+							: [{ id: 1, title: '', link: '', isCompleted: false }],
+					projectHistory:
+						profile.projectHistories?.length > 0
+							? profile.projectHistories.map(history => ({
+									title: history.projectName ?? '',
+									description: history.projectDescription ?? '',
+									date: `${history.startYearMonth ?? ''}~${history.endYearMonth ?? ''}`,
+								}))
+							: [],
+				},
+				{ keepDefaultValues: false }
+			)
+		}
+	}, [profile, reset])
 
 	const navigate = useNavigate()
 
@@ -45,10 +127,57 @@ export const ProfileSettings = () => {
 		() =>
 			new Promise<boolean>(resolve => {
 				handleSubmit(
-					data => {
-						console.log('유효성 검사 통과 및 저장:', data)
-						reset(data)
-						resolve(true)
+					async data => {
+						try {
+							// 폼 데이터를 API request DTO로 변환
+							const requestBody = {
+								profileImageUrl: profile?.profileImageUrl ?? '',
+								bio: data.introduction ?? '',
+								coreCompetencies: data.coreCompetency ?? '',
+								userStatus: data.userStatus ?? '',
+								isPublicMatching: isOpenRecruit,
+								careerDuration: data.userCareer ?? '',
+								interestedJob: data.interestJob ?? '',
+								interestedField: data.interestFields?.[0] ?? '',
+								careers: data.careers.map(career => ({
+									projectName: career.projectName ?? '',
+									industryField: career.industry ?? '',
+									startDate: career.startDate ?? '',
+									endDate: career.endDate ?? '',
+									isOngoing: career.isInProgress ?? false,
+									role: career.role ?? '',
+									achievements: career.achievements.map(ach => ({
+										title: ach.title ?? '',
+										content: ach.content ?? '',
+									})),
+								})),
+								portfolios: (data.portfolios ?? []).map(portfolio => ({
+									title: portfolio.title ?? '',
+									link: portfolio.link ?? '',
+									fileUrl: '',
+								})),
+								projectHistories: (data.projectHistory ?? []).map(history => ({
+									projectName: history.title ?? '',
+									projectImage: '',
+									projectDescription: history.description ?? '',
+									startYearMonth: history.date?.split('~')[0] ?? '',
+									endYearMonth: history.date?.split('~')[1] ?? '',
+								})),
+							}
+
+							console.log('저장 요청 데이터:', requestBody)
+							await saveProfile(requestBody)
+							reset(data)
+							resolve(true)
+						} catch (error) {
+							console.error('프로필 저장 실패:', error)
+							if (error instanceof Error && 'response' in error) {
+								const axiosError = error as { response?: { data?: unknown } }
+								console.error('서버 응답:', axiosError.response?.data)
+							}
+							alert('저장에 실패했습니다. 다시 시도해주세요.')
+							resolve(false)
+						}
 					},
 					errors => {
 						console.log('폼 에러:', errors)
@@ -69,6 +198,7 @@ export const ProfileSettings = () => {
 						if (firstErrorKey) {
 							// 해당 에러 섹션으로 스크롤
 							const errorFieldMap: Record<keyof ProfileFormDataType, string> = {
+								userStatus: 'profile-basic-info',
 								interestJob: 'profile-basic-info',
 								interestOccupation: 'profile-basic-info',
 								userCareer: 'profile-basic-info',
@@ -113,7 +243,7 @@ export const ProfileSettings = () => {
 					}
 				)()
 			}),
-		[handleSubmit, reset]
+		[handleSubmit, reset, profile, isOpenRecruit, saveProfile]
 	)
 
 	// (버튼 핸들러) 저장 버튼
@@ -190,8 +320,15 @@ export const ProfileSettings = () => {
 						<ProfileBasicInfo
 							control={methods.control}
 							isOpenRecruit={isOpenRecruit}
+							isSaving={isSaving}
 							onSave={handleSaveWithModal}
 							onRecruit={handlePublishRecruitment}
+							profileImageUrl={profile?.profileImageUrl}
+							userName={profile?.name}
+							userRole={profile?.role}
+							userStatus={userStatus}
+							userEmail={profile?.email}
+							onStatusChange={status => setValue('userStatus', status, { shouldDirty: true })}
 						/>
 					</div>
 

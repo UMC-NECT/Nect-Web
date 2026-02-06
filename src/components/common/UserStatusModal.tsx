@@ -1,24 +1,22 @@
 import { useRef } from 'react'
-import { USER_STATUS, type UserStatusType } from '../../constants/userStatus'
+import { USER_STATUS } from '../../constants/userStatus'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useUserStatusStore } from '@/stores/useUserStatusStore'
-import { useUserStore } from '@/stores/useUserStore'
 
-interface UserStatusModalState {
+interface UserStatusModalProps {
 	isOpen: boolean
+	onStatusChange?: (value: string) => void
 }
 
-const UserStatusModal = ({ isOpen }: UserStatusModalState) => {
-	const { setUserStatus } = useUserStore() // 유저 상태 변경 (재학/구직/재직)
-
+const UserStatusModal = ({ isOpen, onStatusChange }: UserStatusModalProps) => {
 	// 외부 클릭시 닫히도록
 	const ref = useRef<HTMLDivElement>(null)
 	const { close } = useUserStatusStore()
 	useClickOutside(ref, close, isOpen)
 
 	// (모달 핸들러) 유저 상태 변경
-	const handleStatusClick = (status: UserStatusType) => {
-		setUserStatus(status)
+	const handleStatusClick = (value: string) => {
+		onStatusChange?.(value)
 		close()
 	}
 
@@ -30,11 +28,11 @@ const UserStatusModal = ({ isOpen }: UserStatusModalState) => {
 			<div className='flex flex-col gap-2.5'>
 				{USER_STATUS.map(status => (
 					<span
-						key={status}
+						key={status.value}
 						className='text-[14px] text-neutral-600 leading-[140%] font-semibold bg-neutral-100 border border-neutral-300 px-3 py-1 rounded-100 text-center cursor-pointer'
-						onClick={() => handleStatusClick(status)}
+						onClick={() => handleStatusClick(status.value)}
 					>
-						{status}
+						{status.label}
 					</span>
 				))}
 			</div>

@@ -27,7 +27,7 @@ const RecruitmentStatusChip = ({ status, isSelected = false, onClick }: Recruitm
 
 	return (
 		<div
-			className={`w-fit flex items-center justify-center px-2.5 py-0.75 border border-neutral-200 rounded-100 cursor-pointer ${isSelected ? 'bg-primary-100-light border-primary-150-light' : 'bg-neutral-000'}`}
+			className={`w-fit flex items-center justify-center px-2.5 py-0.75 border border-neutral-200 rounded-100 cursor-pointer ${isSelected ? (status === '모집 완료' ? 'bg-neutral-100' : 'bg-primary-100-light border-primary-150-light') : 'bg-neutral-000'}`}
 			onClick={onClick}
 		>
 			<div className={cn(dotStyle, config.dotColor)} />

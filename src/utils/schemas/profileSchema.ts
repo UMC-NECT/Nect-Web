@@ -45,6 +45,9 @@ export const projectHistorySchema = z.object({
 
 // 내 프로필 설정 전체 스키마
 export const profileFormSchema = z.object({
+	// 유저 상태 (재학/구직/재직)
+	userStatus: z.string().optional(),
+
 	// 관심 직무
 	interestJob: z.string().optional(),
 
@@ -64,7 +67,19 @@ export const profileFormSchema = z.object({
 	interestFields: z.array(z.string()).min(1, '관심분야를 1개 이상 선택해주세요'),
 
 	// 섹션 05. 보유스킬 (필수)
-	skills: z.record(z.string(), z.array(z.string())),
+	skills: z.array(
+		z.object({
+			category: z.string(),
+			categoryLabel: z.string(),
+			skills: z.array(
+				z.object({
+					skill: z.string(),
+					skillLabel: z.string(),
+					isSelected: z.boolean(),
+				})
+			),
+		})
+	),
 
 	// 섹션 06. 주요 경력/이력 (필수)
 	careers: z.array(careerSchema).min(1, '경력을 1개 이상 입력해주세요'),

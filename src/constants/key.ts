@@ -17,6 +17,7 @@ export const QUERY_KEY = {
 		list: (page?: string) => [...QUERY_KEY.analysis.all, 'list', page ?? '0'] as const,
 	},
 	onboardingEnums: ['onboardingEnums'] as const,
+<<<<<<< HEAD
     ACCESS_TOKEN: 'accessToken',
     REFRESH_TOKEN: 'refreshToken',
 	process: {
@@ -41,3 +42,10 @@ export const QUERY_KEY = {
 		files: (projectId: string) => ['project', projectId, 'files'] as const,
 	},
 }
+=======
+	mypage: {
+		all: ['mypage'] as const,
+		profile: () => [...QUERY_KEY.mypage.all, 'profile'] as const,
+	},
+}
+>>>>>>> b10067a (feat: 내프로필설정 정보 불러오기 api 연동)

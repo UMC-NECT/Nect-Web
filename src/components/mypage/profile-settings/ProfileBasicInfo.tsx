@@ -1,25 +1,46 @@
 import { useRef, useState } from 'react'
 import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?react'
 import ProfilePencilIcon from '@/assets/icons/mypage/profile-pencil.svg?react'
-import { useUserStore } from '@/stores/useUserStore'
 import Button from '../../common/Button'
 import UserStatusModal from '@/components/common/UserStatusModal'
 import { useUserStatusStore } from '@/stores/useUserStatusStore'
+import { getUserStatusLabel } from '@/constants/userStatus'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 import { Controller, type Control } from 'react-hook-form'
 
 interface ProfileBasicInfoProps {
 	control: Control<ProfileFormDataType>
 	isOpenRecruit: boolean // 공개 매칭 여부 (디폴트: 비공개)
+	isSaving?: boolean // 저장 중 여부
 	onSave: () => void
 	onRecruit: () => void
+	// API 데이터
+	profileImageUrl?: string
+	userName?: string
+	userRole?: string
+	userStatus?: string
+	userEmail?: string
+	onProfileImageChange?: (imageUrl: string) => void
+	onStatusChange?: (status: string) => void
 }
 
-const ProfileBasicInfo = ({ control, isOpenRecruit, onSave, onRecruit }: ProfileBasicInfoProps) => {
+const ProfileBasicInfo = ({
+	control,
+	isOpenRecruit,
+	isSaving,
+	onSave,
+	onRecruit,
+	profileImageUrl,
+	userName,
+	userRole,
+	userStatus,
+	userEmail,
+	onProfileImageChange,
+	onStatusChange,
+}: ProfileBasicInfoProps) => {
 	const [isRecruitButtonHovered, setIsRecruitButtonHovered] = useState(false) // 버튼 호버하면 텍스트 변경되게 하려고
-
-	// 유저 전역 상태
-	const { profileImage, userName, userRole, userStatus, userEmail, setProfileImage } = useUserStore()
+	const [localProfileImage, setLocalProfileImage] = useState<string | null>(null)
+	const profileImage = localProfileImage ?? profileImageUrl
 
 	// 유저 상태변경 모달 (재학/구직/재직)
 	const { isOpen, open } = useUserStatusStore()
@@ -34,7 +55,9 @@ const ProfileBasicInfo = ({ control, isOpenRecruit, onSave, onRecruit }: Profile
 		if (file) {
 			const reader = new FileReader()
 			reader.onloadend = () => {
-				setProfileImage(reader.result as string)
+				const imageUrl = reader.result as string
+				setLocalProfileImage(imageUrl)
+				onProfileImageChange?.(imageUrl)
 			}
 			reader.readAsDataURL(file)
 		}
@@ -78,18 +101,18 @@ const ProfileBasicInfo = ({ control, isOpenRecruit, onSave, onRecruit }: Profile
 								className='text-[14px] text-primary-500-normal leading-[140%] font-semibold bg-primary-100-light border border-primary-200-light px-3 py-1 rounded-100 cursor-pointer'
 								onClick={open}
 							>
-								{userStatus}
+								{getUserStatusLabel(userStatus ?? '')}
 							</span>
 
-							{isOpen && <UserStatusModal isOpen={isOpen} />}
+							{isOpen && <UserStatusModal isOpen={isOpen} onStatusChange={onStatusChange} />}
 						</div>
 					</div>
 				</div>
 
 				{/* 우측 - 버튼 2개 */}
 				<div className='flex gap-4'>
-					<Button color='mypage1' className='w-32.5' onClick={onSave}>
-						저장
+					<Button color='mypage1' className='w-32.5' onClick={onSave} disabled={isSaving}>
+						{isSaving ? '저장 중...' : '저장'}
 					</Button>
 
 					<Button
