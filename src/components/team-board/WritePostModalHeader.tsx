@@ -15,7 +15,6 @@ const WritePostModalHeader = ({
 }: WritePostModalHeaderProps) => {
 	const isViewMode = mode === 'view'
 	const isEditMode = mode === 'edit'
-	const isCreateMode = mode === 'create'
 
 	return (
 		<div className="flex h-[34px] items-start justify-between mb-2.5">

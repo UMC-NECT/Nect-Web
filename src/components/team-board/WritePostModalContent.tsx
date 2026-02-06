@@ -15,7 +15,7 @@ export interface PostAttachment {
 	fileName?: string
 }
 
-export type WritePostModalContentMode = 'create' | 'view'
+export type WritePostModalContentMode = 'create' | 'view' | 'edit'
 
 interface WritePostModalContentProps {
 	mode?: WritePostModalContentMode
@@ -54,6 +54,8 @@ const WritePostModalContent = ({
 	const fileInputRef = (externalFileInputRef || internalFileInputRef) as React.RefObject<HTMLInputElement | null>
 	const isViewMode = mode === 'view'
 	const isCreateMode = mode === 'create'
+	const isEditMode = mode === 'edit'
+	const isEditable = isCreateMode || isEditMode
 
 	const handleFileAdd = () => {
 		fileInputRef.current?.click()
@@ -67,14 +69,14 @@ const WritePostModalContent = ({
 	const getAttachmentIcon = (attachment: PostAttachment) => {
 		if (attachment.type === 'link') {
 			if (attachment.url?.includes('figma.com')) {
-				return <FigmaIcon className="w-[14px] h-[14px]" />
+				return <FigmaIcon className="w-7 h-7" />
 			}
-			return <LinkIcon className="w-[14px] h-[14px] text-neutral-400" />
+			return <LinkIcon className="w-[18px] h-[18px] text-neutral-400" />
 		}
 		if (attachment.fileName?.toLowerCase().endsWith('.pdf')) {
-			return <PdfIcon className="w-[14px] h-[14px]" />
+			return <PdfIcon className="w-[18px] h-[18px]" />
 		}
-		return <LinkIcon className="w-[14px] h-[14px] text-neutral-400" />
+		return <LinkIcon className="w-[18px] h-[18px] text-neutral-400" />
 	}
 
 	return (
@@ -91,7 +93,13 @@ const WritePostModalContent = ({
 					<input
 						type="text"
 						value={title}
-						onChange={(e) => onTitleChange?.(e.target.value)}
+						onChange={(e) => {
+							const newValue = e.target.value
+							if (newValue.length <= 20) {
+								onTitleChange?.(newValue)
+							}
+						}}
+						maxLength={20}
 						className={`heading-2 font-bold leading-[1.3] bg-transparent border-none outline-none w-[572px] overflow-hidden text-ellipsis whitespace-nowrap ${
 							title ? 'text-neutral-900' : 'text-neutral-300'
 						} placeholder:text-neutral-300`}
@@ -99,28 +107,31 @@ const WritePostModalContent = ({
 					/>
 				)}
 
-				{/* 공지 체크박스 - create 모드에서만 표시, absolute로 제목 아래 18px에 배치 */}
-				{isCreateMode && (
+				{/* 공지 체크박스 - create/edit 모드에서 표시, absolute로 제목 아래 18px에 배치 */}
+				{isEditable && (
 					<div className="absolute top-[18px] right-0 flex gap-1.5 h-[30px] items-center pr-1.5">
 						<button
 							onClick={() => onNoticeChange?.(!isNotice)}
 							className="flex items-center justify-center cursor-pointer transition-colors relative"
 						>
-							{isNotice ? (
-								<CheckboxIcon className="w-4 h-4 text-primary-400-normal" />
-							) : (
-								<CheckboxIcon className="w-4 h-4 text-neutral-300" />
-							)}
+							<div className={!isNotice ? '[&>path]:opacity-0' : ''}>
+								<CheckboxIcon
+									className={`w-4 h-4 ${isNotice ? 'text-primary-400-normal' : 'text-neutral-300'}`}
+								/>
+							</div>
 						</button>
-						<span className="body-1 font-medium text-neutral-300 leading-[1.8] tracking-[-0.08px] whitespace-nowrap">
+						<span
+							className={`body-1 font-medium leading-[1.8] tracking-[-0.08px] whitespace-nowrap ${
+								isNotice ? 'text-primary-500-normal' : 'text-neutral-300'
+							}`}
+						>
 							공지
 						</span>
 					</div>
 				)}
 
 				{/* 내용 입력 영역 */}
-				<div className={`flex flex-col ${isCreateMode ? 'gap-3' : ''} items-end mb-[-18px] w-full`}>
-
+				<div className={`flex flex-col ${isEditable ? 'gap-3' : ''} items-end mb-[-18px] w-full`}>
 					{/* 내용 */}
 					{isViewMode ? (
 						<div className="bg-neutral-000 border border-neutral-100 rounded-md flex flex-col h-[454px] items-start px-4 py-3 w-[678px]">
@@ -131,8 +142,14 @@ const WritePostModalContent = ({
 					) : (
 						<textarea
 							value={content}
-							onChange={(e) => onContentChange?.(e.target.value)}
-							className="bg-neutral-50 border border-neutral-100 rounded-md flex flex-col h-[454px] items-start px-4 py-3 w-[678px] resize-none outline-none body-2 font-regular placeholder:text-neutral-300"
+							onChange={(e) => {
+								const newValue = e.target.value
+								if (newValue.length <= 1000) {
+									onContentChange?.(newValue)
+								}
+							}}
+							maxLength={1000}
+							className={`${isEditMode ? '' : 'bg-neutral-50'} border border-neutral-100 rounded-md flex flex-col h-[454px] items-start px-4 py-3 w-[678px] resize-none outline-none body-2 font-regular placeholder:text-neutral-300`}
 							placeholder="내용을 작성하세요."
 						/>
 					)}
@@ -145,7 +162,7 @@ const WritePostModalContent = ({
 				<div className="flex flex-col items-start pl-1 w-full">
 					<div className="flex h-6 items-center justify-between w-full">
 						<span className="body-1 font-semibold text-neutral-900 tracking-[-0.32px]">첨부 파일</span>
-						{isCreateMode && (
+						{isEditable && (
 							<button
 								onClick={handleFileAdd}
 								className="bg-[rgba(250,250,250,0.2)] border border-neutral-200 rounded-md flex gap-0.5 items-center justify-center pl-1.5 pr-2.5 py-0.5 hover:bg-neutral-100 transition-colors shadow-inner-neutral-2"
@@ -173,7 +190,7 @@ const WritePostModalContent = ({
 					}`}
 				>
 					{attachments.length === 0 && files.length === 0 ? (
-						isCreateMode ? (
+						isEditable ? (
 							<div className="flex flex-col items-start px-3.5 py-2 w-full">
 									<div className="flex items-center">
 										<div className="relative shrink-0 w-7 h-7">
@@ -206,7 +223,7 @@ const WritePostModalContent = ({
 													: 'bg-neutral-50'
 											} shadow-inner-neutral-1`}
 										/>
-										<div className="absolute inset-0 flex items-center justify-center">
+										<div className="absolute inset-0 flex items-center justify-center overflow-hidden">
 											{getAttachmentIcon(attachment)}
 										</div>
 									</div>
@@ -225,7 +242,7 @@ const WritePostModalContent = ({
 										</div>
 
 										{/* 더보기 메뉴 - view 모드에서는 표시하지 않음 */}
-										{isCreateMode && onAttachmentRemove && (
+										{isEditable && onAttachmentRemove && (
 											<div className="relative shrink-0">
 												<button
 													onClick={(e) => {
@@ -249,7 +266,7 @@ const WritePostModalContent = ({
 									<div className="flex-1 min-w-0">
 										<div className="caption-1 font-semibold text-neutral-900 truncate">{file.name}</div>
 									</div>
-									{isCreateMode && onFileRemove && (
+									{isEditable && onFileRemove && (
 										<button
 											onClick={() => onFileRemove(index)}
 											className="w-4 h-4 flex items-center justify-center shrink-0 hover:opacity-70 transition-opacity"

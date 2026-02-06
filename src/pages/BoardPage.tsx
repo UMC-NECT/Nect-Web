@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useUserStore } from '@/stores/useUserStore'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import BoardListItem from '@/components/team-board/BoardListItem'
 import BoardListHeader from '@/components/team-board/BoardListHeader'
@@ -6,6 +7,7 @@ import BoardPagination from '@/components/team-board/BoardPagination'
 import WritePostModal from '@/components/team-board/WritePostModal'
 
 const BoardPage = () => {
+	const { userName } = useUserStore()
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
 	const [isViewModalOpen, setIsViewModalOpen] = useState(false)
@@ -14,6 +16,7 @@ const BoardPage = () => {
 		content: string
 		isNotice: boolean
 		tag?: string
+		author?: string
 	} | null>(null)
 
 	const handleWriteClick = () => {
@@ -32,8 +35,19 @@ const BoardPage = () => {
 			content: '프로젝트 공동 경비 사용 내역 프로젝트 공동 경비 사용 내역프로젝트 공동 경비 사용 내역\n링크 첨부해두겠습니다',
 			isNotice: !!item.tag,
 			tag: item.tag,
+			author: item.author,
 		})
 		setIsViewModalOpen(true)
+	}
+
+	const handleUpdatePost = (title: string, content: string, isNotice: boolean, files: File[]) => {
+		console.log('게시글 수정:', { title, content, isNotice, files })
+		// TODO: API 호출로 게시글 수정
+	}
+
+	const handleDeletePost = () => {
+		console.log('게시글 삭제')
+		// TODO: API 호출로 게시글 삭제
 	}
 
 	const handlePageChange = (page: number) => {
@@ -416,6 +430,9 @@ const BoardPage = () => {
 							fileName: '파일명: 파일명 한 줄까지 미리보기.png',
 						},
 					]}
+					onUpdate={handleUpdatePost}
+					onDelete={handleDeletePost}
+					isOwner={false}
 				/>
 			)}
 		</div>

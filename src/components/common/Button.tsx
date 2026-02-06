@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn'
 import React from 'react'
 
-type SizeType = 'sm' | 'md' | 'lg' | 'xl'
+type SizeType = 'sm' | 'md' | 'lg' | 'xl' | 'modal'
 type ColorType = 'auth' | 'socialLogin' | 'onboarding' | 'primary' | 'secondary' | 'mypage1' | 'mypage2' | 'text'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -34,6 +34,7 @@ const Button = ({ size = 'md', color = 'onboarding', fullWidth = false, classNam
 		md: 'px-10 py-2.5 title-3',
 		lg: 'px-29.25 py-3.25 title-2',
 		xl: 'px-5 py-2.5 title-3 h-[60px]',
+		modal: 'px-[10px] py-3'
 	}
 
 	const widthStyles = fullWidth ? 'w-full' : 'w-fit'
