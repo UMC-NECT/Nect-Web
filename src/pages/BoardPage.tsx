@@ -3,18 +3,37 @@ import ContentHeader from '@/components/team-board/ContentHeader'
 import BoardListItem from '@/components/team-board/BoardListItem'
 import BoardListHeader from '@/components/team-board/BoardListHeader'
 import BoardPagination from '@/components/team-board/BoardPagination'
+import WritePostModal from '@/components/team-board/WritePostModal'
 
 const BoardPage = () => {
 	const [currentPage, setCurrentPage] = useState(1)
+	const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
+	const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+	const [selectedPost, setSelectedPost] = useState<{
+		title: string
+		content: string
+		isNotice: boolean
+		tag?: string
+	} | null>(null)
 
 	const handleWriteClick = () => {
-		console.log('글쓰기 클릭')
-		// TODO: 글쓰기 모달 또는 페이지로 이동
+		setIsWriteModalOpen(true)
 	}
 
-	const handleItemClick = (title: string) => {
-		console.log('게시글 클릭:', title)
-		// TODO: 게시글 상세 페이지로 이동
+	const handleSavePost = (title: string, content: string, isNotice: boolean, files: File[]) => {
+		console.log('게시글 저장:', { title, content, isNotice, files })
+		// TODO: API 호출로 게시글 저장
+	}
+
+	const handleItemClick = (item: { tag?: string; title: string; author: string; date: string }) => {
+		// 샘플 데이터로 모달 열기 (실제로는 API에서 가져온 데이터 사용)
+		setSelectedPost({
+			title: item.title,
+			content: '프로젝트 공동 경비 사용 내역 프로젝트 공동 경비 사용 내역프로젝트 공동 경비 사용 내역\n링크 첨부해두겠습니다',
+			isNotice: !!item.tag,
+			tag: item.tag,
+		})
+		setIsViewModalOpen(true)
 	}
 
 	const handlePageChange = (page: number) => {
@@ -346,7 +365,7 @@ const BoardPage = () => {
                                 title={item.title}
                                 author={item.author}
                                 date={item.date}
-                                onClick={() => handleItemClick(item.title)}
+                                onClick={() => handleItemClick(item)}
                             />
                         ))}
                     </div>
@@ -363,7 +382,42 @@ const BoardPage = () => {
                     )}
 			    </div>
             </div>
-			
+
+			{/* 글쓰기 모달 */}
+			<WritePostModal
+				isOpen={isWriteModalOpen}
+				onClose={() => setIsWriteModalOpen(false)}
+				onSave={handleSavePost}
+			/>
+
+			{/* 게시글 조회 모달 */}
+			{selectedPost && (
+				<WritePostModal
+					mode="view"
+					isOpen={isViewModalOpen}
+					onClose={() => {
+						setIsViewModalOpen(false)
+						setSelectedPost(null)
+					}}
+					initialTitle={selectedPost.title}
+					initialContent={selectedPost.content}
+					initialIsNotice={selectedPost.isNotice}
+					initialAttachments={[
+						{
+							id: '1',
+							type: 'link',
+							name: '파일 정보',
+							url: 'https://www.figma.com/',
+						},
+						{
+							id: '2',
+							type: 'file',
+							name: '파일 정보',
+							fileName: '파일명: 파일명 한 줄까지 미리보기.png',
+						},
+					]}
+				/>
+			)}
 		</div>
 	)
 }
