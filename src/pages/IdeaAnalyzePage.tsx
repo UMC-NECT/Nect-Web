@@ -111,14 +111,14 @@ const IdeaAnalyzePage = () => {
 			{isSubmitting && <AnalysisScreen name={formData.projectName.trim() || '프로젝트'} section='아이디어' />}
 
 			<div className='flex flex-col items-center justify-start min-h-screen pt-[128px]'>
-				<div className='flex flex-col items-center px-4 mb-[62px] gap-[26px]'>
+				<div className='flex flex-col items-center px-4 mb-[64px] gap-[26px]'>
 					<img src={logo} alt='NECT Logo' className='w-[226px] h-[40px]' />
 					<h1 className='heading-1 font-bold text-primary-800-dark text-center'>프로젝트 아이디어 분석 리포트</h1>
 				</div>
 
-				<div className='relative bg-bg-gray rounded-100 z-10 w-screen -ml-[calc((100vw-100%)/2)] -mr-[calc((100vw-100%)/2)] min-h-screen mt-[52px]'>
+				<div className='relative bg-bg-gray rounded-100 z-10 w-screen -ml-[calc((100vw-100%)/2)] -mr-[calc((100vw-100%)/2)] min-h-screen shadow-inner-neutral-1'>
 					<div className='my-20 flex flex-col justify-center items-center'>
-						<h2 className='title-3 font-semibold text-primary-600-normal'>NECT Analyze Report</h2>
+						<h2 className='title-3 font-semibold text-primary-600-normal'>NECT Analysis Report</h2>
 						<p className='font-bold text-[28px] mt-4'>아이디어 입력을 시작합니다!</p>
 					</div>
 

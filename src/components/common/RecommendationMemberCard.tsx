@@ -1,5 +1,4 @@
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
-import { getTagStyle } from '@/utils/tagStyles';
 
 interface RecommendationMemberCardProps {
     member: {
@@ -10,13 +9,12 @@ interface RecommendationMemberCardProps {
         name: string;
         position: string;
         description: string;
-        tags: string[];
     };
 }
 
 const RecommendationMemberCard = ({ member }: RecommendationMemberCardProps) => {
     return (
-        <div className={`w-90 ${member.description.length > 40 ? 'h-85' : 'h-80'} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
+        <div className={`w-90 h-[300px] pb-4 bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
             {/* 상단: 배경 + 캐릭터 영역 */}
             <div className="relative h-45">
                 <img
@@ -43,27 +41,15 @@ const RecommendationMemberCard = ({ member }: RecommendationMemberCardProps) => 
 
             {/* 하단: 텍스트 정보 영역 */}
             <div className="flex flex-col px-5">
-                <div className="flex h-6.5 items-center text-lg font-semibold text-neutral-900 gap-1.5 mb-1.5">
-                    <span>{member.name}</span>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className='title-3 font-semibold text-neutral-900'>{member.name}</span>
                     <BarIcon className="w-0.5 h-3" />
-                    <span className="text-neutral-500 font-medium">{member.position}</span>
+                    <span className="title-3 text-neutral-500 font-medium">{member.position}</span>
                 </div>
 
-                <p className="text-sm text-neutral-700 line-clamp-2 mb-3">
+                <p className="body-2 font-medium text-neutral-600 line-clamp-2 mb-3">
                     {member.description}
                 </p>
-
-                {/* 포지션 태그 */}
-                <div className="flex gap-2 flex-wrap h-6">
-                    {member.tags.map((tag, index) => (
-                        <span
-                            key={index}
-                            className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(tag)}`}
-                        >
-                            {tag}
-                        </span>
-                    ))}
-                </div>
             </div>
         </div>
     );

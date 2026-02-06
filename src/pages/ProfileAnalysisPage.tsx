@@ -57,12 +57,12 @@ const ProfileAnalysisPage = () => {
 
                     {/* 협업 스타일 레이더 차트 */}
                     <ContentSection title='협업 스타일' className='mb-20'>
-                        <ProfileRadarChart data={radarData} className='w-[600px] h-[500px] mx-auto' />
+                        <ProfileRadarChart data={radarData} className='w-[600px] h-[500px] mx-auto bg-neutral-000 rounded-[20px]' />
                     </ContentSection>
 
                     {/* 보유 스킬 섹션*/}
                     <ContentSection title='보유 스킬' className='mb-[110px]'>
-                        <div className='flex flex-col gap-6 px-2 mt-6'>
+                        <div className='flex flex-col gap-6 px-2'>
                             {skills.map((skill) => (
                                 <SkillSection key={skill.skillName} skillName={skill.skillName} skillList={skill.skillList} />
                             ))}
@@ -71,7 +71,7 @@ const ProfileAnalysisPage = () => {
 
                     {/* 역할별 맞춤 추천 섹션 */}
                     <ContentSection title='역할별 맞춤 추천' className='mb-[110px]'>
-                        <div className='flex flex-col gap-6 px-2 mt-6'>
+                        <div className='flex flex-col gap-6 px-2'>
                             {roleRecommend.map((roleRecommend, index) => (
                                 <RoleRecommend key={index} role={roleRecommend.role} title={roleRecommend.title} description={roleRecommend.description} />
                             ))}
@@ -80,7 +80,7 @@ const ProfileAnalysisPage = () => {
 
                     {/* 성장 가이드 */}
                     <ContentSection title='성장 가이드'>
-                        <div className='flex flex-col gap-6 px-2 mt-6'>
+                        <div className='flex flex-col gap-6 px-2'>
                             {growGuide.map((growGuide, index) => (
                                 <GrowGuideSection key={index} tipText={growGuide.tipText} title={growGuide.title} description={growGuide.description} />
                             ))}

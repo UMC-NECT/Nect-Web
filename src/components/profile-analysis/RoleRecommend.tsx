@@ -13,7 +13,7 @@ const RoleRecommend = ({ role, title, description }: RoleRecommendProps) => {
 			{/* 내용 */}
 			<div className='flex flex-col gap-2 py-5 px-[22px] bg-white rounded-12 w-full'>
 				<p className='title-3 font-semibold text-neutral-900'>{title}</p>
-				<p className='body-2 text-neutral-800 whitespace-pre-line'>
+				<p className='body-2 text-neutral-800 font-medium whitespace-pre-line'>
 					{description}
 				</p>
 			</div>

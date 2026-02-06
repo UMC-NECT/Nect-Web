@@ -17,7 +17,7 @@ interface RecommendationProjectCardProps {
 
 const RecommendationProjectCard = ({ project }: RecommendationProjectCardProps) => {
     return (
-        <div className={`w-90 ${project.description.length > 40 ? 'h-85' : 'h-80'} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
+        <div className={`w-90 h-[340px] pb-4 flex flex-col bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
             {/* 이미지 영역 */}
             <div className="relative w-90 h-50 rounded-xl">
                 <img
@@ -28,33 +28,33 @@ const RecommendationProjectCard = ({ project }: RecommendationProjectCardProps) 
                 {/* 모집 중 태그 */}
                 <div className="absolute bottom-[7px] right-3">
                     <RecruitmentStatusChip
-                        status={project.status as '모집 전' | '모집 중' | '모집 완료'} 
+                        status={project.status as '모집 전' | '모집 중' | '모집 완료'}
                     />
                 </div>
             </div>
 
             {/* 정보 영역 */}
-            <div className="gap-3 mx-5 mt-3.5">
-                <div className="flex justify-between items-center mt-3 mb-2">
-                    <div className="flex items-center gap-1.5 flex-1 h-6.5">
-                        <h3 className="text-lg font-semibold text-neutral-900 truncate">{project.title}</h3>
-                        <div className='flex items-center justify-between gap-5 mt-0.75'>
-                            <span className="text-sm font-semibold text-neutral-700">{project.subtitle}</span>
-                            <span className="text-neutral-500 text-sm">{project.part}</span>
+            <div className="flex flex-col flex-1 mx-5 mt-3.5 min-h-0">
+                <div className="flex justify-between items-center mt-3 mb-1.5">
+                    <div className="flex items-center gap-1.5 flex-1">
+                        <h3 className="title-3 font-semibold text-neutral-900 truncate">{project.title}</h3>
+                        <div className='flex items-center justify-between gap-[3px] mt-0.75'>
+                            <span className="button-1 font-semibold text-neutral-700">{project.subtitle}</span>
+                            <span className="button-1 text-neutral-500">{project.part}</span>
                         </div>
                     </div>
-                    <span className="text-lg font-semibold text-primary-500-normal whitespace-nowrap">{project.dDay}</span>
+                    <span className="title-3 font-semibold text-primary-500-normal whitespace-nowrap">{project.dDay}</span>
                 </div>
 
-                <p className="text-sm text-neutral-700 mb-3 line-clamp-2">
+                <p className="body-2 font-medium text-neutral-600 line-clamp-2">
                     {project.description}
                 </p>
 
-                <div className="flex gap-2 flex-wrap h-6">
+                <div className="flex gap-2 flex-wrap mt-auto">
                     {project.tags.map((tag, index) => (
                         <span
                             key={index}
-                            className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(tag)}`}
+                            className={`h-[22px] px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(tag)}`}
                         >
                             {tag}
                         </span>
@@ -64,5 +64,4 @@ const RecommendationProjectCard = ({ project }: RecommendationProjectCardProps) 
         </div>
     );
 };
-
 export default RecommendationProjectCard;
