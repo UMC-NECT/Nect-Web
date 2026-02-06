@@ -26,7 +26,7 @@ const ProfileAnalysisPage = () => {
             </div>
 
             {/* 콘텐츠 섹션 */}
-            <div className='bg-neutral-100 w-full rounded-[40px] mt-16 pt-20 pb-24 px-12 shadow-inner-neutral-1'>
+            <div className='bg-bg-gray w-full rounded-100 mt-16 pt-20 pb-24 px-12 shadow-inner-neutral-1'>
                 <div className='flex flex-col items-center px-60 mb-[112px]'>
                     <div className='flex flex-col items-center gap-4 mb-24'>
                         {/* 상단 타이틀 */}
