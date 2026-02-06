@@ -86,18 +86,21 @@ const Section07ProjectFiles = ({ control, setValue, watch }: ISection07ProjectFi
 	}
 
 	return (
-		<section className='ml-5'>
-			<div className='flex items-center justify-between mb-1.5'>
+		<section className=''>
+			<div className='ml-5 flex items-center justify-between mb-1.5'>
 				<h2 className='title-2 font-bold text-neutral-900'>프로젝트 세부 기획 파일</h2>
 
-				<Button color='text' size='sm' onClick={addPortfolio}>
-					+ 파일 추가
+				<Button color='text' size='sm' onClick={addPortfolio} className='group flex gap-1'>
+					<span className='group-hover:text-neutral-500'>+</span>파일 추가
 				</Button>
 			</div>
 
 			{portfolios.map((portfolio, index) =>
 				(() => {
 					const currentIsCompleted = watch(`portfolioFiles.${index}.isCompleted`)
+					const currentTitle = watch(`portfolioFiles.${index}.title`)
+					const currentLink = watch(`portfolioFiles.${index}.link`)
+					const hasContent = !!(currentTitle || currentLink)
 					return (
 						<div key={portfolio.id} className='mb-4'>
 							<div
@@ -110,13 +113,13 @@ const Section07ProjectFiles = ({ control, setValue, watch }: ISection07ProjectFi
 								onDragLeave={handleDragLeave}
 								onDrop={e => handleDrop(e, index)}
 							>
-								<ClipIcon className='w-5 h-5 mt-1 shrink-0 text-neutral-400' />
+								<ClipIcon className={`w-5 h-5 mt-1 shrink-0 ${hasContent ? 'text-neutral-700' : 'text-neutral-400'}`} />
 								<div className='flex-1 flex gap-2 items-start'>
 									<div className='flex-1'>
 										<input
 											type='text'
-											className={`w-full body-1 bg-transparent focus:outline-none placeholder:text-neutral-300 mb-2 ${
-												currentIsCompleted ? 'text-primary-500-normal font-semibold' : 'text-neutral-900'
+											className={`w-full body-1 bg-transparent focus:outline-none placeholder:text-neutral-300 mb-0 font-semibold ${
+												currentIsCompleted ? 'text-primary-500-normal ' : 'text-neutral-800'
 											}`}
 											placeholder='제목'
 											value={watch(`portfolioFiles.${index}.title`) || ''}
@@ -130,7 +133,7 @@ const Section07ProjectFiles = ({ control, setValue, watch }: ISection07ProjectFi
 											type='text'
 											className={`w-full body-1 bg-transparent focus:outline-none placeholder:text-neutral-300 ${
 												currentIsCompleted
-													? 'text-neutral-500 underline cursor-pointer'
+													? 'text-neutral-400 underline cursor-pointer'
 													: 'text-neutral-900'
 											}`}
 											placeholder='링크 붙여넣기 및 파일 드래그'

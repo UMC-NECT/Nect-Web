@@ -3,6 +3,8 @@ import Button from '@/components/common/Button'
 import BulletTextArea from '@/components/common/BulletTextArea'
 import GoalIcon from '@/assets/icons/week-mission/goal.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
+import BarIcon from '@/assets/icons/common/Bar.svg?react'
+import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 interface ISection06CareerHistory {
@@ -66,8 +68,9 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 					주요 경력/이력 <span className='text-danger-700'>*</span>
 				</h2>
 
-				<Button color='text' size='sm' onClick={addCareer}>
-					+ 경력/이력 추가
+				<Button color='text' size='sm' onClick={addCareer} className='group flex gap-1 justify-center items-center'>
+					<PlusIcon className='w-4 h-4 text-neutral-400 group-hover:text-neutral-500' />
+					경력/이력 추가
 				</Button>
 			</div>
 
@@ -113,7 +116,12 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 												/>
 											)}
 										/>
-										<span>~</span>
+										<span
+											className='text-neutral-300
+										'
+										>
+											~
+										</span>
 										<Controller
 											name={`careers.${careerIndex}.endDate`}
 											control={control}
@@ -134,7 +142,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 										/>
 
 										{/* 기간 계산 결과 */}
-										<span className='whitespace-nowrap'>
+										<span className='whitespace-nowrap text-neutral-300'>
 											{getDuration(
 												watch(`careers.${careerIndex}.startDate`),
 												watch(`careers.${careerIndex}.endDate`),
@@ -156,12 +164,12 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 														setValue(`careers.${careerIndex}.endDate`, '2026.02')
 													}
 												}}
-												className={`flex items-center cursor-pointer ml-4 select-none transition-colors whitespace-nowrap ${
+												className={`flex items-center cursor-pointer ml-4 select-none transition-colors whitespace-nowrap text-neutral-300 ${
 													field.value ? 'text-primary-500-normal' : 'hover:text-neutral-600'
 												}`}
 											>
 												<CheckboxIcon
-													className={`w-4 h-4 mr-1.5 transition-colors ${field.value ? 'text-primary-500-normal' : 'text-neutral-400'}`}
+													className={`w-4 h-4 mr-1.5 transition-colors ${field.value ? 'text-primary-500-normal' : 'text-neutral-300'}`}
 												/>
 												<span>진행중</span>
 											</button>
@@ -169,7 +177,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 									/>
 
 									{/* 구분선 */}
-									<span className='mx-3 text-neutral-300 font-semibold'>|</span>
+									<BarIcon className='w-0.5 h-3 text-neutral-300 mx-2.5' />
 
 									{/* 분야 (산업체) */}
 									<div className='flex items-center'>
@@ -188,7 +196,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 									</div>
 
 									{/* 구분선 */}
-									<span className='mx-3 text-neutral-300 font-semibold'>|</span>
+									<BarIcon className='w-0.5 h-3 text-neutral-300 mx-2.5' />
 
 									{/* 역할 (직무) */}
 									<div className='flex items-center'>
@@ -247,7 +255,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 							<Button
 								color='text'
 								size='sm'
-								className='text-neutral-400 hover:text-neutral-600 p-0 ml-5'
+								className='text-neutral-400 hover:text-neutral-500 p-0 ml-5'
 								onClick={() => addAchievement(careerIndex)}
 							>
 								+ 주요 성과 추가

@@ -5,6 +5,7 @@ import { useProjectHistoryModal } from '@/stores/useProjectHistoryModal'
 import Button from '../../../common/Button'
 import ProjectCard from './ProjectCard'
 import ProjectHistoryModal from '../ProjectHistoryModal'
+import PlusIcon from '@/assets/icons/common/plus.svg?react'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 interface ISection08ProjectHistory {
@@ -70,8 +71,15 @@ const Section08ProjectHistory = ({ control }: ISection08ProjectHistory) => {
 			<div className='flex items-center justify-between mb-4'>
 				<h2 className='title-2 font-bold text-neutral-900'>프로젝트 히스토리</h2>
 
-				<Button color='text' size='sm' onClick={addProject} disabled={isAddingNew}>
-					+ 프로젝트 추가
+				<Button
+					color='text'
+					size='sm'
+					onClick={addProject}
+					disabled={isAddingNew}
+					className='group flex gap-1 justify-center items-center'
+				>
+					<PlusIcon className='w-4 h-4 text-neutral-400 group-hover:text-neutral-500' />
+					프로젝트 추가
 				</Button>
 			</div>
 

@@ -137,10 +137,11 @@ const DroppablePartSection = ({
 	}
 
 	return (
-		<div className='flex flex-col gap-4'>
+		<div className='flex flex-col gap-2.5'>
 			{/* 역할 태그 + 인원 수 (모집 원하는 전체 인원) */}
-			<div className='flex items-center gap-2'>
-				<HamburgerIcon className='w-4 h-4 text-neutral-400' />
+			<div className='flex items-center gap-0.5'>
+				<HamburgerIcon className='w-6 h-6 px-1.5 py-2 text-neutral-300' />
+
 				{isEditingRole ? (
 					<input
 						type='text'
@@ -156,6 +157,7 @@ const DroppablePartSection = ({
 						<RoleTag role={role} showTotal={false} />
 					</button>
 				)}
+
 				{isEditingCount ? (
 					<div className='flex items-center'>
 						<input
@@ -166,15 +168,15 @@ const DroppablePartSection = ({
 							onBlur={handleCountBlur}
 							onKeyDown={handleCountKeyDown}
 							autoFocus
-							className='w-10 h-6 text-center body-2 text-neutral-600 border border-primary-400-normal rounded-4 outline-none'
+							className='w-10 h-6 text-center body-1 text-neutral-900 border border-primary-400-normal rounded-4 outline-none'
 						/>
-						<span className='body-2 text-neutral-600'>명</span>
+						<span className='body-1 text-neutral-900'>명</span>
 					</div>
 				) : (
 					<button
 						type='button'
 						onClick={handleCountClick}
-						className='body-2 text-neutral-600 hover:text-primary-400-normal hover:underline cursor-pointer'
+						className='body-1 text-neutral-900 hover:text-primary-400-normal hover:underline cursor-pointer font-medium ml-2'
 					>
 						{targetCount}명
 					</button>
