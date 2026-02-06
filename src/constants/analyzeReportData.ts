@@ -2,7 +2,7 @@ import type { WeeklyRoadmap, CheckPoint } from '@/types/analyzeReport'
 
 export const weeklyRoadmapData: WeeklyRoadmap[] = [
     {
-        week: '1주차',
+        week: '1',
         title: '아이디어 확정 및 요구사항 정의',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',
@@ -12,7 +12,7 @@ export const weeklyRoadmapData: WeeklyRoadmap[] = [
         ]
     },
     {
-        week: '2주차',
+        week: '2',
         title: '와이어프레임 및 시스템 설계',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',
@@ -22,7 +22,7 @@ export const weeklyRoadmapData: WeeklyRoadmap[] = [
         ]
     },
     {
-        week: '3주차',
+        week: '3',
         title: '디자인 시스템 및 초기 기능 개발',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',
@@ -32,7 +32,7 @@ export const weeklyRoadmapData: WeeklyRoadmap[] = [
         ]
     },
     {
-        week: '4주차',
+        week: '4',
         title: '메인 페이지 및 핵심 기능 구현',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',
@@ -42,7 +42,7 @@ export const weeklyRoadmapData: WeeklyRoadmap[] = [
         ]
     },
     {
-        week: '5주차',
+        week: '5',
         title: '메인 페이지 및 기능 고도화 / 부가 기능 개발',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',
@@ -52,7 +52,7 @@ export const weeklyRoadmapData: WeeklyRoadmap[] = [
         ]
     },
     {
-        week: '6주차',
+        week: '6',
         title: '서브 페이지 구현 및 기능 개발',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',
@@ -62,7 +62,7 @@ export const weeklyRoadmapData: WeeklyRoadmap[] = [
         ]
     },
     {
-        week: '7주차',
+        week: '7',
         title: '통합 테스트 및 버그 수정 (QA)',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',
@@ -72,7 +72,7 @@ export const weeklyRoadmapData: WeeklyRoadmap[] = [
         ]
     },
     {
-        week: '8주차',
+        week: '8',
         title: '최종 배포 및 안정화 / 프로젝트 종료 및 성과 발표',
         details: [
             'PM: 서비스 기획안 확정, 요구사항 정리, 기능 명세서 작성, 유저 플로우 초안',

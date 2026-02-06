@@ -19,13 +19,19 @@ type ImprovementPoint = {
     description: string
 }
 
+export type WeeklyRoadmapRoleTask = {
+    role_field: string
+    role_field_display_name: string
+    tasks: string
+}
+
 type WeeklyRoadmap = {
     week_number: number
     week_title: string
     week_start_date: string
     week_end_date: string
     week_period: string
-    role_tasks:RoleTask[]
+    role_tasks: WeeklyRoadmapRoleTask[]
 }
 export type RequestPostAnalysisDto = {
     projectName: string
