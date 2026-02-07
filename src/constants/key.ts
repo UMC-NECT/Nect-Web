@@ -7,6 +7,7 @@ export const QUERY_KEY = {
 	users: {
 		all: ['users'] as const,
 		email: () => [...QUERY_KEY.users.all, 'email'] as const,
+		profile: () => [...QUERY_KEY.users.all, 'profile'] as const,
 	},
 	onboardingEnums: ['onboardingEnums'] as const,
 }

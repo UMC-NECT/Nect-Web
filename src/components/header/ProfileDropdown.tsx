@@ -4,7 +4,8 @@ import { useClickOutside } from '@/hooks/useClickOutside'
 import MyIcon from '@/assets/icons/header/my.svg?react'
 import ProjectIcon from '@/assets/icons/header/project.svg?react'
 import MatchingIcon from '@/assets/icons/header/matching.svg?react'
-import { useLogoutMutation } from '@/hooks/auth/useUsersApi'
+import { useGetProfileQuery, useLogoutMutation } from '@/hooks/auth/useUsersApi'
+import DefaultProfileImage from '@/assets/Default_Profile.svg'
 
 interface ProfileDropdownProps {
 	isOpen: boolean
@@ -16,6 +17,7 @@ const ProfileDropdown = ({ isOpen, onClose }: ProfileDropdownProps) => {
 	const dropdownRef = useRef<HTMLDivElement>(null)
 	const { mutate: logout } = useLogoutMutation()
 	useClickOutside(dropdownRef, () => onClose(), isOpen)
+	const { data: profileData } = useGetProfileQuery()
 
 	const handleMenuClick = (path: string) => {
 		navigate(path)
@@ -41,21 +43,21 @@ const ProfileDropdown = ({ isOpen, onClose }: ProfileDropdownProps) => {
 						<div className='self-stretch px-2 inline-flex justify-start items-center gap-5'>
 							<img
 								className='w-[68px] h-[68px] rounded-[28px]'
-								src='https://placehold.co/68x68'
+								src={profileData?.body?.imageUrl || DefaultProfileImage}
 								alt='프로필'
 							/>
 							<div className='w-60 inline-flex flex-col justify-start items-start gap-1'>
-								<div className='w-36 h-6 inline-flex justify-start items-center gap-2'>
-									<div className='justify-start text-neutral-900 title-3 font-semibold leading-6'>
-										김넥터
-									</div>
+								<div className='w-fit max-w-full h-6 inline-flex justify-start items-center gap-2'>
+									<p className='justify-start text-neutral-900 title-3 font-semibold'>
+										{profileData?.body?.name}
+									</p>
 									<div className='w-0.5 h-4 relative bg-neutral-300 rounded-md' />
 									<div className='justify-start text-primary-500-normal title-3 font-regular leading-6'>
-										디자이너
+										{profileData?.body?.role}
 									</div>
 								</div>
 								<div className='justify-start text-neutral-500 body-2 font-regular leading-5'>
-									Nect2u@naver.com
+									{profileData?.body?.email}
 								</div>
 							</div>
 						</div>

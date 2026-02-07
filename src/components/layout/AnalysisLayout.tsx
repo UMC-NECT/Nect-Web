@@ -4,7 +4,7 @@ import AnalysisHeader from '../header/AnalysisHeader'
 const AnalysisLayout = () => {
 	return (
 		<>
-			<AnalysisHeader onNavigate={() => {}} />
+			<AnalysisHeader />
 			<div className='w-full'>
 				<Outlet />
 			</div>

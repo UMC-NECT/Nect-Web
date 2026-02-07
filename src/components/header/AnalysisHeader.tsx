@@ -7,24 +7,25 @@ import { useRef, useState } from 'react'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import NotificationDropdown from '../notification/NotificationDropdown'
 import MessageDropdown from '../chat/MessageDropdown'
+import { Link } from 'react-router'
+import ProfileDropdown from './ProfileDropdown'
 
-interface AnalysisHeaderProps {
-	onNavigate: () => void
-}
-
-const AnalysisHeader = ({ onNavigate }: AnalysisHeaderProps) => {
+const AnalysisHeader = () => {
     const [showNotifications, setShowNotifications] = useState(false)
 	const [showMessages, setShowMessages] = useState(false)
+	const [showProfile, setShowProfile] = useState(false)
 
     const unreadNotifications = 3
 
     // 외부 클릭 감지를 위한 ref
 	const notificationRef = useRef<HTMLDivElement>(null)
 	const messageRef = useRef<HTMLDivElement>(null)
+	const profileRef = useRef<HTMLDivElement>(null)
 
 	// 외부 클릭 시 드롭다운 닫기
 	useClickOutside(notificationRef, () => setShowNotifications(false), showNotifications)
 	useClickOutside(messageRef, () => setShowMessages(false), showMessages)
+	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
     return (
         <div>
@@ -32,22 +33,19 @@ const AnalysisHeader = ({ onNavigate }: AnalysisHeaderProps) => {
 			<div className='h-[66px] px-[92px]'>
 				<div className='mx-auto flex h-full items-center gap-9 px-6 relative'>
 					{/* 로고 */}
-					<div className='flex items-center cursor-pointer'>
+					<Link to='/' className='flex items-center cursor-pointer'>
 						<LogoIcon className='h-10 w-auto' />
-					</div>
+					</Link>
 
 					{/* 네비게이션 */}
 					<nav className='flex items-center gap-4'>
-						<button className='text-[18px] font-medium text-neutral-900 transition-colors'>
+						<Link to='/explore' className='text-[18px] font-medium text-neutral-900 transition-colors'>
 							프로젝트ㆍ팀원 탐색
-						</button>
+						</Link>
 						<BarIcon />
-						<button
-							onClick={onNavigate}
-							className='text-[18px] font-medium text-neutral-400 hover:text-primary-500-normal transition-colors'
-						>
+						<Link to='/team-board' className='text-[18px] font-medium text-neutral-400 hover:text-primary-500-normal transition-colors'>
 							팀 작업실
-						</button>
+						</Link>
 					</nav>
 
 					{/* 오른쪽 공간 */}
@@ -90,12 +88,22 @@ const AnalysisHeader = ({ onNavigate }: AnalysisHeaderProps) => {
 							{showMessages && <MessageDropdown defaultTab='team' />}
 						</div>
 
-						<button
-							className='flex w-10 h-10 items-center justify-center hover:bg-neutral-100 rounded-[14px] transition-colors'
-							aria-label='프로필'
-						>
-							<ProfileIcon className='h-6 w-6 text-neutral-700' />
-						</button>
+						<div ref={profileRef} className='relative'>
+							<button
+								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+									showProfile ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+								}`}
+								aria-label='프로필'
+								onClick={() => {
+									setShowProfile(!showProfile)
+									setShowNotifications(false)
+									setShowMessages(false)
+								}}
+							>
+								<ProfileIcon className='h-6 w-6 text-neutral-700' />
+							</button>
+							<ProfileDropdown isOpen={showProfile} onClose={() => setShowProfile(false)} />
+						</div>
 					</div>
 				</div>
 			</div>
