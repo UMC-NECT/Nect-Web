@@ -165,9 +165,9 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						</>
 					) : (
 						<>
-							<p className='text-[16px] font-medium text-neutral-600 hover:text-primary-600-normal pointer-cursor'>
+							<Link to='/login' className='text-[16px] font-medium text-neutral-600 hover:text-primary-600-normal pointer-cursor'>
 								로그인/회원가입
-							</p>
+							</Link>
 						</>
 					)}
 				</div>
