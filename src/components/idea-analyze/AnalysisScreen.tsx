@@ -1,4 +1,4 @@
-import Character from '@/assets/character.png'
+import Character from '@/assets/Character.png'
 
 const floatStyles = `
 @keyframes float {
