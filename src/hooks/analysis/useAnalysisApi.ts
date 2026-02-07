@@ -15,10 +15,12 @@ export const useGetAnalysisQuery = (page?: string) => {
 
 export const usePostAnalysisMutation = () => {
 	const queryClient = useQueryClient()
+	const navigate = useNavigate()
 	return useMutation({
 		mutationFn: (body: RequestPostAnalysisDto) => postAnalysis(body),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.analysis.all })
+			navigate('/analyze-report')
 		},
 	})
 }

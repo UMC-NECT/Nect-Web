@@ -7,8 +7,8 @@ import FormInput from '@/components/idea-analyze/FormInput'
 import FeaturesInput from '@/components/idea-analyze/FeaturesInput'
 import NumberedSection from '@/components/common/NumberedSection'
 import AnalysisScreen from '@/components/idea-analyze/AnalysisScreen'
-import { postAnalysis } from '@/api/analysis'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
+import { usePostAnalysisMutation } from '@/hooks/analysis/useAnalysisApi'
 
 function toRequestPostAnalysisDto(form: IdeaFormData): RequestPostAnalysisDto {
 	return {
@@ -28,8 +28,8 @@ function toRequestPostAnalysisDto(form: IdeaFormData): RequestPostAnalysisDto {
 
 const IdeaAnalyzePage = () => {
 	const navigate = useNavigate()
-	const [isSubmitting, setIsSubmitting] = useState(false)
 	const { data: profileData } = useGetProfileQuery()
+	const { mutateAsync: postAnalyze, isPending: isPostAnalyzePending } = usePostAnalysisMutation()
 
 	const [formData, setFormData] = useState<IdeaFormData>({
 		projectName: '',
@@ -95,22 +95,12 @@ const IdeaAnalyzePage = () => {
 
 		const hasErrors = Object.values(newErrors).some(error => error === true)
 		if (hasErrors) return
-
-		setIsSubmitting(true)
-		try {
-			const body = toRequestPostAnalysisDto(formData)
-			const response = await postAnalysis(body)
-			navigate('/analyze-report', { state: { analysisResult: response } })
-		} catch (err) {
-			console.error(err)
-		} finally {
-			setIsSubmitting(false)
-		}
+		await postAnalyze(toRequestPostAnalysisDto(formData))
 	}
 
 	return (
 		<>
-			{isSubmitting ? (
+			{isPostAnalyzePending ? (
 				<AnalysisScreen name={profileData?.body?.name || '넥터'} section='아이디어' />
 			) : (
 				<div className='flex flex-col items-center justify-start min-h-screen pt-[128px]'>
@@ -207,9 +197,9 @@ const IdeaAnalyzePage = () => {
 							<div className='flex flex-col items-center justify-center mt-6 mb-24'>
 								<button
 									onClick={handleSubmit}
-									disabled={!isFormComplete || isSubmitting}
+									disabled={!isFormComplete || isPostAnalyzePending}
 									className={`w-[320px] h-[60px] text-white font-semibold text-[16px] px-12 py-4 rounded-2xl transition-colors ${
-										isFormComplete && !isSubmitting
+										isFormComplete && !isPostAnalyzePending
 											? 'bg-primary-400-normal hover:bg-primary-500-normal cursor-pointer'
 											: 'bg-gray-300 cursor-not-allowed'
 									}`}
