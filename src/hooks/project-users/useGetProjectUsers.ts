@@ -10,10 +10,7 @@ const useGetProjectUsers = () => {
         gcTime: 1000 * 60 * 10,
     })
 
-    return {
-        projectId: data?.body?.[0]?.projectId != null ? String(data.body[0].projectId) : undefined,
-        memberType: data?.body?.[0]?.memberType != null ? data.body[0].memberType : undefined,
-    }
+    return data?.body
 }
 
 export default useGetProjectUsers

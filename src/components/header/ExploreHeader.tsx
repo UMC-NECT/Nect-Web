@@ -12,6 +12,8 @@ import { useClickOutside } from '@/hooks/useClickOutside'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { Link, useNavigate } from 'react-router'
+import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
+import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 
 interface ExploreHeaderProps {
 	onNavigate: () => void
@@ -23,7 +25,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [showMessages, setShowMessages] = useState(false)
 	const [showProfile, setShowProfile] = useState(false)
 	const [isScrolled, setIsScrolled] = useState(false)
+	const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
 	const navigate = useNavigate()
+	const projectData = useGetProjectUsers()
+	const { setProjectId } = useProjectIdStore()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	// 읽지 않은 알림 개수 (더미 데이터)
 	const unreadNotifications = 3
@@ -39,6 +44,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
 	const subMenuItems = [{ name: '홈' }, { name: '프로젝트 찾기' }, { name: '팀원 찾기' }, { name: '출시 프로젝트' }]
+	const workspaceMenuItems = [
+        {projectId: projectData?.[0]?.projectId, name: `${projectData?.[0]?.projectTitle}` },
+        {projectId: projectData?.[1]?.projectId, name: `${projectData?.[1]?.projectTitle}` },
+    ];
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {
@@ -86,15 +95,45 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 							프로젝트ㆍ팀원 탐색
 						</button>
 						<BarIcon />
-						<button
-							onClick={() => {
-								onNavigate()
-								navigate('/team-board')
-							}}
-							className='text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
-						>
-							팀 작업실
-						</button>
+						<div className='relative'>
+							<button
+								onClick={() => {
+									onNavigate()
+									setProjectId(projectData?.[0]?.projectId ?? null)
+									navigate('/team-board')
+								}}
+								onMouseEnter={() => setShowWorkspaceMenu(true)}
+								className='text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
+							>
+								팀 작업실
+							</button>
+							{/* 팀 작업실 드롭다운 */}
+
+							{showWorkspaceMenu && (
+									<div
+										className="absolute top-[46px] left-[-20px] w-[160px] bg-white rounded-12 border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
+										onMouseEnter={() => setShowWorkspaceMenu(true)}
+										onMouseLeave={() => setShowWorkspaceMenu(false)}
+									>
+										{workspaceMenuItems.map((item, index) => (
+											<div key={item.name}>
+												<button
+													className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center"
+													onClick={() => {
+														setProjectId(item.projectId ?? null)
+														navigate('/team-board')
+													}}
+												>
+													{item.name}
+												</button>
+												{index < workspaceMenuItems.length - 1 && (
+													<div className="border-b border-neutral-200"></div>
+												)}
+											</div>
+										))}
+									</div>
+								)}
+						</div>
 					</nav>
 
 					{/* 오른쪽 공간 */}
