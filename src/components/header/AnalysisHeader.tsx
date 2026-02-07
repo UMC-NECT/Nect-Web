@@ -62,6 +62,7 @@ const AnalysisHeader = () => {
 								onClick={() => {
 									setShowNotifications(!showNotifications)
 									setShowMessages(false)
+									setShowProfile(false)
 								}}
 							>
 								<NotificationIcon className='h-6 w-6 text-neutral-700' />
@@ -81,6 +82,7 @@ const AnalysisHeader = () => {
 								onClick={() => {
 									setShowMessages(!showMessages)
 									setShowNotifications(false)
+									setShowProfile(false)
 								}}
 							>
 								<MessageIcon className='h-6 w-6 text-neutral-700' />

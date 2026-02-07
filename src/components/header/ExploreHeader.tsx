@@ -113,6 +113,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 										onClick={() => {
 											setShowNotifications(!showNotifications)
 											setShowMessages(false)
+											setShowProfile(false)
 										}}
 									>
 										<NotificationIcon className='h-6 w-6 text-neutral-700' />
