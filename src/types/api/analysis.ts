@@ -1,8 +1,8 @@
 import type { CommonResponse } from "./commonResponse"
 
-type RoleTask = {
-    role_task_id: number
-    role_task_display_name: string
+type TeamComposition = {
+    role_field: string
+    role_field_display_name: string
     required_count: number
 }
 
@@ -51,7 +51,7 @@ export type ResponsePostAnalysisDto = CommonResponse<{
     analysis_id: number
     recommended_project_names: string[]
     project_duration: ProjectDuration
-    team_composition: RoleTask[]
+    team_composition: TeamComposition[]
     improvement_points: ImprovementPoint[]
     weekly_roadmap: WeeklyRoadmap
 }>
@@ -61,9 +61,11 @@ export type ResponseGetAnalysisDto = CommonResponse<{
         analysis_id: number
         recommended_project_names: string[]
         project_duration: ProjectDuration
-        team_composition: RoleTask[]
+        team_composition: TeamComposition[]
         improvement_points: ImprovementPoint[]
-        weekly_roadmap: WeeklyRoadmap
+        /** 단일 객체 또는 배열로 내려올 수 있음 */
+        weekly_roadmap?: WeeklyRoadmap
+        weekly_roadmaps?: WeeklyRoadmap[]
     }
     page_info: {
         current_page: number
