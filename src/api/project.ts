@@ -4,7 +4,7 @@ import type { ResponseUsersDto } from "@/types/api/project"
 
 /** 현재 프로젝트에 설정된 파트 목록을 조회합니다. */
 export const getParts = async (projectId: string): Promise<ResponsePartsDto> => {
-    const { data } = await api.get(`/api/v1/projects/${projectId}/parts`)
+    const { data } = await api.get(`/api/v1/projects/${projectId}/roles`)
     return data
 }
 
