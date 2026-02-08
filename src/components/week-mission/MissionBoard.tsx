@@ -42,6 +42,18 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 	const weekDatesDrag = useDragScroll({ scrollRef: weekDatesRef })
 	const boardDrag = useDragScroll({ scrollRef: boardScrollRef })
 	const { openMissionModal } = useMissionModalStore()
+	const [openDropdownId, setOpenDropdownId] = useState<number | null>(null)
+	const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null)
+
+	const handleContextMenu = (processId: number, e: React.MouseEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setDropdownPosition({
+			top: e.clientY,
+			left: e.clientX,
+		})
+		setOpenDropdownId(processId)
+	}
 
 	// WeekDates와 MissionBoard 스크롤 동기화
 	// 드래그 중에는 동기화하지 않도록 isDraggingRef 전달
@@ -349,6 +361,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 								return (
 									<div
 										key={mission.process_id}
+										onContextMenu={e => handleContextMenu(mission.process_id, e)}
 										style={{
 											gridColumnStart: tempColumnStart,
 											gridColumnEnd: `span ${tempColSpan}`,
@@ -391,6 +404,15 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 								)
 							})}
 
+							{openDropdownId && (
+								<div className='fixed inset-0 z-40' onClick={() => setOpenDropdownId(null)}>
+									<div className='fixed z-50 min-w-[138px] bg-neutral-000 rounded-10 shadow-drop-neutral-1 overflow-hidden py-0.5' style={dropdownPosition ? { top: dropdownPosition.top, left: dropdownPosition.left } : undefined}>
+										<button className='body-3 text-danger-700 font-medium py-2 pl-5 pr-3 w-full text-left hover:bg-neutral-50 transition-colors duration-300'>
+											삭제
+										</button>
+									</div>
+								</div>
+							)}
 							{/* 빈 셀에 PlusBlock 표시 (호버 시) */}
 							{visibleItems.map(({ index }) => {
 								const dateIndex = index

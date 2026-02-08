@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from 'react'
+import { memo, useRef, useState, useEffect } from 'react'
 import StatusChip from '@/components/common/StatusChip'
 import AvatarGroup from '@/components/common/AvatarGroup'
 import ProgressBar from './ProgressBar'
@@ -6,6 +6,7 @@ import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
 import type { MissionStatus } from '@/types/missionStatus'
 import { cn } from '@/utils/cn'
 import StatusChipList from '../common/StatusChipList'
+import ProfileModal from './ProfileModal'
 import type { Assignees } from '@/types/api/assignees'
 
 interface MissionBlockProps {
@@ -47,9 +48,11 @@ const MissionBlock = memo(
 		isResizing = false,
 	}: MissionBlockProps) => {
 		const [isStatusListOpen, setIsStatusListOpen] = useState(false)
+		const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 		const [isBlockHovered, setIsBlockHovered] = useState(false)
 		const [isExcludedAreaHovered, setIsExcludedAreaHovered] = useState(false)
 		const statusListRef = useRef<HTMLDivElement>(null)
+		const profileDropdownRef = useRef<HTMLDivElement>(null)
 		const dropdownHoveredRef = useRef(false)
 		const statusChipHoveredRef = useRef(false)
 		const updateExcludedAreaHovered = () =>
@@ -95,6 +98,16 @@ const MissionBlock = memo(
 				onResizeStart()
 			}
 		}
+
+		useEffect(() => {
+			if (!isProfileModalOpen) return
+			const handleClickOutside = (e: MouseEvent) => {
+				if (profileDropdownRef.current?.contains(e.target as Node)) return
+				setIsProfileModalOpen(false)
+			}
+			document.addEventListener('mousedown', handleClickOutside)
+			return () => document.removeEventListener('mousedown', handleClickOutside)
+		}, [isProfileModalOpen])
 
 		return (
 			<div
@@ -177,22 +190,35 @@ const MissionBlock = memo(
 						<p className='body-3 text-primary-500-normal font-medium text-right whitespace-nowrap'>
 							D-{daysRemaining}
 						</p>
-						<div
-							className={cn('flex gap-[2px] items-center justify-end hover:bg-neutral-000 rounded-16 p-0.5 transition-all duration-300')}
-							onMouseEnter={() => {
-								dropdownHoveredRef.current = true
-								updateExcludedAreaHovered()
-							}}
-							onMouseLeave={() => {
-								dropdownHoveredRef.current = false
-								updateExcludedAreaHovered()
-							}}
-						>
-							{gridColumnSize > 2 && assignees && <AvatarGroup avatars={assignees.map(assignee => assignee.profile_image_url)} maxCount={gridColumnSize < 4 ? 1 : 3} size={26} />}
-							{/* 드롭다운 아이콘 */}
-							<div className='w-[14.839px] h-[14.839px] shrink-0 flex items-center justify-center'>
-								<ChevronDownIcon className='w-full h-full text-neutral-600' />
+						<div ref={profileDropdownRef} className='relative'>
+							<div
+								className={cn('flex gap-[2px] items-center justify-end hover:bg-neutral-000 rounded-16 p-0.5 transition-all duration-300 cursor-pointer')}
+								onMouseEnter={() => {
+									dropdownHoveredRef.current = true
+									updateExcludedAreaHovered()
+								}}
+								onMouseLeave={() => {
+									dropdownHoveredRef.current = false
+									updateExcludedAreaHovered()
+								}}
+								onClick={e => {
+									e.stopPropagation()
+									setIsProfileModalOpen(prev => !prev)
+								}}
+							>
+								{gridColumnSize > 2 && assignees && <AvatarGroup avatars={assignees.map(assignee => assignee.profile_image_url)} maxCount={gridColumnSize < 4 ? 1 : 3} size={26} />}
+								{/* 드롭다운 아이콘 */}
+								<div className='w-[14.839px] h-[14.839px] shrink-0 flex items-center justify-center'>
+									<ChevronDownIcon className='w-full h-full text-neutral-600' />
+								</div>
 							</div>
+							{isProfileModalOpen && (
+								<ProfileModal
+									isOpen={isProfileModalOpen}
+									onClose={() => setIsProfileModalOpen(false)}
+									assignees={assignees ?? []}
+								/>
+							)}
 						</div>
 					</div>
 				</div>
