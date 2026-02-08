@@ -15,7 +15,7 @@ import type {
 	ProcessWeekWeekItem,
 } from '@/types/api/process/process'
 import { getMissionList } from '@/api/process/weekMission'
-import { useDeleteProcessMutation } from '@/hooks/process/useProcessApi'
+import { useDeleteProcessMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery, useUsersQuery } from '@/hooks/project/useProjectApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useCallback } from 'react'
@@ -26,6 +26,9 @@ import { QUERY_KEY } from '@/constants/key'
 
 /** API 날짜(YYYY-MM-DD) → 보드 표시(YYYY.MM.DD) */
 const formatDateForBoard = (dateStr: string) => (dateStr ? dateStr.replace(/-/g, '.') : '')
+
+/** 보드 날짜(YYYY.MM.DD) → API(YYYY-MM-DD) */
+const formatDateToApi = (dateStr: string) => (dateStr ? dateStr.replace(/\./g, '-') : '')
 
 /** 위크미션 조회 body.missions → Mission[] (전부 위크미션 Task 행, sectionIndex 0) */
 function buildMissionsFromWeekMission(missionsFromApi: WeekMissionItem[]): Mission[] {
@@ -145,6 +148,7 @@ const WeekMissionPage = () => {
 	const { data: partsData } = usePartsQuery(projectIdStr)
 	const { data: usersData } = useUsersQuery(projectIdStr)
 	const patchStatusMutation = usePatchMissionStatusMutation()
+	const patchProcessMutation = usePatchProcessMutation()
 	const deleteProcessMutation = useDeleteProcessMutation()
 
 	// 위크미션 API + 프로세스 week API 둘 다 반영해서 미션 보드 렌더링
@@ -198,7 +202,7 @@ const WeekMissionPage = () => {
 		title: getRoleDisplayName(role),
 	}))
 
-	// 상태 변경 시 API 호출 후 로컬 반영
+	// 상태 변경 / 드래그·리사이즈(날짜 변경) 시 API 호출 후 로컬 반영
 	const handleMissionUpdate = useCallback(
 		(missionId: number, updates: { start_date?: string; dead_line?: string; sectionIndex?: number; status?: StatusType }) => {
 			if (updates.status !== undefined) {
@@ -214,11 +218,61 @@ const WeekMissionPage = () => {
 						},
 					}
 				)
-			} else {
-				updateMission(missionId, updates)
+				return
 			}
+			// 드래그·리사이즈로 start_date / dead_line 변경 시 PATCH 프로세스 호출
+			if (updates.start_date !== undefined || updates.dead_line !== undefined) {
+				const mission = missions.find(m => m.process_id === missionId)
+				if (!mission) return
+				const cachedDetail = queryClient.getQueryData<{
+					body?: {
+						process_title?: string
+						process_content?: string
+						process_status?: string
+						role_fields?: string[]
+						custom_fields?: string[]
+						assignees?: Array<{ user_id: number }>
+						mention_user_ids?: number[]
+					}
+				}>(QUERY_KEY.process.detail(projectIdStr, String(missionId)))
+				const body = {
+					process_title: cachedDetail?.body?.process_title ?? mission.title,
+					process_content: cachedDetail?.body?.process_content ?? '',
+					process_status: mission.status ?? 'PLANNING',
+					start_date: formatDateToApi(updates.start_date ?? mission.start_date),
+					dead_line: formatDateToApi(updates.dead_line ?? mission.dead_line),
+					role_fields: cachedDetail?.body?.role_fields ?? [],
+					custom_fields: cachedDetail?.body?.custom_fields ?? [],
+					mission_number: mission.mission_number ?? 0,
+					assignee_ids: cachedDetail?.body?.assignees?.map(a => a.user_id) ?? mission.assignee?.map(a => a.user_id) ?? [],
+					mention_user_ids: cachedDetail?.body?.mention_user_ids ?? [],
+				}
+				patchProcessMutation.mutate(
+					{
+						projectId: projectIdStr,
+						processId: String(missionId),
+						body,
+					},
+					{
+						onSuccess: () => {
+							queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdStr) })
+							queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectIdStr) })
+							updateMission(missionId, updates)
+						},
+					}
+				)
+				return
+			}
+			updateMission(missionId, updates)
 		},
-		[projectIdStr, patchStatusMutation, updateMission]
+		[
+			projectIdStr,
+			missions,
+			queryClient,
+			patchStatusMutation,
+			patchProcessMutation,
+			updateMission,
+		]
 	)
 
 	// 삭제 시 API 호출 후 캐시 무효화 및 로컬 제거

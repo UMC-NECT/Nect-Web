@@ -1,9 +1,5 @@
-import type { Assignees } from "../assignees"
 import type { CommonResponse } from "../commonResponse"
-import type { Files } from "../file"
 import type { TaskItems } from "./taskItems"
-import type { Feedback } from "./feedback"
-import type { Links } from "./links"
 
 export interface RequestProcessPostLinkDto {
     title: string
@@ -81,6 +77,44 @@ export type ResponseProcessWeekDto = CommonResponse<{
     weeks: ProcessWeekWeekItem[]
 }>
 
+/** 프로세스 상세 조회 - 담당자 (API 응답 필드명) */
+export interface ProcessDetailAssignee {
+    user_id: number
+    user_name: string
+    nickname: string
+    user_image: string | null
+}
+
+/** 프로세스 상세 조회 - 첨부 (FILE | LINK) */
+export interface ProcessDetailAttachment {
+    type: 'FILE' | 'LINK'
+    id: number
+    created_at: string
+    title: string | null
+    url: string | null
+    file_name: string | null
+    file_url: string | null
+    file_type: string | null
+    file_size: number | null
+}
+
+/** 프로세스 상세 조회 - 피드백 created_by */
+export interface ProcessDetailFeedbackCreatedBy {
+    user_id: number
+    user_name: string
+    nickname: string
+    role_fields: string[]
+}
+
+/** 프로세스 상세 조회 - 피드백 한 건 */
+export interface ProcessDetailFeedback {
+    feedback_id: number
+    content: string
+    status: string
+    created_by: ProcessDetailFeedbackCreatedBy
+    created_at: string
+}
+
 export type ResponseProcessDetailDto = CommonResponse<{
     process_id: number
     process_title: string
@@ -89,17 +123,16 @@ export type ResponseProcessDetailDto = CommonResponse<{
     start_date: string
     dead_line: string
     status_order: number
-    role_fields: []
+    role_fields: string[]
     custom_fields: string[]
-    assignees: Assignees[]
+    assignees: ProcessDetailAssignee[]
     mention_user_ids: number[]
-    files: Files[]
-    links: Links[]
     task_items: TaskItems[]
-    feedbacks: Feedback[]
+    feedbacks: ProcessDetailFeedback[]
+    attachments: ProcessDetailAttachment[]
     created_at: string
     updated_at: string
-    deleted_at: boolean
+    deleted_at: boolean | null
 }>
 
 export type RequestProcessPatchDto = {
@@ -110,6 +143,7 @@ export type RequestProcessPatchDto = {
     dead_line: string
     role_fields: string[]
     custom_fields: string[]
+    mission_number: number
     assignee_ids: number[]
     mention_user_ids: number[]
 }

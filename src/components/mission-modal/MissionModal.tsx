@@ -25,10 +25,10 @@ import CheckboxIcon from '@/assets/icons/common/checkbox/checkbox-gray.svg?react
 import InfoIcon from '@/assets/icons/common/info.svg?react'
 import { useMissionListQuery } from '@/hooks/process/useWeekMissionApi'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
-import { usePostProcessMutation, usePostFileMutation } from '@/hooks/process/useProcessApi'
+import { usePostProcessMutation, usePostFileMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEY } from '@/constants/key'
-import type { RequestProcessPostDto } from '@/types/api/process/process'
+import type { RequestProcessPostDto, RequestProcessPatchDto } from '@/types/api/process/process'
 
 interface MissionModalProps {
 	className?: string
@@ -125,7 +125,13 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setWorkContent(body.process_content ?? '')
 		setStartDate(formatDateForDisplay(body.start_date ?? ''))
 		setDeadline(formatDateForDisplay(body.dead_line ?? ''))
-		const status = (body.process_status ?? 'planning') as MissionStatus
+		const statusMap: Record<string, MissionStatus> = {
+			PLANNING: 'planning',
+			IN_PROGRESS: 'in_progress',
+			DONE: 'completed',
+			BACKLOG: 'backlog',
+		}
+		const status = statusMap[body.process_status ?? ''] ?? 'planning'
 		setMissionStatus(status)
 
 		const roleFieldValues = (body.role_fields ?? []) as string[]
@@ -136,9 +142,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 		const assignees = (body.assignees ?? []).map(a => ({
 			id: a.user_id,
-			name: a.nickname,
+			name: a.user_name ?? a.nickname,
 			roleId: 0,
-			image: a.profile_image_url ?? '',
+			image: a.user_image ?? '',
 		}))
 		setSelectedAssignees(assignees)
 
@@ -152,28 +158,30 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		const feedbackList = (body.feedbacks ?? []).map(f => ({
 			id: f.feedback_id,
 			partName: f.created_by?.role_fields?.[0] ?? '',
-			authorName: f.created_by?.user_name ?? '',
+			authorName: f.created_by?.user_name ?? f.created_by?.nickname ?? '',
 			content: f.content,
 			timestamp: f.created_at,
 			state: (f.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
 		}))
 		setFeedbacks(feedbackList)
 
-		const fileItems = [
-			...(body.files ?? []).map(f => ({
-				id: f.file_id,
-				type: 'file' as const,
-				name: f.file_name,
-				url: f.file_url,
-				fileName: f.file_name,
-			})),
-			...(body.links ?? []).map(l => ({
-				id: l.link_id,
+		const fileItems = (body.attachments ?? []).map(att => {
+			if (att.type === 'FILE') {
+				return {
+					id: att.id,
+					type: 'file' as const,
+					name: att.file_name ?? '',
+					url: att.file_url ?? '',
+					fileName: att.file_name ?? '',
+				}
+			}
+			return {
+				id: att.id,
 				type: 'link' as const,
-				name: l.url,
-				url: l.url,
-			})),
-		]
+				name: att.title ?? att.url ?? '',
+				url: att.url ?? '',
+			}
+		})
 		setFiles(fileItems)
 	}, [
 		isEditMode,
@@ -229,6 +237,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const queryClient = useQueryClient()
 	const postFileMutation = usePostFileMutation()
 	const postProcessMutation = usePostProcessMutation()
+	const patchProcessMutation = usePatchProcessMutation()
 
 	const toggleDropdown = (dropdown: 'mission' | 'parts' | 'assignees' | 'duration' | 'status') => {
 		setOpenDropdown(prev => (prev === dropdown ? null : dropdown))
@@ -239,6 +248,36 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		const projectIdNum = Number(projectIdForList)
 		if (Number.isNaN(projectIdNum)) return
 
+		// 편집 모드: 기존 프로세스 수정 → PATCH
+		if (isEditMode && editingMissionId != null && projectId != null) {
+			const patchBody: RequestProcessPatchDto = {
+				process_title: title.trim() || '',
+				process_content: workContent.trim() || '',
+				process_status: missionStatus.toUpperCase(),
+				start_date: formatDateToApi(startDate),
+				dead_line: formatDateToApi(deadline),
+				role_fields: selectedParts.map(p => p.role_field ?? p.custom_role_field_name ?? '').filter(Boolean),
+				custom_fields: processDetail?.body?.custom_fields ?? [],
+				mission_number: missionNumber,
+				assignee_ids: selectedAssignees.map(a => a.id),
+				mention_user_ids: mentionedPersons.map(p => p.id),
+			}
+			try {
+				await patchProcessMutation.mutateAsync({
+					projectId,
+					processId: String(editingMissionId),
+					body: patchBody,
+				})
+				queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+				queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdForList) })
+				closeMissionModal()
+			} catch {
+				// 에러 토스트 등은 필요 시 추가
+			}
+			return
+		}
+
+		// 생성 모드: 새 프로세스 → POST (파일 업로드 + postProcess)
 		const fileIds: number[] = []
 		for (const file of files) {
 			if (file.type === 'file') {
@@ -413,11 +452,19 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 					</button>
 					<button
 						type='button'
-						disabled={postProcessMutation.isPending || postFileMutation.isPending}
+						disabled={
+							postProcessMutation.isPending ||
+							postFileMutation.isPending ||
+							patchProcessMutation.isPending
+						}
 						onClick={handleSave}
 						className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-primary-150-light text-primary-500-normal min-w-[60px] hover:bg-primary-200-light transition-all duration-300 ease-in-out disabled:opacity-50 disabled:pointer-events-none'
 					>
-						{postProcessMutation.isPending || postFileMutation.isPending ? '저장 중...' : '저장'}
+						{postProcessMutation.isPending ||
+						postFileMutation.isPending ||
+						patchProcessMutation.isPending
+							? '저장 중...'
+							: '저장'}
 					</button>
 				</div>
 			</section>
