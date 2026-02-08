@@ -117,7 +117,9 @@ const DroppablePartSection = ({
 	}
 
 	const handleRoleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setEditRole(e.target.value)
+		if (e.target.value.length <= 10) {
+			setEditRole(e.target.value)
+		}
 	}
 
 	const handleRoleBlur = () => {
@@ -149,6 +151,7 @@ const DroppablePartSection = ({
 						onChange={handleRoleInputChange}
 						onBlur={handleRoleBlur}
 						onKeyDown={handleRoleKeyDown}
+						maxLength={10}
 						autoFocus
 						className='w-24 h-7 px-2 text-center body-2 font-medium text-neutral-800 border border-primary-400-normal rounded-4 outline-none'
 					/>

@@ -7,7 +7,7 @@ interface IRoleTag extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	total?: number
 }
 
-const base = 'w-fit body-2 text-neutral-700 px-2 py-0.5 rounded-6'
+const base = 'w-fit button-1 font-medium text-neutral-700 px-2 py-0.5 rounded-6 shadow-drop-neutral-2'
 
 // 역할에 따라 자동으로 색상 결정
 const getRoleColor = (role: string): ColorType => {
@@ -39,7 +39,7 @@ const RoleTag = ({ role = '역할', showTotal = true, total = 0, className, ...p
 	return (
 		<span className={cn(base, colorStyles[color], className)} {...props}>
 			{role}
-			{showTotal ? <>({total})</> : ''}
+			&nbsp;{showTotal ? <>({total})</> : ''}
 		</span>
 	)
 }

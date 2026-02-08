@@ -40,7 +40,7 @@ const EmptyIdeaAnalysis = ({ setHasReport }: EmptyIdeaAnalysisProps) => {
 						className='font-medium bg-primary-400-normal text-neutral-50 px-10 py-4 w-[320px] hover:bg-primary-500-normal'
 						onClick={handleAnalysis}
 					>
-						AI 아이디어 분석하기
+						AI 아이디어 분석 받기
 					</Button>
 				</div>
 			</div>

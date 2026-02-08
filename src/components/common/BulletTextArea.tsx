@@ -44,11 +44,14 @@ const BulletTextArea = ({
 	const pendingCursorRef = useRef<number | null>(null)
 	const [isFocused, setIsFocused] = useState(false)
 
+	// 외부 value에 불렛이 포함되어 있을 수 있으므로 항상 제거
+	const cleanValue = useMemo(() => removeBullets(value), [value])
+
 	// 외부 value(순수 텍스트)를 불렛이 포함된 display 값으로 변환 (포커스 시 빈 값이면 불렛만 표시)
 	const displayValue = useMemo(() => {
-		if (!value && isFocused) return '• '
-		return addBullets(value)
-	}, [value, isFocused])
+		if (!cleanValue && isFocused) return '• '
+		return addBullets(cleanValue)
+	}, [cleanValue, isFocused])
 
 	// placeholder에도 불렛 표시
 	const bulletPlaceholder = useMemo(() => (placeholder ? addBullets(placeholder) : undefined), [placeholder])
@@ -103,7 +106,7 @@ const BulletTextArea = ({
 			}
 
 			// 커서가 있는 줄 다음에 새 줄 삽입
-			const valueLines = value.split('\n')
+			const valueLines = cleanValue.split('\n')
 			valueLines.splice(lineIndex + 1, 0, '')
 			const newValue = valueLines.join('\n')
 			onChange(newValue)
@@ -122,7 +125,7 @@ const BulletTextArea = ({
 			if (!textarea) return
 
 			// 값이 없으면 포커스 해제
-			if (!value) {
+			if (!cleanValue) {
 				e.preventDefault()
 				textarea.blur()
 				return
@@ -131,7 +134,6 @@ const BulletTextArea = ({
 			const cursorPos = textarea.selectionStart
 			const selectionEnd = textarea.selectionEnd
 
-			// 텍스트 선택 상태면 네이티브 동작에 위임
 			if (cursorPos !== selectionEnd) return
 
 			const displayLines = displayValue.split('\n')
@@ -147,7 +149,7 @@ const BulletTextArea = ({
 				charCount += displayLines[i].length + 1
 			}
 
-			const valueLines = value.split('\n')
+			const valueLines = cleanValue.split('\n')
 			const currentLineContent = valueLines[lineIndex]
 			const posInLine = cursorPos - charCount
 

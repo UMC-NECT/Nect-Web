@@ -34,14 +34,14 @@ export type CareerType = {
 // (내 프로필 설정) 포트폴리오 링크 및 파일
 export type PortfolioType = {
 	title: string
-	link: string
-	fileUrl: string
+	link: string | null
+	fileUrl: string | null
 }
 
 // (내 프로필 설정) 프로젝트 히스토리
 export type MyHistoryType = {
 	projectName: string
-	projectImage: string
+	projectImage: string | null
 	projectDescription: string
 	startYearMonth: string
 	endYearMonth: string
@@ -54,7 +54,7 @@ export type ResponseMypageProfileDto = CommonResponse<{
 	nickname: string
 	email: string
 	role: string
-	profileImageUrl: string
+	profileImageFileName: string
 	bio: string
 	coreCompetencies: string
 	userStatus: string
@@ -72,7 +72,7 @@ export type ResponseMypageProfileDto = CommonResponse<{
 
 // (내 프로필 설정) 프로필 수정
 export type RequestMypageProfileSaveDto = {
-	profileImageUrl: string
+	profileImageFileName: string
 	bio: string
 	coreCompetencies: string
 	userStatus: string

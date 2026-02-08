@@ -8,7 +8,7 @@ export const useMypageProfileQuery = () => {
 	return useQuery({
 		queryKey: QUERY_KEY.mypage.profile(),
 		queryFn: getMypageProfile,
-		staleTime: 60 * 1 * 1_000, // 테스트용으로 1분
+		staleTime: 60 * 5 * 1_000, // 테스트용으로 5분
 		gcTime: Infinity,
 	})
 }

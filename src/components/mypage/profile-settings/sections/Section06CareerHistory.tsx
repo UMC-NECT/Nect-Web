@@ -13,6 +13,12 @@ interface ISection06CareerHistory {
 	watch: UseFormWatch<ProfileFormDataType>
 }
 
+const formatDateInput = (value: string): string => {
+	const digits = value.replace(/\D/g, '')
+	if (digits.length <= 4) return digits
+	return `${digits.slice(0, 4)}.${digits.slice(4, 6)}`
+}
+
 const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHistory) => {
 	const { fields: careers, append: appendCareer } = useFieldArray({
 		control,
@@ -113,6 +119,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 													className='w-18.25 bg-transparent resize-none text-neutral-900 focus:outline-none placeholder:text-neutral-300 overflow-hidden whitespace-nowrap text-center'
 													placeholder='YYYY.MM'
 													maxLength={7}
+													onChange={e => field.onChange(formatDateInput(e.target.value))}
 												/>
 											)}
 										/>
@@ -136,6 +143,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 														value={isInProgress ? '2026.02' : field.value}
 														maxLength={7}
 														disabled={isInProgress}
+														onChange={e => field.onChange(formatDateInput(e.target.value))}
 													/>
 												)
 											}}

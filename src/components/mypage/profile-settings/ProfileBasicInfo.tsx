@@ -15,7 +15,7 @@ interface ProfileBasicInfoProps {
 	onSave: () => void
 	onRecruit: () => void
 	// API 데이터
-	profileImageUrl?: string
+	profileImageFileName?: string
 	userName?: string
 	userRole?: string
 	userStatus?: string
@@ -30,7 +30,7 @@ const ProfileBasicInfo = ({
 	isSaving,
 	onSave,
 	onRecruit,
-	profileImageUrl,
+	profileImageFileName,
 	userName,
 	userRole,
 	userStatus,
@@ -40,7 +40,7 @@ const ProfileBasicInfo = ({
 }: ProfileBasicInfoProps) => {
 	const [isRecruitButtonHovered, setIsRecruitButtonHovered] = useState(false) // 버튼 호버하면 텍스트 변경되게 하려고
 	const [localProfileImage, setLocalProfileImage] = useState<string | null>(null)
-	const profileImage = localProfileImage ?? profileImageUrl
+	const profileImage = localProfileImage ?? profileImageFileName
 
 	// 유저 상태변경 모달 (재학/구직/재직)
 	const { isOpen, open } = useUserStatusStore()
