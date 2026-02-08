@@ -83,7 +83,7 @@ const AddScheduleModal = ({ isOpen, onClose, onSave }: AddScheduleModalProps) =>
 							setPreviousStartDate(startDate)
 							setStartDate(formatted)
 						}}
-						className={`opacity-80 bg-transparent border-none outline-none ${
+						className={`w-[123px] opacity-80 bg-transparent border-none outline-none ${
 							startDate ? 'text-neutral-900' : 'text-neutral-400'
 						}`}
 						placeholder="0000년 00월 00일 *"
