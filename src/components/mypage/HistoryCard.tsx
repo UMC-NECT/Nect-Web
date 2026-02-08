@@ -1,20 +1,25 @@
-interface IHistoryCard {
-	title: string
-	description: string
-	period: string
-}
+import { useState } from 'react'
+import type { MypageProjectType } from '@/types/api/mypage'
 
-const HistoryCard = ({ title, description, period }: IHistoryCard) => {
+const HistoryCard = ({ project_title, description, planned_started_on, planned_ended_on, image_name }: MypageProjectType) => {
+	const [imgError, setImgError] = useState(false)
+
 	return (
-		<div className='w-96 h-85.5 border-[3px] border-transparent hover:border-primary-400-normal rounded-16 transition-colors cursor-pointer overflow-hidden'>
+		<div className='w-96 h-85.5 border-[3px] border-transparent hover:border-primary-400-normal rounded-16 transition-colors cursor-pointer overflow-hidden shrink-0'>
 			{/* 썸네일 */}
-			<div className='w-full h-52 bg-neutral-600 rounded-12'></div>
+			{image_name && !imgError ? (
+				<img src={image_name} alt={project_title} className='w-full h-52 object-cover rounded-12' onError={() => setImgError(true)} />
+			) : (
+				<div className='w-full h-52 bg-neutral-600 rounded-12' />
+			)}
 
 			{/* 프로젝트 정보 */}
 			<div className='flex flex-col gap-1 p-4'>
-				<h4 className='body-1 font-semibold text-neutral-900'>{title}</h4>
-				<p className='body-2 text-neutral-600 line-clamp-2'>{description}</p>
-				<span className='caption-1 text-neutral-400'>{period}</span>
+				<h4 className='title-3 font-semibold text-neutral-900'>{project_title}</h4>
+				<p className='body-2 font-medium h-10.5 text-neutral-600 line-clamp-2'>{description}</p>
+				<span className='body-2 font-normal text-neutral-400'>
+					{planned_started_on} ~ {planned_ended_on}
+				</span>
 			</div>
 		</div>
 	)

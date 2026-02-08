@@ -96,5 +96,40 @@ export type RequestMypageProfileSaveDto = {
 // MINO-TODO: 1개 (팀 히스토리 조회)
 
 // === 모든 프로젝트 ==========================================================
+// (모든 프로젝트) 프로젝트 역할 형식
+export type MypageProjectRoleType = {
+	role_field: 'BACKEND' | 'FRONTEND' | 'DESIGNER' | string
+	required_count: number
+}
+// (모든 프로젝트) 프로젝트 형식
+export type MypageProjectType = {
+	project_id: number
+	project_title: string
+	description: string
+	planned_started_on: string
+	planned_ended_on: string
+	image_name: string
+	team_roles: [MypageProjectRoleType[]]
+	leader: {
+		user_id: number
+		name: string
+		profile_image_url: string
+	}
+	team_member_projects: [
+		{
+			project_id: number
+			title: string
+			description: string
+			image_name: string
+			created_at: string
+			ended_at: string
+		}[],
+	]
+}
+
+// (모든 프로젝트) 현재 참여중인 프로젝트 조회
+export type ResponseProjectUsers = CommonResponse<{
+	projects: [MypageProjectType[]]
+}>
 
 // === 매칭 현황 ==========================================================
