@@ -62,9 +62,7 @@ const WritePostModalContent = ({
 		onFileAdd?.()
 	}
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		// 파일 추가는 부모 컴포넌트에서 처리
-	}
+	// 파일 추가는 부모 컴포넌트에서 처리
 
 	const getAttachmentIcon = (attachment: PostAttachment) => {
 		if (attachment.type === 'link') {
@@ -212,7 +210,7 @@ const WritePostModalContent = ({
 					) : (
 						<div className="flex flex-col gap-0 w-full">
 							{/* 기존 첨부 파일 */}
-							{attachments.map((attachment, index) => (
+							{attachments.map((attachment) => (
 								<div key={attachment.id} className="flex gap-2.5 items-center px-3.5 py-2 w-full relative group">
 									{/* 아이콘 */}
 									<div className="relative shrink-0 w-7 h-7">

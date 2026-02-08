@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useUserStore } from '@/stores/useUserStore'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import BoardListItem from '@/components/team-board/BoardListItem'
 import BoardListHeader from '@/components/team-board/BoardListHeader'
@@ -7,7 +6,6 @@ import BoardPagination from '@/components/team-board/BoardPagination'
 import WritePostModal from '@/components/team-board/WritePostModal'
 
 const BoardPage = () => {
-	const { userName } = useUserStore()
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
 	const [isViewModalOpen, setIsViewModalOpen] = useState(false)

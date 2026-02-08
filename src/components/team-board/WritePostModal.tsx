@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useClickOutside } from '@/hooks/useClickOutside'
-import WritePostModalHeader, { type WritePostModalHeaderMode } from './WritePostModalHeader'
+import WritePostModalHeader from './WritePostModalHeader'
 import WritePostModalContent, { type PostAttachment, type WritePostModalContentMode } from './WritePostModalContent'
 import CTAModal from '@/components/common/CTAModal'
 
