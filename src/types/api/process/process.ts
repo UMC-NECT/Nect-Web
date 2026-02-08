@@ -124,3 +124,16 @@ type Lane = {
 export type ResponseProgressSummaryDto = CommonResponse<{
     lanes: Lane[]
 }>
+
+export type ResponseHistoryDto = CommonResponse<{
+    next_cursor: number | null
+    items: {
+        actor_user_id: number
+        target_type: string
+        created_at: string
+        action: string
+        target_id: number
+        history_id: number
+        meta_json: string
+    }[]
+}>

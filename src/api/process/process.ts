@@ -1,5 +1,5 @@
 import type { CommonResponse } from '@/types/api/commonResponse'
-import type { RequestProcessOrderPatchDto, RequestProcessPatchDto, RequestProcessPostDto, RequestProcessStatusPatchDto, ResponseProcessDetailDto, ResponseProcessOrderPatchDto, ResponseProcessPartDto, ResponseProcessPatchDto, ResponseProcessPostDto, ResponseProcessStatusPatchDto, ResponseProcessWeekDto, ResponseProgressSummaryDto } from '@/types/api/process/process'
+import type { RequestProcessOrderPatchDto, RequestProcessPatchDto, RequestProcessPostDto, RequestProcessStatusPatchDto, ResponseHistoryDto, ResponseProcessDetailDto, ResponseProcessOrderPatchDto, ResponseProcessPartDto, ResponseProcessPatchDto, ResponseProcessPostDto, ResponseProcessStatusPatchDto, ResponseProcessWeekDto, ResponseProgressSummaryDto } from '@/types/api/process/process'
 import { api } from '@/utils/AxiosInstance'
 import { toQueryString } from '@/utils/queryString'
 
@@ -59,5 +59,15 @@ export const patchProcessStatus = async (projectId: string, processId: string, b
 /** 프로젝트의 ROLE/CUSTOM 레인별 프로세스 상태 진행률(PLANNING/IN_PROGRESS/DONE)을 요약 조회합니다. */
 export const getProgressSummary = async (projectId: string): Promise<ResponseProgressSummaryDto> => {
     const {data} = await api.get(`/api/v1/projects/${projectId}/processes/parts/progress-summary`)
+    return data
+}
+
+/** 프로젝트의 히스토리를 조회합니다.
+ * 
+ * cursor 미입력 시 서버 정책으로 최신 로그부터 조회합니다. (서버 정책: 최근 10개 고정)
+*/
+export const getProcessHistory = async (projectId: string, cursor?: number): Promise<ResponseHistoryDto> => {
+    const query = toQueryString({ cursor: cursor?.toString() })
+    const {data} = await api.get(`/api/v1/projects/${projectId}/histories${query}`)
     return data
 }

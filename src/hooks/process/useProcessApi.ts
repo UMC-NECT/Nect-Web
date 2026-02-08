@@ -9,6 +9,7 @@ import {
 	patchProcess,
 	patchProcessOrder,
 	patchProcessStatus,
+	getProcessHistory,
 } from '@/api/process/process'
 import type {
 	RequestProcessOrderPatchDto,
@@ -132,5 +133,14 @@ export const usePatchProcessStatusMutation = () => {
 		onSuccess: (_, { projectId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
 		},
+	})
+}
+
+/** 프로젝트의 히스토리를 조회합니다. */
+export const useProcessHistoryQuery = (projectId: string, cursor?: number) => {
+	return useQuery({
+		queryKey: QUERY_KEY.process.history(projectId, cursor),
+		queryFn: () => getProcessHistory(projectId, cursor),
+		enabled: !!projectId,
 	})
 }
