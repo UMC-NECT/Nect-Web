@@ -176,6 +176,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 				name: editName.trim(),
 				fileName: droppedFile.name,
 				url: blobUrl,
+				rawFile: droppedFile,
 			})
 		} else if (editUrl.trim()) {
 			onSave?.({

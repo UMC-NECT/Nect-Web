@@ -5,19 +5,31 @@ import type { TaskItems } from "./taskItems"
 import type { Feedback } from "./feedback"
 import type { Links } from "./links"
 
+export interface RequestProcessPostLinkDto {
+    title: string
+    url: string
+}
+
+export interface RequestProcessPostTaskItemDto {
+    content: string
+    is_done: boolean
+    sort_order: number
+}
+
 export interface RequestProcessPostDto {
     process_title: string
     process_content: string
     process_status: string
-    assignee_ids: string[]
+    assignee_ids: number[]
     role_fields: string[]
     custom_field_name: string | null
+    mission_number: number
     start_date: string
     dead_line: string
-    mention_user_ids: []
-    file_ids: []
-    links: []
-    task_items: []
+    mention_user_ids: number[]
+    file_ids: number[]
+    links: RequestProcessPostLinkDto[]
+    task_items: RequestProcessPostTaskItemDto[]
 }
 
 export type ResponseProcessPostDto = CommonResponse<{

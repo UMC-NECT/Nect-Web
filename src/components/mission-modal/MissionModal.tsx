@@ -6,7 +6,7 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import 'overlayscrollbars/overlayscrollbars.css'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useProcessDetailQuery } from '@/hooks/process/useProcessApi'
-import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
+import { useTeamStore } from '@/stores/teamStore'
 import type { MissionStatus } from '@/types/missionStatus'
 import MissionTagChip from './MissionTagChip'
 import PartSelector from './PartSelector'
@@ -25,6 +25,10 @@ import CheckboxIcon from '@/assets/icons/common/checkbox/checkbox-gray.svg?react
 import InfoIcon from '@/assets/icons/common/info.svg?react'
 import { useMissionListQuery } from '@/hooks/process/useWeekMissionApi'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import { usePostProcessMutation, usePostFileMutation } from '@/hooks/process/useProcessApi'
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEY } from '@/constants/key'
+import type { RequestProcessPostDto } from '@/types/api/process/process'
 
 interface MissionModalProps {
 	className?: string
@@ -34,6 +38,12 @@ interface MissionModalProps {
 const formatDateForDisplay = (dateStr: string) => {
 	if (!dateStr) return ''
 	return dateStr.replace(/-/g, '.')
+}
+
+/** 모달 표시용 "YYYY.MM.DD" → API용 "YYYY-MM-DD" */
+const formatDateToApi = (dateStr: string) => {
+	if (!dateStr) return ''
+	return dateStr.replace(/\./g, '-')
 }
 
 const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
@@ -81,6 +91,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		toggleFeedback,
 		addFile,
 		removeFile,
+		closeMissionModal,
+		mentionedPersons,
 	} = useMissionModalStore()
 
 	const { projectId: pageProjectId } = useProjectIdStore()
@@ -116,9 +128,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		const status = (body.process_status ?? 'planning') as MissionStatus
 		setMissionStatus(status)
 
-		const partNames = (body.role_fields ?? []) as string[]
-		const matchedParts = partNames
-			.map(name => roles.find(r => getRoleDisplayName(r) === name))
+		const roleFieldValues = (body.role_fields ?? []) as string[]
+		const matchedParts = roleFieldValues
+			.map(value => roles.find(r => r.role_field === value || r.custom_role_field_name === value))
 			.filter((r): r is NonNullable<typeof r> => r != null)
 		setSelectedParts(matchedParts)
 
@@ -214,8 +226,70 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const completedTasks = tasks.filter(t => t.isComplete).length
 	const totalTasks = tasks.length
 
+	const queryClient = useQueryClient()
+	const postFileMutation = usePostFileMutation()
+	const postProcessMutation = usePostProcessMutation()
+
 	const toggleDropdown = (dropdown: 'mission' | 'parts' | 'assignees' | 'duration' | 'status') => {
 		setOpenDropdown(prev => (prev === dropdown ? null : dropdown))
+	}
+
+	const handleSave = async () => {
+		if (!projectIdForList) return
+		const projectIdNum = Number(projectIdForList)
+		if (Number.isNaN(projectIdNum)) return
+
+		const fileIds: number[] = []
+		for (const file of files) {
+			if (file.type === 'file') {
+				if (file.rawFile) {
+					const formData = new FormData()
+					formData.append('file', file.rawFile)
+					try {
+						const res = await postFileMutation.mutateAsync({
+							projectId: projectIdForList,
+							body: formData,
+						})
+						if (res?.body?.file_id != null) fileIds.push(res.body.file_id)
+					} catch {
+						// 업로드 실패 시 해당 파일은 제외
+					}
+				} else if (!file.rawFile) {
+					// 이미 서버에 있는 파일 (상세 로드 시 id = file_id)
+					fileIds.push(file.id)
+				}
+			}
+		}
+		const links = files
+			.filter((f): f is typeof f & { url: string; name: string } => f.type === 'link' && !!f.url)
+			.map(f => ({ title: f.name || '', url: f.url }))
+
+		const body: RequestProcessPostDto = {
+			process_title: title.trim() || '',
+			process_content: workContent.trim() || '',
+			process_status: missionStatus.toUpperCase(),
+			assignee_ids: selectedAssignees.map(a => a.id),
+			role_fields: selectedParts.map(p => p.role_field ?? p.custom_role_field_name ?? '').filter(Boolean),
+			custom_field_name: null,
+			mission_number: missionNumber,
+			start_date: formatDateToApi(startDate),
+			dead_line: formatDateToApi(deadline),
+			mention_user_ids: mentionedPersons.map(p => p.id),
+			file_ids: fileIds,
+			links,
+			task_items: tasks.map((t, i) => ({
+				content: t.content,
+				is_done: t.isComplete,
+				sort_order: i + 1,
+			})),
+		}
+		try {
+			await postProcessMutation.mutateAsync({ projectId: projectIdNum, body })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdForList) })
+			closeMissionModal()
+		} catch {
+			// 에러 토스트 등은 필요 시 추가
+		}
 	}
 
 	useEffect(() => {
@@ -334,8 +408,17 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 				</div>
 
 				<div className='flex gap-2.5'>
-					<button className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-neutral-50 border-[1.5px] border-neutral-100 text-neutral-900 min-w-[60px] hover:bg-neutral-200 hover:border-neutral-200 transition-all duration-300 ease-in-out'>삭제</button>
-					<button className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-primary-150-light text-primary-500-normal min-w-[60px] hover:bg-primary-200-light transition-all duration-300 ease-in-out'>저장</button>
+					<button type='button' className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-neutral-50 border-[1.5px] border-neutral-100 text-neutral-900 min-w-[60px] hover:bg-neutral-200 hover:border-neutral-200 transition-all duration-300 ease-in-out'>
+						삭제
+					</button>
+					<button
+						type='button'
+						disabled={postProcessMutation.isPending || postFileMutation.isPending}
+						onClick={handleSave}
+						className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-primary-150-light text-primary-500-normal min-w-[60px] hover:bg-primary-200-light transition-all duration-300 ease-in-out disabled:opacity-50 disabled:pointer-events-none'
+					>
+						{postProcessMutation.isPending || postFileMutation.isPending ? '저장 중...' : '저장'}
+					</button>
 				</div>
 			</section>
 			<OverlayScrollbarsComponent

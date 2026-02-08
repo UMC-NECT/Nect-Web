@@ -41,6 +41,8 @@ export interface FileItem {
 	name: string
 	url?: string
 	fileName?: string
+	/** 새로 추가한 파일 업로드용 (저장 시 postFile 호출 후 file_id 사용) */
+	rawFile?: File
 }
 
 import type { MissionStatus } from '@/types/missionStatus'

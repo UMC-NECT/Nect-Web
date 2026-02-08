@@ -36,5 +36,6 @@ export const QUERY_KEY = {
 	project: {
 		parts: (projectId: string) => ['project', projectId, 'parts'] as const,
 		users: (projectId: string) => ['project', projectId, 'users'] as const,
+		files: (projectId: string) => ['project', projectId, 'files'] as const,
 	},
 }

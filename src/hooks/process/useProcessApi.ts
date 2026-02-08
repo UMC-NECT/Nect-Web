@@ -11,6 +11,7 @@ import {
 	patchProcessStatus,
 	getProcessHistory,
 } from '@/api/process/process'
+import { postFile } from '@/api/process/file'
 import type {
 	RequestProcessOrderPatchDto,
 	RequestProcessPatchDto,
@@ -52,6 +53,14 @@ export const useProgressSummaryQuery = (projectId: string) => {
 		queryKey: QUERY_KEY.process.progressSummary(projectId),
 		queryFn: () => getProgressSummary(projectId),
 		enabled: !!projectId,
+	})
+}
+
+/** 프로젝트 파일 업로드 (프로세스 생성 시 첨부용) */
+export const usePostFileMutation = () => {
+	return useMutation({
+		mutationFn: ({ projectId, body }: { projectId: string; body: FormData }) =>
+			postFile(projectId, body),
 	})
 }
 
