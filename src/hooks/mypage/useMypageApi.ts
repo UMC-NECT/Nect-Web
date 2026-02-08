@@ -1,4 +1,4 @@
-import { getMypageProfile, getMypageProjects, patchMypageProfileSave } from '@/api/mypage'
+import { deleteAnalysis, getAnalysis, getMypageProfile, getMypageProjects, patchMypageProfileSave } from '@/api/mypage'
 import { QUERY_KEY } from '@/constants/key'
 import type { RequestMypageProfileSaveDto } from '@/types/api/mypage'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -21,6 +21,28 @@ export const useMypageProfileMutation = () => {
 		mutationFn: (body: RequestMypageProfileSaveDto) => patchMypageProfileSave(body),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.profile() })
+		},
+	})
+}
+
+// (나의 아이디어 분석) 분석서 페이징 조회
+export const useAnalysisQuery = (page: string) => {
+	return useQuery({
+		queryKey: QUERY_KEY.mypage.analysis(page),
+		queryFn: () => getAnalysis(page),
+		staleTime: 60 * 5 * 1_000, // 테스트용으로 5분
+		gcTime: Infinity,
+	})
+}
+
+// (나의 아이디어 분석) 분석서 삭제
+export const useDeleteAnalysisMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (analysisId: number) => deleteAnalysis(analysisId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: [...QUERY_KEY.mypage.all, 'analysis'] })
 		},
 	})
 }

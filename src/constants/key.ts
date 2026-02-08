@@ -47,6 +47,7 @@ export const QUERY_KEY = {
 		all: ['mypage'] as const,
 		profile: () => [...QUERY_KEY.mypage.all, 'profile'] as const,
 		project: () => [...QUERY_KEY.mypage.all, 'project'] as const,
+		analysis: (page?: string) => [...QUERY_KEY.mypage.all, 'analysis', page] as const,
 	},
 }
 >>>>>>> b10067a (feat: 내프로필설정 정보 불러오기 api 연동)

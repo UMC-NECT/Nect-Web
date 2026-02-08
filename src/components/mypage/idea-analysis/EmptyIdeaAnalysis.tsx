@@ -1,16 +1,10 @@
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
+import { useNavigate } from 'react-router'
 
-interface EmptyIdeaAnalysisProps {
-	setHasReport: () => void
-}
+const EmptyIdeaAnalysis = () => {
+	const navigate = useNavigate()
 
-const EmptyIdeaAnalysis = ({ setHasReport }: EmptyIdeaAnalysisProps) => {
-	const handleAnalysis = () => {
-		alert(`아이디어 분석 페이지로 이동 후\n분석 진행했다고 가정.`)
-		// 임시로 버튼 누르면 아이디어 분석 됐다고 가정
-		setHasReport()
-	}
 	return (
 		<div className='flex flex-col min-w-229 w-full'>
 			{/* 브레드크럼 + 타이틀 */}
@@ -38,7 +32,7 @@ const EmptyIdeaAnalysis = ({ setHasReport }: EmptyIdeaAnalysisProps) => {
 					{/* AI 아이디어 분석하기 버튼 */}
 					<Button
 						className='font-medium bg-primary-400-normal text-neutral-50 px-10 py-4 w-[320px] hover:bg-primary-500-normal'
-						onClick={handleAnalysis}
+						onClick={() => navigate('/idea-analyze')}
 					>
 						AI 아이디어 분석 받기
 					</Button>

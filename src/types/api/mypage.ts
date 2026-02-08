@@ -85,15 +85,73 @@ export type RequestMypageProfileSaveDto = {
 	projectHistories: MyHistoryType[]
 }
 
-// MINO-TODO: 3개 (프젝 조회, 멤버 파트변경, 강퇴)
-
 // === 나의 아이디어 분석 ==========================================================
-// MINO-TODO: 4개 (조회, 분석, 삭제, 프로젝트 생성)
+// (나의 아이디어 분석) 분석서에 쓰일 팀 구성정보
+export type TeamCompositionType = {
+	role_field: string
+	role_field_display_name: string
+	required_count: number
+}
+// (나의 아이디어 분석) 프로젝트 보완할 점을 발견했어요!
+export type ImprovementPointsType = {
+	order: number
+	title: string
+	description: string
+}
+
+// (나의 아이디어 분석) 주차별 로드맵에 쓰일 역할별 할일
+export type RoleTasksType = {
+	role_field: string
+	role_field_display_name: string
+	tasks: string
+}
+
+// (나의 아이디어 분석) 주차별 로드맵
+export type WeeklyRoadmapType = {
+	week_number: number
+	week_title: string
+	week_start_date: string
+	week_end_date: string
+	week_period: string
+	role_tasks: RoleTasksType[]
+}
+
+// (나의 아이디어 분석) 분석서 타입
+export type AnalysisType = {
+	analysis_id: number
+	description: string
+	recommended_project_names: string[]
+	project_duration: {
+		start_date: string
+		end_date: string
+		total_weeks: number
+		display_text: string
+	}
+	team_composition: TeamCompositionType[]
+	improvement_points: ImprovementPointsType[]
+	weekly_roadmap: WeeklyRoadmapType[]
+}
+
+// (나의 아이디어 분석) 분석서 페이징 조회
+export type ResponseAnalysisDto = CommonResponse<{
+	analysis: AnalysisType
+	page_info: {
+		current_page: number
+		total_pages: number
+		total_elements: number
+		has_next: boolean
+		has_previous: boolean
+	}
+}>
+
+// (나의 아이디어 분석) 분석서 삭제
+export type ResponseDeleteAnalysisDto = CommonResponse
 
 // === 나의 프로필 분석 ==========================================================
 
 // === 진행 중인 프로젝트 ==========================================================
 // MINO-TODO: 1개 (팀 히스토리 조회)
+// MINO-TODO: 3개 (프젝 조회, 멤버 파트변경, 강퇴)
 
 // === 모든 프로젝트 ==========================================================
 // (모든 프로젝트) 프로젝트 역할 형식

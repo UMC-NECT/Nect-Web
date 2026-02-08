@@ -13,12 +13,16 @@ const base = 'w-fit button-1 font-medium text-neutral-700 px-2 py-0.5 rounded-6 
 const getRoleColor = (role: string): ColorType => {
 	switch (role) {
 		case 'PM':
+		case '기획':
 			return 'purple'
 		case 'Design':
+		case 'UI/UX':
 			return 'pink'
 		case 'Backend':
+		case '백엔드':
 			return 'blue'
 		case 'Frontend':
+		case '프론트엔드':
 			return 'green'
 		default:
 			return 'gray'

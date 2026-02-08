@@ -1,8 +1,8 @@
-import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
+import type { AnalysisType } from '@/types/api/mypage'
 import DoubleCheckIcon from '@/assets/icons/mypage/double-check.svg?react'
 
 interface Section03ImprovementsProps {
-	analysisData: IdeaAnalysisData
+	analysisData: AnalysisType
 }
 
 const Section03Improvements = ({ analysisData }: Section03ImprovementsProps) => {
@@ -16,14 +16,16 @@ const Section03Improvements = ({ analysisData }: Section03ImprovementsProps) => 
 
 			{/* 내용 */}
 			<div className='flex flex-col gap-3.5 pl-12.5 w-full'>
-				{analysisData.idea_analysis_improvements.map((improvement, index) => (
+				{analysisData.improvement_points.map(improvement => (
 					<div
-						key={improvement.improvement_id}
+						key={improvement.order}
 						className='flex items-center bg-neutral-000 rounded-12 px-5.5 py-5 gap-7.5 w-full'
 					>
 						{/* 좌측 - 아이콘 */}
 						<div className='flex flex-col items-center gap-1'>
-							<span className='body-2 font-bold text-primary-600-normal text-center'>Check {index + 1}</span>
+							<span className='body-2 font-bold text-primary-600-normal text-center'>
+								Check {improvement.order}
+							</span>
 							<DoubleCheckIcon />
 						</div>
 
@@ -31,7 +33,7 @@ const Section03Improvements = ({ analysisData }: Section03ImprovementsProps) => 
 						<div className='flex flex-col gap-3 flex-1'>
 							<span className='title-3 font-bold text-neutral-900'>{improvement.title}</span>
 							<p className='body-1 font-medium text-[#191919] tracking-[-0.08px] whitespace-pre-line'>
-								{improvement.content}
+								{improvement.description}
 							</p>
 						</div>
 					</div>
