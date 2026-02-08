@@ -32,6 +32,11 @@ import {
 	useDeleteTaskItemsMutation,
 	usePatchTaskItemsOrderMutation,
 } from '@/hooks/process/useTaskItemsApi'
+import {
+	usePostFeedbackMutation,
+	usePatchFeedbackMutation,
+	useDeleteFeedbackMutation,
+} from '@/hooks/process/useFeedbackApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEY } from '@/constants/key'
 import type { RequestProcessPostDto, RequestProcessPatchDto } from '@/types/api/process/process'
@@ -50,6 +55,20 @@ const formatDateForDisplay = (dateStr: string) => {
 const formatDateToApi = (dateStr: string) => {
 	if (!dateStr) return ''
 	return dateStr.replace(/\./g, '-')
+}
+
+/** 타임스탬프 표시: "26/2/9 AM 8:52" 형식 (YY/M/D AM/PM H:MM) */
+const formatTimestampDisplay = (date: Date | string): string => {
+	const d = typeof date === 'string' ? new Date(date) : date
+	if (Number.isNaN(d.getTime())) return ''
+	const year = d.getFullYear().toString().slice(-2)
+	const month = d.getMonth() + 1
+	const day = d.getDate()
+	const hours = d.getHours()
+	const minutes = d.getMinutes().toString().padStart(2, '0')
+	const period = hours >= 12 ? 'PM' : 'AM'
+	const displayHours = hours % 12 || 12
+	return `${year}/${month}/${day} ${period} ${displayHours}:${minutes}`
 }
 
 const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
@@ -166,7 +185,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 			partName: f.created_by?.role_fields?.[0] ?? '',
 			authorName: f.created_by?.user_name ?? f.created_by?.nickname ?? '',
 			content: f.content,
-			timestamp: f.created_at,
+			timestamp: formatTimestampDisplay(f.created_at),
 			state: (f.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
 		}))
 		setFeedbacks(feedbackList)
@@ -255,6 +274,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	}
 
 	const nextTempTaskIdRef = useRef(-1)
+	const nextTempFeedbackIdRef = useRef(-1)
 	const [newTaskContent, setNewTaskContent] = useState('')
 	const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
 	const [editingTaskContent, setEditingTaskContent] = useState('')
@@ -281,6 +301,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const patchTaskItemsMutation = usePatchTaskItemsMutation()
 	const deleteTaskItemsMutation = useDeleteTaskItemsMutation()
 	const patchTaskItemsOrderMutation = usePatchTaskItemsOrderMutation()
+	const postFeedbackMutation = usePostFeedbackMutation()
+	const patchFeedbackMutation = usePatchFeedbackMutation()
+	const deleteFeedbackMutation = useDeleteFeedbackMutation()
 
 	const toggleDropdown = (dropdown: 'mission' | 'parts' | 'assignees' | 'duration' | 'status') => {
 		setOpenDropdown(prev => (prev === dropdown ? null : dropdown))
@@ -401,17 +424,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		return () => el.removeAttribute('inert')
 	}, [isCreateMode])
 
-	const formatTimestamp = () => {
-		const now = new Date()
-		const year = now.getFullYear().toString().slice(-2)
-		const month = now.getMonth() + 1
-		const day = now.getDate()
-		const hours = now.getHours()
-		const minutes = now.getMinutes().toString().padStart(2, '0')
-		const period = hours >= 12 ? 'PM' : 'AM'
-		const displayHours = hours % 12 || 12
-		return `${year}/${month}/${day} ${period} ${displayHours}:${minutes}`
-	}
+	const formatTimestamp = () => formatTimestampDisplay(new Date())
 
 	const handleTaskSubmit = () => {
 		const content = newTaskContent.trim()
@@ -541,12 +554,41 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	}
 
 	const handleFeedbackSubmit = () => {
-		if (newFeedbackContent.trim()) {
+		const content = newFeedbackContent.trim()
+		if (!content) return
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			postFeedbackMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					body: { content },
+				},
+				{
+					onSuccess: res => {
+						if (res?.body) {
+							const b = res.body
+							addFeedback({
+								id: b.feedback_id,
+								partName: b.created_by?.role_fields?.[0] ?? '',
+								authorName: b.created_by?.user_name ?? '',
+								content: b.content,
+								timestamp: formatTimestampDisplay(b.created_at),
+								state: (b.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
+							})
+						}
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+						setNewFeedbackContent('')
+					},
+				}
+			)
+		} else {
 			addFeedback({
-				id: Date.now(),
+				id: nextTempFeedbackIdRef.current--,
 				partName: '파트 소속',
 				authorName: '작성자 이름',
-				content: newFeedbackContent.trim(),
+				content,
 				timestamp: formatTimestamp(),
 				state: 'default',
 			})
@@ -560,11 +602,59 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	}
 
 	const handleFeedbackEditSubmit = () => {
-		if (editingFeedbackId !== null && editingFeedbackContent.trim()) {
-			updateFeedback(editingFeedbackId, { content: editingFeedbackContent.trim() })
+		if (editingFeedbackId === null || !editingFeedbackContent.trim()) {
+			setEditingFeedbackId(null)
+			setEditingFeedbackContent('')
+			return
 		}
-		setEditingFeedbackId(null)
-		setEditingFeedbackContent('')
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			patchFeedbackMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					feedbackId: String(editingFeedbackId),
+					body: { content: editingFeedbackContent.trim() },
+				},
+				{
+					onSuccess: () => {
+						updateFeedback(editingFeedbackId, { content: editingFeedbackContent.trim() })
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+						setEditingFeedbackId(null)
+						setEditingFeedbackContent('')
+					},
+				}
+			)
+		} else {
+			updateFeedback(editingFeedbackId, { content: editingFeedbackContent.trim() })
+			setEditingFeedbackId(null)
+			setEditingFeedbackContent('')
+		}
+	}
+
+	const handleFeedbackDelete = (feedbackId: number) => {
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			deleteFeedbackMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					feedbackId: String(feedbackId),
+				},
+				{
+					onSuccess: () => {
+						removeFeedback(feedbackId)
+						setEditingFeedbackId(prev => (prev === feedbackId ? null : prev))
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+					},
+				}
+			)
+		} else {
+			removeFeedback(feedbackId)
+			setEditingFeedbackId(prev => (prev === feedbackId ? null : prev))
+		}
 	}
 
 	return (
@@ -1017,10 +1107,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 														onContentClick={() => handleFeedbackEdit(feedback.id, feedback.content)}
 														onChange={setEditingFeedbackContent}
 														onSubmit={handleFeedbackEditSubmit}
-														onDelete={() => {
-															removeFeedback(feedback.id)
-															setEditingFeedbackId(prev => (prev === feedback.id ? null : prev))
-														}}
+														onDelete={() => handleFeedbackDelete(feedback.id)}
 													/>
 												))}
 												{/* 아래 입력칸 항상 표시 (피드백을 다 지워도 추가 가능) */}
