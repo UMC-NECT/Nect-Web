@@ -16,6 +16,8 @@ interface TaskItemProps {
 	onContentClick?: () => void
 	onChange?: (value: string) => void
 	onSubmit?: (value: string) => void
+	/** Delete 키 누르면 호출 (아이템 삭제) */
+	onDelete?: () => void
 }
 
 const TaskItem = ({
@@ -30,6 +32,7 @@ const TaskItem = ({
 	onContentClick,
 	onChange,
 	onSubmit,
+	onDelete,
 }: TaskItemProps) => {
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -40,8 +43,16 @@ const TaskItem = ({
 	}, [autoFocus, isEditing])
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === 'Enter' && content.trim()) {
+		// Mac IME: Enter가 조합 완료와 제출에 둘 다 쓰여 두 번 제출되는 것 방지
+		if (e.key === 'Enter' && !e.nativeEvent.isComposing && content.trim()) {
+			e.preventDefault()
 			onSubmit?.(content.trim())
+			return
+		}
+		// Delete 키 → 아이템 삭제 (입력이 비어 있으면 삭제 안 함)
+		if (e.key === 'Delete' && onDelete && content.trim()) {
+			e.preventDefault()
+			onDelete()
 		}
 	}
 
@@ -72,7 +83,7 @@ const TaskItem = ({
 					<input
 						ref={inputRef}
 						type='text'
-						className='body-3 font-medium text-neutral-900 bg-transparent outline-none w-full placeholder:text-neutral-300'
+						className='body-3 font-normal text-neutral-900 bg-transparent outline-none w-full placeholder:text-neutral-300'
 						placeholder='할 업무를 입력하세요'
 						value={content}
 						onChange={e => onChange?.(e.target.value)}
@@ -82,7 +93,7 @@ const TaskItem = ({
 				) : (
 					<p
 						className={cn(
-							'body-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap flex-1',
+							'body-3 font-normal overflow-hidden text-ellipsis whitespace-nowrap flex-1',
 							isPlaceholder ? 'text-neutral-300' : isComplete ? 'text-neutral-400' : 'text-neutral-900',
 							!isPlaceholder && 'cursor-text'
 						)}

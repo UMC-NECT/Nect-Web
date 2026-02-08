@@ -1,12 +1,10 @@
-import { useState } from 'react'
+
 import { cn } from '@/utils/cn'
 import { useMissionModalStore, type Mission } from '@/stores/mission-modal/missionModalStore'
 import { useTeamStore, getRoleDisplayName, type Person, type Role } from '@/stores/teamStore'
 import PersonTagChip from './PersonTagChip'
 import RoleTagChip from './RoleTagChip'
 import MissionTagChip from './MissionTagChip'
-import SettingIcon from '@/assets/icons/common/settings.svg?react'
-import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 
 type TagChipListVariant = 'person' | 'role' | 'mission'
 
@@ -68,8 +66,6 @@ const TagChipList = ({
 
 	const displayTitle = title ?? defaultTitles[variant]
 
-	const [isEditMode, setIsEditMode] = useState(false)
-
 	// 커스텀 선택 상태 사용 여부
 	const useCustomPersonSelection = customSelectedPersonIds !== undefined
 	const useCustomRoleSelection = customSelectedRoleIds !== undefined
@@ -86,10 +82,6 @@ const TagChipList = ({
 			return customSelectedRoleIds.includes(roleId)
 		}
 		return selectedRoles.some(r => r.part_id === roleId)
-	}
-
-	const handleSettingClick = () => {
-		setIsEditMode(prev => !prev)
 	}
 
 	const handlePersonClick = (person: Person) => {
@@ -176,7 +168,6 @@ const TagChipList = ({
 		const isDisabled = disabledRoleIds.includes(role.part_id)
 
 		if (isDisabled) return 'disabled'
-		if (isEditMode) return 'edit'
 		if (showClearButton && isSelected) return 'clear'
 		return 'default'
 	}
@@ -192,7 +183,6 @@ const TagChipList = ({
 					onClick={() => handleRoleClick(role)}
 				/>
 			))}
-			{isEditMode && <PlusIcon className='mx-auto hover:cursor-pointer stroke-neutral-300' />}
 		</div>
 	)
 
@@ -222,13 +212,12 @@ const TagChipList = ({
 	return (
 		<div
 			className={cn(
-				'flex flex-col w-fit border border-neutral-200 rounded-[6px] px-3.5 pt-2.5 pb-3 shadow-drop-neutral-1 bg-white',
+				'flex flex-col w-fit border border-neutral-200 rounded-6 px-3.5 pt-2.5 pb-3 shadow-drop-neutral-1 bg-white',
 				className
 			)}
 		>
 			<div className='flex items-center  justify-between'>
 				<p className='pl-0.5 caption-1 font-medium text-neutral-500'>{displayTitle}</p>
-				{variant !== 'mission' && <SettingIcon className='hover:cursor-pointer w-4 h-4' onClick={handleSettingClick} />}
 			</div>
 			{renderChips()}
 		</div>

@@ -12,6 +12,7 @@ interface SortableTaskItemProps {
     onContentClick?: () => void
     onChange?: (value: string) => void
     onSubmit?: (value: string) => void
+    onDelete?: () => void
 }
 
 const SortableTaskItem = ({
@@ -24,6 +25,7 @@ const SortableTaskItem = ({
     onContentClick,
     onChange,
     onSubmit,
+    onDelete,
 }: SortableTaskItemProps) => {
     const {
         attributes,
@@ -52,6 +54,7 @@ const SortableTaskItem = ({
                 onContentClick={onContentClick}
                 onChange={onChange}
                 onSubmit={onSubmit}
+                onDelete={onDelete}
             />
         </div>
     )

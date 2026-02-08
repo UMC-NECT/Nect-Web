@@ -51,6 +51,7 @@ interface MissionModalStore {
 	editingMissionId: number | null // 현재 편집 중인 미션(프로세스) ID = processId (null이면 새 미션 생성)
 	editingSectionIndex: number | null // 현재 편집 중인 미션의 섹션 인덱스 (0이면 리더형 모달)
 	projectId: string | null // 프로세스 상세 조회용 (기존 미션 조회 시 필요)
+	isCreateMode: boolean
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: Mission[]
@@ -77,6 +78,7 @@ interface MissionModalStore {
 	setSelectedPersons: (persons: Person[]) => void
 	setSelectedRoles: (roles: Role[]) => void
 	setSelectedMission: (mission: Mission | null) => void
+	setIsCreateMode: (isCreateMode: boolean) => void
 	addSelectedPerson: (person: Person) => void
 	removeSelectedPerson: (personId: number) => void
 	addSelectedRole: (role: Role) => void
@@ -122,7 +124,7 @@ interface MissionModalStore {
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string) => void
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean) => void
 	closeMissionModal: () => void
 }
 
@@ -163,6 +165,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	editingMissionId: null,
 	editingSectionIndex: null,
 	projectId: null,
+	isCreateMode: false,
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: initialMissions,
@@ -177,6 +180,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	setSelectedPersons: persons => set({ selectedPersons: persons }),
 	setSelectedRoles: roles => set({ selectedRoles: roles }),
 	setSelectedMission: mission => set({ selectedMission: mission }),
+	setIsCreateMode: isCreateMode => set({ isCreateMode }),
 	addSelectedPerson: person =>
 		set(state => ({
 			selectedPersons: state.selectedPersons.some(p => p.id === person.id)
@@ -314,7 +318,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string) =>
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean) =>
 		set(state => {
 			const isNewMission = missionId === undefined && sectionIndex === undefined
 			if (isNewMission) {
@@ -323,6 +327,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 					editingMissionId: null,
 					editingSectionIndex: null,
 					projectId: null,
+					isCreateMode: isCreateMode ?? false,
 					...initialMissionModalState,
 				}
 			}
@@ -331,8 +336,9 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 				editingMissionId: missionId ?? null,
 				editingSectionIndex: sectionIndex ?? null,
 				projectId: projectId ?? state.projectId ?? null,
+				isCreateMode: isCreateMode ?? state.isCreateMode ?? false,
 			}
 		}),
 	closeMissionModal: () =>
-		set({ isMissionModalOpen: false, editingMissionId: null, editingSectionIndex: null, projectId: null, ...initialMissionModalState }),
+		set({ isMissionModalOpen: false, editingMissionId: null, editingSectionIndex: null, projectId: null, isCreateMode: false, ...initialMissionModalState }),
 }))

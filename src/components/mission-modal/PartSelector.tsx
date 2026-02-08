@@ -31,7 +31,7 @@ const PartSelector = ({
 	return (
 		<div
 			className={cn(
-				'flex flex-wrap gap-1 min-h-[28px] py-0.5 rounded-[6px] w-[266px] items-center cursor-pointer',
+				'flex flex-wrap gap-1 min-h-[28px] py-0.5 rounded-6 w-[266px] items-center cursor-pointer',
 				!hasSelection && 'bg-neutral-50 hover:bg-neutral-100 shadow-inner-neutral-2',
 				'transition-colors',
                 'hover:bg-neutral-100',
@@ -75,7 +75,7 @@ const PartSelector = ({
 					))
 				)
 			) : (
-				<p className='button-1 font-medium text-neutral-300 px-2'>{placeholder}</p>
+				<p className='button-1 font-normal text-neutral-300 px-2'>{placeholder}</p>
 			)}
 		</div>
 	)

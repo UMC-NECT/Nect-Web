@@ -45,9 +45,10 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 	const [openDropdownId, setOpenDropdownId] = useState<number | null>(null)
 	const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null)
 
-	const handleContextMenu = (processId: number, e: React.MouseEvent) => {
+	const handleContextMenu = (processId: number, isTask: boolean, e: React.MouseEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
+		if (isTask) return
 		setDropdownPosition({
 			top: e.clientY,
 			left: e.clientX,
@@ -361,7 +362,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 								return (
 									<div
 										key={mission.process_id}
-										onContextMenu={e => handleContextMenu(mission.process_id, e)}
+										onContextMenu={e => handleContextMenu(mission.process_id, !!mission.task, e)}
 										style={{
 											gridColumnStart: tempColumnStart,
 											gridColumnEnd: `span ${tempColSpan}`,
@@ -443,7 +444,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 													pointerEvents: isHovered ? 'auto' : 'none',
 												}}
 											>
-												<PlusBlock onClick={() => openMissionModal()} />
+												<PlusBlock onClick={() => openMissionModal(undefined, undefined, undefined, true)} />
 											</div>
 										</div>
 									)

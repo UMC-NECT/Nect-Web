@@ -47,6 +47,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		startDate,
 		deadline,
 		missionStatus,
+		isCreateMode,
 		workContent,
 		tasks,
 		feedbacks,
@@ -68,10 +69,12 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setFiles,
 		addTask,
 		updateTask,
+		removeTask,
 		toggleTask,
 		reorderTasks,
 		addFeedback,
 		updateFeedback,
+		removeFeedback,
 		toggleFeedback,
 		addFile,
 		removeFile,
@@ -118,7 +121,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		const feedbackList = (body.feedbacks ?? []).map(f => ({
 			id: f.feedback_id,
 			partName: f.created_by?.role_fields?.[0] ?? '',
-			authorName: f.created_by?.nickname ?? '',
+			authorName: f.created_by?.user_name ?? '',
 			content: f.content,
 			timestamp: f.created_at,
 			state: (f.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
@@ -175,12 +178,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	}
 
 	const [newTaskContent, setNewTaskContent] = useState('')
-	const [isAddingTask, setIsAddingTask] = useState(true)
 	const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
 	const [editingTaskContent, setEditingTaskContent] = useState('')
 
 	const [newFeedbackContent, setNewFeedbackContent] = useState('')
-	const [isAddingFeedback, setIsAddingFeedback] = useState(true)
 	const [editingFeedbackId, setEditingFeedbackId] = useState<number | null>(null)
 	const [editingFeedbackContent, setEditingFeedbackContent] = useState('')
 
@@ -189,6 +190,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const [openDropdown, setOpenDropdown] = useState<'mission' | 'parts' | 'assignees' | 'duration' | 'status' | null>(null)
 	const dropdownRef = useRef<HTMLDivElement>(null)
 	const missionDropdownRef = useRef<HTMLDivElement>(null)
+	const feedbackContentRef = useRef<HTMLDivElement>(null)
 
 	const completedTasks = tasks.filter(t => t.isComplete).length
 	const totalTasks = tasks.length
@@ -211,6 +213,18 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		document.addEventListener('mousedown', handleClickOutside)
 		return () => document.removeEventListener('mousedown', handleClickOutside)
 	}, [])
+
+	// createMode일 때 피드백 영역 포커스 불가(입력 차단)
+	useEffect(() => {
+		const el = feedbackContentRef.current
+		if (!el) return
+		if (isCreateMode) {
+			el.setAttribute('inert', '')
+		} else {
+			el.removeAttribute('inert')
+		}
+		return () => el.removeAttribute('inert')
+	}, [isCreateMode])
 
 	const formatTimestamp = () => {
 		const now = new Date()
@@ -238,7 +252,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const handleTaskEdit = (taskId: number, content: string) => {
 		setEditingTaskId(taskId)
 		setEditingTaskContent(content)
-		setIsAddingTask(false)
 	}
 
 	const handleTaskEditSubmit = () => {
@@ -247,7 +260,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 		setEditingTaskId(null)
 		setEditingTaskContent('')
-		setIsAddingTask(true)
 	}
 
 	const handleFeedbackSubmit = () => {
@@ -267,7 +279,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const handleFeedbackEdit = (feedbackId: number, content: string) => {
 		setEditingFeedbackId(feedbackId)
 		setEditingFeedbackContent(content)
-		setIsAddingFeedback(false)
 	}
 
 	const handleFeedbackEditSubmit = () => {
@@ -276,7 +287,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 		setEditingFeedbackId(null)
 		setEditingFeedbackContent('')
-		setIsAddingFeedback(true)
 	}
 
 	return (
@@ -286,22 +296,29 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 				className
 			)}
 		>
-			<div ref={missionDropdownRef} className='mr-auto mb-[26px] ml-[58px] mt-[34px] relative'>
-				<div onClick={() => toggleDropdown('mission')} className='cursor-pointer'>
-					<MissionTagChip missionNumber={missionNumber} />
-				</div>
-				{openDropdown === 'mission' && (
-					<div className='absolute top-full left-0  z-10'>
-						<TagChipList
-							variant='mission'
-							onMissionClick={mission => {
-								setMissionNumber(mission.missionNumber)
-								setOpenDropdown(null)
-							}}
-						/>
+			<section className='flex items-center justify-between w-full px-[58px] mt-[34px] mb-[26px]'>
+				<div ref={missionDropdownRef} className=' relative'>
+					<div onClick={() => toggleDropdown('mission')} className='cursor-pointer'>
+						<MissionTagChip missionNumber={missionNumber} />
 					</div>
-				)}
-			</div>
+					{openDropdown === 'mission' && (
+						<div className='absolute top-full left-0  z-10'>
+							<TagChipList
+								variant='mission'
+								onMissionClick={mission => {
+									setMissionNumber(mission.missionNumber)
+									setOpenDropdown(null)
+								}}
+							/>
+						</div>
+					)}
+				</div>
+
+				<div className='flex gap-2.5'>
+					<button className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-neutral-50 border-[1.5px] border-neutral-100 text-neutral-900 min-w-[60px] hover:bg-neutral-200 hover:border-neutral-200 transition-all duration-300 ease-in-out'>삭제</button>
+					<button className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-primary-150-light text-primary-500-normal min-w-[60px] hover:bg-primary-200-light transition-all duration-300 ease-in-out'>저장</button>
+				</div>
+			</section>
 			<OverlayScrollbarsComponent
 				className='max-h-[600px] pb-[34px] px-[58px] mission-modal-scrollbar'
 				options={{
@@ -380,7 +397,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 												}}
 												placeholder='입력해주세요'
 												className={cn(
-													'flex min-h-[28px] py-0.5 rounded-[6px] w-[266px] items-center',
+													'flex min-h-[28px] py-0.5 rounded-6 w-[266px] items-center',
 													'transition-colors',
 													!(startDate || deadline) &&
 														'bg-neutral-50 hover:bg-neutral-100 shadow-inner-neutral-2 px-2',
@@ -418,7 +435,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 												업로드 파일 & 링크
 											</p>
 											<button
-												className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-[6px] shadow-inner-neutral-2'
+												className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-6 shadow-inner-neutral-2'
 												onClick={() => setIsAddingFile(true)}
 											>
 												<PlusIcon className='w-4 h-4 stroke-neutral-400' />
@@ -429,7 +446,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 										</div>
 
 										{/* Content */}
-										<div className='bg-neutral-50 border py-2 border-neutral-100 rounded-[6px] min-h-[206px] overflow-y-auto h-full'>
+										<div className='bg-neutral-50 border py-2 border-neutral-100 rounded-6 min-h-[206px] overflow-y-auto h-full'>
 											<div className='flex flex-col'>
 												{files.map(file => (
 													<FileItem
@@ -558,12 +575,12 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 												}}
 												placeholder='입력해주세요'
 												className={cn(
-													'flex min-h-[28px] py-0.5 rounded-[6px] w-[266px] items-center',
+													'flex min-h-[28px] py-0.5 rounded-6 w-[266px] items-center',
 													'transition-colors',
 													!(startDate || deadline) &&
 														'bg-neutral-50 hover:bg-neutral-100 shadow-inner-neutral-2 px-2',
 													(startDate || deadline) && 'hover:bg-neutral-100',
-													'button-1 font-medium text-neutral-700 placeholder:text-neutral-300',
+													'button-1 font-normal text-neutral-700 placeholder:text-neutral-300',
 													'outline-none border-none'
 												)}
 											/>
@@ -614,7 +631,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 										</div>
 
 										{/* Content */}
-										<div className='bg-neutral-50 border border-neutral-100 rounded-[6px] min-h-[206px] px-3 py-2'>
+										<div className='bg-neutral-50 border border-neutral-100 rounded-6 min-h-[206px] px-3 py-2'>
 											<DndContext
 												sensors={sensors}
 												collisionDetection={closestCenter}
@@ -639,18 +656,22 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 																onContentClick={() => handleTaskEdit(task.id, task.content)}
 																onChange={setEditingTaskContent}
 																onSubmit={handleTaskEditSubmit}
+																onDelete={() => {
+																	removeTask(task.id)
+																	setEditingTaskId(prev => (prev === task.id ? null : prev))
+																}}
 															/>
 														))}
-														{isAddingTask && (
-															<TaskItem
-																content={newTaskContent}
-																isEditing
-																autoFocus={tasks.length > 0}
-																isPlaceholder={tasks.length === 0 && !newTaskContent}
-																onChange={setNewTaskContent}
-																onSubmit={handleTaskSubmit}
-															/>
-														)}
+														{/* 아래 입력칸 항상 표시 (업무를 다 지워도 추가 가능) */}
+														<TaskItem
+															content={newTaskContent}
+															isEditing
+															autoFocus={tasks.length > 0}
+															isPlaceholder={tasks.length === 0 && !newTaskContent}
+															onChange={setNewTaskContent}
+															onSubmit={handleTaskSubmit}
+															onDelete={() => setNewTaskContent('')}
+														/>
 													</div>
 												</SortableContext>
 											</DndContext>
@@ -667,7 +688,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											<div className='relative group'>
 												<InfoIcon />
 												<div className='absolute right-6 top-1/2 -translate-y-1/2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20'>
-													<Tooltip side='right' size='small' contentClassName='whitespace-nowrap'>
+													<Tooltip side='left' size='small' contentClassName='whitespace-nowrap'>
 														피드백 미완료 시, 작업 현황의 빨간 테두리가 표시 됩니다.
 													</Tooltip>
 												</div>
@@ -675,28 +696,42 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 										</div>
 
 										{/* Content */}
-										<div className='bg-neutral-50 border border-neutral-100 rounded-[6px] min-h-[206px] px-3.5 py-2'>
-											{feedbacks.map(feedback => (
-												<FeedbackItem
-													key={feedback.id}
-													partName={feedback.partName}
-													authorName={feedback.authorName}
-													content={
-														editingFeedbackId === feedback.id
-															? editingFeedbackContent
-															: feedback.content
-													}
-													timestamp={feedback.timestamp}
-													state={feedback.state}
-													isEditing={editingFeedbackId === feedback.id}
-													autoFocus={editingFeedbackId === feedback.id}
-													onClick={() => toggleFeedback(feedback.id)}
-													onContentClick={() => handleFeedbackEdit(feedback.id, feedback.content)}
-													onChange={setEditingFeedbackContent}
-													onSubmit={handleFeedbackEditSubmit}
+										<div className='relative'>
+											{isCreateMode && (
+												<div
+													className='absolute inset-0 z-10 bg-white/60 rounded-6 cursor-not-allowed'
+													aria-hidden
 												/>
-											))}
-											{isAddingFeedback && (
+											)}
+											<div
+												ref={feedbackContentRef}
+												className='bg-neutral-50 border border-neutral-100 rounded-6 min-h-[206px] px-3.5 py-2'
+											>
+												{feedbacks.map(feedback => (
+													<FeedbackItem
+														key={feedback.id}
+														partName={feedback.partName}
+														authorName={feedback.authorName}
+														content={
+															editingFeedbackId === feedback.id
+																? editingFeedbackContent
+																: feedback.content
+														}
+														timestamp={feedback.timestamp}
+														state={feedback.state}
+														isEditing={editingFeedbackId === feedback.id}
+														autoFocus={editingFeedbackId === feedback.id}
+														onClick={() => toggleFeedback(feedback.id)}
+														onContentClick={() => handleFeedbackEdit(feedback.id, feedback.content)}
+														onChange={setEditingFeedbackContent}
+														onSubmit={handleFeedbackEditSubmit}
+														onDelete={() => {
+															removeFeedback(feedback.id)
+															setEditingFeedbackId(prev => (prev === feedback.id ? null : prev))
+														}}
+													/>
+												))}
+												{/* 아래 입력칸 항상 표시 (피드백을 다 지워도 추가 가능) */}
 												<FeedbackItem
 													partName='파트 소속'
 													authorName='작성자 이름'
@@ -706,8 +741,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 													autoFocus={feedbacks.length > 0}
 													onChange={setNewFeedbackContent}
 													onSubmit={handleFeedbackSubmit}
+													onDelete={() => setNewFeedbackContent('')}
 												/>
-											)}
+											</div>
 										</div>
 									</div>
 
@@ -719,7 +755,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 												업로드 파일 & 링크
 											</p>
 											<button
-												className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-[6px] shadow-inner-neutral-2'
+												className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-6 shadow-inner-neutral-2'
 												onClick={() => setIsAddingFile(true)}
 											>
 												<PlusIcon className='w-4 h-4 stroke-neutral-400' />
@@ -730,7 +766,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 										</div>
 
 										{/* Content */}
-										<div className='bg-neutral-50 border py-2 border-neutral-100 rounded-[6px] min-h-[206px] overflow-y-auto max-h-[300px]'>
+										<div className='bg-neutral-50 border py-2 border-neutral-100 rounded-6 min-h-[206px] overflow-y-auto max-h-[300px]'>
 											<div className='flex flex-col'>
 												{/* 기존 파일 목록 */}
 												{files.map(file => (
