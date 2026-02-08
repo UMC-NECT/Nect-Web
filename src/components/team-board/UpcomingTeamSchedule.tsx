@@ -18,7 +18,7 @@ const UpcomingTeamSchedule = ({ items, className = '' }: UpcomingTeamSchedulePro
 		<div
 			className={`w-[392px] h-[518px] px-5 pt-5 pb-3.5 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 inline-flex justify-center items-start gap-2.5 ${className}`}
 		>
-			<div className="self-stretch inline-flex flex-col justify-start items-start gap-[18Px]">
+			<div className="self-stretch inline-flex flex-col justify-start items-start gap-[18px]">
 				{/* 헤더 */}
 				<div className="self-stretch text-neutral-900 title-2 font-bold">다가오는 팀 일정</div>
 
