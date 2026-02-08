@@ -1,6 +1,7 @@
 import type { GetTeamBoardOverviewResponse } from '@/types/api/team-board/overview'
 import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
+import type { CreateScheduleRequest, CreateScheduleResponse } from '@/types/api/team-board/schedule'
 import { api } from '@/utils/AxiosInstance'
 
 /**
@@ -51,5 +52,19 @@ export const getCalendarMonth = async (
 ): Promise<GetCalendarMonthResponse> => {
 	const url = `/api/v1/projects/${projectId}/boards/calendar/month?year=${year}&month=${month}`
 	const { data } = await api.get(url)
+	return data
+}
+
+/**
+ * 팀 일정을 생성합니다.
+ * @param projectId - 프로젝트 ID
+ * @param scheduleData - 일정 데이터
+ * @returns 생성 결과
+ */
+export const createSchedule = async (
+	projectId: number,
+	scheduleData: CreateScheduleRequest,
+): Promise<CreateScheduleResponse> => {
+	const { data } = await api.post(`/api/v1/projects/${projectId}/boards/schedules`, scheduleData)
 	return data
 }

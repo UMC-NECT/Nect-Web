@@ -9,6 +9,7 @@ import AddScheduleModal from '@/components/team-board/AddScheduleModal'
 import UpcomingTeamSchedule from '@/components/team-board/UpcomingTeamSchedule'
 import { useTeamBoardOverview } from '@/hooks/team-board/useTeamBoardOverview'
 import { useCalendarMonth } from '@/hooks/team-board/useCalendarMonth'
+import { useCreateScheduleMutation } from '@/hooks/team-board/useCreateSchedule'
 import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
@@ -34,6 +35,9 @@ const TeamBoardPage = () => {
 	// 캘린더 월간 인디케이터 API 호출
 	const { data: calendarResponse } = useCalendarMonth(projectId, calendarYear, calendarMonth)
 	const calendarData = calendarResponse?.body
+
+	// 일정 생성 mutation
+	const createScheduleMutation = useCreateScheduleMutation(projectId)
 
 	/**
 	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"
@@ -208,6 +212,12 @@ const TeamBoardPage = () => {
 				time = `${startTime} - ${endTime}`
 			}
 
+			// 오늘 날짜인지 확인
+			const today = new Date()
+			const isToday = startDate.getFullYear() === today.getFullYear() &&
+				startDate.getMonth() === today.getMonth() &&
+				startDate.getDate() === today.getDate()
+
 			// 선택된 날짜와 일치하는지 확인
 			const isSelectedDate = selectedDate !== null &&
 				startDate.getFullYear() === calendarYear &&
@@ -220,7 +230,7 @@ const TeamBoardPage = () => {
 				title: schedule.title,
 				dateString: formatScheduleDateString(schedule.start_at, schedule.end_at, schedule.is_multi_day),
 				time,
-				isHighlighted: false,
+				isHighlighted: isToday, // 오늘 날짜면 primary-500 배경
 				outlineColor: isSelectedDate ? ('primary-300' as const) : ('neutral-100' as const),
 			}
 		})
@@ -472,8 +482,72 @@ const TeamBoardPage = () => {
 								isOpen={isScheduleModalOpen}
 								onClose={() => setIsScheduleModalOpen(false)}
 								onSave={(title, startDate, endDate, time) => {
-									console.log('일정 저장:', { title, startDate, endDate, time })
-									// TODO: API 호출로 일정 저장
+									// 날짜 파싱: "2026년 02월 01일" -> Date 객체
+									const parseDateString = (dateStr: string): Date => {
+										const numbers = dateStr.replace(/[^0-9]/g, '')
+										if (numbers.length !== 8) {
+											throw new Error('Invalid date format')
+										}
+										const year = parseInt(numbers.slice(0, 4), 10)
+										const month = parseInt(numbers.slice(4, 6), 10)
+										const day = parseInt(numbers.slice(6, 8), 10)
+										return new Date(year, month - 1, day)
+									}
+
+									try {
+										const startDateObj = parseDateString(startDate)
+										const endDateObj = endDate ? parseDateString(endDate) : startDateObj
+
+										// 시간 파싱: "15:00 - 17:00" -> { startHour, startMinute, endHour, endMinute }
+										let allDay = true
+										let startHour = 0
+										let startMinute = 0
+										let endHour = 23
+										let endMinute = 59
+
+										if (time && time.trim()) {
+											const timeMatch = time.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2}):(\d{1,2})$/)
+											if (timeMatch) {
+												allDay = false
+												startHour = parseInt(timeMatch[1], 10)
+												startMinute = parseInt(timeMatch[2], 10)
+												endHour = parseInt(timeMatch[3], 10)
+												endMinute = parseInt(timeMatch[4], 10)
+											}
+										}
+
+										// ISO 형식으로 변환
+										const startAt = new Date(
+											startDateObj.getFullYear(),
+											startDateObj.getMonth(),
+											startDateObj.getDate(),
+											startHour,
+											startMinute,
+										).toISOString()
+
+										const endAt = new Date(
+											endDateObj.getFullYear(),
+											endDateObj.getMonth(),
+											endDateObj.getDate(),
+											endHour,
+											endMinute,
+										).toISOString()
+
+										// API 호출
+										createScheduleMutation.mutate({
+											title,
+											description: '', // description 필수이므로 빈 문자열로 전송
+											start_at: startAt,
+											end_at: endAt,
+											all_day: allDay,
+										})
+
+										// 성공 시 모달 닫기
+										setIsScheduleModalOpen(false)
+									} catch (error) {
+										console.error('일정 생성 실패:', error)
+										// TODO: 에러 처리 (토스트 메시지 등)
+									}
 								}}
 							/>
 						</div>
