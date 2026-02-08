@@ -26,6 +26,12 @@ import InfoIcon from '@/assets/icons/common/info.svg?react'
 import { useMissionListQuery } from '@/hooks/process/useWeekMissionApi'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { usePostProcessMutation, usePostFileMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
+import {
+	usePostTaskItemsMutation,
+	usePatchTaskItemsMutation,
+	useDeleteTaskItemsMutation,
+	usePatchTaskItemsOrderMutation,
+} from '@/hooks/process/useTaskItemsApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEY } from '@/constants/key'
 import type { RequestProcessPostDto, RequestProcessPatchDto } from '@/types/api/process/process'
@@ -211,11 +217,44 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event
-		if (over && active.id !== over.id) {
-			reorderTasks(active.id as number, over.id as number)
+		if (!over || active.id === over.id) return
+		const fromIndex = tasks.findIndex(t => t.id === active.id)
+		const toIndex = tasks.findIndex(t => t.id === over.id)
+		if (fromIndex === -1 || toIndex === -1) return
+		const reordered = [...tasks]
+		const [moved] = reordered.splice(fromIndex, 1)
+		reordered.splice(toIndex, 0, moved)
+		const newOrderIds = reordered.map(t => t.id)
+		reorderTasks(active.id as number, over.id as number)
+		if (
+			isEditMode &&
+			projectId != null &&
+			editingMissionId != null &&
+			newOrderIds.length > 0
+		) {
+			const firstPart = selectedParts[0]
+			patchTaskItemsOrderMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					body: {
+						ordered_task_item_ids: newOrderIds,
+						role_field: firstPart?.role_field ?? '',
+						custom_role_field_name: firstPart?.custom_role_field_name ?? '',
+					},
+				},
+				{
+					onSuccess: () => {
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+					},
+				}
+			)
 		}
 	}
 
+	const nextTempTaskIdRef = useRef(-1)
 	const [newTaskContent, setNewTaskContent] = useState('')
 	const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
 	const [editingTaskContent, setEditingTaskContent] = useState('')
@@ -238,6 +277,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const postFileMutation = usePostFileMutation()
 	const postProcessMutation = usePostProcessMutation()
 	const patchProcessMutation = usePatchProcessMutation()
+	const postTaskItemsMutation = usePostTaskItemsMutation()
+	const patchTaskItemsMutation = usePatchTaskItemsMutation()
+	const deleteTaskItemsMutation = useDeleteTaskItemsMutation()
+	const patchTaskItemsOrderMutation = usePatchTaskItemsOrderMutation()
 
 	const toggleDropdown = (dropdown: 'mission' | 'parts' | 'assignees' | 'duration' | 'status') => {
 		setOpenDropdown(prev => (prev === dropdown ? null : dropdown))
@@ -371,12 +414,33 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	}
 
 	const handleTaskSubmit = () => {
-		if (newTaskContent.trim()) {
-			addTask({
-				id: Date.now(),
-				content: newTaskContent.trim(),
-				isComplete: false,
-			})
+		const content = newTaskContent.trim()
+		if (!content) return
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			postTaskItemsMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					body: { content, is_done: false, sort_order: tasks.length },
+				},
+				{
+					onSuccess: (res) => {
+						if (res?.body) {
+							addTask({
+								id: res.body.task_item_id,
+								content: res.body.content,
+								isComplete: res.body.is_done,
+							})
+						}
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+						setNewTaskContent('')
+					},
+				}
+			)
+		} else {
+			addTask({ id: nextTempTaskIdRef.current--, content, isComplete: false })
 			setNewTaskContent('')
 		}
 	}
@@ -387,11 +451,93 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	}
 
 	const handleTaskEditSubmit = () => {
-		if (editingTaskId !== null && editingTaskContent.trim()) {
-			updateTask(editingTaskId, { content: editingTaskContent.trim() })
+		if (editingTaskId === null || !editingTaskContent.trim()) {
+			setEditingTaskId(null)
+			setEditingTaskContent('')
+			return
 		}
-		setEditingTaskId(null)
-		setEditingTaskContent('')
+		const task = tasks.find(t => t.id === editingTaskId)
+		const sortOrder = task ? tasks.findIndex(t => t.id === editingTaskId) : 0
+		if (isEditMode && projectId != null && editingMissionId != null && task) {
+			patchTaskItemsMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					taskItemId: String(editingTaskId),
+					body: {
+						content: editingTaskContent.trim(),
+						is_done: task.isComplete,
+						sort_order: sortOrder,
+					},
+				},
+				{
+					onSuccess: () => {
+						updateTask(editingTaskId, { content: editingTaskContent.trim() })
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+						setEditingTaskId(null)
+						setEditingTaskContent('')
+					},
+				}
+			)
+		} else {
+			updateTask(editingTaskId, { content: editingTaskContent.trim() })
+			setEditingTaskId(null)
+			setEditingTaskContent('')
+		}
+	}
+
+	const handleTaskToggle = (task: { id: number; content: string; isComplete: boolean }) => {
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			const sortOrder = tasks.findIndex(t => t.id === task.id)
+			patchTaskItemsMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					taskItemId: String(task.id),
+					body: {
+						content: task.content,
+						is_done: !task.isComplete,
+						sort_order: sortOrder,
+					},
+				},
+				{
+					onSuccess: () => {
+						updateTask(task.id, { isComplete: !task.isComplete })
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+					},
+				}
+			)
+		} else {
+			toggleTask(task.id)
+		}
+	}
+
+	const handleTaskDelete = (taskId: number) => {
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			deleteTaskItemsMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					taskItemId: String(taskId),
+				},
+				{
+					onSuccess: () => {
+						removeTask(taskId)
+						setEditingTaskId(prev => (prev === taskId ? null : prev))
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+						})
+					},
+				}
+			)
+		} else {
+			removeTask(taskId)
+			setEditingTaskId(prev => (prev === taskId ? null : prev))
+		}
 	}
 
 	const handleFeedbackSubmit = () => {
@@ -801,14 +947,11 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 																isComplete={task.isComplete}
 																isEditing={editingTaskId === task.id}
 																autoFocus={editingTaskId === task.id}
-																onClick={() => toggleTask(task.id)}
+																onClick={() => handleTaskToggle(task)}
 																onContentClick={() => handleTaskEdit(task.id, task.content)}
 																onChange={setEditingTaskContent}
 																onSubmit={handleTaskEditSubmit}
-																onDelete={() => {
-																	removeTask(task.id)
-																	setEditingTaskId(prev => (prev === task.id ? null : prev))
-																}}
+																onDelete={() => handleTaskDelete(task.id)}
 															/>
 														))}
 														{/* 아래 입력칸 항상 표시 (업무를 다 지워도 추가 가능) */}

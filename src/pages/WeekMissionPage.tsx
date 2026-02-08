@@ -8,14 +8,14 @@ import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useProcessWeekQuery } from '@/hooks/process/useProcessApi'
-import { useWeekMissionQuery, usePatchMissionStatusMutation } from '@/hooks/process/useWeekMissionApi'
+import { useWeekMissionQuery } from '@/hooks/process/useWeekMissionApi'
 import type { WeekMissionItem } from '@/types/api/process/weekMission'
 import type {
 	ProcessWeekProcessItem,
 	ProcessWeekWeekItem,
 } from '@/types/api/process/process'
 import { getMissionList } from '@/api/process/weekMission'
-import { useDeleteProcessMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
+import { useDeleteProcessMutation, usePatchProcessMutation, usePatchProcessStatusMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery, useUsersQuery } from '@/hooks/project/useProjectApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useCallback } from 'react'
@@ -147,7 +147,7 @@ const WeekMissionPage = () => {
 	}, [projectIdStr, queryClient])
 	const { data: partsData } = usePartsQuery(projectIdStr)
 	const { data: usersData } = useUsersQuery(projectIdStr)
-	const patchStatusMutation = usePatchMissionStatusMutation()
+	const patchProcessStatusMutation = usePatchProcessStatusMutation()
 	const patchProcessMutation = usePatchProcessMutation()
 	const deleteProcessMutation = useDeleteProcessMutation()
 
@@ -206,7 +206,7 @@ const WeekMissionPage = () => {
 	const handleMissionUpdate = useCallback(
 		(missionId: number, updates: { start_date?: string; dead_line?: string; sectionIndex?: number; status?: StatusType }) => {
 			if (updates.status !== undefined) {
-				patchStatusMutation.mutate(
+				patchProcessStatusMutation.mutate(
 					{
 						projectId: projectIdStr,
 						processId: String(missionId),
@@ -214,6 +214,7 @@ const WeekMissionPage = () => {
 					},
 					{
 						onSuccess: () => {
+							queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdStr) })
 							updateMission(missionId, updates)
 						},
 					}
@@ -269,7 +270,7 @@ const WeekMissionPage = () => {
 			projectIdStr,
 			missions,
 			queryClient,
-			patchStatusMutation,
+			patchProcessStatusMutation,
 			patchProcessMutation,
 			updateMission,
 		]
