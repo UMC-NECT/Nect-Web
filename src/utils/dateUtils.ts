@@ -175,36 +175,7 @@ export const formatDateInput = (value: string, previousValue: string = ''): stri
 	// 빈 값이면 빈 문자열 반환
 	if (!numbers) return ''
 	
-	// 백스페이스로 값이 줄어든 경우 (삭제 중)
-	const previousNumbers = previousValue.replace(/[^0-9]/g, '')
-	if (numbers.length < previousNumbers.length) {
-		// 이전 값에서 단위를 제거한 숫자와 현재 숫자가 같으면 단위만 제거된 것으로 판단
-		if (previousValue.endsWith('일')) {
-			const withoutDay = previousValue.replace(/일$/, '')
-			const numbersWithoutDay = withoutDay.replace(/[^0-9]/g, '')
-			if (numbersWithoutDay === numbers) {
-				return withoutDay
-			}
-		}
-		if (previousValue.endsWith('월')) {
-			const withoutMonth = previousValue.replace(/월$/, '')
-			const numbersWithoutMonth = withoutMonth.replace(/[^0-9]/g, '')
-			if (numbersWithoutMonth === numbers) {
-				return withoutMonth
-			}
-		}
-		if (previousValue.endsWith('년')) {
-			const withoutYear = previousValue.replace(/년$/, '')
-			const numbersWithoutYear = withoutYear.replace(/[^0-9]/g, '')
-			if (numbersWithoutYear === numbers) {
-				return withoutYear
-			}
-		}
-		// 단위 제거가 아닌 경우, 현재 값 그대로 반환 (숫자만 있으면 그대로)
-		return value
-	}
-	
-	// 숫자 길이에 따라 자동 포맷팅
+	// 숫자 길이에 따라 항상 새로 포맷팅 (백스페이스 처리 단순화)
 	if (numbers.length <= 4) {
 		// 년도만 입력 (1~4자리)
 		const year = parseInt(numbers, 10)
@@ -322,51 +293,11 @@ const parseTime = (timeStr: string): { hour: number; minute: number } | null => 
 export const formatTimeInput = (value: string, previousValue: string = ''): string => {
 	// 숫자만 추출
 	const numbers = value.replace(/[^0-9]/g, '')
-	const previousNumbers = previousValue.replace(/[^0-9]/g, '')
 	
 	// 빈 값이면 빈 문자열 반환
 	if (!numbers) return ''
 	
-	// 백스페이스로 값이 줄어든 경우 (삭제 중)
-	if (numbers.length < previousNumbers.length) {
-		// 기존 포맷에서 마지막 부분 제거
-		if (value.includes(' - ')) {
-			// "15:00 - 17:00" 형식에서 삭제
-			const [startTime, endTime] = value.split(' - ')
-			if (endTime && numbers.length <= 4) {
-				// 종료 시간이 모두 삭제된 경우
-				return startTime
-			}
-			if (endTime && numbers.length > 4) {
-				// 종료 시간 일부만 남은 경우
-				const endNumbers = numbers.slice(4)
-				if (endNumbers.length === 0) {
-					return startTime
-				} else if (endNumbers.length <= 2) {
-					return `${startTime} - ${endNumbers}`
-				} else if (endNumbers.length === 3) {
-					return `${startTime} - ${endNumbers.slice(0, 2)}:${endNumbers.slice(2)}`
-				} else {
-					return `${startTime} - ${endNumbers.slice(0, 2)}:${endNumbers.slice(2, 4)}`
-				}
-			}
-		}
-		// "15:00" 형식에서 삭제
-		if (value.includes(':')) {
-			const [hour, minute] = value.split(':')
-			if (minute && numbers.length <= 2) {
-				// 분이 모두 삭제된 경우
-				return hour
-			}
-			if (minute && numbers.length > 2) {
-				// 분 일부만 남은 경우
-				return `${hour}:${minute.slice(0, 2)}`
-			}
-		}
-		return value
-	}
-	
-	// 숫자 길이에 따라 자동 포맷팅
+	// 숫자 길이에 따라 항상 새로 포맷팅 (백스페이스 처리 단순화)
 	if (numbers.length <= 4) {
 		// 시작 시간만 입력 (1~4자리)
 		if (numbers.length <= 2) {
