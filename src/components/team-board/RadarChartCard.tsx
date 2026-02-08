@@ -1,4 +1,3 @@
-import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
 import RadarChart from '@/components/team-board/RadarChart'
 
 interface RadarChartCardProps {
@@ -15,14 +14,7 @@ const RadarChartCard = ({ title, totalScore, maxScore, data, className = '' }: R
 			className={`w-[392px] h-[448px] p-5 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 flex flex-col justify-between ${className}`}
 		>
 			{/* 상단 타이틀 영역 - 다른 카드와 동일 스타일 */}
-			<div className='self-stretch inline-flex justify-between items-center mb-2'>
-				<div className='inline-flex justify-start items-center gap-2'>
-					<div className='justify-start text-neutral-900 title-2 font-bold line-clamp-1'>{title}</div>
-					<div className='w-4 h-4 flex justify-center items-center'>
-						<ChevronRightIcon className='w-4 h-4 text-neutral-700' />
-					</div>
-				</div>
-			</div>
+			<div className='self-stretch text-neutral-900 title-2 font-bold line-clamp-1 mb-2'>{title}</div>
 
 			{/* 차트 영역 */}
 			<div className='flex-1 flex items-center justify-center'>

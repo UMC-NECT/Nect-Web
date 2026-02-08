@@ -54,13 +54,13 @@ const CTAModal = ({
 				{/* 선택용 버튼 2개 */}
 				<div className='flex gap-3 px-7'>
 					{leftButtonMsg && (
-						<Button color='mypage1' className='min-w-40 w-fit' onClick={onLeftClick}>
+						<Button color='mypage1' size='modal' className='min-w-40 w-fit' onClick={onLeftClick}>
 							{leftButtonMsg}
 						</Button>
 					)}
 
 					{rightButtonMsg && (
-						<Button color='mypage2' className='min-w-40' onClick={onRightClick}>
+						<Button color='mypage2' size='modal' className='min-w-40 max-w-40' onClick={onRightClick}>
 							{rightButtonMsg}
 						</Button>
 					)}
