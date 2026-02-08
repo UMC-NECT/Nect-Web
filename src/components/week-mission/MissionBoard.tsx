@@ -13,29 +13,11 @@ import PlusBlock from './PlusBlock'
 import DateCell from './DateCell'
 import { MissonPart_Title, MissionPart_Add } from './MissonPart'
 import type { MissionStatus } from '@/types/missionStatus'
+import type { StatusType } from '@/types/api/status'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
+import type { Mission, Section } from '@/types/mission'
 
 const ITEM_WIDTH = 80 // WeekDates와 동일한 날짜 박스 너비
-
-export interface Mission {
-	id: number
-	isGoal?: boolean
-	missionNumber: number
-	title: string
-	progress: number
-	createdAt: string // "2025.11.17" 형식
-	dueDate: string // "2025.11.30" 형식
-	daysRemaining: number
-	status: MissionStatus
-	sectionIndex: number // 0-3 사이의 섹션 인덱스
-	participants?: string[]
-	onClick?: () => void
-}
-
-export interface Section {
-	id: number
-	title: string
-}
 
 interface MissionBoardProps {
 	missions: Mission[]
@@ -43,7 +25,7 @@ interface MissionBoardProps {
 	projectId?: string // 기존 미션 조회 시 프로세스 상세 API용 (있으면 모달에 데이터 채움)
 	onMissionUpdate?: (
 		missionId: number,
-		updates: { createdAt?: string; dueDate?: string; sectionIndex?: number; status?: MissionStatus }
+		updates: { start_date?: string; dead_line?: string; sectionIndex?: number; status?: StatusType }
 	) => void
 }
 
@@ -88,8 +70,9 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 
 	// Mission의 시작 열 인덱스 찾기
 	const getMissionColumnStart = useCallback(
-		(createdAt: string): number | null => {
-			const startDate = parseDate(createdAt)
+		(start_date: string | undefined): number | null => {
+			if (!start_date || typeof start_date !== 'string') return null
+			const startDate = parseDate(start_date)
 			const index = dates.findIndex(date => isSameDate(date, startDate))
 			return index !== -1 ? index + 1 : null
 		},
@@ -100,7 +83,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 	const positionedMissions = useMemo(() => {
 		return missions.map(mission => ({
 			...mission,
-			columnStart: getMissionColumnStart(mission.createdAt),
+			columnStart: getMissionColumnStart(mission.start_date),
 		}))
 	}, [missions, getMissionColumnStart])
 
@@ -228,7 +211,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 			return positionedMissions.some(mission => {
 				if (!mission.columnStart) return false
 				const startCol = mission.columnStart - 1
-				const endCol = startCol + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
+				const endCol = startCol + calculateDateSpan(mission.start_date, mission.dead_line) - 1
 				return mission.sectionIndex === sectionIndex && dateIndex >= startCol && dateIndex <= endCol
 			})
 		},
@@ -275,7 +258,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 				{/* 왼쪽 MissonPart 컴포넌트들 - 고정 위치 */}
 				<div className='flex flex-col gap-y-[12px] pt-px shrink-0'>
 					{/* 첫 번째 줄: 위크미션 Task */}
-					<MissonPart_Title title='위크미션 Task' isGoal />
+					<MissonPart_Title title='위크미션 Task' task />
 					{/* 나머지 줄들: 섹션 제목들 */}
 					{sections.map((section, index) => (
 						<MissonPart_Title key={index} title={section.title} />
@@ -298,7 +281,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 					>
 						<div
 							ref={gridContainerRef}
-							className='grid gap-x-0 gap-y-[12px] shrink-0 relative border-t border-neutral-200'
+							className='grid gap-x-0 gap-y-[12px] shrink-0 relative border-t border-neutral-100'
 							style={{
 								gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
 								gridTemplateRows: `repeat(${sections.length + 1}, 130px)`,
@@ -323,7 +306,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 								return (
 									<div
 										key={`line-${dateIndex}`}
-										className='border-r border-neutral-200'
+										className='border-r border-neutral-100'
 										style={{
 											gridColumn: dateIndex + 1,
 											gridRow: `1 / ${sections.length + 2}`,
@@ -337,26 +320,35 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 								if (!mission.columnStart) return null
 
 								// 드래그 중이면 임시 위치 사용
-								const isDragging = draggingMissionId === mission.id
+								const isDragging = draggingMissionId === mission.process_id
 								const tempColumnStart =
 									isDragging && dragTempPosition ? dragTempPosition.columnIndex + 1 : mission.columnStart
 								const tempSectionIndex =
 									isDragging && dragTempPosition ? dragTempPosition.sectionIndex : mission.sectionIndex
 
 								// 리사이즈 중이면 임시 크기 사용
-								const isResizing = resizingMissionId === mission.id
-								const originalColSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
+								const isResizing = resizingMissionId === mission.process_id
+								const originalColSpan = calculateDateSpan(mission.start_date, mission.dead_line)
 								let tempColSpan = originalColSpan
 								if (isResizing && resizeTempPosition !== null) {
-									// 리사이즈 시작 시점의 원래 위치 사용 (드래그 중이어도 원래 위치 기준)
-									const resizeStartColumn = getResizeStartColumn(mission.id)
+									const resizeStartColumn = getResizeStartColumn(mission.process_id)
 									const startColumnIndex = (resizeStartColumn || mission.columnStart || 1) - 1
 									tempColSpan = resizeTempPosition - startColumnIndex + 1
 								}
 
+								const statusToMissionStatus = (s: string): MissionStatus => {
+									const map: Record<string, MissionStatus> = {
+										PLANNING: 'planning',
+										IN_PROGRESS: 'in_progress',
+										DONE: 'completed',
+										BACKLOG: 'backlog',
+									}
+									return map[s] ?? 'planning'
+								}
+
 								return (
 									<div
-										key={mission.id}
+										key={mission.process_id}
 										style={{
 											gridColumnStart: tempColumnStart,
 											gridColumnEnd: `span ${tempColSpan}`,
@@ -364,26 +356,32 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 										}}
 									>
 										<MissionBlock
-											isGoal={mission.isGoal}
-											missionNumber={mission.missionNumber}
+											task={mission.task}
+											missionNumber={mission.mission_number}
 											title={mission.title}
 											progress={mission.progress}
-											createdAt={mission.createdAt}
-											dueDate={mission.dueDate}
-											daysRemaining={mission.daysRemaining}
-											status={mission.status}
-											participants={mission.participants}
+											createdAt={mission.start_date}
+											dueDate={mission.dead_line}
+											daysRemaining={mission.left_day}
+											status={statusToMissionStatus(mission.status)}
+											assignees={mission.assignee}
 											gridColumnSize={tempColSpan}
 											onClick={() => {
 												if (!justDraggedRef.current) {
-													openMissionModal(mission.id, mission.sectionIndex, projectId)
+													openMissionModal(mission.process_id, mission.sectionIndex, projectId)
 												}
 											}}
-											onDragStart={e => handleMissionDragStart(mission.id, e)}
-											onResizeStart={() => handleMissionResizeStart(mission.id)}
+											onDragStart={e => handleMissionDragStart(mission.process_id, e)}
+											onResizeStart={() => handleMissionResizeStart(mission.process_id)}
 											onStatusChange={newStatus => {
 												if (onMissionUpdate) {
-													onMissionUpdate(mission.id, { status: newStatus })
+													const statusToApi: Record<MissionStatus, StatusType> = {
+														planning: 'PLANNING',
+														in_progress: 'IN_PROGRESS',
+														completed: 'DONE',
+														backlog: 'BACKLOG',
+													}
+													onMissionUpdate(mission.process_id, { status: statusToApi[newStatus] })
 												}
 											}}
 											isDragging={isDragging}

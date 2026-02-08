@@ -5,13 +5,33 @@ import { useTeamStore } from '@/stores/teamStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
-import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
+import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import { useProcessWeekQuery } from '@/hooks/process/useProcessApi'
+import { useWeekMissionQuery } from '@/hooks/process/useWeekMissionApi'
+import { useEffect } from 'react'
+import type { Mission } from '@/types/mission'
+import type { Assignees } from '@/types/api/assignees'
 
 const WeekMissionPage = () => {
-	const { missions, updateMission } = useMissionStore()
+	const { missions, updateMission, setMissions } = useMissionStore()
 	const { openMissionModal } = useMissionModalStore()
 	const { roles } = useTeamStore()
-	const { projectId } = useGetProjectUsers()
+	const { projectId } = useProjectIdStore()
+	useProcessWeekQuery(projectId?.toString() ?? '')
+	const { data: weekMission } = useWeekMissionQuery(projectId?.toString() ?? '', '4')
+
+	useEffect(() => {
+		if (!weekMission?.body?.missions?.length) return
+		const list = weekMission.body.missions as (Mission & { assignee?: Assignees | Assignees[] })[]
+		setMissions(
+			list.map(m => ({
+				...m,
+				sectionIndex: 0,
+				task: true,
+				assignee: m.assignee != null ? (Array.isArray(m.assignee) ? m.assignee : [m.assignee]) : undefined,
+			}))
+		)
+	}, [weekMission, setMissions])
 
 	// 섹션 데이터 (teamStore의 roles 사용)
 	const sections = roles.map(role => ({
@@ -29,7 +49,10 @@ const WeekMissionPage = () => {
 				<WeekSelector />
 				<div className='flex items-center gap-4'>
 					{/* 일정 추가 버튼 */}
-					<button className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors' onClick={() => openMissionModal()}>
+					<button
+						className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors'
+						onClick={() => openMissionModal()}
+					>
 						<ScheduleAddIcon className='w-6 h-6' />
 					</button>
 				</div>
@@ -37,12 +60,7 @@ const WeekMissionPage = () => {
 
 			{/* MissionBoard - useGetProjectUsers의 projectId로 기존 미션(processId) 클릭 시 모달에 상세 데이터 채움 */}
 			<div className='w-full mt-6'>
-				<MissionBoard
-					missions={missions}
-					sections={sections}
-					projectId={projectId}
-					onMissionUpdate={updateMission}
-				/>
+				<MissionBoard missions={missions} sections={sections} projectId={projectId?.toString() ?? ''} onMissionUpdate={updateMission} />
 			</div>
 		</div>
 	)

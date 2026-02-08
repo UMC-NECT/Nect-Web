@@ -29,8 +29,8 @@ const Statistics = () => {
             {/* 통계 */}
             <div className="h-20 flex items-center">
                 {stats.map((stat, index) => (
-                    <>
-                        <div key={index} className="w-[252px] h-[79px] px-5 gap-[6px]">
+                    <div key={index} className="flex items-center">
+                        <div className="w-[252px] h-[79px] px-5 gap-[6px]">
                             <div className={`text-[40px] font-bold ${
                                 stat.isPrimary ? 'text-primary-500-normal' : 'text-neutral-900'
                             }`}>
@@ -45,7 +45,7 @@ const Statistics = () => {
                                 <div className="w-px h-20 bg-neutral-300"/>
                             </div>
                         )}
-                    </>
+                    </div>
                 ))}
             </div>
         </div>

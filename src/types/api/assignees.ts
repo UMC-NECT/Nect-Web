@@ -1,5 +1,6 @@
 export interface Assignees{
     user_id: number
-    user_name: string
-    user_image: string
+    name: string
+    nickname: string
+    profile_image_url: string
 }

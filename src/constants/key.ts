@@ -23,5 +23,12 @@ export const QUERY_KEY = {
 		detail: (projectId: string, processId: string) => ['processes', projectId, 'detail', processId] as const,
 		progressSummary: (projectId: string) => ['processes', projectId, 'progressSummary'] as const,
 		list: (projectId: string) => ['processes', projectId] as const,
+		weekMission: {
+			all: (projectId: string) => ['processes', projectId, 'weekMission'] as const,
+			week: (projectId: string) => ['processes', projectId, 'weekMission', 'week'] as const,
+			missionList: (projectId: string) => ['processes', projectId, 'weekMission', 'missionList'] as const,
+			detail: (projectId: string, processId: string) =>
+				['processes', projectId, 'weekMission', 'detail', processId] as const,
+		},
 	},
 }

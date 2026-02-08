@@ -19,7 +19,7 @@ export const getProcessPart = async (projectId: string, fieldId?: string): Promi
 /** 프로젝트의 프로세스를 주차 기준으로 조회합니다. start_date 미입력 시 현재 주차 기준. */
 export const getProcessWeek = async (projectId: string, start_date?: string): Promise<ResponseProcessWeekDto> => {
     const query = toQueryString({ start_date })
-    const { data } = await api.get(`/api/v1/projects/${projectId}/processes/weeks${query}`)
+    const { data } = await api.get(`/api/v1/projects/${projectId}/processes/week${query}`)
     return data
 }
 

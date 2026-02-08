@@ -2,17 +2,18 @@ import { useState, useRef, useEffect } from 'react'
 import GoalIcon from '@/assets/icons/week-mission/goal.svg?react'
 import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 import { useTeamStore } from '@/stores/teamStore'
+import { cn } from '@/utils/cn'
 
 interface MissonPart_TitleProps {
-    title: string
-	isGoal?: boolean
+	title: string
+	task?: boolean
 }
 
-export const MissonPart_Title = ({ title, isGoal }: MissonPart_TitleProps) => {
+export const MissonPart_Title = ({ title, task }: MissonPart_TitleProps) => {
 	return (
-		<div className={`flex flex-col items-center justify-center rounded-xl px-2.5 py-4 gap-1 mt-3 ${isGoal ? 'bg-primary-400-normal' : 'bg-neutral-600'} w-[72px] h-[118px]`}>
-			{isGoal && <GoalIcon className='w-[18px] h-[18px]' stroke='#FBF9FF' />}
-			<p className='body-2 font-bold text-neutral-000 text-center'>{title}</p>
+		<div className={`flex flex-col items-center justify-center rounded-xl px-2.5 py-4 gap-1 mt-3 ${task ? 'bg-primary-400-normal' : 'bg-neutral-600'} w-[72px] h-[118px]`}>
+			{task && <GoalIcon className='w-[18px] h-[18px]' stroke='#FBF9FF' />}
+			<p className={cn('body-2 text-neutral-000 text-center', task ? 'text-white font-bold' : 'text-neutral-000 font-semibold')}>{title}</p>
 		</div>
 	)
 }
@@ -72,7 +73,7 @@ export const MissionPart_Add = () => {
 					onKeyDown={handleKeyDown}
 					onBlur={handleBlur}
 					placeholder='팀 이름'
-					className='w-full bg-transparent text-center body-2 font-bold text-neutral-000 placeholder:text-neutral-300 outline-none'
+					className='w-full bg-transparent text-center body-2 font-semibold text-neutral-000 placeholder:text-neutral-300 outline-none'
 				/>
 				<button
 					type='button'

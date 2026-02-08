@@ -23,7 +23,7 @@ const StatusChipList = ({ onStatusChange }: StatusChipListProps) => {
 
 	return (
 		<div
-			className='bg-neutral-000 border border-neutral-200 rounded-[6px] shadow-[0px_6px_20px_0px_#e4e4e4] w-[102px] pb-[12px] pt-[10px] px-[14px]'
+			className='bg-neutral-000 border border-neutral-200 rounded-6 shadow-[0px_6px_20px_0px_#e4e4e4]	w-[102px] pb-[12px] pt-[10px] px-[14px]'
 			onWheel={handleWheel}
 			onMouseDown={handleMouseDown}
 		>
