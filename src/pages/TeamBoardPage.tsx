@@ -8,6 +8,7 @@ import AddScheduleButton from '@/components/team-board/AddScheduleButton'
 import AddScheduleModal from '@/components/team-board/AddScheduleModal'
 import UpcomingTeamSchedule from '@/components/team-board/UpcomingTeamSchedule'
 import { useTeamBoardOverview } from '@/hooks/team-board/useTeamBoardOverview'
+import { useCalendarMonth } from '@/hooks/team-board/useCalendarMonth'
 import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
@@ -16,6 +17,12 @@ const TeamBoardPage = () => {
 	// TODO: URL에서 projectId 가져오기
 	const projectId = 1
 
+	// 현재 캘린더 월/년도 상태
+	const today = new Date()
+	const [calendarYear, setCalendarYear] = useState(today.getFullYear())
+	const [calendarMonth, setCalendarMonth] = useState(today.getMonth() + 1)
+	const [selectedDate, setSelectedDate] = useState<number | null>(null)
+
 	// API 호출
 	const { data: overviewResponse, isLoading } = useTeamBoardOverview(projectId, {
 		docsLimit: 4,
@@ -23,6 +30,10 @@ const TeamBoardPage = () => {
 		scheduleLimit: 6,
 	})
 	const overview = overviewResponse?.body
+
+	// 캘린더 월간 인디케이터 API 호출
+	const { data: calendarResponse } = useCalendarMonth(projectId, calendarYear, calendarMonth)
+	const calendarData = calendarResponse?.body
 
 	/**
 	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"
@@ -197,6 +208,12 @@ const TeamBoardPage = () => {
 				time = `${startTime} - ${endTime}`
 			}
 
+			// 선택된 날짜와 일치하는지 확인
+			const isSelectedDate = selectedDate !== null &&
+				startDate.getFullYear() === calendarYear &&
+				startDate.getMonth() + 1 === calendarMonth &&
+				startDate.getDate() === selectedDate
+
 			return {
 				dayOfWeek: getDayOfWeek(startDate),
 				date: startDate.getDate(),
@@ -204,10 +221,10 @@ const TeamBoardPage = () => {
 				dateString: formatScheduleDateString(schedule.start_at, schedule.end_at, schedule.is_multi_day),
 				time,
 				isHighlighted: false,
-				outlineColor: 'neutral-100' as const,
+				outlineColor: isSelectedDate ? ('primary-300' as const) : ('neutral-100' as const),
 			}
 		})
-	}, [overview])
+	}, [overview, selectedDate, calendarYear, calendarMonth])
 
 	/**
 	 * 작업 시간을 "HH:MM:SS" 형식으로 변환
@@ -290,65 +307,102 @@ const TeamBoardPage = () => {
 		}
 	}, [overview])
 
-	// 캘린더 데이터는 아직 API에 없으므로 샘플 데이터 유지
-	const calendarDays = [
-		// 일요일
-		[
-			{ date: 30, isActive: false, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 7, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 14, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 21, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 28, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 월요일
-		[
-			{ date: 1, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 8, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 15, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 22, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 29, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 화요일
-		[
-			{ date: 2, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 9, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 16, isActive: true, isToday: true, isSelected: true, hasTasks: true },
-			{ date: 23, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 30, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 수요일
-		[
-			{ date: 3, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 10, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 17, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 24, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 31, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 목요일
-		[
-			{ date: 4, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 11, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 18, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 25, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 1, isActive: false, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 금요일
-		[
-			{ date: 5, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 12, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 19, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 26, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 2, isActive: false, isToday: false, isSelected: false, hasTasks: true },
-		],
-		// 토요일
-		[
-			{ date: 6, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 13, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 20, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 27, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 3, isActive: false, isToday: false, isSelected: false, hasTasks: false },
-		],
-	]
+	/**
+	 * 캘린더 데이터를 Calendar 컴포넌트 형식으로 변환
+	 */
+	const calendarDays = useMemo(() => {
+		// API 데이터에서 일정이 있는 날짜를 Map으로 변환
+		const scheduleDaysMap = new Map<string, number>()
+		if (calendarData?.days) {
+			calendarData.days.forEach((day) => {
+				scheduleDaysMap.set(day.date, day.event_count)
+			})
+		}
+
+		// 해당 월의 첫 날과 마지막 날 계산
+		const firstDayOfMonth = new Date(calendarYear, calendarMonth - 1, 1)
+		const lastDayOfMonth = new Date(calendarYear, calendarMonth, 0)
+		const daysInMonth = lastDayOfMonth.getDate()
+		const startingDayOfWeek = firstDayOfMonth.getDay() // 0 = 일요일, 6 = 토요일
+
+		// 오늘 날짜 확인
+		const todayDate = new Date()
+		const isCurrentMonth = todayDate.getFullYear() === calendarYear && todayDate.getMonth() + 1 === calendarMonth
+
+		// 7x6 그리드 생성 (최대 6주)
+		const daysGrid: Array<Array<{ date: number; isActive: boolean; isToday: boolean; isSelected: boolean; hasTasks: boolean }>> = Array.from({ length: 7 }, () => [])
+
+		let dayCounter = 1
+		for (let week = 0; week < 6; week++) {
+			for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+				if (week === 0 && dayOfWeek < startingDayOfWeek) {
+					// 이전 달의 날짜 (표시하지 않음)
+					daysGrid[dayOfWeek].push({ date: 0, isActive: false, isToday: false, isSelected: false, hasTasks: false })
+				} else if (dayCounter > daysInMonth) {
+					// 다음 달의 날짜 (표시하지 않음)
+					daysGrid[dayOfWeek].push({ date: 0, isActive: false, isToday: false, isSelected: false, hasTasks: false })
+				} else {
+					// 현재 달의 날짜
+					const dateString = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`
+					const hasTasks = scheduleDaysMap.has(dateString) && (scheduleDaysMap.get(dateString) || 0) > 0
+					const isToday = isCurrentMonth && dayCounter === todayDate.getDate()
+					const isSelected = selectedDate === dayCounter && hasTasks
+
+					daysGrid[dayOfWeek].push({
+						date: dayCounter,
+						isActive: true,
+						isToday,
+						isSelected,
+						hasTasks,
+					})
+					dayCounter++
+				}
+			}
+			if (dayCounter > daysInMonth) break // 모든 날짜를 채웠으면 종료
+		}
+
+		return daysGrid
+	}, [calendarData, calendarYear, calendarMonth, selectedDate])
+
+	/**
+	 * 이전 달로 이동
+	 */
+	const handlePreviousMonth = () => {
+		setSelectedDate(null) // 월 변경 시 선택 해제
+		if (calendarMonth === 1) {
+			setCalendarYear(calendarYear - 1)
+			setCalendarMonth(12)
+		} else {
+			setCalendarMonth(calendarMonth - 1)
+		}
+	}
+
+	/**
+	 * 다음 달로 이동
+	 */
+	const handleNextMonth = () => {
+		setSelectedDate(null) // 월 변경 시 선택 해제
+		if (calendarMonth === 12) {
+			setCalendarYear(calendarYear + 1)
+			setCalendarMonth(1)
+		} else {
+			setCalendarMonth(calendarMonth + 1)
+		}
+	}
+
+	/**
+	 * 날짜 클릭 핸들러 (일정이 있는 날짜만 선택)
+	 */
+	const handleDayClick = (date: number) => {
+		// 해당 날짜에 일정이 있는지 확인
+		const dateString = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(date).padStart(2, '0')}`
+		const hasTasks = calendarData?.days?.some((day) => day.date === dateString && day.event_count > 0) || false
+
+		if (hasTasks) {
+			// 이미 선택된 날짜를 다시 클릭하면 선택 해제, 아니면 선택
+			setSelectedDate(selectedDate === date ? null : date)
+		}
+	}
 
 	return (
 		<div className="flex flex-col w-full max-w-main mx-auto px-6 py-8 gap-7">
@@ -405,12 +459,12 @@ const TeamBoardPage = () => {
 					{/* 상단: Calendar + AddScheduleButton (392x448) */}
 					<div className="flex flex-col gap-4 h-[448px] relative">
 						<Calendar
-							year={2026}
-							month={12}
+							year={calendarYear}
+							month={calendarMonth}
 							days={calendarDays}
-							onPreviousMonth={() => console.log('이전 달')}
-							onNextMonth={() => console.log('다음 달')}
-							onDayClick={(date) => console.log('날짜 클릭:', date)}
+							onPreviousMonth={handlePreviousMonth}
+							onNextMonth={handleNextMonth}
+							onDayClick={handleDayClick}
 						/>
 						<div className="relative">
 							<AddScheduleButton onClick={() => setIsScheduleModalOpen(true)} />

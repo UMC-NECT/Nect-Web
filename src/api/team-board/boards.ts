@@ -1,5 +1,6 @@
 import type { GetTeamBoardOverviewResponse } from '@/types/api/team-board/overview'
 import type { PostType } from '@/types/api/team-board/overview'
+import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
 import { api } from '@/utils/AxiosInstance'
 
 /**
@@ -32,6 +33,23 @@ export const getTeamBoardOverview = async (
 	const queryString = params.toString()
 	const url = `/api/v1/projects/${projectId}/boards/overview${queryString ? `?${queryString}` : ''}`
 
+	const { data } = await api.get(url)
+	return data
+}
+
+/**
+ * 캘린더 월간 인디케이터를 조회합니다.
+ * @param projectId - 프로젝트 ID
+ * @param year - 조회 연도
+ * @param month - 조회 월 (1~12)
+ * @returns 캘린더 월간 인디케이터 정보
+ */
+export const getCalendarMonth = async (
+	projectId: number,
+	year: number,
+	month: number,
+): Promise<GetCalendarMonthResponse> => {
+	const url = `/api/v1/projects/${projectId}/boards/calendar/month?year=${year}&month=${month}`
 	const { data } = await api.get(url)
 	return data
 }
