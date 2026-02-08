@@ -84,13 +84,13 @@ const FeedbackItem = ({
 			<div className='flex items-center py-0.5'>{renderCheckbox()}</div>
 
 			{/* Content */}
-			<div className='flex flex-col gap-0.5 w-[264px]'>
+			<div className='flex flex-col gap-1 w-[264px]'>
 				{/* Header */}
 				<div className='flex items-center justify-between w-full'>
 					<div className='flex gap-1.5 items-center'>
 						<p
 							className={cn(
-								'body-3 font-normal overflow-hidden text-ellipsis',
+								'body-2 font-medium overflow-hidden text-ellipsis',
 								isDisabled || isEditing
 									? 'text-neutral-300'
 									: isComplete
@@ -103,7 +103,7 @@ const FeedbackItem = ({
 						<div className={cn('w-0.5 h-3 rounded-6', isEditing ? 'bg-neutral-200' : 'bg-neutral-300')} />
 						<p
 							className={cn(
-								'body-3 font-normal overflow-hidden text-ellipsis',
+								'body-2 font-medium overflow-hidden text-ellipsis',
 								isDisabled || isEditing
 									? 'text-neutral-300'
 									: isComplete
@@ -117,7 +117,7 @@ const FeedbackItem = ({
 					{!isDisabled && timestamp && (
 						<p
 							className={cn(
-								'caption-2 text-right',
+								'caption-1 font-normal text-right',
 								isEditing ? 'text-neutral-300' : isComplete ? 'text-neutral-300' : 'text-neutral-400'
 							)}
 						>
@@ -141,7 +141,7 @@ const FeedbackItem = ({
 				) : (
 					<p
 						className={cn(
-							'body-3 font-normal w-full whitespace-pre-wrap',
+							'body-2 font-normal w-full whitespace-pre-wrap',
 							isDisabled ? 'text-neutral-300' : isComplete ? 'text-neutral-400' : 'text-neutral-900',
 							!isDisabled && 'cursor-text'
 						)}

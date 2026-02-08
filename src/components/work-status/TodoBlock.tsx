@@ -24,6 +24,19 @@ interface TodoBlockProps {
 	onClick?: () => void
 }
 
+/** 날짜 문자열을 yy.mm.dd 형식으로 변환 */
+const formatDueDate = (dateStr: string): string => {
+	const normalized = dateStr.replace(/-/g, '.')
+	const parts = normalized.split('.')
+	if (parts.length >= 3) {
+		const y = parts[0].length >= 4 ? parts[0].slice(-2) : parts[0].padStart(2, '0')
+		const m = parts[1].padStart(2, '0')
+		const d = parts[2].padStart(2, '0')
+		return `${y}.${m}.${d}`
+	}
+	return dateStr
+}
+
 const TodoBlock = ({
 	team,
 	title,
@@ -146,8 +159,8 @@ const TodoBlock = ({
 								<div className='flex gap-gutter items-center relative shrink-0'>
 									{dueDate && (
 										<div className='flex gap-[4px] items-center leading-[1.6] relative shrink-0 whitespace-pre'>
-											<p className='caption-2 text-neutral-500 font-medium relative shrink-0'>마감일</p>
-											<p className='caption-2 text-neutral-900 font-medium relative shrink-0'>{dueDate}</p>
+											<p className='body-3 text-neutral-500 font-medium relative shrink-0'>마감일</p>
+											<p className='body-3 text-neutral-600 font-medium relative shrink-0'>{formatDueDate(dueDate)}</p>
 										</div>
 									)}
 								</div>

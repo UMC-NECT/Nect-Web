@@ -20,9 +20,9 @@ import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
-import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import { useProgressSummaryQuery } from '@/hooks/process/useProcessApi'
 import type { Progress } from '@/types/progress'
+import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 
 // Droppable 컬럼 컴포넌트
 interface DroppableColumnProps {
@@ -103,8 +103,8 @@ const WorkStatusPage = () => {
 	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
 	const { isScrolling, scrollContainerRef } = useWorkStatusScroll()
 	const { statusCounts, historyItems } = useWorkStatusData()
-	const { projectId } = useGetProjectUsers()
-	const { data: progressSummaryData } = useProgressSummaryQuery(projectId ?? '')
+	const projectId = useProjectIdStore(state => state.projectId)
+	const { data: progressSummaryData } = useProgressSummaryQuery(projectId?.toString() ?? '')
 
 	// 진행률: 초기값은 API, 변경분은 드래그 시 deltas로만 반영 (effect 없이 파생)
 	const progressFromApi = useMemo(
