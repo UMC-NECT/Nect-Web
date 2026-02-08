@@ -1,3 +1,5 @@
+import DefaultAvatar from '@/assets/Default_Profile.svg'
+
 interface AvatarGroupProps {
 	avatars?: string[] // 사용자 아바타 이미지 URL 배열
 	maxCount?: number // 최대 표시 개수 (기본값 3)
@@ -21,7 +23,7 @@ const AvatarGroup = ({ avatars = [], maxCount = 3, size = 22.533 }: AvatarGroupP
 					className="rounded-full border-2 border-white bg-neutral-200 shrink-0 overflow-hidden"
 					style={{ width: `${size}px`, height: `${size}px` }}
 				>
-					<img src={avatar} alt={`Participant ${index + 1}`} className="w-full h-full object-cover" />
+					<img src={avatar ? avatar : DefaultAvatar} alt={`Participant ${index + 1}`} className="w-full h-full object-cover" />
 				</div>
 			))}
 			{/* 남은 개수 표시 (maxCount 초과 시) */}

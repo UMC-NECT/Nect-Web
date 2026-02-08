@@ -2,6 +2,7 @@ import { useState } from 'react'
 import XIcon from '@/assets/icons/common/X-small.svg?react'
 import { cn } from '@/utils/cn'
 import { getRoleColorById } from '@/utils/roleColor'
+import DefaultAvatar from '@/assets/Default_Profile.svg'
 
 interface PersonTagChipProps {
 	personName: string
@@ -46,7 +47,7 @@ const PersonTagChip = ({ personName, roleId, personImage, state, onClick }: Pers
 			<div
 				className={cn('relative w-6 h-6 rounded-full border-2 border-white overflow-hidden', isDisabled && 'opacity-50')}
 			>
-				<img src={personImage} alt={personName} className='w-full h-full object-cover' />
+				<img src={personImage ? personImage : DefaultAvatar} alt={personName} className='w-full h-full object-cover' />
 			</div>
 			<p className={cn('relative button-1 font-medium text-center whitespace-nowrap max-w-full', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
 				{personName}
