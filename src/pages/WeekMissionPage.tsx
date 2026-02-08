@@ -9,6 +9,11 @@ import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useProcessWeekQuery } from '@/hooks/process/useProcessApi'
 import { useWeekMissionQuery, usePatchMissionStatusMutation } from '@/hooks/process/useWeekMissionApi'
+import type { WeekMissionItem } from '@/types/api/process/weekMission'
+import type {
+	ProcessWeekProcessItem,
+	ProcessWeekWeekItem,
+} from '@/types/api/process/process'
 import { getMissionList } from '@/api/process/weekMission'
 import { useDeleteProcessMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery, useUsersQuery } from '@/hooks/project/useProjectApi'
@@ -18,6 +23,91 @@ import type { Mission } from '@/types/mission'
 import type { Assignees } from '@/types/api/assignees'
 import type { StatusType } from '@/types/api/status'
 import { QUERY_KEY } from '@/constants/key'
+
+/** API 날짜(YYYY-MM-DD) → 보드 표시(YYYY.MM.DD) */
+const formatDateForBoard = (dateStr: string) => (dateStr ? dateStr.replace(/-/g, '.') : '')
+
+/** 위크미션 조회 body.missions → Mission[] (전부 위크미션 Task 행, sectionIndex 0) */
+function buildMissionsFromWeekMission(missionsFromApi: WeekMissionItem[]): Mission[] {
+	return missionsFromApi.map((m): Mission => {
+		const assigneeList: Assignees[] =
+			m.assignee != null
+				? [
+						{
+							user_id: m.assignee.user_id,
+							name: m.assignee.nickname,
+							nickname: m.assignee.nickname,
+							profile_image_url: m.assignee.profile_image_url ?? '',
+						},
+					]
+				: []
+		return {
+			process_id: m.process_id,
+			mission_number: m.mission_number,
+			title: m.title ?? '',
+			start_date: formatDateForBoard(m.start_date),
+			dead_line: formatDateForBoard(m.dead_line),
+			left_day: m.left_day ?? 0,
+			status: (m.status as StatusType) ?? 'PLANNING',
+			progress:
+				m.total_count > 0 ? Math.round((m.done_count / m.total_count) * 100) : 0,
+			sectionIndex: 0,
+			task: true,
+			assignee: assigneeList.length > 0 ? assigneeList : undefined,
+		}
+	})
+}
+
+/** 프로세스 week API body.weeks → Mission[] (common_lane=0행, by_field=field_name으로 행 매핑) */
+function buildMissionsFromProcessWeeks(
+	weeks: ProcessWeekWeekItem[],
+	sections: { id: number; title: string; role_field: string | null }[]
+): Mission[] {
+	const missions: Mission[] = []
+	const toMission = (item: ProcessWeekProcessItem, sectionIndex: number): Mission => {
+		const raw = item.assignee
+		const assignees: Assignees[] =
+			raw != null
+				? (Array.isArray(raw)
+						? raw.map(a => ({
+								user_id: a.user_id,
+								name: a.user_name ?? a.nickname,
+								nickname: a.nickname,
+								profile_image_url: a.user_image ?? '',
+							}))
+						: [])
+				: []
+		return {
+			process_id: item.process_id,
+			title: item.title ?? '',
+			start_date: formatDateForBoard(item.start_date),
+			dead_line: formatDateForBoard(item.dead_line),
+			status: (item.process_status as StatusType) ?? 'PLANNING',
+			mission_number: item.mission_number ?? 0,
+			progress:
+				item.whole_check_list > 0
+					? Math.round((item.complete_check_list / item.whole_check_list) * 100)
+					: 0,
+			left_day: item.left_day ?? 0,
+			sectionIndex,
+			task: sectionIndex === 0,
+			assignee: assignees.length > 0 ? assignees : undefined,
+		}
+	}
+	weeks.forEach(week => {
+		;(week.common_lane ?? []).forEach(item => missions.push(toMission(item, 0)))
+		;(week.by_field ?? []).forEach(fieldGroup => {
+			const partIndex = sections.findIndex(
+				s =>
+					s.role_field === fieldGroup.field_name ||
+					s.role_field === fieldGroup.field_id.replace(/^ROLE:/, '')
+			)
+			const sectionIndex = partIndex >= 0 ? partIndex + 1 : 0
+			fieldGroup.processes.forEach(item => missions.push(toMission(item, sectionIndex)))
+		})
+	})
+	return missions
+}
 
 const WeekMissionPage = () => {
 	const { missions, updateMission, setMissions, removeMission } = useMissionStore()
@@ -33,8 +123,16 @@ const WeekMissionPage = () => {
 	baseDate.setDate(baseDate.getDate() - 14)
 	const processWeekStartDate = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}-${String(baseDate.getDate()).padStart(2, '0')}`
 
-	useProcessWeekQuery(projectIdStr, processWeekStartDate, '6')
-	const { data: weekMission } = useWeekMissionQuery(projectIdStr, '6', processWeekStartDate)
+	const { data: processWeekData } = useProcessWeekQuery(
+		projectIdStr,
+		processWeekStartDate,
+		'6'
+	)
+	const { data: weekMissionData } = useWeekMissionQuery(
+		projectIdStr,
+		'6',
+		processWeekStartDate
+	)
 
 	// 미션 모달 드롭다운용 리스트 미리 로드 (모달 열 때 캐시 사용)
 	useEffect(() => {
@@ -49,18 +147,28 @@ const WeekMissionPage = () => {
 	const patchStatusMutation = usePatchMissionStatusMutation()
 	const deleteProcessMutation = useDeleteProcessMutation()
 
+	// 위크미션 API + 프로세스 week API 둘 다 반영해서 미션 보드 렌더링
 	useEffect(() => {
-		if (!weekMission?.body?.missions?.length) return
-		const list = weekMission.body.missions as (Mission & { assignee?: Assignees | Assignees[] })[]
-		setMissions(
-			list.map(m => ({
-				...m,
-				sectionIndex: 0,
-				task: true,
-				assignee: m.assignee != null ? (Array.isArray(m.assignee) ? m.assignee : [m.assignee]) : undefined,
-			}))
+		const fromWeekMission = buildMissionsFromWeekMission(
+			weekMissionData?.body?.missions ?? []
 		)
-	}, [weekMission, setMissions])
+		const sectionList = roles.map(r => ({
+			id: r.part_id,
+			title: getRoleDisplayName(r),
+			role_field: r.role_field ?? r.custom_role_field_name ?? null,
+		}))
+		const fromProcessWeek = buildMissionsFromProcessWeeks(
+			processWeekData?.body?.weeks ?? [],
+			sectionList
+		)
+		const combined = [...fromWeekMission, ...fromProcessWeek]
+		setMissions(combined)
+	}, [
+		weekMissionData?.body?.missions,
+		processWeekData?.body?.weeks,
+		roles,
+		setMissions,
+	])
 
 	useEffect(() => {
 		if (partsData?.body?.parts?.length) setRoles(partsData.body.parts)

@@ -41,10 +41,44 @@ export type ResponseProcessPartDto = CommonResponse<{
     groups: []
 }>
 
-export type ResponseProcessWeekDto = CommonResponse<{
+/** 주차별 프로세스 조회 - 한 주의 한 건 카드 (API 응답 필드명 그대로) */
+export interface ProcessWeekProcessItem {
+    process_id: number
+    process_status: string
+    title: string
+    complete_check_list: number
+    whole_check_list: number
     start_date: string
-    common_lane: []
-    by_field: []
+    dead_line: string
+    left_day: number
+    role_fields: string[]
+    custom_fields: string[]
+    mission_number: number
+    assignee?: Array<{
+        user_id: number
+        user_name: string
+        nickname: string
+        user_image: string | null
+    }>
+}
+
+/** 주차별 by_field 한 그룹 (field_id = "ROLE:FRONTEND" 형태) */
+export interface ProcessWeekByFieldItem {
+    field_id: string
+    field_name: string
+    field_order: number
+    processes: ProcessWeekProcessItem[]
+}
+
+/** 주차 한 구간 (start_date 기준 한 주) */
+export interface ProcessWeekWeekItem {
+    start_date: string
+    common_lane: ProcessWeekProcessItem[]
+    by_field: ProcessWeekByFieldItem[]
+}
+
+export type ResponseProcessWeekDto = CommonResponse<{
+    weeks: ProcessWeekWeekItem[]
 }>
 
 export type ResponseProcessDetailDto = CommonResponse<{

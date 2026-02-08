@@ -196,6 +196,9 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 		scrollElementRef: weekDatesRef,
 	})
 
+	// 행 개수: 위크미션 Task(1) + 파트 섹션(sections.length), 최소 1행 보장
+	const rowCount = Math.max(1, sections.length + 1)
+
 	// 필터링된 미션 목록
 	const visibleMissions = useMissionFilter({
 		positionedMissions,
@@ -298,7 +301,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 							className='grid gap-x-0 gap-y-[12px] shrink-0 relative border-t border-neutral-100'
 							style={{
 								gridTemplateColumns: `repeat(${totalDates}, ${ITEM_WIDTH}px)`,
-								gridTemplateRows: `repeat(${sections.length + 1}, 130px)`,
+								gridTemplateRows: `repeat(${rowCount}, 130px)`,
 								width: `${totalWidth}px`,
 							}}
 						>
@@ -307,7 +310,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 								<div
 									style={{
 										gridColumn: `1 / ${Math.ceil(beforeWidth / ITEM_WIDTH) + 1}`,
-										gridRow: `1 / ${sections.length + 2}`,
+										gridRow: `1 / ${rowCount + 1}`,
 									}}
 								/>
 							)}
@@ -323,7 +326,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 										className='border-r border-neutral-100'
 										style={{
 											gridColumn: dateIndex + 1,
-											gridRow: `1 / ${sections.length + 2}`,
+											gridRow: `1 / ${rowCount + 1}`,
 										}}
 									/>
 								)
@@ -422,12 +425,12 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 									</div>
 								</div>
 							)}
-							{/* 빈 셀에 PlusBlock 표시 (호버 시) */}
+							{/* 빈 셀에 PlusBlock 표시 (호버 시) - rowCount만큼 행 보장(0=위크미션 Task) */}
 							{visibleItems.map(({ index }) => {
 								const dateIndex = index
 								if (dateIndex >= dates.length) return null
 
-								return [...sections, null].map((_, sectionIndex) => {
+								return Array.from({ length: rowCount }, (_, sectionIndex) => sectionIndex).map(sectionIndex => {
 									const hasMission = checkEmptyCell(dateIndex, sectionIndex)
 
 									if (hasMission) return null
@@ -464,7 +467,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 								<div
 									style={{
 										gridColumn: `${Math.floor((totalWidth - afterWidth) / ITEM_WIDTH) + 1} / ${totalDates + 1}`,
-										gridRow: `1 / ${sections.length + 2}`,
+										gridRow: `1 / ${rowCount + 1}`,
 									}}
 								/>
 							)}

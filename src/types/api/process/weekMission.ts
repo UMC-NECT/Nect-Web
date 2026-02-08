@@ -3,10 +3,28 @@ import type { CommonResponse } from "../commonResponse"
 import type { StatusType } from "../status"
 
 
+/** 위크미션 주차 조회 - 한 건 미션 (week-missions/week 응답) */
+export interface WeekMissionItem {
+    process_id: number
+    mission_number: number
+    status: string
+    title: string
+    start_date: string
+    dead_line: string
+    left_day: number
+    done_count: number
+    total_count: number
+    assignee?: {
+        user_id: number
+        nickname: string
+        profile_image_url: string | null
+    }
+}
+
 export type ResponseMissionDto = CommonResponse<{
     week_start: string
     week_end: string
-    missions: []
+    missions: WeekMissionItem[]
 }>
 
 export type ResponseMissionListDto = CommonResponse<{
