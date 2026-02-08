@@ -35,7 +35,7 @@ const RecruitingProjectsPage = () => {
             'data': 'bg-roletag-yellow',
         };
 
-        return styles[positionName] || 'bg-roletag-yellow';
+        return styles[positionName] || 'bg-tag-yellow';
     };
 
     const handleMatchingButtonClick = () => {
@@ -72,7 +72,7 @@ const RecruitingProjectsPage = () => {
                         <h1 className="text-3xl font-bold mt-1">모집 중인 프로젝트</h1>
                         <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-md">
                             <img src={hamburger} alt="Menu" />
-                            <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
+                            <p className='text-[14px] text-neutral-400 bg-neutral-100'>목록으로 가기</p>
                         </button>
                     </div>
                 </div>

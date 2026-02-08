@@ -8,7 +8,7 @@ import Statistics from '@/components/main/Statistics';
 import ProjectShowcase from '@/components/main/ProjectShowcase';
 import NewsSection from '@/components/main/NewsSection';
 import CallToAction from '@/components/main/CallToAction';
-import Footer from '@/components/main/Footer'
+import Footer from '@/components/common/Footer'
 
 const MainPage = () => {
     return (

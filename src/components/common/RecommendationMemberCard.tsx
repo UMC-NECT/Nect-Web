@@ -9,23 +9,43 @@ interface RecommendationMemberCardProps {
         name: string;
         position: string;
         description: string;
+        tags?: string[]; // optional로 변경
     };
+    variant?: 'default' | 'list';
 }
 
-const RecommendationMemberCard = ({ member }: RecommendationMemberCardProps) => {
+const RecommendationMemberCard = ({ member, variant = 'default' }: RecommendationMemberCardProps) => {
+    // variant에 따른 스타일 설정
+    const sizeStyles = {
+        default: {
+            card: 'w-90',
+            height: 'h-[300px]',
+            background: 'h-45',
+            character: 'w-16 h-16',
+        },
+        list: {
+            card: 'w-[272px]',
+            height: 'h-[285px]',
+            background: 'h-[151px]',
+            character: 'w-16 h-16',
+        }
+    };
+
+    const styles = sizeStyles[variant];
+
     return (
-        <div className={`w-90 h-[300px] pb-4 bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
+        <div className={`${styles.card} ${styles.height} pb-4 bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
             {/* 상단: 배경 + 캐릭터 영역 */}
-            <div className="relative h-45">
+            <div className={`relative ${styles.background}`}>
                 <img
                     src={member.background}
                     alt="background"
-                    className="absolute inset-0 w-full h-full object-cover rounded-t-xl"
+                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
                 />
                 <img
                     src={member.character}
                     alt="character"
-                    className="absolute bottom-0 left-4 w-16 h-16 translate-y-1/2 border border-neutral-100 rounded-full bg-white"
+                    className={`absolute bottom-0 left-4 ${styles.character} translate-y-1/2 border border-neutral-100 rounded-full bg-white`}
                 />
             </div>
 
