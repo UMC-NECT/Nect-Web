@@ -23,6 +23,8 @@ import Tooltip from '@/components/common/Tooltip'
 import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox/checkbox-gray.svg?react'
 import InfoIcon from '@/assets/icons/common/info.svg?react'
+import { useMissionListQuery } from '@/hooks/process/useWeekMissionApi'
+import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 
 interface MissionModalProps {
 	className?: string
@@ -40,7 +42,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const {
 		editingMissionId,
 		projectId,
-		missionNumber,
+		setMissions,
 		title,
 		selectedParts,
 		selectedAssignees,
@@ -52,6 +54,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		tasks,
 		feedbacks,
 		files,
+		missionNumber,
 		setMissionNumber,
 		setTitle,
 		setSelectedParts,
@@ -80,8 +83,24 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		removeFile,
 	} = useMissionModalStore()
 
+	const { projectId: pageProjectId } = useProjectIdStore()
+	const projectIdForList = projectId ?? pageProjectId?.toString() ?? ''
+
 	const isEditMode = editingMissionId != null && projectId != null
 	const { data: processDetail } = useProcessDetailQuery(projectId ?? '', String(editingMissionId ?? ''))
+	const { data: missionListData } = useMissionListQuery(projectIdForList)
+
+	useEffect(() => {
+		if (!missionListData?.body?.missions) return
+		const list = missionListData.body.missions.map(m => ({
+			id: m.mission_number,
+			missionNumber: m.mission_number,
+			is_current: m.is_current,
+		}))
+		setMissions(list)
+		const current = list.find(m => m.is_current)
+		if (current) setMissionNumber(current.missionNumber)
+	}, [missionListData, setMissions, setMissionNumber])
 
 	const appliedDetailKeyRef = useRef<string | null>(null)
 	useEffect(() => {

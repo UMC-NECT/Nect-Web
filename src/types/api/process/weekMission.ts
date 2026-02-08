@@ -10,7 +10,12 @@ export type ResponseMissionDto = CommonResponse<{
 }>
 
 export type ResponseMissionListDto = CommonResponse<{
-    missions: []
+    missions: {
+        mission_number: number
+        is_current: boolean
+        start_date: string
+        end_date: string
+    }[]
 }>
 
 export type ResponseMissionDetailDto = CommonResponse<{

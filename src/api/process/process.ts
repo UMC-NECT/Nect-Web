@@ -16,9 +16,9 @@ export const getProcessPart = async (projectId: string, fieldId?: string): Promi
     return data
 }
 
-/** 프로젝트의 프로세스를 주차 기준으로 조회합니다. start_date 미입력 시 현재 주차 기준. */
-export const getProcessWeek = async (projectId: string, start_date?: string): Promise<ResponseProcessWeekDto> => {
-    const query = toQueryString({ start_date })
+/** 프로젝트의 프로세스를 주차 기준으로 조회합니다. start_date 미입력 시 현재 주차 기준, weeks를 통해 여러 주차를 한번에 조회할 수 있습니다. */
+export const getProcessWeek = async (projectId: string, start_date?: string, weeks?: string): Promise<ResponseProcessWeekDto> => {
+    const query = toQueryString({ start_date, weeks })
     const { data } = await api.get(`/api/v1/projects/${projectId}/processes/week${query}`)
     return data
 }
@@ -63,7 +63,7 @@ export const getProgressSummary = async (projectId: string): Promise<ResponsePro
 }
 
 /** 프로젝트의 히스토리를 조회합니다.
- * 
+ *
  * cursor 미입력 시 서버 정책으로 최신 로그부터 조회합니다. (서버 정책: 최근 10개 고정)
 */
 export const getProcessHistory = async (projectId: string, cursor?: number): Promise<ResponseHistoryDto> => {

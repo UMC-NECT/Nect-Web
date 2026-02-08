@@ -19,14 +19,15 @@ export const QUERY_KEY = {
     REFRESH_TOKEN: 'refreshToken',
 	process: {
 		part: (projectId: string, fieldId?: string) => ['processes', projectId, 'part', fieldId] as const,
-		week: (projectId: string, startDate?: string) => ['processes', projectId, 'week', startDate] as const,
+		week: (projectId: string, startDate?: string, weeks?: string) => ['processes', projectId, 'week', startDate, weeks] as const,
 		detail: (projectId: string, processId: string) => ['processes', projectId, 'detail', processId] as const,
 		progressSummary: (projectId: string) => ['processes', projectId, 'progressSummary'] as const,
 		list: (projectId: string) => ['processes', projectId] as const,
 		history: (projectId: string, cursor?: number) => ['processes', projectId, 'history', cursor] as const,
 		weekMission: {
 			all: (projectId: string) => ['processes', projectId, 'weekMission'] as const,
-			week: (projectId: string) => ['processes', projectId, 'weekMission', 'week'] as const,
+			week: (projectId: string, startDate?: string, weeks?: string) =>
+			['processes', projectId, 'weekMission', 'week', startDate, weeks] as const,
 			missionList: (projectId: string) => ['processes', projectId, 'weekMission', 'missionList'] as const,
 			detail: (projectId: string, processId: string) =>
 				['processes', projectId, 'weekMission', 'detail', processId] as const,

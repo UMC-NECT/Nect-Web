@@ -14,7 +14,7 @@ interface MissionBlockProps {
 	missionNumber: number
 	title: string
 	progress: number // 0-4 사이의 값
-	createdAt: string // "2025.11.17" 형식
+	startDate: string // "2025.11.17" 형식
 	dueDate: string // "2025.11.30" 형식
 	daysRemaining: number // D-13의 13
 	status: MissionStatus
@@ -34,7 +34,7 @@ const MissionBlock = memo(
 		missionNumber,
 		title,
 		progress,
-		createdAt,
+		startDate,
 		dueDate,
 		daysRemaining,
 		status,
@@ -175,8 +175,8 @@ const MissionBlock = memo(
 							<>
 								{gridColumnSize > 4 && (
 									<div className='flex gap-[10px] items-center body-2 text-neutral-900 font-normal whitespace-nowrap'>
-										<p className='text-neutral-500'>생성일</p>
-										<p>{createdAt}</p>
+										<p className='text-neutral-500'>시작일</p>
+										<p>{startDate}</p>
 									</div>
 								)}
 								<div className='flex gap-[10px] items-center body-2 text-neutral-900 font-normal whitespace-nowrap'>

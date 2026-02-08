@@ -29,10 +29,10 @@ export const useProcessPartQuery = (projectId: string, fieldId?: string) => {
 }
 
 /** 주차 기준 프로세스 조회 */
-export const useProcessWeekQuery = (projectId: string, startDate?: string) => {
+export const useProcessWeekQuery = (projectId: string, startDate?: string, weeks?: string) => {
 	return useQuery({
-		queryKey: QUERY_KEY.process.week(projectId, startDate),
-		queryFn: () => getProcessWeek(projectId, startDate),
+		queryKey: QUERY_KEY.process.week(projectId, startDate, weeks),
+		queryFn: () => getProcessWeek(projectId, startDate, weeks),
 		enabled: !!projectId,
 	})
 }

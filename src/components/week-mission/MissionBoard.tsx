@@ -27,9 +27,10 @@ interface MissionBoardProps {
 		missionId: number,
 		updates: { start_date?: string; dead_line?: string; sectionIndex?: number; status?: StatusType }
 	) => void
+	onDeleteMission?: (processId: number) => void
 }
 
-const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: MissionBoardProps) => {
+const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onDeleteMission }: MissionBoardProps) => {
 	// 공유 스크롤 컨테이너 ref
 	const boardScrollRef = useRef<HTMLDivElement>(null)
 	const weekDatesRef = useRef<HTMLDivElement>(null)
@@ -374,7 +375,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 											missionNumber={mission.mission_number}
 											title={mission.title}
 											progress={mission.progress}
-											createdAt={mission.start_date}
+											startDate={mission.start_date}
 											dueDate={mission.dead_line}
 											daysRemaining={mission.left_day}
 											status={statusToMissionStatus(mission.status)}
@@ -408,7 +409,14 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate }: M
 							{openDropdownId && (
 								<div className='fixed inset-0 z-40' onClick={() => setOpenDropdownId(null)}>
 									<div className='fixed z-50 min-w-[138px] bg-neutral-000 rounded-10 shadow-drop-neutral-1 overflow-hidden py-0.5' style={dropdownPosition ? { top: dropdownPosition.top, left: dropdownPosition.left } : undefined}>
-										<button className='body-3 text-danger-700 font-medium py-2 pl-5 pr-3 w-full text-left hover:bg-neutral-50 transition-colors duration-300'>
+										<button
+											type='button'
+											className='body-3 text-danger-700 font-medium py-2 pl-5 pr-3 w-full text-left hover:bg-neutral-50 transition-colors duration-300'
+											onClick={() => {
+												onDeleteMission?.(openDropdownId)
+												setOpenDropdownId(null)
+											}}
+										>
 											삭제
 										</button>
 									</div>

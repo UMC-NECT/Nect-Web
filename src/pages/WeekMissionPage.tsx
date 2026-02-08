@@ -2,27 +2,52 @@ import WeekSelector from '@/components/week-mission/WeekSelector'
 import MissionBoard from '@/components/week-mission/MissionBoard'
 import { useMissionStore } from '@/stores/missionStore'
 import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
+import { useWeekStore } from '@/stores/weekStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useProcessWeekQuery } from '@/hooks/process/useProcessApi'
-import { useWeekMissionQuery } from '@/hooks/process/useWeekMissionApi'
+import { useWeekMissionQuery, usePatchMissionStatusMutation } from '@/hooks/process/useWeekMissionApi'
+import { getMissionList } from '@/api/process/weekMission'
+import { useDeleteProcessMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery, useUsersQuery } from '@/hooks/project/useProjectApi'
-import { useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useCallback } from 'react'
 import type { Mission } from '@/types/mission'
 import type { Assignees } from '@/types/api/assignees'
+import type { StatusType } from '@/types/api/status'
+import { QUERY_KEY } from '@/constants/key'
 
 const WeekMissionPage = () => {
-	const { missions, updateMission, setMissions } = useMissionStore()
+	const { missions, updateMission, setMissions, removeMission } = useMissionStore()
 	const { openMissionModal } = useMissionModalStore()
 	const { roles, setRoles, setPersons } = useTeamStore()
 	const { projectId } = useProjectIdStore()
+	const { weekInfo } = useWeekStore()
+	const queryClient = useQueryClient()
 	const projectIdStr = projectId?.toString() ?? ''
-	useProcessWeekQuery(projectIdStr)
-	const { data: weekMission } = useWeekMissionQuery(projectIdStr, '4')
+
+	// weekStore 기준일(선택한 주의 월요일)에서 2주 전을 start_date로 사용, weeks 6으로 요청
+	const baseDate = weekInfo?.dates?.[0] ? new Date(weekInfo.dates[0]) : new Date()
+	baseDate.setDate(baseDate.getDate() - 14)
+	const processWeekStartDate = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}-${String(baseDate.getDate()).padStart(2, '0')}`
+
+	useProcessWeekQuery(projectIdStr, processWeekStartDate, '6')
+	const { data: weekMission } = useWeekMissionQuery(projectIdStr, '6', processWeekStartDate)
+
+	// 미션 모달 드롭다운용 리스트 미리 로드 (모달 열 때 캐시 사용)
+	useEffect(() => {
+		if (!projectIdStr) return
+		queryClient.prefetchQuery({
+			queryKey: QUERY_KEY.process.weekMission.missionList(projectIdStr),
+			queryFn: () => getMissionList(projectIdStr),
+		})
+	}, [projectIdStr, queryClient])
 	const { data: partsData } = usePartsQuery(projectIdStr)
 	const { data: usersData } = useUsersQuery(projectIdStr)
+	const patchStatusMutation = usePatchMissionStatusMutation()
+	const deleteProcessMutation = useDeleteProcessMutation()
 
 	useEffect(() => {
 		if (!weekMission?.body?.missions?.length) return
@@ -65,6 +90,45 @@ const WeekMissionPage = () => {
 		title: getRoleDisplayName(role),
 	}))
 
+	// 상태 변경 시 API 호출 후 로컬 반영
+	const handleMissionUpdate = useCallback(
+		(missionId: number, updates: { start_date?: string; dead_line?: string; sectionIndex?: number; status?: StatusType }) => {
+			if (updates.status !== undefined) {
+				patchStatusMutation.mutate(
+					{
+						projectId: projectIdStr,
+						processId: String(missionId),
+						body: { status: updates.status },
+					},
+					{
+						onSuccess: () => {
+							updateMission(missionId, updates)
+						},
+					}
+				)
+			} else {
+				updateMission(missionId, updates)
+			}
+		},
+		[projectIdStr, patchStatusMutation, updateMission]
+	)
+
+	// 삭제 시 API 호출 후 캐시 무효화 및 로컬 제거
+	const handleDeleteMission = useCallback(
+		(processId: number) => {
+			deleteProcessMutation.mutate(
+				{ projectId: projectIdStr, processId: String(processId) },
+				{
+					onSuccess: () => {
+						queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdStr) })
+						removeMission(processId)
+					},
+				}
+			)
+		},
+		[projectIdStr, deleteProcessMutation, queryClient, removeMission]
+	)
+
 	return (
 		<div className='flex flex-col pt-16 pb-20'>
 			{/* 페이지 타이틀 영역 */}
@@ -86,7 +150,13 @@ const WeekMissionPage = () => {
 
 			{/* MissionBoard - useGetProjectUsers의 projectId로 기존 미션(processId) 클릭 시 모달에 상세 데이터 채움 */}
 			<div className='w-full mt-6'>
-				<MissionBoard missions={missions} sections={sections} projectId={projectIdStr} onMissionUpdate={updateMission} />
+				<MissionBoard
+				missions={missions}
+				sections={sections}
+				projectId={projectIdStr}
+				onMissionUpdate={handleMissionUpdate}
+				onDeleteMission={handleDeleteMission}
+			/>
 			</div>
 		</div>
 	)

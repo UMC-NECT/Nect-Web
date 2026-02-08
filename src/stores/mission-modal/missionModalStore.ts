@@ -7,6 +7,7 @@ export type { Person, Role }
 export interface Mission {
 	id: number
 	missionNumber: number
+	is_current?: boolean
 }
 
 export interface Task {
@@ -75,6 +76,7 @@ interface MissionModalStore {
 	roleTasks: RoleTask[] // 역할별 태스크 (리더형 모달용)
 
 	// 기존 액션
+	setMissions: (missions: Mission[]) => void
 	setSelectedPersons: (persons: Person[]) => void
 	setSelectedRoles: (roles: Role[]) => void
 	setSelectedMission: (mission: Mission | null) => void
@@ -177,6 +179,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	...initialMissionModalState,
 
 	// 기존 액션
+	setMissions: missions => set({ missions }),
 	setSelectedPersons: persons => set({ selectedPersons: persons }),
 	setSelectedRoles: roles => set({ selectedRoles: roles }),
 	setSelectedMission: mission => set({ selectedMission: mission }),

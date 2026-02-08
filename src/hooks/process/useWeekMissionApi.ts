@@ -10,20 +10,23 @@ import type { RequestStatusPatchDto, RequestTaskPatchDto } from '@/types/api/pro
 import { QUERY_KEY } from '@/constants/key'
 
 /** start_date 기준 위크미션 주차 목록 조회 */
-export const useWeekMissionQuery = (projectId: string, weeks: string) => {
+export const useWeekMissionQuery = (projectId: string, weeks: string, startDate?: string) => {
 	return useQuery({
-		queryKey: QUERY_KEY.process.weekMission.week(projectId),
-		queryFn: () => getWeekMission(projectId, weeks),
+		queryKey: QUERY_KEY.process.weekMission.week(projectId, startDate, weeks),
+		queryFn: () => getWeekMission(projectId, weeks, startDate),
 		enabled: !!projectId,
 	})
 }
 
 /** 멤버형 모달용 미션(주차) 드롭다운 목록 조회 */
+const MISSION_LIST_STALE_MS = 5 * 60 * 1000 // 5분
+
 export const useMissionListQuery = (projectId: string) => {
 	return useQuery({
 		queryKey: QUERY_KEY.process.weekMission.missionList(projectId),
 		queryFn: () => getMissionList(projectId),
 		enabled: !!projectId,
+		staleTime: MISSION_LIST_STALE_MS,
 	})
 }
 
