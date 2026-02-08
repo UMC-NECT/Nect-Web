@@ -23,6 +23,8 @@ const ContentListCard = ({ type, items, className = '' }: ContentListCardProps) 
 	const handleHeaderClick = () => {
 		if (type === '게시판') {
 			navigate('/board')
+		} else if (type === '공유 문서함') {
+			navigate('/shared-documents')
 		}
 	}
 
@@ -31,7 +33,7 @@ const ContentListCard = ({ type, items, className = '' }: ContentListCardProps) 
             <div className={`self-stretch ${type === '게시판' ? 'h-44' : ''} flex flex-col justify-start items-start gap-4`}>
 				{/* 헤더 */}
 				<div 
-					className={`self-stretch inline-flex justify-start items-center gap-2 ${type === '게시판' ? 'cursor-pointer hover:opacity-70 transition-opacity' : ''}`}
+					className="self-stretch inline-flex justify-start items-center gap-2 cursor-pointer hover:opacity-70 transition-opacity"
 					onClick={handleHeaderClick}
 				>
 					<div className="justify-start text-neutral-900 title-2 font-bold">{type}</div>
