@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import TeamBoardHeader from '@/components/team-board/TeamBoardHeader'
 import RadarChartCard from '@/components/team-board/RadarChartCard'
 import ContentListCard from '@/components/team-board/ContentListCard'
@@ -7,113 +7,289 @@ import Calendar from '@/components/team-board/Calendar'
 import AddScheduleButton from '@/components/team-board/AddScheduleButton'
 import AddScheduleModal from '@/components/team-board/AddScheduleModal'
 import UpcomingTeamSchedule from '@/components/team-board/UpcomingTeamSchedule'
+import { useTeamBoardOverview } from '@/hooks/team-board/useTeamBoardOverview'
+import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
 	const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
-	// 샘플 데이터
+	
+	// TODO: URL에서 projectId 가져오기
+	const projectId = 1
 
-	const radarChartData = [
-		{
-			label: 'PM',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-purple)',
-			roleColor: 'var(--color-roletag-purple)',
-			angle: 0, // 12시 방향
-		},
-		{
-			label: 'Design',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-pink)',
-			roleColor: 'var(--color-roletag-pink)',
-			angle: 60, // 2시 방향
-		},
-		{
-			label: 'Role',
-			score: 18,
-			maxScore: 20,
-			color: 'var(--color-roletag-orange)',
-			roleColor: 'var(--color-roletag-orange)',
-			angle: 120, // 4시 방향
-		},
-		{
-			label: 'Backend',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-blue)',
-			roleColor: 'var(--color-roletag-blue)',
-			angle: 180, // 6시 방향
-		},
-		{
-			label: 'Frontend',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-green)',
-			roleColor: 'var(--color-roletag-green)',
-			angle: 240, // 8시 방향
-		},
-		{
-			label: 'Role',
-			score: 18,
-			maxScore: 20,
-			color: 'var(--color-roletag-yellow)',
-			roleColor: 'var(--color-roletag-yellow)',
-			angle: 300, // 10시 방향
-		},
-	]
+	// API 호출
+	const { data: overviewResponse, isLoading } = useTeamBoardOverview(projectId, {
+		docsLimit: 4,
+		postsLimit: 4,
+		scheduleLimit: 6,
+	})
+	const overview = overviewResponse?.body
 
-	const bulletinBoardItems = [
-		{ title: '팀별 주간 업무 보고 양식 안내', date: '2024.1.10', tag: '[필독]' },
-		{ title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~', date: '2024.01.10', tag: '[공지]' },
-		{ title: '회의록 (댓글에 변동사항 추가)', date: '2024.1.10' },
-		{ title: '프로젝트 공동 경비 사용 내역', date: '0000.00.00' },
-	]
+	/**
+	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"
+	 */
+	const formatDateForDisplay = (dateString: string): string => {
+		return dateString.replace(/-/g, '.')
+	}
 
-	const sharedDocumentItems = [
-		{ title: '서비스 기획안 & 기능 명세서', date: '2024.1.10', fileType: 'PDF' as const },
-		{ title: 'UI/UX 디자인 시스템', date: '2024.1.10', fileType: 'Figma' as const },
-		{ title: 'UI 구현 피그마 페이지', date: '2024.1.10', fileType: 'Figma' as const },
-		{ title: '웹사이트 개발 임시 배포 링크', date: '0000.00.00', fileType: 'PDF' as const },
-	]
+	/**
+	 * ISO 날짜 포맷 변환: "2026-01-31T10:00:00" -> "2026.01.31"
+	 */
+	const formatISODateForDisplay = (isoDateString: string): string => {
+		const date = new Date(isoDateString)
+		const year = date.getFullYear()
+		const month = String(date.getMonth() + 1).padStart(2, '0')
+		const day = String(date.getDate()).padStart(2, '0')
+		return `${year}.${month}.${day}`
+	}
 
-	const upcomingScheduleItems = [
-		{
-			dayOfWeek: 'Mon',
-			date: 16,
-			title: '개발 스프링부트 데이',
-			dateString: '12월 16일 - 12월 17일',
-			isHighlighted: false,
-			outlineColor: 'neutral-100' as const,
-		},
-		{
-			dayOfWeek: 'Wed',
-			date: 18,
-			title: '프로젝트 회의',
-			dateString: '12월 18일',
-			time: '14:00 - 15:30',
-			isHighlighted: true,
-			outlineColor: 'primary-300' as const,
-		},
-		{
-			dayOfWeek: 'Fri',
-			date: 26,
-			title: '개발 스프링부트 데이',
-			dateString: '12월 26일 - 12월 27일',
-			isHighlighted: false,
-			outlineColor: 'neutral-100' as const,
-		},
-		{
-			dayOfWeek: 'Fri',
-			date: 2,
-			title: '파트 팀장 회의',
-			dateString: '2026년 1월 2일',
-			time: '13:15 - 14:30',
-			isHighlighted: false,
-			outlineColor: 'neutral-100' as const,
-		},
-	]
+	/**
+	 * 필드 타입에 따른 색상 매핑
+	 */
+	const getFieldColor = (fieldType: FieldType, index: number): string => {
+		const colorMap: Record<FieldType, string> = {
+			PM: 'var(--color-roletag-purple)',
+			DESIGN: 'var(--color-roletag-pink)',
+			FRONTEND: 'var(--color-roletag-green)',
+			BACKEND: 'var(--color-roletag-blue)',
+			CUSTOM: index % 2 === 0 ? 'var(--color-roletag-yellow)' : 'var(--color-roletag-orange)',
+		}
+		return colorMap[fieldType] || 'var(--color-roletag-gray)'
+	}
 
+	/**
+	 * 필드 타입에 따른 라벨 매핑
+	 */
+	const getFieldLabel = (fieldType: FieldType, customName: string | null): string => {
+		const labelMap: Record<FieldType, string> = {
+			PM: 'PM',
+			DESIGN: 'Design',
+			FRONTEND: 'Frontend',
+			BACKEND: 'Backend',
+			CUSTOM: customName || 'Custom',
+		}
+		return labelMap[fieldType] || 'Unknown'
+	}
+
+	/**
+	 * 미션 진행도 데이터를 RadarChart 형식으로 변환
+	 */
+	const radarChartData = useMemo(() => {
+		if (!overview?.mission_progress?.teams || overview.mission_progress.teams.length === 0) {
+			return []
+		}
+
+		const angleStep = 360 / overview.mission_progress.teams.length
+
+		return overview.mission_progress.teams.map((team, index) => {
+			const fieldColor = getFieldColor(team.field.type, index)
+			const score = Math.round(team.completion_rate * 100)
+			const maxScore = 100
+
+			return {
+				label: getFieldLabel(team.field.type, team.field.custom_name),
+				score,
+				maxScore,
+				color: fieldColor,
+				roleColor: fieldColor,
+				angle: index * angleStep,
+			}
+		})
+	}, [overview])
+
+	/**
+	 * 전체 완료율 계산 (Total 점수)
+	 */
+	const totalScore = useMemo(() => {
+		if (!overview?.mission_progress?.total) return 0
+		return Math.round(overview.mission_progress.total.completion_rate * 100)
+	}, [overview])
+
+	/**
+	 * 게시글 프리뷰 데이터를 ContentListCard 형식으로 변환
+	 */
+	const bulletinBoardItems = useMemo(() => {
+		if (!overview?.posts_preview?.posts || overview.posts_preview.posts.length === 0) {
+			return []
+		}
+
+		return overview.posts_preview.posts.map((post) => {
+			let tag: string | undefined
+			if (post.post_type === 'NOTICE') {
+				tag = '[공지]'
+			} else if (post.post_type === 'REQUIRED') {
+				tag = '[필독]'
+			}
+
+			return {
+				title: post.title,
+				date: formatISODateForDisplay(post.created_at),
+				tag,
+			}
+		})
+	}, [overview])
+
+	/**
+	 * 공유 문서함 프리뷰 데이터를 ContentListCard 형식으로 변환
+	 */
+	const sharedDocumentItems = useMemo(() => {
+		if (!overview?.shared_documents_preview?.documents || overview.shared_documents_preview.documents.length === 0) {
+			return []
+		}
+
+		return overview.shared_documents_preview.documents.map((document) => ({
+			title: document.title,
+			date: formatISODateForDisplay(document.created_at),
+			fileExt: document.file_ext, // 파일 확장자를 직접 전달
+		}))
+	}, [overview])
+
+	/**
+	 * 시간 포맷 변환: "2026-02-01T10:00:00" -> "10:00"
+	 */
+	const formatTimeFromISO = (isoDateString: string): string => {
+		const date = new Date(isoDateString)
+		const hours = String(date.getHours()).padStart(2, '0')
+		const minutes = String(date.getMinutes()).padStart(2, '0')
+		return `${hours}:${minutes}`
+	}
+
+	/**
+	 * 날짜 포맷 변환: ISO -> "12월 16일" 또는 "12월 16일 - 12월 17일"
+	 */
+	const formatScheduleDateString = (startAt: string, endAt: string, isMultiDay: boolean): string => {
+		const startDate = new Date(startAt)
+		const endDate = new Date(endAt)
+		
+		const startMonth = startDate.getMonth() + 1
+		const startDay = startDate.getDate()
+		const endMonth = endDate.getMonth() + 1
+		const endDay = endDate.getDate()
+		
+		if (isMultiDay) {
+			return `${startMonth}월 ${startDay}일 - ${endMonth}월 ${endDay}일`
+		}
+		return `${startMonth}월 ${startDay}일`
+	}
+
+	/**
+	 * 요일 추출: Date -> "Mon", "Wed" 등
+	 */
+	const getDayOfWeek = (date: Date): string => {
+		const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+		return days[date.getDay()]
+	}
+
+	/**
+	 * 다가오는 일정 데이터를 UpcomingTeamSchedule 형식으로 변환
+	 */
+	const upcomingScheduleItems = useMemo(() => {
+		if (!overview?.upcoming_schedules?.items || overview.upcoming_schedules.items.length === 0) {
+			return []
+		}
+
+		return overview.upcoming_schedules.items.map((schedule) => {
+			const startDate = new Date(schedule.start_at)
+			
+			let time: string | undefined
+			if (!schedule.all_day) {
+				const startTime = formatTimeFromISO(schedule.start_at)
+				const endTime = formatTimeFromISO(schedule.end_at)
+				time = `${startTime} - ${endTime}`
+			}
+
+			return {
+				dayOfWeek: getDayOfWeek(startDate),
+				date: startDate.getDate(),
+				title: schedule.title,
+				dateString: formatScheduleDateString(schedule.start_at, schedule.end_at, schedule.is_multi_day),
+				time,
+				isHighlighted: false,
+				outlineColor: 'neutral-100' as const,
+			}
+		})
+	}, [overview])
+
+	/**
+	 * 작업 시간을 "HH:MM:SS" 형식으로 변환
+	 */
+	const formatWorkTime = (seconds: number): string => {
+		const hours = Math.floor(seconds / 3600)
+		const minutes = Math.floor((seconds % 3600) / 60)
+		const secs = seconds % 60
+		return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+	}
+
+	/**
+	 * 팀원 데이터를 TeamProfileBoard 형식으로 변환
+	 */
+	const teamProfiles = useMemo(() => {
+		if (!overview?.members?.members || overview.members.members.length === 0) {
+			return []
+		}
+
+		return overview.members.members.map((member) => ({
+			name: member.nickname || member.name,
+			role: getFieldLabel(member.field.type, member.field.custom_name),
+			contact: '',
+			time: formatWorkTime(member.today_work_seconds),
+			avatarUrl: member.profile_image_url || undefined,
+			status: {
+				beforeProgress: member.counts.planning,
+				inProgress: member.counts.in_progress,
+				completed: member.counts.done,
+			},
+		}))
+	}, [overview])
+
+	/**
+	 * 메인 프로필 (리더 또는 첫 번째 팀원)
+	 */
+	const mainProfile = useMemo(() => {
+		if (!overview?.members?.members || overview.members.members.length === 0) {
+			return undefined
+		}
+
+		const leader = overview.members.members.find((m) => m.member_type === 'LEADER')
+		const targetMember = leader || overview.members.members[0]
+
+		return {
+			name: targetMember.nickname || targetMember.name,
+			role: getFieldLabel(targetMember.field.type, targetMember.field.custom_name),
+			time: formatWorkTime(targetMember.today_work_seconds),
+			avatarUrl: targetMember.profile_image_url || undefined,
+			status: {
+				beforeProgress: targetMember.counts.planning,
+				inProgress: targetMember.counts.in_progress,
+				completed: targetMember.counts.done,
+			},
+			onStartWork: () => console.log('작업 시작'),
+		}
+	}, [overview])
+
+	// 헤더 데이터
+	const headerData = useMemo(() => {
+		if (!overview?.basic_info) {
+			return {
+				title: '넥트 웹사이트 개발 프로젝트',
+				description: '크리에이터를 위한 사이드 프로젝트 매칭 & 협업 플랫폼',
+				notice: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
+				regularMeeting: '매주 금요일 PM 8:30 / 강남 사거리역 스타벅스',
+				startDate: '2025.11.14',
+				endDate: '2026.2.20',
+			}
+		}
+
+		return {
+			title: overview.basic_info.title,
+			description: overview.basic_info.description,
+			notice: overview.basic_info.notice_text,
+			regularMeeting: overview.basic_info.regular_meeting_text,
+			startDate: formatDateForDisplay(overview.basic_info.planned_started_on),
+			endDate: formatDateForDisplay(overview.basic_info.planned_ended_on),
+		}
+	}, [overview])
+
+	// 캘린더 데이터는 아직 API에 없으므로 샘플 데이터 유지
 	const calendarDays = [
 		// 일요일
 		[
@@ -173,87 +349,22 @@ const TeamBoardPage = () => {
 		],
 	]
 
-	const teamProfiles = [
-		{
-			name: '닉네임5자',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:08:56',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-		{
-			name: '이방토',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:58:57',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-		{
-			name: '닉네임5자',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:08:56',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-		{
-			name: '이방토',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:58:57',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-		{
-			name: '닉네임5자',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:08:56',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-		{
-			name: '이방토',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:58:57',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-	]
-
 	return (
-		<div className="flex flex-col w-full max-w-[1440px] mx-auto px-6 py-8 gap-7">
+		<div className="flex flex-col w-full max-w-main mx-auto px-6 py-8 gap-7">
 			{/* 상단 헤더 영역 (1224x180) */}
 			<div className="w-[1224px] h-[180px]">
-				<TeamBoardHeader
-					title="넥트 웹사이트 개발 프로젝트"
-					description="크리에이터를 위한 사이드 프로젝트 매칭 & 협업 플랫폼"
-					notice="이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~"
-					regularMeeting="매주 금요일 PM 8:30 / 강남 사거리역 스타벅스"
-					startDate="2025.11.14"
-					endDate="2026.2.20"
-				/>
+				{isLoading ? (
+					<div className="flex items-center justify-center h-full">로딩 중...</div>
+				) : (
+					<TeamBoardHeader
+						title={headerData.title}
+						description={headerData.description}
+						notice={headerData.notice}
+						regularMeeting={headerData.regularMeeting}
+						startDate={headerData.startDate}
+						endDate={headerData.endDate}
+					/>
+				)}
 			</div>
 
 			{/* 헤더/메인 구분선 */}
@@ -266,7 +377,12 @@ const TeamBoardPage = () => {
 					{/* 상단: RadarChartCard + ContentListCard 두 개 (808x448) */}
 					<div className="flex gap-6 h-[448px]">
 						{/* RadarChartCard (392x448) */}
-						<RadarChartCard title="팀 역할별 역량" totalScore={80} maxScore={80} data={radarChartData} />
+						<RadarChartCard 
+							title="팀 역할별 역량" 
+							totalScore={totalScore} 
+							maxScore={100} 
+							data={radarChartData} 
+						/>
 						{/* ContentListCard 두 개 (세로 배치, 392x216 각각) */}
 						<div className="flex flex-col gap-4">
 							<ContentListCard type="게시판" items={bulletinBoardItems} />
@@ -277,17 +393,7 @@ const TeamBoardPage = () => {
 					{/* 하단: TeamProfileBoard (808x518) */}
 					<div className="h-[518px]">
 						<TeamProfileBoard
-							mainProfile={{
-								name: '이방토',
-								role: 'Design',
-								time: '04:58:57',
-								status: {
-									beforeProgress: 20,
-									inProgress: 20,
-									completed: 20,
-								},
-								onStartWork: () => console.log('작업 시작'),
-							}}
+							mainProfile={mainProfile}
 							profiles={teamProfiles}
 						/>
 					</div>
