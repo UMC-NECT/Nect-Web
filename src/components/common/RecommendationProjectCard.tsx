@@ -23,7 +23,7 @@ const RecommendationProjectCard = ({ project, variant = 'default' }: Recommendat
         default: {
             card: 'w-90',
             image: 'w-90 h-50',
-            height: project.description.length > 40 ? 'h-85' : 'h-80',
+            height: 'h-[340px]',
             infoArea: '',
             infoMargin: 'mt-3.5',
             chipPosition: 'bottom-[7px]'
@@ -43,7 +43,7 @@ const RecommendationProjectCard = ({ project, variant = 'default' }: Recommendat
     const remainingCount = project.tags.length - 3;
 
     return (
-        <div className={`${styles.card} ${styles.height} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
+        <div className={`${styles.card} ${styles.height} pb-4 flex flex-col bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
             {/* 이미지 영역 */}
             <div className={`relative ${styles.image} rounded-xl overflow-hidden`}>
                 <img
@@ -55,29 +55,29 @@ const RecommendationProjectCard = ({ project, variant = 'default' }: Recommendat
                 {/* 모집 중 태그 */}
                 <div className={`absolute ${styles.chipPosition} right-3`}>
                     <RecruitmentStatusChip
-                        status={project.status as '모집 전' | '모집 중' | '모집 완료'} 
+                        status={project.status as '모집 전' | '모집 중' | '모집 완료'}
                     />
                 </div>
             </div>
 
             {/* 정보 영역 */}
-            <div className={`gap-3 mx-5 ${styles.infoMargin} ${styles.infoArea}`}>
-                <div className="flex justify-between items-center mt-3 mb-2">
-                    <div className="flex items-center gap-1.5 flex-1 h-6.5">
-                        <h3 className="text-lg font-semibold text-neutral-900 truncate">{project.title}</h3>
+            <div className={`flex flex-col flex-1 mx-5 ${styles.infoMargin}mt-3.5 min-h-0`}>
+                <div className="flex justify-between items-center mt-3 mb-1.5">
+                    <div className="flex items-center gap-1.5 flex-1">
+                        <h3 className="title-3 font-semibold text-neutral-900 truncate">{project.title}</h3>
                         <div className='flex items-center justify-between gap-[3px] mt-0.75'>
-                            <span className="text-sm font-semibold text-neutral-700">{project.subtitle}</span>
-                            <span className="text-neutral-500 font-medium text-sm">{project.part}</span>
+                            <span className="button-1 font-semibold text-neutral-700">{project.subtitle}</span>
+                            <span className="button-1 text-neutral-500">{project.part}</span>
                         </div>
                     </div>
-                    <span className="text-lg font-semibold text-primary-500-normal whitespace-nowrap">{project.dDay}</span>
+                    <span className="title-3 font-semibold text-primary-500-normal whitespace-nowrap">{project.dDay}</span>
                 </div>
 
-                <p className="text-sm text-neutral-600 font-medium mb-3 line-clamp-2">
+                <p className="body-2 font-medium text-neutral-600 line-clamp-2">
                     {project.description}
                 </p>
 
-                <div className="flex gap-2 flex-wrap h-6 items-center justify-between">
+                <div className="flex gap-2 flex-wrap mt-auto items-center justify-between">
                     <div className="flex gap-2">
                         {visibleTags.map((tag, index) => (
                             <span
@@ -103,5 +103,4 @@ const RecommendationProjectCard = ({ project, variant = 'default' }: Recommendat
         </div>
     );
 };
-
 export default RecommendationProjectCard;

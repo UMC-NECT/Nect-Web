@@ -65,6 +65,8 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 		}
 	}, [])
 
+	const isLoggedIn = getAccessToken()
+
 	return (
 		<header
 			className='fixed top-0 left-0 right-0 bg-white z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.02)] transition-transform duration-300'
@@ -98,65 +100,76 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 					{/* 오른쪽 공간 */}
 					<div className='flex-1' />
 
-					{/* 오른쪽 아이콘들 */}
-					<div className='flex items-center gap-4'>
-						<div ref={notificationRef} className='relative'>
-							<button
-								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
-									showNotifications ? 'bg-neutral-100' : 'hover:bg-neutral-100'
-								}`}
-								aria-label='알림'
-								onClick={() => {
-									setShowNotifications(!showNotifications)
-									setShowMessages(false)
-								}}
-							>
-								<NotificationIcon className='h-6 w-6 text-neutral-700' />
-								{unreadNotifications > 0 && (
-									<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-danger-600 rounded-full'></div>
-								)}
-							</button>
-							{showNotifications && <NotificationDropdown defaultTab='team' />}
-						</div>
+					{isLoggedIn ? (
+						<>
+							{/* 오른쪽 아이콘들 */}
+							<div className='flex items-center gap-4'>
+								<div ref={notificationRef} className='relative'>
+									<button
+										className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+											showNotifications ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+										}`}
+										aria-label='알림'
+										onClick={() => {
+											setShowNotifications(!showNotifications)
+											setShowMessages(false)
+											setShowProfile(false)
+										}}
+									>
+										<NotificationIcon className='h-6 w-6 text-neutral-700' />
+										{unreadNotifications > 0 && (
+											<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-danger-600 rounded-full'></div>
+										)}
+									</button>
+									{showNotifications && <NotificationDropdown defaultTab='team' />}
+								</div>
 
-						<div ref={messageRef} className='relative'>
-							<button
-								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
-									showMessages ? 'bg-neutral-100' : 'hover:bg-neutral-100'
-								}`}
-								aria-label='채팅'
-								onClick={() => {
-									setShowMessages(!showMessages)
-									setShowNotifications(false)
-									setShowProfile(false)
-								}}
-							>
-								<MessageIcon className='h-6 w-6 text-neutral-700' />
-							</button>
-							{showMessages && <MessageDropdown defaultTab='team' />}
-						</div>
+								<div ref={messageRef} className='relative'>
+									<button
+										className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+											showMessages ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+										}`}
+										aria-label='채팅'
+										onClick={() => {
+											setShowMessages(!showMessages)
+											setShowNotifications(false)
+											setShowProfile(false)
+										}}
+									>
+										<MessageIcon className='h-6 w-6 text-neutral-700' />
+									</button>
+									{showMessages && <MessageDropdown defaultTab='team' />}
+								</div>
 
-						<div ref={profileRef} className='relative'>
-							<button
-								className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
-									showProfile ? 'bg-neutral-100' : 'hover:bg-neutral-100'
-								}`}
-								aria-label='프로필'
-								onClick={() => {
-									setShowProfile(!showProfile)
-									setShowNotifications(false)
-									setShowMessages(false)
-									const accessToken = getAccessToken()
-									if (!accessToken) {
-										navigate('/login')
-									}
-								}}
-						>
-								<ProfileIcon className='h-6 w-6 text-neutral-700' />
-							</button>
-							<ProfileDropdown isOpen={showProfile} onClose={() => setShowProfile(false)} />
-						</div>
-					</div>
+								<div ref={profileRef} className='relative'>
+									<button
+										className={`flex w-10 h-10 items-center justify-center relative rounded-[14px] transition-colors ${
+											showProfile ? 'bg-neutral-100' : 'hover:bg-neutral-100'
+										}`}
+										aria-label='프로필'
+										onClick={() => {
+											setShowProfile(!showProfile)
+											setShowNotifications(false)
+											setShowMessages(false)
+											const accessToken = getAccessToken()
+											if (!accessToken) {
+												navigate('/login')
+											}
+										}}
+									>
+										<ProfileIcon className='h-6 w-6 text-neutral-700' />
+									</button>
+									<ProfileDropdown isOpen={showProfile} onClose={() => setShowProfile(false)} />
+								</div>
+							</div>
+						</>
+					) : (
+						<>
+							<Link to='/login' className='text-[16px] font-medium text-neutral-600 hover:text-primary-600-normal pointer-cursor'>
+								로그인/회원가입
+							</Link>
+						</>
+					)}
 				</div>
 			</div>
 

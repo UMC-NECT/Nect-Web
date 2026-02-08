@@ -1,5 +1,4 @@
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
-import { getTagStyle } from '@/utils/tagStyles';
 
 interface RecommendationMemberCardProps {
     member: {
@@ -20,7 +19,7 @@ const RecommendationMemberCard = ({ member, variant = 'default' }: Recommendatio
     const sizeStyles = {
         default: {
             card: 'w-90',
-            height: member.description.length > 40 ? 'h-85' : 'h-80',
+            height: 'h-[300px]',
             background: 'h-45',
             character: 'w-16 h-16',
         },
@@ -35,7 +34,7 @@ const RecommendationMemberCard = ({ member, variant = 'default' }: Recommendatio
     const styles = sizeStyles[variant];
 
     return (
-        <div className={`${styles.card} ${styles.height} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
+        <div className={`${styles.card} ${styles.height} pb-4 bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
             {/* 상단: 배경 + 캐릭터 영역 */}
             <div className={`relative ${styles.background}`}>
                 <img
@@ -61,30 +60,16 @@ const RecommendationMemberCard = ({ member, variant = 'default' }: Recommendatio
             </div>
 
             {/* 하단: 텍스트 정보 영역 */}
-            <div className="flex flex-col px-5 mt-[5px]">
-                <div className="flex h-6.5 items-center text-[16px] text-neutral-900 gap-1.5 mb-1.5">
-                    <span className='font-semibold'>{member.name}</span>
+            <div className="flex flex-col px-5">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className='title-3 font-semibold text-neutral-900'>{member.name}</span>
                     <BarIcon className="w-0.5 h-3" />
-                    <span className="text-neutral-500 font-medium">{member.position}</span>
+                    <span className="title-3 text-neutral-500 font-medium">{member.position}</span>
                 </div>
 
-                <p className="text-[13px] text-neutral-600 line-clamp-2 mb-3">
+                <p className="body-2 font-medium text-neutral-600 line-clamp-2 mb-3">
                     {member.description}
                 </p>
-
-                {/* 포지션 태그 - tags가 있을 때만 렌더링 */}
-                {member.tags && member.tags.length > 0 && (
-                    <div className="flex gap-2 flex-wrap h-6">
-                        {member.tags.map((tag, index) => (
-                            <span
-                                key={index}
-                                className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(tag)}`}
-                            >
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
-                )}
             </div>
         </div>
     );
