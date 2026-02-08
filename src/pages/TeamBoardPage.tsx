@@ -262,6 +262,7 @@ const TeamBoardPage = () => {
 				inProgress: targetMember.counts.in_progress,
 				completed: targetMember.counts.done,
 			},
+			isWorking: targetMember.is_working,
 			onStartWork: () => console.log('작업 시작'),
 		}
 	}, [overview])

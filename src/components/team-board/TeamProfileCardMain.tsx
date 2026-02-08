@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { WORK_STATUS_CONFIG } from '@/constants/workStatus'
 import ResetIcon from '@/assets/icons/common/reset.svg?react'
 import PlayIcon from '@/assets/icons/common/play.svg?react'
@@ -14,6 +15,7 @@ interface TeamProfileCardMainProps {
 	time: string // "04:58:57" 형식
 	avatarUrl?: string
 	status: WorkStatus
+	isWorking?: boolean // 작업 중 여부
 	onStartWork?: () => void
 	className?: string
 }
@@ -24,13 +26,28 @@ const TeamProfileCardMain = ({
 	time,
 	avatarUrl = 'https://placehold.co/68x68',
 	status,
+	isWorking: initialIsWorking = false,
 	onStartWork,
 	className = '',
 }: TeamProfileCardMainProps) => {
+	const [isWorking, setIsWorking] = useState(initialIsWorking)
+
+	// API의 is_working 값이 변경되면 로컬 상태 동기화
+	useEffect(() => {
+		setIsWorking(initialIsWorking)
+	}, [initialIsWorking])
+
 	const statusItems = WORK_STATUS_CONFIG.map((config) => ({
 		...config,
 		value: status[config.key],
 	}))
+
+	const handleButtonClick = () => {
+		setIsWorking(!isWorking)
+		if (onStartWork) {
+			onStartWork()
+		}
+	}
 
 	return (
 		<div
@@ -53,15 +70,21 @@ const TeamProfileCardMain = ({
 							</div>
 						</div>
 
-						{/* 작업 시작 버튼 */}
+						{/* 작업 시작/정지 버튼 */}
 						<div className="w-[116px] inline-flex flex-col justify-start items-start gap-[6px]">
 							<button
-								onClick={onStartWork}
-								className="self-stretch pl-3.5 pr-[18px] py-2.5 bg-primary-500-normal rounded-xl inline-flex justify-start items-center gap-1.5"
+								onClick={handleButtonClick}
+								className={`self-stretch pl-3.5 pr-[18px] py-2.5 rounded-xl inline-flex justify-start items-center gap-1.5 transition-colors ${
+									isWorking
+										? 'bg-neutral-600 text-neutral-000 hover:bg-neutral-700'
+										: 'bg-primary-500-normal text-neutral-50 hover:bg-primary-600-normal'
+								}`}
 							>
 								{/* Play 아이콘 */}
 								<PlayIcon className="w-[18px] h-[18px]" />
-								<div className="text-center justify-center text-neutral-50 body-1 font-semibold">작업 시작</div>
+								<div className="text-center justify-center body-1 font-semibold">
+									{isWorking ? '작업 정지' : '작업 시작'}
+								</div>
 							</button>
 						</div>
 					</div>
