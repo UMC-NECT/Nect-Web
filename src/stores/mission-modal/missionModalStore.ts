@@ -189,11 +189,11 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		})),
 	addSelectedRole: role =>
 		set(state => ({
-			selectedRoles: state.selectedRoles.some(r => r.id === role.id) ? state.selectedRoles : [...state.selectedRoles, role],
+			selectedRoles: state.selectedRoles.some(r => r.part_id === role.part_id) ? state.selectedRoles : [...state.selectedRoles, role],
 		})),
 	removeSelectedRole: roleId =>
 		set(state => ({
-			selectedRoles: state.selectedRoles.filter(r => r.id !== roleId),
+			selectedRoles: state.selectedRoles.filter(r => r.part_id !== roleId),
 		})),
 
 	// 미션 모달 액션
@@ -202,11 +202,11 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	setSelectedParts: parts => set({ selectedParts: parts }),
 	addSelectedPart: part =>
 		set(state => ({
-			selectedParts: state.selectedParts.some(p => p.id === part.id) ? state.selectedParts : [...state.selectedParts, part],
+			selectedParts: state.selectedParts.some(p => p.part_id === part.part_id) ? state.selectedParts : [...state.selectedParts, part],
 		})),
 	removeSelectedPart: partId =>
 		set(state => ({
-			selectedParts: state.selectedParts.filter(p => p.id !== partId),
+			selectedParts: state.selectedParts.filter(p => p.part_id !== partId),
 		})),
 	setSelectedAssignees: assignees => set({ selectedAssignees: assignees }),
 	addSelectedAssignee: assignee =>

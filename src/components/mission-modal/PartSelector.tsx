@@ -43,13 +43,17 @@ const PartSelector = ({
 				variant === 'role' ? (
 					selectedRoles.map(role => (
 						<div
-							key={role.id}
+							key={role.part_id}
 							onClick={e => {
 								e.stopPropagation()
-								onRoleRemove?.(role.id)
+								onRoleRemove?.(role.part_id)
 							}}
 						>
-							<RoleTagChip roleId={role.id} roleName={role.name} state='clear' />
+							<RoleTagChip
+								roleId={role.part_id}
+								roleName={role.part_label ?? role.custom_role_field_name ?? ''}
+								state='clear'
+							/>
 						</div>
 					))
 				) : (

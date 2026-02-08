@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTeamStore } from '@/stores/teamStore'
+import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
 import { useMissionModalStore, type RoleTask } from '@/stores/mission-modal/missionModalStore'
 import RoleTagChip from './RoleTagChip'
 import TaskItem from './TaskItem'
@@ -109,16 +109,16 @@ const RoleTaskPanel = () => {
 	// 역할별로 태스크 그룹화
 	const tasksByRole = roles.map(role => ({
 		role,
-		tasks: roleTasks.filter(task => task.roleId === role.id),
+		tasks: roleTasks.filter(task => task.roleId === role.part_id),
 	}))
 
 	return (
 		<div className='flex flex-col gap-4 w-full bg-neutral-50 border border-neutral-100 rounded-12 p-5 overflow-y-auto max-h-[370px]'>
 			{tasksByRole.map(({ role, tasks }) => (
 				<RoleTaskSection
-					key={role.id}
-					roleId={role.id}
-					roleName={role.name}
+					key={role.part_id}
+					roleId={role.part_id}
+					roleName={getRoleDisplayName(role)}
 					tasks={tasks}
 					onToggleTask={toggleRoleTask}
 					onUpdateTask={(taskId, content) => updateRoleTask(taskId, { content })}

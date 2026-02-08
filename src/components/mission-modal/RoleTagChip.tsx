@@ -31,7 +31,7 @@ const RoleTagChip = ({ roleId, roleName, state, onClick, className, count }: Rol
 				)}
 				onClick={!isDisabled && !isClear ? onClick : undefined}
 			>
-				<p className={cn('button-1 font-medium text-center', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
+				<p className={cn('button-1 font-medium text-center whitespace-nowrap max-w-full', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
 					{roleName}
 				</p>
 				{count && <span className='button-1 text-neutral-700'>({count})</span>}

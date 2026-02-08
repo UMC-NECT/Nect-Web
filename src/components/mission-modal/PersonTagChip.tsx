@@ -48,7 +48,7 @@ const PersonTagChip = ({ personName, roleId, personImage, state, onClick }: Pers
 			>
 				<img src={personImage} alt={personName} className='w-full h-full object-cover' />
 			</div>
-			<p className={cn('relative button-1 font-medium text-center', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
+			<p className={cn('relative button-1 font-medium text-center whitespace-nowrap max-w-full', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
 				{personName}
 			</p>
 			{isClear && !isDisabled && <XIcon className='relative cursor-pointer' onClick={onClick} />}

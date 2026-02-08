@@ -1,13 +1,14 @@
 import WeekSelector from '@/components/week-mission/WeekSelector'
 import MissionBoard from '@/components/week-mission/MissionBoard'
 import { useMissionStore } from '@/stores/missionStore'
-import { useTeamStore } from '@/stores/teamStore'
+import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useProcessWeekQuery } from '@/hooks/process/useProcessApi'
 import { useWeekMissionQuery } from '@/hooks/process/useWeekMissionApi'
+import { usePartsQuery, useUsersQuery } from '@/hooks/project.ts/useProjectApi'
 import { useEffect } from 'react'
 import type { Mission } from '@/types/mission'
 import type { Assignees } from '@/types/api/assignees'
@@ -15,10 +16,13 @@ import type { Assignees } from '@/types/api/assignees'
 const WeekMissionPage = () => {
 	const { missions, updateMission, setMissions } = useMissionStore()
 	const { openMissionModal } = useMissionModalStore()
-	const { roles } = useTeamStore()
+	const { roles, setRoles, setPersons } = useTeamStore()
 	const { projectId } = useProjectIdStore()
-	useProcessWeekQuery(projectId?.toString() ?? '')
-	const { data: weekMission } = useWeekMissionQuery(projectId?.toString() ?? '', '4')
+	const projectIdStr = projectId?.toString() ?? ''
+	useProcessWeekQuery(projectIdStr)
+	const { data: weekMission } = useWeekMissionQuery(projectIdStr, '4')
+	const { data: partsData } = usePartsQuery(projectIdStr)
+	const { data: usersData } = useUsersQuery(projectIdStr)
 
 	useEffect(() => {
 		if (!weekMission?.body?.missions?.length) return
@@ -33,10 +37,32 @@ const WeekMissionPage = () => {
 		)
 	}, [weekMission, setMissions])
 
-	// 섹션 데이터 (teamStore의 roles 사용)
+	useEffect(() => {
+		if (partsData?.body?.parts?.length) setRoles(partsData.body.parts)
+	}, [partsData?.body?.parts, setRoles])
+
+	useEffect(() => {
+		if (!usersData?.body?.users?.length) return
+		const storeRoles = useTeamStore.getState().roles
+		const persons = usersData.body.users.map(u => {
+			const roleId =
+				storeRoles.find(
+					r => r.part_label === u.part_label || r.custom_role_field_name === u.custom_role_field_name
+				)?.part_id ?? 0
+			return {
+				id: u.user_id,
+				name: u.name,
+				roleId,
+				image: u.profile_image_url ?? '',
+			}
+		})
+		setPersons(persons)
+	}, [usersData?.body?.users, setPersons])
+
+	// 섹션 데이터 (teamStore의 roles = 파트 API 결과)
 	const sections = roles.map(role => ({
-		id: role.id,
-		title: role.name,
+		id: role.part_id,
+		title: getRoleDisplayName(role),
 	}))
 
 	return (
@@ -60,7 +86,7 @@ const WeekMissionPage = () => {
 
 			{/* MissionBoard - useGetProjectUsers의 projectId로 기존 미션(processId) 클릭 시 모달에 상세 데이터 채움 */}
 			<div className='w-full mt-6'>
-				<MissionBoard missions={missions} sections={sections} projectId={projectId?.toString() ?? ''} onMissionUpdate={updateMission} />
+				<MissionBoard missions={missions} sections={sections} projectId={projectIdStr} onMissionUpdate={updateMission} />
 			</div>
 		</div>
 	)

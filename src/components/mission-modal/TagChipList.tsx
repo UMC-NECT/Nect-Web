@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { cn } from '@/utils/cn'
 import { useMissionModalStore, type Mission } from '@/stores/mission-modal/missionModalStore'
-import { useTeamStore, type Person, type Role } from '@/stores/teamStore'
+import { useTeamStore, getRoleDisplayName, type Person, type Role } from '@/stores/teamStore'
 import PersonTagChip from './PersonTagChip'
 import RoleTagChip from './RoleTagChip'
 import MissionTagChip from './MissionTagChip'
@@ -85,7 +85,7 @@ const TagChipList = ({
 		if (useCustomRoleSelection) {
 			return customSelectedRoleIds.includes(roleId)
 		}
-		return selectedRoles.some(r => r.id === roleId)
+		return selectedRoles.some(r => r.part_id === roleId)
 	}
 
 	const handleSettingClick = () => {
@@ -112,9 +112,9 @@ const TagChipList = ({
 	}
 
 	const handleRoleClick = (role: Role) => {
-		if (disabledRoleIds.includes(role.id)) return
+		if (disabledRoleIds.includes(role.part_id)) return
 
-		const isSelected = isRoleSelected(role.id)
+		const isSelected = isRoleSelected(role.part_id)
 
 		if (onRoleSelect) {
 			onRoleSelect(role, !isSelected)
@@ -122,7 +122,7 @@ const TagChipList = ({
 			// customSelectedRoleIds만 있고 onRoleSelect가 없는 경우는 무시
 		} else {
 			if (showClearButton && isSelected) {
-				removeSelectedRole(role.id)
+				removeSelectedRole(role.part_id)
 			} else {
 				addSelectedRole(role)
 			}
@@ -172,8 +172,8 @@ const TagChipList = ({
 	}
 
 	const getRoleState = (role: Role): 'default' | 'clear' | 'disabled' | 'edit' => {
-		const isSelected = isRoleSelected(role.id)
-		const isDisabled = disabledRoleIds.includes(role.id)
+		const isSelected = isRoleSelected(role.part_id)
+		const isDisabled = disabledRoleIds.includes(role.part_id)
 
 		if (isDisabled) return 'disabled'
 		if (isEditMode) return 'edit'
@@ -185,9 +185,9 @@ const TagChipList = ({
 		<div className='flex flex-col gap-2 w-full mt-2'>
 			{roles.map(role => (
 				<RoleTagChip
-					key={role.id}
-					roleId={role.id}
-					roleName={role.name}
+					key={role.part_id}
+					roleId={role.part_id}
+					roleName={getRoleDisplayName(role)}
 					state={getRoleState(role)}
 					onClick={() => handleRoleClick(role)}
 				/>

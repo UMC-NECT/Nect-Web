@@ -19,7 +19,7 @@ import { useWorkStatusFilter } from '@/hooks/work-status/useWorkStatusFilter'
 import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
-import { useTeamStore } from '@/stores/teamStore'
+import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import { useProgressSummaryQuery } from '@/hooks/process/useProcessApi'
 import type { Progress } from '@/types/progress'
@@ -95,7 +95,7 @@ const SortableTodoBlock = ({ item, status, onItemClick }: SortableTodoBlockProps
 const WorkStatusPage = () => {
 	const [selectedSegment, setSelectedSegment] = useState('Team')
 	const { roles } = useTeamStore()
-	const segments = ['Team', ...roles.map(role => role.name)]
+	const segments = ['Team', ...roles.map(role => getRoleDisplayName(role))]
 	const statuses: MissionStatus[] = ['planning', 'in_progress', 'completed', 'backlog']
 	const { openMissionModal } = useMissionModalStore()
 

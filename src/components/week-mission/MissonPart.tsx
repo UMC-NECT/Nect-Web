@@ -38,9 +38,14 @@ export const MissionPart_Add = () => {
 
 	const handleSubmit = () => {
 		if (inputValue.trim()) {
-			// 새 role ID 생성 (기존 ID 중 최대값 + 1)
-			const newId = Math.max(...roles.map(r => r.id), 0) + 1
-			addRole({ id: newId, name: inputValue.trim() })
+			const newPartId = Math.max(...roles.map(r => r.part_id), 0) + 1
+			addRole({
+				part_id: newPartId,
+				part_label: inputValue.trim(),
+				role_field: null,
+				custom_role_field_name: null,
+				required_count: 0,
+			})
 			setInputValue('')
 			setIsEditing(false)
 		}

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { Part } from '@/types/part'
 
 export interface Person {
 	id: number
@@ -7,13 +8,15 @@ export interface Person {
 	image: string
 }
 
-export interface Role {
-	id: number
-	name: string
-}
+/** Part와 동일. roles는 파트 API(getParts) 응답으로 setRoles로 주입 */
+export type Role = Part
+
+/** Role(Part) 표시 이름: part_label 우선, 없으면 custom_role_field_name */
+export const getRoleDisplayName = (role: Role): string =>
+	role.part_label ?? role.custom_role_field_name ?? ''
 
 interface TeamStore {
-	// 데이터
+	// 데이터 (roles는 파트 API setRoles, persons는 유저 API setPersons로 설정)
 	persons: Person[]
 	roles: Role[]
 
@@ -23,42 +26,17 @@ interface TeamStore {
 	updatePerson: (personId: number, updates: Partial<Person>) => void
 	removePerson: (personId: number) => void
 
-	// Role 액션
+	// Role(Part) 액션
 	setRoles: (roles: Role[]) => void
 	addRole: (role: Role) => void
-	updateRole: (roleId: number, updates: Partial<Role>) => void
-	removeRole: (roleId: number) => void
+	updateRole: (partId: number, updates: Partial<Role>) => void
+	removeRole: (partId: number) => void
 }
 
-// 초기 데이터
-const initialPersons: Person[] = [
-	{ id: 1, name: '시루', roleId: 1, image: 'https://placehold.co/24x24' }, // PM
-	{ id: 2, name: '이방토', roleId: 2, image: 'https://placehold.co/24x24' }, // Design
-	{ id: 3, name: '김개발', roleId: 3, image: 'https://placehold.co/24x24' }, // Backend
-	{ id: 4, name: '박디자인', roleId: 2, image: 'https://placehold.co/24x24' }, // Design
-	{ id: 5, name: '최기획', roleId: 1, image: 'https://placehold.co/24x24' }, // PM
-	{ id: 6, name: '정마케팅', roleId: 1, image: 'https://placehold.co/24x24' }, // PM
-	{ id: 7, name: '한영업', roleId: 1, image: 'https://placehold.co/24x24' }, // PM
-	{ id: 8, name: '오데이터', roleId: 3, image: 'https://placehold.co/24x24' }, // Backend
-	{ id: 9, name: '송보안', roleId: 3, image: 'https://placehold.co/24x24' }, // Backend
-	{ id: 10, name: '임인프라', roleId: 3, image: 'https://placehold.co/24x24' }, // Backend
-	{ id: 11, name: '강리서치', roleId: 2, image: 'https://placehold.co/24x24' }, // Design
-	{ id: 12, name: '윤전략', roleId: 1, image: 'https://placehold.co/24x24' }, // PM
-]
-
-const initialRoles: Role[] = [
-	{ id: 1, name: 'PM' },
-	{ id: 2, name: 'Design' },
-	{ id: 3, name: 'Frontend' },
-	{ id: 4, name: 'Backend' }
-]
-
 export const useTeamStore = create<TeamStore>(set => ({
-	// 데이터
-	persons: initialPersons,
-	roles: initialRoles,
+	persons: [],
+	roles: [],
 
-	// Person 액션
 	setPersons: persons => set({ persons }),
 	addPerson: person =>
 		set(state => ({
@@ -73,18 +51,17 @@ export const useTeamStore = create<TeamStore>(set => ({
 			persons: state.persons.filter(p => p.id !== personId),
 		})),
 
-	// Role 액션
 	setRoles: roles => set({ roles }),
 	addRole: role =>
 		set(state => ({
-			roles: [...state.roles, role],
+			roles: state.roles.some(r => r.part_id === role.part_id) ? state.roles : [...state.roles, role],
 		})),
-	updateRole: (roleId, updates) =>
+	updateRole: (partId, updates) =>
 		set(state => ({
-			roles: state.roles.map(r => (r.id === roleId ? { ...r, ...updates } : r)),
+			roles: state.roles.map(r => (r.part_id === partId ? { ...r, ...updates } : r)),
 		})),
-	removeRole: roleId =>
+	removeRole: partId =>
 		set(state => ({
-			roles: state.roles.filter(r => r.id !== roleId),
+			roles: state.roles.filter(r => r.part_id !== partId),
 		})),
 }))
