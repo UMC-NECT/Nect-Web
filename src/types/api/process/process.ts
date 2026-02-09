@@ -33,8 +33,12 @@ export type ResponseProcessPostDto = CommonResponse<{
 }>
 
 export type ResponseProcessPartDto = CommonResponse<{
-    lane_key: string
-    groups: []
+    lane_key: string | null
+    groups: {
+        status: string
+        count: number
+        processes: ProcessWeekProcessItem[]
+    }[]
 }>
 
 /** 주차별 프로세스 조회 - 한 주의 한 건 카드 (API 응답 필드명 그대로) */
@@ -49,7 +53,8 @@ export interface ProcessWeekProcessItem {
     left_day: number
     role_fields: string[]
     custom_fields: string[]
-    mission_number: number
+    mission_number: number | null
+    has_open_feedback?: boolean
     assignee?: Array<{
         user_id: number
         user_name: string

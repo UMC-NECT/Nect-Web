@@ -20,14 +20,107 @@ import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
-import { useProgressSummaryQuery } from '@/hooks/process/useProcessApi'
+import { useProgressSummaryQuery, useProcessHistoryQuery, useProcessPartQuery } from '@/hooks/process/useProcessApi'
+import { usePartsQuery } from '@/hooks/project/useProjectApi'
 import type { Progress } from '@/types/progress'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import type { ProcessWeekProcessItem } from '@/types/api/process/process'
+import type { Part } from '@/types/part'
 
 // Droppable 컬럼 컴포넌트
 interface DroppableColumnProps {
 	id: string
 	children: React.ReactNode
+}
+
+/** API process_status → MissionStatus */
+const apiStatusToMissionStatus = (s: string): MissionStatus => {
+	const map: Record<string, MissionStatus> = {
+		PLANNING: 'planning',
+		IN_PROGRESS: 'in_progress',
+		DONE: 'completed',
+		BACKLOG: 'backlog',
+	}
+	return map[s] ?? 'planning'
+}
+
+/** role_fields와 parts를 비교하여 일치하는 part의 part_label 반환 */
+const getTeamDisplayNameFromRoleFields = (roleFields: string[], parts: Part[]): string => {
+	if (!roleFields?.length) return 'Team'
+	const rf = roleFields[0]
+	const part = parts.find(p => p.role_field === rf || p.role_field === `ROLE:${rf}`)
+	return part?.part_label ?? part?.custom_role_field_name ?? rf
+}
+
+/** 파트 API 그룹의 processes + status → WorkStatusItem */
+const mapPartProcessToWorkStatusItem = (
+	p: ProcessWeekProcessItem,
+	status: MissionStatus,
+	teamDisplayName: string
+): WorkStatusItem => ({
+	id: p.process_id,
+	team: teamDisplayName,
+	title: p.title ?? '',
+	status,
+	todo: { id: p.process_id, done: p.complete_check_list, total: p.whole_check_list },
+	dueDate: p.dead_line ? p.dead_line.replace(/-/g, '.') : undefined,
+	participants: p.assignee?.map(a => ({
+		id: a.user_id,
+		name: a.nickname ?? a.user_name,
+		avatar: a.user_image ?? '',
+	})),
+	links: undefined,
+	attachments: undefined,
+	isEdit: p.has_open_feedback ?? false,
+})
+
+/** API 히스토리 아이템을 HistoryItem props로 변환 */
+type HistoryIconVariant = 'add' | 'share' | 'app'
+const mapHistoryItem = (item: {
+	history_id: number
+	actor_user_id: number
+	target_type: string
+	created_at: string
+	action: string
+	meta_json: string
+}): { id: number; team: string; user: string; action: string; time: string; iconVariant: HistoryIconVariant; app?: string } => {
+	let meta: Record<string, unknown> = {}
+	try {
+		if (item.meta_json) meta = JSON.parse(item.meta_json) as Record<string, unknown>
+	} catch {
+		// ignore
+	}
+	const team = (meta.team as string) ?? (meta.part_name as string) ?? '—'
+	const user = (meta.actor_name as string) ?? (meta.user_name as string) ?? '사용자'
+	const app = (meta.app as string) ?? (meta.app_type as string)
+	const timeStr = item.created_at
+	const d = new Date(timeStr)
+	const time =
+		Number.isNaN(d.getTime())
+			? ''
+			: (() => {
+					const today = new Date()
+					const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+					const period = d.getHours() >= 12 ? '오후' : '오전'
+					const h = d.getHours() % 12 || 12
+					const min = d.getMinutes().toString().padStart(2, '0')
+					return isToday ? `오늘 ${period} ${h}:${min}` : `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ${period} ${h}:${min}`
+				})()
+	const iconVariant: HistoryIconVariant =
+		item.target_type === 'LINK' || item.action?.toLowerCase().includes('공유')
+			? 'share'
+			: app
+				? 'app'
+				: 'add'
+	return {
+		id: item.history_id,
+		team: String(team),
+		user: String(user),
+		action: item.action ?? '',
+		time,
+		iconVariant,
+		...(app ? { app: String(app) } : {}),
+	}
 }
 
 const DroppableColumn = ({ id, children }: DroppableColumnProps) => {
@@ -102,9 +195,40 @@ const WorkStatusPage = () => {
 	// 커스텀 훅들
 	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
 	const { isScrolling, scrollContainerRef } = useWorkStatusScroll()
-	const { statusCounts, historyItems } = useWorkStatusData()
+	const { statusCounts } = useWorkStatusData()
 	const projectId = useProjectIdStore(state => state.projectId)
-	const { data: progressSummaryData } = useProgressSummaryQuery(projectId?.toString() ?? '')
+	const projectIdStr = projectId?.toString() ?? ''
+	const { data: progressSummaryData } = useProgressSummaryQuery(projectIdStr)
+	const { data: historyData } = useProcessHistoryQuery(projectIdStr)
+	const historyItems = useMemo(
+		() => (historyData?.body?.items ?? []).map(mapHistoryItem),
+		[historyData?.body?.items]
+	)
+
+	// 파트(분야)별 작업 현황 API: 팀 탭은 fieldId 없음, 역할 선택 시 해당 role_field 전달
+	const fieldId = useMemo(() => {
+		if (selectedSegment === 'Team') return undefined
+		const role = roles.find(r => getRoleDisplayName(r) === selectedSegment)
+		return role?.role_field ?? undefined
+	}, [selectedSegment, roles])
+	const { data: partData } = useProcessPartQuery(projectIdStr, fieldId)
+	const { data: partsData } = usePartsQuery(projectIdStr)
+	const setWorkStatusItems = useWorkStatusStore(s => s.setWorkStatusItems)
+	const parts = useMemo(() => partsData?.body?.parts ?? [], [partsData?.body?.parts])
+
+	// 파트 API 응답을 스토어에 동기화 (미션 카드 렌더링/드래그/필터용) - team은 role_fields와 parts의 role_field 매칭 후 part_label 사용
+	useEffect(() => {
+		const body = partData?.body
+		if (!body?.groups) return
+		const items: WorkStatusItem[] = body.groups.flatMap(g => {
+			const status = apiStatusToMissionStatus(g.status)
+			return g.processes.map(p => {
+				const teamDisplayName = getTeamDisplayNameFromRoleFields(p.role_fields ?? [], parts)
+				return mapPartProcessToWorkStatusItem(p, status, teamDisplayName)
+			})
+		})
+		setWorkStatusItems(items)
+	}, [partData?.body, setWorkStatusItems, parts])
 
 	// 진행률: 초기값은 API, 변경분은 드래그 시 deltas로만 반영 (effect 없이 파생)
 	const progressFromApi = useMemo(

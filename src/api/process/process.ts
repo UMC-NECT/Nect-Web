@@ -12,7 +12,7 @@ export const postProcess = async (projectId: number, body: RequestProcessPostDto
 /** 파트(분야)별 작업 현황을 조회합니다. field_id 미입력(null) 시 팀 탭. */
 export const getProcessPart = async (projectId: string, fieldId?: string): Promise<ResponseProcessPartDto> => {
     const query = toQueryString({ field_id: fieldId })
-    const { data } = await api.get(`/api/v1/projects/${projectId}/processes/parts${query}`)
+    const { data } = await api.get(`/api/v1/projects/${projectId}/processes/part${query}`)
     return data
 }
 
