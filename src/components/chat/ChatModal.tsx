@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChatMessageItem } from './ChatMessageItem'
 import ChatRoom from './ChatRoom'
 import ChatMemberSelectModal from './ChatMemberSelectModal'
@@ -6,114 +6,73 @@ import ChatRoomInfoModal from './ChatRoomInfoModal'
 import ChatHeader from './ChatHeader'
 import ChatSidebar from './ChatSidebar'
 import ChatCloudView from './ChatCloudView'
+import { getChatRooms, createGroupChatRoom } from '@/api/chat'
+import type { ChatRoomListDto } from '@/types/api/chat'
+import { useQuery } from '@tanstack/react-query'
 
 type ModalView = 'list' | 'roomInfo' | 'selectContact' | 'room' | 'cloud'
 
-const ChatModal = () => {
+interface ChatModalProps {
+	projectId?: number
+}
+
+	const ChatModal = ({ projectId = 1 }: ChatModalProps) => {
 	const [view, setView] = useState<ModalView>('list')
-	const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
-	const [selectedMessage, setSelectedMessage] = useState<typeof messages[0] | null>(null)
+	const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
+	const [selectedRoom, setSelectedRoom] = useState<ChatRoomListDto | null>(null)
+	const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([])
 
-	const messages = [
-		{
-			id: 1,
-			senderName: '넥트 전체방',
-			content: '그시간 다들 괜찮으신가요~~?',
-			time: '19:45',
-			isRead: false,
-			participants: [
-				'https://placehold.co/20x20',
-				'https://placehold.co/20x20',
-				'https://placehold.co/20x20',
-				'https://placehold.co/20x20',
-			],
-			memberCount: 20,
-			unreadCount: 990,
-			isGroup: true,
-		},
-		{
-			id: 2,
-			senderName: '이방토',
-			content: '넵 확인했습니다!',
-			time: '00:00',
-			isRead: false,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Design',
-			unreadCount: 8,
-			isGroup: false,
-		},
-		{
-			id: 3,
-			senderName: '숀',
-			content: '수정해서 피그마에 올려두었습니당',
-			time: '00:00',
-			isRead: true,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Frontend',
-			isGroup: false,
-		},
-		{
-			id: 4,
-			senderName: '디자인팀',
-			content: '컴퍼넌트 수정사항 체크해주세요 ~',
-			time: '12월 30일',
-			isRead: false,
-			participants: [
-				'https://placehold.co/20x20',
-				'https://placehold.co/20x20',
-				'https://placehold.co/20x20',
-			],
-			memberCount: 3,
-			unreadCount: 80,
-			isGroup: true,
-		},
-		{
-			id: 7,
-			senderName: '넥트 팀방',
-			content: '그시간 다들 괜찮으신가요~~?',
-			time: '12월 30일',
-			isRead: false,
-			participants: [
-				'https://placehold.co/20x20',
-				'https://placehold.co/20x20',
-			],
-			memberCount: 3,
-			unreadCount: 80,
-			isGroup: true,
-		},
-		{
-			id: 5,
-			senderName: '세인트',
-			content: '마지막으로 보낸 메세지',
-			time: '1월 27일',
-			isRead: true,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Part',
-			isGroup: false,
-		},
-		{
-			id: 6,
-			senderName: '웬디',
-			content: '마지막으로 보낸 메세지',
-			time: '1월 27일',
-			isRead: true,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Part',
-			isGroup: false,
-		},
+	// 채팅방 목록 조회
+	const { data: chatRoomsData, isLoading, refetch } = useQuery({
+		queryKey: ['chatRooms', projectId],
+		queryFn: () => getChatRooms(projectId),
+		enabled: !!projectId,
+	})
+
+	const chatRooms = chatRoomsData?.body || []
+
+	// 채팅방 목록을 메시지 아이템 형식으로 변환
+	const messages = chatRooms.map((room) => {
+		const roomId = (room as any).room_id || room.roomId
+		const roomName = (room as any).room_name || room.roomName
+		const lastMessage = (room as any).last_message || room.lastMessage
+		const lastMessageTime = (room as any).last_message_time || room.lastMessageTime
+		const unreadCount = (room as any).unread_count || room.unreadCount
 		
-	]
+		return {
+			id: roomId,
+			senderName: roomName,
+			content: lastMessage || '',
+			time: lastMessageTime
+				? new Date(lastMessageTime).toLocaleTimeString('ko-KR', {
+						hour: '2-digit',
+						minute: '2-digit',
+					})
+				: '',
+			isRead: unreadCount === 0,
+			memberCount: undefined,
+			unreadCount: unreadCount,
+			isGroup: true,
+			roomId: roomId,
+			roomData: room,
+		}
+	})
 
-	if (view === 'room' && selectedRoom && selectedMessage) {
+	if (view === 'room' && selectedRoomId && selectedRoom) {
+		const roomName = (selectedRoom as any).room_name || selectedRoom.roomName || ''
+		const unreadCount = (selectedRoom as any).unread_count || selectedRoom.unreadCount || 0
+		
 		return (
 			<ChatRoom
-				roomName={selectedRoom}
-				memberCount={selectedMessage.memberCount}
-				role={selectedMessage.role}
-				unreadCount={messages.filter(m => !m.isRead).length}
+				roomId={selectedRoomId}
+				roomName={roomName}
+				unreadCount={unreadCount}
+				projectId={projectId}
 				onClose={() => {
 					setView('list')
-					setSelectedMessage(null)
+					setSelectedRoomId(null)
+					setSelectedRoom(null)
+					refetch() // 채팅방 목록 새로고침
 				}}
 			/>
 		)
@@ -122,8 +81,17 @@ const ChatModal = () => {
 	if (view === 'selectContact') {
 		return (
 			<ChatMemberSelectModal
-				onClose={() => setView('list')}
-				onConfirm={(_selectedContacts) => {
+				projectId={projectId}
+				onClose={() => {
+					setSelectedMemberIds([])
+					setView('list')
+				}}
+				onConfirm={(selectedContacts) => {
+					// 선택한 멤버 ID 저장
+					const memberIds = selectedContacts.map((c) => c.id)
+					console.log('선택한 멤버:', selectedContacts)
+					console.log('멤버 ID 목록:', memberIds)
+					setSelectedMemberIds(memberIds)
 					// 멤버 선택 완료 후 방 정보 설정으로 이동
 					setView('roomInfo')
 				}}
@@ -134,11 +102,38 @@ const ChatModal = () => {
 	if (view === 'roomInfo') {
 		return (
 			<ChatRoomInfoModal
-				onClose={() => setView('list')}
-				onConfirm={(roomName, selectedAvatar) => {
-					console.log('방 정보:', { roomName, selectedAvatar })
-					// TODO: 채팅방 생성 로직 구현
+				onClose={() => {
+					setSelectedMemberIds([])
 					setView('list')
+				}}
+				onConfirm={async (roomName, selectedAvatar) => {
+					try {
+						console.log('채팅방 생성 요청:', {
+							projectId,
+							roomName,
+							memberIds: selectedMemberIds,
+						})
+						
+						if (selectedMemberIds.length === 0) {
+							alert('최소 1명 이상의 멤버를 선택해주세요.')
+							return
+						}
+
+						const response = await createGroupChatRoom({
+							projectId,
+							roomName,
+							memberIds: selectedMemberIds,
+						})
+						if (response.body) {
+							// 채팅방 생성 성공 시 목록 새로고침
+							refetch()
+							setSelectedMemberIds([])
+							setView('list')
+						}
+					} catch (error) {
+						console.error('채팅방 생성 실패:', error)
+						alert('채팅방 생성에 실패했습니다.')
+					}
 				}}
 			/>
 		)
@@ -170,19 +165,45 @@ const ChatModal = () => {
 					onNewMessage={() => setView('selectContact')}
 				/>
 				<div className='notification-scrollbar flex-1 overflow-y-auto overflow-x-hidden'>
-				{messages.map((message, index) => (
-					<ChatMessageItem
-						key={message.id}
-						message={message}
-						showDivider={index === 0}
-						onClick={() => {
-							setSelectedRoom(message.senderName)
-							setSelectedMessage(message)
-							setView('room')
-						}}
-					/>
-				))}
-			</div>
+					{isLoading ? (
+						<div className='flex justify-center items-center py-8'>
+							<span className='text-neutral-500'>채팅방 목록을 불러오는 중...</span>
+						</div>
+					) : messages.length === 0 ? (
+						<div className='flex justify-center items-center py-8'>
+							<span className='text-neutral-500'>채팅방이 없습니다.</span>
+						</div>
+					) : (
+						messages.map((message, index) => (
+							<ChatMessageItem
+								key={message.id}
+								message={message}
+								showDivider={index === 0}
+								onClick={() => {
+									console.log('채팅방 클릭:', message)
+									if (message.roomId) {
+										const roomData = message.roomData as any
+										const roomId = roomData?.room_id || roomData?.roomId || message.roomId
+										const roomName = roomData?.room_name || roomData?.roomName || message.senderName
+										const unreadCount = roomData?.unread_count || roomData?.unreadCount || message.unreadCount || 0
+										
+										console.log('채팅방 진입:', { roomId, roomName, unreadCount })
+										
+										setSelectedRoomId(roomId)
+										setSelectedRoom({
+											roomId: roomId,
+											roomName: roomName,
+											lastMessage: message.content,
+											lastMessageTime: message.time,
+											unreadCount: unreadCount,
+										})
+										setView('room')
+									}
+								}}
+							/>
+						))
+					)}
+				</div>
 				
 			</div>
 		</div>

@@ -19,8 +19,9 @@ const ChatRoomInfoModal = ({ onClose, onConfirm }: ChatRoomInfoModalProps) => {
 	]
 
 	const handleConfirm = () => {
-		if (selectedAvatar !== null) {
-			onConfirm(roomName, selectedAvatar)
+		if (roomName.trim()) {
+			// 아바타가 선택되지 않았으면 기본값 1 사용
+			onConfirm(roomName.trim(), selectedAvatar || 1)
 		}
 	}
 

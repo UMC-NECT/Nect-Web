@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import SearchIcon from '@/assets/icons/sidebar/search.svg?react'
 import MemberDeleteIcon from '@/assets/icons/sidebar/member-delete.svg?react'
 import ChatSidebar from './ChatSidebar'
 import ChatActionButtons from './ChatActionButtons'
+import { getProjectMembers } from '@/api/chat'
+import { useQuery } from '@tanstack/react-query'
+import type { ProjectMemberDto } from '@/types/api/chat'
 
 interface Contact {
 	id: number
@@ -12,37 +15,56 @@ interface Contact {
 }
 
 interface ChatMemberSelectModalProps {
+	projectId?: number
 	onClose: () => void
 	onConfirm: (selectedContacts: Contact[]) => void
 	existingMemberIds?: number[]
 }
 
-const ChatMemberSelectModal = ({ onClose, onConfirm, existingMemberIds = [] }: ChatMemberSelectModalProps) => {
+const ChatMemberSelectModal = ({
+	projectId = 1,
+	onClose,
+	onConfirm,
+	existingMemberIds = [],
+}: ChatMemberSelectModalProps) => {
 	const [selectedContacts, setSelectedContacts] = useState<number[]>([])
 	const [searchQuery, setSearchQuery] = useState('')
 
-	// 역할별로 그룹화된 멤버 데이터
-	const membersByRole: Record<string, Contact[]> = {
-		PM: [
-			{ id: 1, name: '이방토', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-			{ id: 2, name: '새로운 파트장', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-		],
-		Design: [
-			{ id: 3, name: '디자이너1', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-			{ id: 4, name: '디자이너2', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-		],
-		Frontend: [
-			{ id: 5, name: '프론트엔드1', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-			{ id: 6, name: '프론트엔드2', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-		],
-		Backend: [
-			{ id: 7, name: '백엔드1', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-			{ id: 8, name: '백엔드2', role: 'Part', profileImage: 'https://placehold.co/44x44' },
-		],
-	}
+	// 프로젝트 멤버 조회
+	const { data: membersData, isLoading } = useQuery({
+		queryKey: ['projectMembers', projectId, searchQuery],
+		queryFn: () => getProjectMembers(projectId, searchQuery || undefined),
+		enabled: !!projectId,
+	})
 
-	const allMembers = Object.values(membersByRole).flat()
-	const selectedMembers = allMembers.filter(member => selectedContacts.includes(member.id))
+	const apiMembers = membersData?.body || []
+
+	// API 멤버를 Contact 형식으로 변환
+	const allMembers: Contact[] = useMemo(
+		() =>
+			apiMembers.map((member) => ({
+				id: member.user_id, // API에서 user_id로 오는 값 사용
+				name: member.name,
+				role: member.role,
+				profileImage: member.profile_image_url || undefined,
+			})),
+		[apiMembers]
+	)
+
+	// 역할별로 그룹화
+	const membersByRole = useMemo(() => {
+		const grouped: Record<string, Contact[]> = {}
+		allMembers.forEach((member) => {
+			const role = member.role || '기타'
+			if (!grouped[role]) {
+				grouped[role] = []
+			}
+			grouped[role].push(member)
+		})
+		return grouped
+	}, [allMembers])
+
+	const selectedMembers = allMembers.filter((member) => selectedContacts.includes(member.id))
 
 	const handleToggleContact = (contactId: number) => {
 		// 이미 채팅방에 있는 멤버는 선택/해제 불가
@@ -64,16 +86,6 @@ const ChatMemberSelectModal = ({ onClose, onConfirm, existingMemberIds = [] }: C
 		onConfirm(selected)
 	}
 
-	const filteredMembersByRole = Object.entries(membersByRole).reduce((acc, [role, members]) => {
-		const filtered = members.filter(member =>
-			member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			member.role.toLowerCase().includes(searchQuery.toLowerCase())
-		)
-		if (filtered.length > 0) {
-			acc[role] = filtered
-		}
-		return acc
-	}, {} as Record<string, Contact[]>)
 
 	return (
 		<div className='flex items-start h-full'>
@@ -116,18 +128,33 @@ const ChatMemberSelectModal = ({ onClose, onConfirm, existingMemberIds = [] }: C
 
 				{/* 멤버 리스트 */}
 				<div className='flex-1 overflow-y-auto py-3 min-h-0 notification-scrollbar'>
-					<div className='flex flex-col gap-3'>
-						{Object.entries(filteredMembersByRole).map(([role, members]) => (
-							<div key={role} className='flex flex-col'>
-								{/* 역할 헤더 */}
-								<div className='px-5 py-1.5 flex items-center justify-start'>
-									<div className='text-neutral-500 body-2 font-medium leading-normal'>
-										{role}
-									</div>
-								</div>
-								{/* 멤버 리스트 */}
-								<div className='flex flex-col'>
-									{members.map(member => {
+					{isLoading ? (
+						<div className='flex justify-center items-center py-8'>
+							<span className='text-neutral-500'>멤버를 불러오는 중...</span>
+						</div>
+					) : (
+						<div className='flex flex-col gap-3'>
+							{Object.entries(membersByRole).map(([role, members]) => {
+								// 검색 필터링
+								const filtered = members.filter(
+									(member) =>
+										member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+										member.role.toLowerCase().includes(searchQuery.toLowerCase())
+								)
+
+								if (filtered.length === 0) return null
+
+								return (
+									<div key={role} className='flex flex-col'>
+										{/* 역할 헤더 */}
+										<div className='px-5 py-1.5 flex items-center justify-start'>
+											<div className='text-neutral-500 body-2 font-medium leading-normal'>
+												{role}
+											</div>
+										</div>
+										{/* 멤버 리스트 */}
+										<div className='flex flex-col'>
+											{filtered.map((member) => {
 										const isExistingMember = existingMemberIds.includes(member.id)
 										const isChecked = isExistingMember || selectedContacts.includes(member.id)
 										
@@ -199,11 +226,13 @@ const ChatMemberSelectModal = ({ onClose, onConfirm, existingMemberIds = [] }: C
 												</div>
 											</div>
 										)
-									})}
-								</div>
-							</div>
-						))}
-					</div>
+											})}
+										</div>
+									</div>
+								)
+							})}
+						</div>
+					)}
 				</div>
 
 				{/* 선택된 멤버 태그 영역 */}
