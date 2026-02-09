@@ -37,6 +37,12 @@ import {
 	usePatchFeedbackMutation,
 	useDeleteFeedbackMutation,
 } from '@/hooks/process/useFeedbackApi'
+import {
+	usePostUploadAttachmentFileMutation,
+	usePostAttachmentLinksMutation,
+	useDeleteAttachmentFileMutation,
+	useDeleteAttachmentLinkMutation,
+} from '@/hooks/process/useAttachmentApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEY } from '@/constants/key'
 import type { RequestProcessPostDto, RequestProcessPatchDto } from '@/types/api/process/process'
@@ -275,6 +281,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 	const nextTempTaskIdRef = useRef(-1)
 	const nextTempFeedbackIdRef = useRef(-1)
+	const nextTempFileIdRef = useRef(-1)
 	const [newTaskContent, setNewTaskContent] = useState('')
 	const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
 	const [editingTaskContent, setEditingTaskContent] = useState('')
@@ -304,6 +311,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const postFeedbackMutation = usePostFeedbackMutation()
 	const patchFeedbackMutation = usePatchFeedbackMutation()
 	const deleteFeedbackMutation = useDeleteFeedbackMutation()
+	const postUploadAttachmentFileMutation = usePostUploadAttachmentFileMutation()
+	const postAttachmentLinksMutation = usePostAttachmentLinksMutation()
+	const deleteAttachmentFileMutation = useDeleteAttachmentFileMutation()
+	const deleteAttachmentLinkMutation = useDeleteAttachmentLinkMutation()
 
 	const toggleDropdown = (dropdown: 'mission' | 'parts' | 'assignees' | 'duration' | 'status') => {
 		setOpenDropdown(prev => (prev === dropdown ? null : dropdown))
@@ -657,6 +668,110 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 	}
 
+	type FileSaveData = Omit<import('@/stores/mission-modal/missionModalStore').FileItem, 'id'>
+	const handleFileSave = (fileData: FileSaveData) => {
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			if (fileData.type === 'file' && fileData.rawFile) {
+				const formData = new FormData()
+				formData.append('file', fileData.rawFile)
+				postUploadAttachmentFileMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						body: formData,
+					},
+					{
+						onSuccess: res => {
+							if (res?.body) {
+								addFile({
+									id: res.body.file_id,
+									type: 'file',
+									name: res.body.file_name,
+									fileName: res.body.file_name,
+									url: res.body.file_url,
+								})
+							}
+							queryClient.invalidateQueries({
+								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+							})
+							setIsAddingFile(false)
+						},
+					}
+				)
+			} else if (fileData.type === 'link' && fileData.url) {
+				postAttachmentLinksMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						body: { title: fileData.name ?? '', link_url: fileData.url },
+					},
+					{
+						onSuccess: res => {
+							if (res?.body) {
+								addFile({
+									id: res.body.document_id,
+									type: 'link',
+									name: res.body.title,
+									url: res.body.url,
+								})
+							}
+							queryClient.invalidateQueries({
+								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+							})
+							setIsAddingFile(false)
+						},
+					}
+				)
+			}
+		} else {
+			addFile({
+				id: nextTempFileIdRef.current--,
+				...fileData,
+			})
+			setIsAddingFile(false)
+		}
+	}
+
+	const handleFileDelete = (file: { id: number; type: 'file' | 'link' }) => {
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			if (file.type === 'file') {
+				deleteAttachmentFileMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						fileId: file.id,
+					},
+					{
+						onSuccess: () => {
+							removeFile(file.id)
+							queryClient.invalidateQueries({
+								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+							})
+						},
+					}
+				)
+			} else {
+				deleteAttachmentLinkMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						linkId: file.id,
+					},
+					{
+						onSuccess: () => {
+							removeFile(file.id)
+							queryClient.invalidateQueries({
+								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
+							})
+						},
+					}
+				)
+			}
+		} else {
+			removeFile(file.id)
+		}
+	}
+
 	return (
 		<div
 			className={cn(
@@ -691,14 +806,18 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 						disabled={
 							postProcessMutation.isPending ||
 							postFileMutation.isPending ||
-							patchProcessMutation.isPending
+							patchProcessMutation.isPending ||
+							postUploadAttachmentFileMutation.isPending ||
+							postAttachmentLinksMutation.isPending
 						}
 						onClick={handleSave}
 						className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-primary-150-light text-primary-500-normal min-w-[60px] hover:bg-primary-200-light transition-all duration-300 ease-in-out disabled:opacity-50 disabled:pointer-events-none'
 					>
 						{postProcessMutation.isPending ||
 						postFileMutation.isPending ||
-						patchProcessMutation.isPending
+						patchProcessMutation.isPending ||
+						postUploadAttachmentFileMutation.isPending ||
+						postAttachmentLinksMutation.isPending
 							? '저장 중...'
 							: '저장'}
 					</button>
@@ -847,7 +966,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 																window.open(url, '_blank')
 															}
 														}}
-														onDelete={() => removeFile(file.id)}
+														onDelete={() => handleFileDelete(file)}
 														onDownload={() => {
 															if (file.url && file.fileName) {
 																const link = document.createElement('a')
@@ -863,13 +982,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 												{isAddingFile && (
 													<FileItem
 														isEditing
-														onSave={fileData => {
-															addFile({
-																id: Date.now(),
-																...fileData,
-															})
-															setIsAddingFile(false)
-														}}
+														onSave={handleFileSave}
 														onCancel={() => setIsAddingFile(false)}
 													/>
 												)}
@@ -1162,7 +1275,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 																window.open(url, '_blank')
 															}
 														}}
-														onDelete={() => removeFile(file.id)}
+														onDelete={() => handleFileDelete(file)}
 														onDownload={() => {
 															if (file.url && file.fileName) {
 																const link = document.createElement('a')
@@ -1179,13 +1292,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 												{isAddingFile && (
 													<FileItem
 														isEditing
-														onSave={fileData => {
-															addFile({
-																id: Date.now(),
-																...fileData,
-															})
-															setIsAddingFile(false)
-														}}
+														onSave={handleFileSave}
 														onCancel={() => setIsAddingFile(false)}
 													/>
 												)}

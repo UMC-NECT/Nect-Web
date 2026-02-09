@@ -10,11 +10,14 @@ export type ResponseAttachmentFilePostDto = CommonResponse<{
 }>
 
 export type RequestAttachmentLinksPostDto = {
-    url: string
+    title: string
+    link_url: string
 }
 
 export type ResponseAttachmentLinksPostDto = CommonResponse<{
-    link_id: number
+    document_id: number
+    title: string
+    url: string
 }>
 export type RequestUploadAttachment = FormData
 
