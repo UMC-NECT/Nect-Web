@@ -498,7 +498,7 @@ const TeamBoardPage = () => {
 										const startDateObj = parseDateString(startDate)
 										const endDateObj = endDate ? parseDateString(endDate) : startDateObj
 
-										// 시간 파싱: "15:00 - 17:00" -> { startHour, startMinute, endHour, endMinute }
+										// 시간 파싱: "15:00 - 17:00" 또는 "15:00-17:00" 형식 지원
 										let allDay = true
 										let startHour = 0
 										let startMinute = 0
@@ -506,32 +506,60 @@ const TeamBoardPage = () => {
 										let endMinute = 59
 
 										if (time && time.trim()) {
-											const timeMatch = time.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2}):(\d{1,2})$/)
+											// 더 유연한 정규식: 공백과 하이픈 형식 다양하게 지원
+											const timeMatch = time.trim().match(/^(\d{1,2}):(\d{1,2})\s*[-~]\s*(\d{1,2}):(\d{1,2})$/)
 											if (timeMatch) {
 												allDay = false
 												startHour = parseInt(timeMatch[1], 10)
 												startMinute = parseInt(timeMatch[2], 10)
 												endHour = parseInt(timeMatch[3], 10)
 												endMinute = parseInt(timeMatch[4], 10)
+
+												// 시간 유효성 검사
+												if (startHour < 0 || startHour > 23 || startMinute < 0 || startMinute > 59 ||
+													endHour < 0 || endHour > 23 || endMinute < 0 || endMinute > 59) {
+													throw new Error('Invalid time format')
+												}
+											} else {
+												// 시간 형식이 맞지 않으면 allDay로 처리
+												console.warn('시간 형식이 올바르지 않습니다:', time)
 											}
 										}
 
-										// ISO 형식으로 변환
-										const startAt = new Date(
+										// ISO 형식으로 변환 (입력한 시간 그대로, 시간대 변환 없이)
+										const formatToISO = (year: number, month: number, day: number, hour: number, minute: number): string => {
+											const yearStr = String(year).padStart(4, '0')
+											const monthStr = String(month + 1).padStart(2, '0')
+											const dayStr = String(day).padStart(2, '0')
+											const hourStr = String(hour).padStart(2, '0')
+											const minuteStr = String(minute).padStart(2, '0')
+											return `${yearStr}-${monthStr}-${dayStr}T${hourStr}:${minuteStr}:00`
+										}
+
+										const startAt = formatToISO(
 											startDateObj.getFullYear(),
 											startDateObj.getMonth(),
 											startDateObj.getDate(),
 											startHour,
 											startMinute,
-										).toISOString()
+										)
 
-										const endAt = new Date(
+										const endAt = formatToISO(
 											endDateObj.getFullYear(),
 											endDateObj.getMonth(),
 											endDateObj.getDate(),
 											endHour,
 											endMinute,
-										).toISOString()
+										)
+
+										// 디버깅: 실제 전송되는 값 확인
+										console.log('일정 생성 데이터:', {
+											title,
+											start_at: startAt,
+											end_at: endAt,
+											all_day: allDay,
+											parsedTime: { startHour, startMinute, endHour, endMinute },
+										})
 
 										// API 호출
 										createScheduleMutation.mutate({
