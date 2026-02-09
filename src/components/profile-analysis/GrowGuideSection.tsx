@@ -1,11 +1,10 @@
 import type { GrowGuide } from '@/stores/profileAnalysisStore'
 
 const GrowGuideSection = ({ tipText, title, description }: GrowGuide) => {
-
 	return (
-		<div className='flex flex-col gap-3 py-6'>
+		<div className='flex flex-col gap-3'>
 			{/* Tip 라벨 */}
-			<p className=' flex items-center gap-2 body-1 text-neutral-700 font-semibold'>
+			<p className=' flex items-center gap-2 body-1 text-neutral-700 font-semibold ml-2.5'>
 				<span>Tip</span> <span className='text-primary-600-normal'>{tipText}</span>
 			</p>
 
@@ -14,7 +13,7 @@ const GrowGuideSection = ({ tipText, title, description }: GrowGuide) => {
 				<p className='title-3 font-semibold text-neutral-900'>{title}</p>
 
 				{/* 설명 */}
-				<p className='body-2 text-neutral-800 font-medium whitespace-pre-line'>{description}</p>
+				<p className='text-[16px] text-neutral-800 font-medium whitespace-pre-line'>{description}</p>
 			</div>
 		</div>
 	)

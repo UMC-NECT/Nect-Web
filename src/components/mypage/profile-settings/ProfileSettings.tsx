@@ -224,7 +224,7 @@ export const ProfileSettings = () => {
 	// (모달 핸들러) 매칭 현황으로 이동
 	const handleGoToMatching = () => {
 		close()
-		navigate('/')
+		navigate('/mypage/matching')
 	}
 
 	// (모달 핸들러) 프로필 분석으로 이동

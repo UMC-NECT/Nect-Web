@@ -5,9 +5,11 @@ import type {
 	ResponseProjectUsers,
 	ResponseAnalysisDto,
 	ResponseDeleteAnalysisDto,
+	ResponseProfileAnalysisDto,
 } from '@/types/api/mypage'
 import { api } from '@/utils/AxiosInstance'
 
+// === 내 프로필 설정 ==========================================================
 // (내 프로필 설정) 프로필 조회
 export const getMypageProfile = async (): Promise<ResponseMypageProfileDto> => {
 	const { data } = await api.get('/api/v1/mypage/profile')
@@ -22,6 +24,7 @@ export const patchMypageProfileSave = async (body: RequestMypageProfileSaveDto):
 	return data
 }
 
+// === 나의 아이디어 분석 ==========================================================
 // (나의 아이디어 분석) 분석서 페이징 조회
 export const getAnalysis = async (page: string): Promise<ResponseAnalysisDto> => {
 	const { data } = await api.get('/api/v1/analysis', { params: { page } })
@@ -36,9 +39,20 @@ export const deleteAnalysis = async (analysisId: number): Promise<ResponseDelete
 	return data
 }
 
+// === 나의 프로필 분석 ==========================================================
+// (나의 프로필 분석) 프로필 AI 분석 조회
+export const getProfileAnalysis = async (): Promise<ResponseProfileAnalysisDto> => {
+	const { data } = await api.get('/api/v1/users/profile/analysis')
+
+	return data
+}
+
+// === 모든 프로젝트 ==========================================================
 // (모든 프로젝트) 현재 참여중인 프로젝트 조회
 export const getMypageProjects = async (): Promise<ResponseProjectUsers> => {
 	const { data } = await api.get('/api/v1/mypage/projects')
 
 	return data
 }
+
+// === 매칭 현황 ==========================================================

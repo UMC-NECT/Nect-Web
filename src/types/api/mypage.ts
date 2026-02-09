@@ -148,7 +148,34 @@ export type ResponseAnalysisDto = CommonResponse<{
 export type ResponseDeleteAnalysisDto = CommonResponse
 
 // === 나의 프로필 분석 ==========================================================
-
+// (나의 프로필 분석) 프로필 AI 분석 조회
+export type ResponseProfileAnalysisDto = CommonResponse<{
+	profileType: string
+	tags: string[]
+	collaborationStyle: {
+		planning: number
+		logic: number
+		leadership: number
+		empathy: number
+		execution: number
+	}
+	skills: [
+		{
+			category: string
+			skill_names: string[]
+		},
+	]
+	roleRecommendation: {
+		leader: string
+		team_member: string
+	}
+	growthGuide: [
+		{
+			order: number
+			tip: string
+		},
+	]
+}>
 // === 진행 중인 프로젝트 ==========================================================
 // MINO-TODO: 1개 (팀 히스토리 조회)
 // MINO-TODO: 3개 (프젝 조회, 멤버 파트변경, 강퇴)

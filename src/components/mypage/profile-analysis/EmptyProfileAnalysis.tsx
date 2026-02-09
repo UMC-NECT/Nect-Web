@@ -1,17 +1,16 @@
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
+import { useNavigate } from 'react-router'
 import NecttyIcon from '@/assets/icons/mypage/nectty.png'
 
-interface IEmptyProfileAnalysis {
-	setHasReport: () => void
-}
+const EmptyProfileAnalysis = () => {
+	const navigate = useNavigate()
 
-const EmptyProfileAnalysis = ({ setHasReport }: IEmptyProfileAnalysis) => {
 	const handleAnalysis = () => {
-		alert(`프로필 분석했다고 치고 넘어감`)
-		// 임시로 버튼 누르면 아이디어 분석 됐다고 가정
-		setHasReport()
+		// 프로필 분석 페이지로 이동
+		navigate('/profile-analysis')
 	}
+
 	return (
 		<div className='flex flex-col min-w-229 w-full'>
 			{/* 브레드크럼 + 타이틀 */}
