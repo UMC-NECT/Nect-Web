@@ -14,4 +14,14 @@ export const getRoleColorById = (id: number): string => {
 	return ROLE_COLORS[index]
 }
 
+/**
+ * 역할명을 첫 글자만 대문자로 포맷팅합니다.
+ * @param role - 역할명 (예: "DEVELOPER", "DESIGNER")
+ * @returns 포맷팅된 역할명 (예: "Developer", "Designer")
+ */
+export const formatRoleName = (role: string | undefined): string => {
+	if (!role) return ''
+	return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+}
+
 export default ROLE_COLORS

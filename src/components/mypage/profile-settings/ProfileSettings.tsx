@@ -265,7 +265,7 @@ export const ProfileSettings = () => {
 							onSave={handleSaveWithModal}
 							onRecruit={handlePublishRecruitment}
 							profileImageFileName={profile?.profileImageFileName}
-							userName={profile?.name}
+							userName={profile?.nickname}
 							userRole={profile?.role}
 							userStatus={userStatus}
 							userEmail={profile?.email}

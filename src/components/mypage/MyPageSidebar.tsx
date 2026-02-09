@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router'
-import { useUserStore } from '@/stores/useUserStore'
+import { useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
 import { MYPAGE_MENU } from '@/constants/mypage'
+import { formatRoleName } from '@/utils/roleColor'
 import ProfileImageIcon from '@/assets/icons/mypage/profile-image.svg?react'
 
 interface MyPageSidebarProps {
@@ -9,7 +10,8 @@ interface MyPageSidebarProps {
 }
 
 export const MyPageSidebar = ({ matchingWaitCount = 0, receivedRequestCount = 0 }: MyPageSidebarProps) => {
-	const { userName, userRole, userEmail, profileImage, isPro } = useUserStore()
+	const { data: profileData } = useMypageProfileQuery()
+	const profile = profileData?.body
 	const navigate = useNavigate()
 	const location = useLocation()
 
@@ -30,9 +32,9 @@ export const MyPageSidebar = ({ matchingWaitCount = 0, receivedRequestCount = 0 
 			{/* 프로필 섹션 */}
 			<div className='flex flex-col items-start px-4 py-2.5 gap-4 mb-3'>
 				{/* 프사 */}
-				{profileImage ? (
+				{profile?.profileImageFileName ? (
 					<img
-						src={profileImage}
+						src={profile.profileImageFileName}
 						alt='프로필'
 						className='w-20 h-20 rounded-full overflow-hidden object-cover border border-neutral-100'
 					/>
@@ -42,9 +44,11 @@ export const MyPageSidebar = ({ matchingWaitCount = 0, receivedRequestCount = 0 
 
 				<div className='flex flex-col items-start gap-0.5'>
 					{/* 이름 */}
-					<div className='w-25 h-7 flex items-center gap-1.5'>
-						<span className='title-2 font-bold text-neutral-900'>{userName}</span>
-						{isPro && (
+					<div className='w-fit h-7 flex items-center gap-1.5'>
+						<span className='title-2 font-bold text-neutral-900'>{profile?.nickname}</span>
+
+						{/* 백엔드에서 프로 유무 필드를 안주셔서, 임시로 이름이 있다면 프로사용자로 되게끔 설정함 (추후 수정 예정) */}
+						{profile?.nickname && (
 							<span className='text-primary-500-normal text-[13px] font-bold px-2 py-0.5 rounded-100 bg-primary-200-light leading-[130%] tracking-[-0.5px]'>
 								PRO
 							</span>
@@ -52,8 +56,8 @@ export const MyPageSidebar = ({ matchingWaitCount = 0, receivedRequestCount = 0 
 					</div>
 
 					{/* 소개 */}
-					<span className='button-1 font-semibold text-primary-500-normal'>{userRole}</span>
-					<span className='caption-2 text-neutral-500'>{userEmail}</span>
+					<span className='button-1 font-semibold text-primary-500-normal'>{formatRoleName(profile?.role)}</span>
+					<span className='caption-2 text-neutral-500'>{profile?.email}</span>
 				</div>
 			</div>
 

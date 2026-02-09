@@ -5,6 +5,7 @@ import Button from '../../common/Button'
 import UserStatusModal from '@/components/common/UserStatusModal'
 import { useUserStatusStore } from '@/stores/useUserStatusStore'
 import { getUserStatusLabel } from '@/constants/userStatus'
+import { formatRoleName } from '@/utils/roleColor'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 import { Controller, type Control } from 'react-hook-form'
 
@@ -92,7 +93,7 @@ const ProfileBasicInfo = ({
 						<div className='flex items-center gap-2.5 mb-1'>
 							<span className='title-2 font-bold'>{userName}</span>
 							<span className='text-neutral-300 font-semibold'>|</span>
-							<span className='title-2 text-neutral-400'>{userRole}</span>
+							<span className='title-2 text-neutral-400'>{formatRoleName(userRole)}</span>
 						</div>
 						<p className='body-2 text-neutral-500 mb-2'>{userEmail}</p>
 
