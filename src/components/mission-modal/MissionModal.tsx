@@ -23,7 +23,7 @@ import Tooltip from '@/components/common/Tooltip'
 import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox/checkbox-gray.svg?react'
 import InfoIcon from '@/assets/icons/common/info.svg?react'
-import { useMissionListQuery } from '@/hooks/process/useWeekMissionApi'
+import { useMissionListQuery, useMissionDetailQuery, usePatchTaskItemMutation } from '@/hooks/process/useWeekMissionApi'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { usePostProcessMutation, usePostFileMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
 import {
@@ -43,8 +43,6 @@ import {
 	useDeleteAttachmentFileMutation,
 	useDeleteAttachmentLinkMutation,
 } from '@/hooks/process/useAttachmentApi'
-import { useQueryClient } from '@tanstack/react-query'
-import { QUERY_KEY } from '@/constants/key'
 import type { RequestProcessPostDto, RequestProcessPatchDto } from '@/types/api/process/process'
 
 interface MissionModalProps {
@@ -75,6 +73,21 @@ const formatTimestampDisplay = (date: Date | string): string => {
 	const period = hours >= 12 ? 'PM' : 'AM'
 	const displayHours = hours % 12 || 12
 	return `${year}/${month}/${day} ${period} ${displayHours}:${minutes}`
+}
+
+/** 파츠 API role_field와 위크미션 task_groups 매칭용 (ROLE: 제거, 대소문자 무시) */
+const normalizeRoleFieldForMatch = (v: string | null | undefined) =>
+	(v ?? '').replace(/^ROLE:/i, '').trim().toLowerCase()
+
+const roleFieldMatches = (
+	role: { role_field: string | null; custom_role_field_name: string | null },
+	group: { role_field: string | null; custom_field_name: string | null }
+) => {
+	const a = normalizeRoleFieldForMatch(role.role_field)
+	const b = normalizeRoleFieldForMatch(role.custom_role_field_name)
+	const ga = normalizeRoleFieldForMatch(group.role_field)
+	const gb = normalizeRoleFieldForMatch(group.custom_field_name)
+	return (a !== '' && a === ga) || (b !== '' && b === gb) || (a !== '' && a === gb) || (b !== '' && b === ga)
 }
 
 const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
@@ -116,6 +129,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		removeTask,
 		toggleTask,
 		reorderTasks,
+		setRoleTasks,
 		addFeedback,
 		updateFeedback,
 		removeFeedback,
@@ -125,14 +139,21 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		closeMissionModal,
 		mentionedPersons,
 		setMentionedPersons,
+		isTask,
 	} = useMissionModalStore()
 
 	const { projectId: pageProjectId } = useProjectIdStore()
 	const projectIdForList = projectId ?? pageProjectId?.toString() ?? ''
 
 	const isEditMode = editingMissionId != null && projectId != null
-	const { data: processDetail } = useProcessDetailQuery(projectId ?? '', String(editingMissionId ?? ''))
+	const { data: processDetail } = useProcessDetailQuery(projectId ?? '', String(editingMissionId ?? ''), {
+		enabled: isEditMode && !isTask,
+	})
+	const { data: missionDetail } = useMissionDetailQuery(projectId ?? '', String(editingMissionId ?? ''), {
+		enabled: isEditMode && !!isTask,
+	})
 	const { data: missionListData } = useMissionListQuery(projectIdForList)
+	const patchTaskItemMutation = usePatchTaskItemMutation()
 
 	useEffect(() => {
 		if (!missionListData?.body?.missions) return
@@ -148,7 +169,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 	const appliedDetailKeyRef = useRef<string | null>(null)
 	useEffect(() => {
-		if (!isEditMode || !processDetail?.body) return
+		if (!isEditMode || isTask || !processDetail?.body) return
 		const key = `${projectId}-${editingMissionId}`
 		if (appliedDetailKeyRef.current === key) return
 		appliedDetailKeyRef.current = key
@@ -221,6 +242,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setMentionedPersons(mentionedList)
 	}, [
 		isEditMode,
+		isTask,
 		processDetail,
 		projectId,
 		editingMissionId,
@@ -238,6 +260,117 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		roles,
 		persons,
 	])
+
+	// 위크미션(task) task_groups 보관 - 선택된 파트에 따라 해당 그룹의 items만 표시
+	type TaskGroupItem = { role_field: string | null; custom_field_name: string | null; items: Array<{ task_item_id: number; content: string; is_done: boolean; sort_order: number; done_at: string | null }> }
+	const missionTaskGroupsRef = useRef<TaskGroupItem[]>([])
+
+	// 위크미션(task) 상세 적용 - ResponseMissionDetailDto 반환값을 모달 필드에 매핑
+	const appliedMissionDetailKeyRef = useRef<string | null>(null)
+	useEffect(() => {
+		if (!isEditMode || !isTask || !missionDetail?.body) return
+		const body = missionDetail.body
+		const taskGroups = body.task_groups ?? []
+		const key = `mission-${projectId}-${editingMissionId}`
+		// task_groups가 있는데 roles가 비어 있으면 파츠 로드 후 다시 적용되도록 ref 설정 보류
+		const canMatchParts = taskGroups.length === 0 || roles.length > 0
+		if (appliedMissionDetailKeyRef.current === key && canMatchParts) return
+		if (canMatchParts) appliedMissionDetailKeyRef.current = key
+		setTitle(body.title ?? '')
+		setWorkContent(body.content ?? '')
+		setStartDate(formatDateForDisplay(body.start_date ?? ''))
+		setDeadline(formatDateForDisplay(body.dead_line ?? ''))
+		const statusMap: Record<string, MissionStatus> = {
+			PLANNING: 'planning',
+			IN_PROGRESS: 'in_progress',
+			DONE: 'completed',
+			BACKLOG: 'backlog',
+		}
+		setMissionStatus(statusMap[body.status ?? ''] ?? 'planning')
+		if (body.assignee) {
+			setSelectedAssignees([
+				{
+					id: body.assignee.user_id,
+					name: body.assignee.name ?? body.assignee.nickname,
+					roleId: 0,
+					image: body.assignee.profile_image_url ?? '',
+				},
+			])
+		} else {
+			setSelectedAssignees([])
+		}
+		missionTaskGroupsRef.current = taskGroups
+		if (taskGroups.length > 0) {
+			const firstGroup = taskGroups[0]
+			const matchedRole = roles.find(r => roleFieldMatches(r, firstGroup))
+			if (matchedRole) {
+				setSelectedParts([matchedRole])
+			}
+			setTasks(
+				firstGroup.items.map(t => ({
+					id: t.task_item_id,
+					content: t.content,
+					isComplete: t.is_done,
+				}))
+			)
+			// 리더형 모달(RoleTaskPanel)용 roleTasks 채우기 - 파츠 API role_field로 task_groups 매칭
+			const roleTasksFromGroups: Array<{ id: number; roleId: number; content: string; isComplete: boolean }> = []
+			for (const group of taskGroups) {
+				const role = roles.find(r => roleFieldMatches(r, group))
+				const roleId = role?.part_id ?? 0
+				for (const t of group.items) {
+					roleTasksFromGroups.push({
+						id: t.task_item_id,
+						roleId,
+						content: t.content,
+						isComplete: t.is_done,
+					})
+				}
+			}
+			setRoleTasks(roleTasksFromGroups)
+		} else {
+			setTasks((body.task_items ?? []).map(t => ({
+				id: t.task_item_id,
+				content: t.content,
+				isComplete: t.is_done,
+			})))
+			setRoleTasks([])
+		}
+	}, [
+		isEditMode,
+		isTask,
+		missionDetail,
+		projectId,
+		editingMissionId,
+		roles,
+		setTitle,
+		setWorkContent,
+		setStartDate,
+		setDeadline,
+		setMissionStatus,
+		setSelectedAssignees,
+		setSelectedParts,
+		setTasks,
+		setRoleTasks,
+	])
+
+	// 위크미션(task) 모달에서 담당 파트 변경 시 해당 파트의 task_groups items만 tasks에 반영
+	useEffect(() => {
+		if (!isTask || !missionTaskGroupsRef.current.length) return
+		const parts = selectedParts
+		if (!parts.length) return
+		const fieldMatch = (group: TaskGroupItem) =>
+			parts.some(p => roleFieldMatches(p, group))
+		const matchedGroups = missionTaskGroupsRef.current.filter(fieldMatch)
+		const items = matchedGroups.flatMap(g => g.items)
+		setTasks(
+			items.map(t => ({
+				id: t.task_item_id,
+				content: t.content,
+				isComplete: t.is_done,
+			}))
+		)
+	}, [isTask, selectedParts, setTasks])
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -275,14 +408,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 						custom_role_field_name: firstPart?.custom_role_field_name ?? '',
 					},
 				},
-				{
-					onSuccess: () => {
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
-					},
-				}
-			)
+				)
 		}
 	}
 
@@ -307,7 +433,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const completedTasks = tasks.filter(t => t.isComplete).length
 	const totalTasks = tasks.length
 
-	const queryClient = useQueryClient()
 	const postFileMutation = usePostFileMutation()
 	const postProcessMutation = usePostProcessMutation()
 	const patchProcessMutation = usePatchProcessMutation()
@@ -352,8 +477,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 					processId: String(editingMissionId),
 					body: patchBody,
 				})
-				queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
-				queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdForList) })
 				closeMissionModal()
 			} catch {
 				// 에러 토스트 등은 필요 시 추가
@@ -408,7 +531,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 		try {
 			await postProcessMutation.mutateAsync({ projectId: projectIdNum, body })
-			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdForList) })
 			closeMissionModal()
 		} catch {
 			// 에러 토스트 등은 필요 시 추가
@@ -455,7 +577,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 					body: { content, is_done: false, sort_order: tasks.length },
 				},
 				{
-					onSuccess: (res) => {
+					onSuccess: res => {
 						if (res?.body) {
 							addTask({
 								id: res.body.task_item_id,
@@ -463,9 +585,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 								isComplete: res.body.is_done,
 							})
 						}
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
 						setNewTaskContent('')
 					},
 				}
@@ -489,29 +608,50 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 		const task = tasks.find(t => t.id === editingTaskId)
 		const sortOrder = task ? tasks.findIndex(t => t.id === editingTaskId) : 0
+		const firstPart = selectedParts[0]
 		if (isEditMode && projectId != null && editingMissionId != null && task) {
-			patchTaskItemsMutation.mutate(
-				{
-					projectId,
-					processId: String(editingMissionId),
-					taskItemId: String(editingTaskId),
-					body: {
-						content: editingTaskContent.trim(),
-						is_done: task.isComplete,
-						sort_order: sortOrder,
+			if (isTask) {
+				patchTaskItemMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						taskItemId: String(editingTaskId),
+						body: {
+							content: editingTaskContent.trim(),
+							is_done: task.isComplete,
+							role_field: firstPart?.role_field ?? '',
+							custom_role_field_name: firstPart?.custom_role_field_name ?? '',
+						},
 					},
-				},
-				{
-					onSuccess: () => {
-						updateTask(editingTaskId, { content: editingTaskContent.trim() })
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
-						setEditingTaskId(null)
-						setEditingTaskContent('')
+					{
+						onSuccess: () => {
+							updateTask(editingTaskId, { content: editingTaskContent.trim() })
+							setEditingTaskId(null)
+							setEditingTaskContent('')
+						},
+					}
+				)
+			} else {
+				patchTaskItemsMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						taskItemId: String(editingTaskId),
+						body: {
+							content: editingTaskContent.trim(),
+							is_done: task.isComplete,
+							sort_order: sortOrder,
+						},
 					},
-				}
-			)
+					{
+						onSuccess: () => {
+							updateTask(editingTaskId, { content: editingTaskContent.trim() })
+							setEditingTaskId(null)
+							setEditingTaskContent('')
+						},
+					}
+				)
+			}
 		} else {
 			updateTask(editingTaskId, { content: editingTaskContent.trim() })
 			setEditingTaskId(null)
@@ -521,27 +661,46 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 	const handleTaskToggle = (task: { id: number; content: string; isComplete: boolean }) => {
 		if (isEditMode && projectId != null && editingMissionId != null) {
-			const sortOrder = tasks.findIndex(t => t.id === task.id)
-			patchTaskItemsMutation.mutate(
-				{
-					projectId,
-					processId: String(editingMissionId),
-					taskItemId: String(task.id),
-					body: {
-						content: task.content,
-						is_done: !task.isComplete,
-						sort_order: sortOrder,
+			const firstPart = selectedParts[0]
+			if (isTask) {
+				patchTaskItemMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						taskItemId: String(task.id),
+						body: {
+							content: task.content,
+							is_done: !task.isComplete,
+							role_field: firstPart?.role_field ?? '',
+							custom_role_field_name: firstPart?.custom_role_field_name ?? '',
+						},
 					},
-				},
-				{
-					onSuccess: () => {
-						updateTask(task.id, { isComplete: !task.isComplete })
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
+					{
+						onSuccess: () => {
+							updateTask(task.id, { isComplete: !task.isComplete })
+						},
+					}
+				)
+			} else {
+				const sortOrder = tasks.findIndex(t => t.id === task.id)
+				patchTaskItemsMutation.mutate(
+					{
+						projectId,
+						processId: String(editingMissionId),
+						taskItemId: String(task.id),
+						body: {
+							content: task.content,
+							is_done: !task.isComplete,
+							sort_order: sortOrder,
+						},
 					},
-				}
-			)
+					{
+						onSuccess: () => {
+							updateTask(task.id, { isComplete: !task.isComplete })
+						},
+					}
+				)
+			}
 		} else {
 			toggleTask(task.id)
 		}
@@ -559,9 +718,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 					onSuccess: () => {
 						removeTask(taskId)
 						setEditingTaskId(prev => (prev === taskId ? null : prev))
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
 					},
 				}
 			)
@@ -594,9 +750,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 								state: (b.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
 							})
 						}
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
 						setNewFeedbackContent('')
 					},
 				}
@@ -636,9 +789,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 				{
 					onSuccess: () => {
 						updateFeedback(editingFeedbackId, { content: editingFeedbackContent.trim() })
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
 						setEditingFeedbackId(null)
 						setEditingFeedbackContent('')
 					},
@@ -663,9 +813,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 					onSuccess: () => {
 						removeFeedback(feedbackId)
 						setEditingFeedbackId(prev => (prev === feedbackId ? null : prev))
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-						})
 					},
 				}
 			)
@@ -698,9 +845,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 									url: res.body.file_url,
 								})
 							}
-							queryClient.invalidateQueries({
-								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-							})
 							setIsAddingFile(false)
 						},
 					}
@@ -722,9 +866,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 									url: res.body.url,
 								})
 							}
-							queryClient.invalidateQueries({
-								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-							})
 							setIsAddingFile(false)
 						},
 					}
@@ -751,9 +892,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 					{
 						onSuccess: () => {
 							removeFile(file.id)
-							queryClient.invalidateQueries({
-								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-							})
 						},
 					}
 				)
@@ -767,9 +905,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 					{
 						onSuccess: () => {
 							removeFile(file.id)
-							queryClient.invalidateQueries({
-								queryKey: QUERY_KEY.process.detail(projectId, String(editingMissionId)),
-							})
 						},
 					}
 				)
@@ -805,9 +940,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 				</div>
 
 				<div className='flex gap-2.5'>
-					<button type='button' className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-neutral-50 border-[1.5px] border-neutral-100 text-neutral-900 min-w-[60px] hover:bg-neutral-200 hover:border-neutral-200 transition-all duration-300 ease-in-out'>
-						삭제
-					</button>
+
 					<button
 						type='button'
 						disabled={

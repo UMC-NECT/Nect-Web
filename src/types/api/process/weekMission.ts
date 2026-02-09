@@ -36,6 +36,15 @@ export type ResponseMissionListDto = CommonResponse<{
     }[]
 }>
 
+/** 위크미션 상세 내 task_item (체크리스트 항목) */
+export interface WeekMissionTaskItem {
+    task_item_id: number
+    content: string
+    is_done: boolean
+    sort_order: number
+    done_at: string | null
+}
+
 export type ResponseMissionDetailDto = CommonResponse<{
     process_id: number
     mission_number: number
@@ -46,8 +55,12 @@ export type ResponseMissionDetailDto = CommonResponse<{
     dead_line: string
     assignee: Assignees
     attachments: []
-    task_groups: []
-    task_items: []
+    task_groups: {
+        role_field: string | null
+        custom_field_name: string | null
+        items: WeekMissionTaskItem[]
+    }[]
+    task_items: WeekMissionTaskItem[]
     created_at: string
     updated_at: string
 }>

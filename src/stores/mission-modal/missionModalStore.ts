@@ -55,6 +55,8 @@ interface MissionModalStore {
 	editingSectionIndex: number | null // 현재 편집 중인 미션의 섹션 인덱스 (0이면 리더형 모달)
 	projectId: string | null // 프로세스 상세 조회용 (기존 미션 조회 시 필요)
 	isCreateMode: boolean
+	/** 위크미션 Task 여부 (true면 위크미션 상세/태스크 API 사용) */
+	isTask: boolean
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: Mission[]
@@ -128,7 +130,7 @@ interface MissionModalStore {
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean) => void
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean) => void
 	closeMissionModal: () => void
 }
 
@@ -161,6 +163,7 @@ const initialMissionModalState = {
 	mentionedPersons: [] as Person[],
 	files: initialFiles,
 	roleTasks: initialRoleTasks,
+	isTask: false,
 }
 
 export const useMissionModalStore = create<MissionModalStore>(set => ({
@@ -323,7 +326,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean) =>
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean) =>
 		set(state => {
 			const isNewMission = missionId === undefined && sectionIndex === undefined
 			if (isNewMission) {
@@ -342,6 +345,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 				editingSectionIndex: sectionIndex ?? null,
 				projectId: projectId ?? state.projectId ?? null,
 				isCreateMode: isCreateMode ?? state.isCreateMode ?? false,
+				isTask: isTask ?? false,
 			}
 		}),
 	closeMissionModal: () =>

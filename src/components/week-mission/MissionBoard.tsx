@@ -387,7 +387,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 											gridColumnSize={tempColSpan}
 											onClick={() => {
 												if (!justDraggedRef.current) {
-													openMissionModal(mission.process_id, mission.sectionIndex, projectId)
+													openMissionModal(mission.process_id, mission.sectionIndex, projectId, undefined, mission.task)
 												}
 											}}
 											onDragStart={e => handleMissionDragStart(mission.process_id, e)}

@@ -16,8 +16,9 @@ export const usePostFeedbackMutation = () => {
 			processId: string
 			body: RequestFeedbackPostDto
 		}) => postFeedback(projectId, processId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -35,8 +36,9 @@ export const useDeleteFeedbackMutation = () => {
 			processId: string
 			feedbackId: string
 		}) => deleteFeedback(projectId, processId, feedbackId),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -56,8 +58,9 @@ export const usePatchFeedbackMutation = () => {
 			feedbackId: string
 			body: RequestFeedbackPatchDto
 		}) => patchFeedback(projectId, processId, feedbackId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }

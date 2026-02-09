@@ -25,8 +25,9 @@ export const usePostTaskItemsMutation = () => {
 			processId: string
 			body: RequestTaskItemsPostDto
 		}) => postTaskItems(projectId, processId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -44,8 +45,9 @@ export const usePatchTaskItemsOrderMutation = () => {
 			processId: string
 			body: RequestTaskItemsOrderPatchDto
 		}) => patchTaskItemsOrder(projectId, processId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -63,8 +65,9 @@ export const useDeleteTaskItemsMutation = () => {
 			processId: string
 			taskItemId: string
 		}) => deleteTaskItems(projectId, processId, taskItemId),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -84,8 +87,9 @@ export const usePatchTaskItemsMutation = () => {
 			taskItemId: string
 			body: RequestTaskItemsPatchDto
 		}) => patchTaskItems(projectId, processId, taskItemId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }

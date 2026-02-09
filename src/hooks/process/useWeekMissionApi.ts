@@ -31,11 +31,15 @@ export const useMissionListQuery = (projectId: string) => {
 }
 
 /** 위크미션(프로세스) 상세 조회 (체크리스트 포함) */
-export const useMissionDetailQuery = (projectId: string, processId: string) => {
+export const useMissionDetailQuery = (
+	projectId: string,
+	processId: string,
+	options?: { enabled?: boolean }
+) => {
 	return useQuery({
 		queryKey: QUERY_KEY.process.weekMission.detail(projectId, processId),
 		queryFn: () => getMissionDetail(projectId, processId),
-		enabled: !!projectId && !!processId,
+		enabled: (options?.enabled !== false) && !!projectId && !!processId,
 	})
 }
 
@@ -73,8 +77,9 @@ export const usePatchTaskItemMutation = () => {
 			taskItemId: string
 			body: RequestTaskPatchDto
 		}) => patchTaskItem(projectId, processId, taskItemId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.detail(projectId, processId) })
 		},
 	})
 }

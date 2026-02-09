@@ -39,11 +39,15 @@ export const useProcessWeekQuery = (projectId: string, startDate?: string, weeks
 }
 
 /** 프로세스(카드) 상세 조회 */
-export const useProcessDetailQuery = (projectId: string, processId: string) => {
+export const useProcessDetailQuery = (
+	projectId: string,
+	processId: string,
+	options?: { enabled?: boolean }
+) => {
 	return useQuery({
 		queryKey: QUERY_KEY.process.detail(projectId, processId),
 		queryFn: () => getProcessDetail(projectId, processId),
-		enabled: !!projectId && !!processId,
+		enabled: (options?.enabled !== false) && !!projectId && !!processId,
 	})
 }
 
@@ -71,7 +75,9 @@ export const usePostProcessMutation = () => {
 		mutationFn: ({ projectId, body }: { projectId: number; body: RequestProcessPostDto }) =>
 			postProcess(projectId, body),
 		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(String(projectId)) })
+			const pid = String(projectId)
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(pid) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(pid) })
 		},
 	})
 }
@@ -103,6 +109,7 @@ export const usePatchProcessMutation = () => {
 		}) => patchProcess(projectId, processId, body),
 		onSuccess: (_, { projectId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectId) })
 		},
 	})
 }

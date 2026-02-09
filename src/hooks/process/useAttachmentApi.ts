@@ -45,8 +45,9 @@ export const usePostAttachmentLinksMutation = () => {
 			processId: string
 			body: RequestAttachmentLinksPostDto
 		}) => postAttachmentLinks(projectId, processId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -64,8 +65,9 @@ export const usePostUploadAttachmentFileMutation = () => {
 			processId: string
 			body: RequestUploadAttachment
 		}) => postUploadAttachmentFile(projectId, processId, body),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -83,8 +85,9 @@ export const useDeleteAttachmentFileMutation = () => {
 			processId: string
 			fileId: number
 		}) => deleteAttachmentFile(projectId, processId, fileId),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
@@ -102,8 +105,9 @@ export const useDeleteAttachmentLinkMutation = () => {
 			processId: string
 			linkId: number
 		}) => deleteAttachmentLink(projectId, processId, linkId),
-		onSuccess: (_, { projectId }) => {
+		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.detail(projectId, processId) })
 		},
 	})
 }
