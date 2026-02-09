@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import BoardListItem from '@/components/team-board/BoardListItem'
@@ -11,11 +12,34 @@ import { usePostDetail } from '@/hooks/team-board/usePostDetail'
 import { useUpdatePostMutation } from '@/hooks/team-board/useUpdatePost'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { uploadPostFile } from '@/api/team-board/boards'
+import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { PostAttachment } from '@/components/team-board/WritePostModalContent'
 
 const BoardPage = () => {
-	// TODO: URL에서 projectId 가져오기
-	const projectId = 1
+	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
+	const navigate = useNavigate()
+	
+	// 프로젝트 목록 조회 및 projectId 설정
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await getProjectUsers()
+				if (response.body) {
+					// URL에 projectId가 없으면 첫 번째 프로젝트로 리다이렉트
+					if (!projectIdParam && response.body.length > 0) {
+						navigate(`/board/${response.body[0].projectId}`, { replace: true })
+						return
+					}
+				}
+			} catch (error) {
+				console.error('프로젝트 목록 조회 실패:', error)
+			}
+		}
+		fetchProjects()
+	}, [projectIdParam, navigate])
+
+	// URL에서 projectId 가져오기
+	const projectId = projectIdParam ? parseInt(projectIdParam, 10) : null
 	const queryClient = useQueryClient()
 
 	const [currentPage, setCurrentPage] = useState(1)
@@ -24,20 +48,20 @@ const BoardPage = () => {
 	const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
 
 	// 게시글 목록 API 호출 (페이지는 0부터 시작하므로 currentPage - 1)
-	const { data: postListResponse, isLoading } = usePostList(projectId, {
+	const { data: postListResponse, isLoading } = usePostList(projectId || 0, {
 		page: currentPage - 1, // API는 0부터 시작
 	})
 	const postList = postListResponse?.body
 
 	// 게시글 생성 mutation
-	const createPostMutation = useCreatePostMutation(projectId)
+	const createPostMutation = useCreatePostMutation(projectId || 0)
 
 	// 게시글 상세 조회
-	const { data: postDetailResponse } = usePostDetail(projectId, selectedPostId)
+	const { data: postDetailResponse } = usePostDetail(projectId || 0, selectedPostId)
 	const postDetail = postDetailResponse?.body
 
 	// 게시글 수정 mutation
-	const updatePostMutation = useUpdatePostMutation(projectId, selectedPostId || 0)
+	const updatePostMutation = useUpdatePostMutation(projectId || 0, selectedPostId || 0)
 
 	// 현재 사용자 프로필 정보
 	const { data: profileData } = useGetProfileQuery()
@@ -66,7 +90,7 @@ const BoardPage = () => {
 				onSuccess: async (response) => {
 					// 게시글 생성 성공 후 파일 업로드
 					const postId = response.body?.post_id
-					if (postId && files.length > 0) {
+					if (postId && files.length > 0 && projectId) {
 						try {
 							// 모든 파일을 순차적으로 업로드
 							for (const file of files) {
@@ -105,7 +129,7 @@ const BoardPage = () => {
 			{
 				onSuccess: async () => {
 					// 게시글 수정 성공 후 새로 추가된 파일이 있으면 업로드
-					if (files.length > 0) {
+					if (files.length > 0 && projectId) {
 						try {
 							// 모든 파일을 순차적으로 업로드
 							for (const file of files) {
@@ -241,7 +265,7 @@ const BoardPage = () => {
 			/>
 
 			{/* 게시글 조회 모달 */}
-			{selectedPostId && postDetail && (
+			{selectedPostId && postDetail && projectId && (
 				<WritePostModal
 					mode="view"
 					isOpen={isViewModalOpen}

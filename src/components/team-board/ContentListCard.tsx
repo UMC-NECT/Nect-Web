@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
 import PdfIcon from '@/assets/icons/app/pdf.svg?react'
 import FigmaIcon from '@/assets/icons/app/figma.svg?react'
@@ -71,12 +71,22 @@ interface ContentListCardProps {
 
 const ContentListCard = ({ type, items, className = '' }: ContentListCardProps) => {
 	const navigate = useNavigate()
+	const params = useParams<{ projectId?: string }>()
 
 	const handleHeaderClick = () => {
+		const projectId = params.projectId
 		if (type === '게시판') {
-			navigate('/board')
+			if (projectId) {
+				navigate(`/board/${projectId}`)
+			} else {
+				navigate('/board')
+			}
 		} else if (type === '공유 문서함') {
-			navigate('/shared-documents')
+			if (projectId) {
+				navigate(`/shared-documents/${projectId}`)
+			} else {
+				navigate('/shared-documents')
+			}
 		}
 	}
 

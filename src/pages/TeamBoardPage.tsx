@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router'
 import TeamBoardHeader from '@/components/team-board/TeamBoardHeader'
 import RadarChartCard from '@/components/team-board/RadarChartCard'
 import ContentListCard from '@/components/team-board/ContentListCard'
@@ -14,14 +15,47 @@ import { useUpdateScheduleMutation } from '@/hooks/team-board/useUpdateSchedule'
 import { useDeleteScheduleMutation } from '@/hooks/team-board/useDeleteSchedule'
 import { useStartWorkMutation } from '@/hooks/team-board/useStartWork'
 import { useStopWorkMutation } from '@/hooks/team-board/useStopWork'
+import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
+	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
+	const navigate = useNavigate()
 	const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
 	const [editingScheduleId, setEditingScheduleId] = useState<number | null>(null)
+	const [projects, setProjects] = useState<Array<{ projectId: number; projectTitle: string }>>([])
 	
-	// TODO: URL에서 projectId 가져오기
-	const projectId = 1
+	// 프로젝트 목록 조회 및 projectId 설정
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await getProjectUsers()
+				console.log('=== 현재 참여하고 있는 프로젝트 목록 ===')
+				console.log('전체 응답:', response)
+				console.log('프로젝트 목록:', response.body)
+				if (response.body) {
+					setProjects(response.body)
+					if (response.body.length > 0) {
+						response.body.forEach((project, index) => {
+							console.log(`${index + 1}. 프로젝트 ID: ${project.projectId}, 제목: ${project.projectTitle}, 멤버 타입: ${project.memberType}`)
+						})
+					}
+					
+					// URL에 projectId가 없으면 첫 번째 프로젝트로 리다이렉트
+					if (!projectIdParam && response.body.length > 0) {
+						navigate(`/team-board/${response.body[0].projectId}`, { replace: true })
+						return
+					}
+				}
+			} catch (error) {
+				console.error('프로젝트 목록 조회 실패:', error)
+			}
+		}
+		fetchProjects()
+	}, [projectIdParam, navigate])
+
+	// URL에서 projectId 가져오기
+	const projectId = projectIdParam ? parseInt(projectIdParam, 10) : null
 
 	// 현재 캘린더 월/년도 상태
 	const today = new Date()
@@ -29,7 +63,7 @@ const TeamBoardPage = () => {
 	const [calendarMonth, setCalendarMonth] = useState(today.getMonth() + 1)
 	const [selectedDate, setSelectedDate] = useState<number | null>(null)
 
-	// API 호출
+	// API 호출 (projectId가 있을 때만)
 	const { data: overviewResponse, isLoading } = useTeamBoardOverview(projectId, {
 		docsLimit: 4,
 		postsLimit: 4,
@@ -41,20 +75,20 @@ const TeamBoardPage = () => {
 	const { data: calendarResponse } = useCalendarMonth(projectId, calendarYear, calendarMonth)
 	const calendarData = calendarResponse?.body
 
-	// 일정 생성 mutation
-	const createScheduleMutation = useCreateScheduleMutation(projectId)
+	// 일정 생성 mutation (projectId가 있을 때만)
+	const createScheduleMutation = useCreateScheduleMutation(projectId || 0)
 	
-	// 일정 수정 mutation
-	const updateScheduleMutation = useUpdateScheduleMutation(projectId)
+	// 일정 수정 mutation (projectId가 있을 때만)
+	const updateScheduleMutation = useUpdateScheduleMutation(projectId || 0)
 	
-	// 일정 삭제 mutation
-	const deleteScheduleMutation = useDeleteScheduleMutation(projectId)
+	// 일정 삭제 mutation (projectId가 있을 때만)
+	const deleteScheduleMutation = useDeleteScheduleMutation(projectId || 0)
 
-	// 작업 시작 mutation
-	const startWorkMutation = useStartWorkMutation(projectId)
+	// 작업 시작 mutation (projectId가 있을 때만)
+	const startWorkMutation = useStartWorkMutation(projectId || 0)
 
-	// 작업 정지 mutation
-	const stopWorkMutation = useStopWorkMutation(projectId)
+	// 작업 정지 mutation (projectId가 있을 때만)
+	const stopWorkMutation = useStopWorkMutation(projectId || 0)
 
 	/**
 	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"

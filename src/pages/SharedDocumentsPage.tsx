@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import SharedDocumentItem from '@/components/team-board/SharedDocumentItem'
 import FileItem from '@/components/mission-modal/FileItem'
@@ -6,14 +7,37 @@ import SortDropdown, { type SortOption } from '@/components/team-board/SortDropd
 import { useSharedDocumentList } from '@/hooks/team-board/useSharedDocumentList'
 import { useDeleteSharedDocumentMutation } from '@/hooks/team-board/useDeleteSharedDocument'
 import { useUpdateSharedDocumentNameMutation } from '@/hooks/team-board/useUpdateSharedDocumentName'
+import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { FileItem as FileItemData } from '@/stores/mission-modal/missionModalStore'
 import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
 import LinkIcon from '@/assets/icons/team-board/link.svg?react'
 import PlusIcon from '@/assets/icons/common/plus.svg?react'
 
 const SharedDocumentsPage = () => {
-	// TODO: URL에서 projectId 가져오기
-	const projectId = 1
+	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
+	const navigate = useNavigate()
+	
+	// 프로젝트 목록 조회 및 projectId 설정
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await getProjectUsers()
+				if (response.body) {
+					// URL에 projectId가 없으면 첫 번째 프로젝트로 리다이렉트
+					if (!projectIdParam && response.body.length > 0) {
+						navigate(`/shared-documents/${response.body[0].projectId}`, { replace: true })
+						return
+					}
+				}
+			} catch (error) {
+				console.error('프로젝트 목록 조회 실패:', error)
+			}
+		}
+		fetchProjects()
+	}, [projectIdParam, navigate])
+
+	// URL에서 projectId 가져오기
+	const projectId = projectIdParam ? parseInt(projectIdParam, 10) : null
 
 	const [currentPage] = useState(1)
 	const [isUploading, setIsUploading] = useState(false)
@@ -39,7 +63,7 @@ const SharedDocumentsPage = () => {
 	}, [sortOrder])
 
 	// 공유 문서함 목록 API 호출 (페이지는 0부터 시작하므로 currentPage - 1)
-	const { data: documentListResponse, isLoading } = useSharedDocumentList(projectId, {
+	const { data: documentListResponse, isLoading } = useSharedDocumentList(projectId || 0, {
 		page: currentPage - 1, // API는 0부터 시작
 		size: 20,
 		type: documentType,
@@ -48,10 +72,10 @@ const SharedDocumentsPage = () => {
 	const documentList = documentListResponse?.body
 
 	// 공유 문서 삭제 mutation
-	const deleteDocumentMutation = useDeleteSharedDocumentMutation(projectId)
+	const deleteDocumentMutation = useDeleteSharedDocumentMutation(projectId || 0)
 	
 	// 공유 문서 이름 변경 mutation
-	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId)
+	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId || 0)
 
 	const handleUploadClick = () => {
 		// TODO: 파일 업로드 모달 또는 파일 선택 다이얼로그 열기

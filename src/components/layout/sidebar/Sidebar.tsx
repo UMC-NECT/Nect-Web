@@ -4,7 +4,7 @@ import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } 
 import SideNotificationModal from '@/components/notification/SideNotificationModal'
 import ChatModal from '@/components/chat/ChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
 export const Sidebar = () => {
 	const [activeTopMenu, setActiveTopMenu] = useState<TopMenuId | null>(null)
@@ -12,6 +12,7 @@ export const Sidebar = () => {
 	const [showNotificationModal, setShowNotificationModal] = useState(false)
 	const [showChatModal, setShowChatModal] = useState(false)
 	const navigate = useNavigate()
+	const params = useParams<{ projectId?: string }>()
 
 	const notificationModalRef = useRef<HTMLDivElement>(null)
 	const chatModalRef = useRef<HTMLDivElement>(null)
@@ -52,7 +53,13 @@ export const Sidebar = () => {
 
 	const handleBottomMenuClick = (menuId: BottomMenuId) => {
 		setActiveBottomMenu(menuId)
-		navigate(`/${menuId}`)
+		// projectId가 있으면 포함하여 네비게이션
+		const projectId = params.projectId
+		if (projectId && (menuId === 'board' || menuId === 'shared-documents' || menuId === 'team-board')) {
+			navigate(`/${menuId}/${projectId}`)
+		} else {
+			navigate(`/${menuId}`)
+		}
 	}
 
 	return (

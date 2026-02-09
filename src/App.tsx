@@ -50,15 +50,15 @@ const router = createBrowserRouter([
 				element: <WeekMissionPage />,
 			},
 			{
-				path: '/team-board',
+				path: '/team-board/:projectId?',
 				element: <TeamBoardPage />,
 			},
 			{
-				path: '/board',
+				path: '/board/:projectId?',
 				element: <BoardPage />,
 			},
 			{
-				path: '/shared-documents',
+				path: '/shared-documents/:projectId?',
 				element: <SharedDocumentsPage />,
 			},
 			{
