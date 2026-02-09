@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import WritePostModalHeader from './WritePostModalHeader'
 import WritePostModalContent, { type PostAttachment, type WritePostModalContentMode } from './WritePostModalContent'
 import CTAModal from '@/components/common/CTAModal'
 import { useUpdateSharedDocumentNameMutation } from '@/hooks/team-board/useUpdateSharedDocumentName'
 import { useUnlinkPostAttachmentMutation } from '@/hooks/team-board/useUnlinkPostAttachment'
+import { uploadPostFile } from '@/api/team-board/boards'
 
 interface WritePostModalProps {
 	isOpen: boolean
@@ -46,6 +48,7 @@ const WritePostModal = ({
 	const [ctaModalType, setCtaModalType] = useState<'unsavedChanges' | 'delete' | null>(null)
 	const fileInputRef = useRef<HTMLInputElement>(null)
 	const modalRef = useRef<HTMLDivElement>(null)
+	const queryClient = useQueryClient()
 	const isViewMode = currentMode === 'view'
 	const isEditMode = currentMode === 'edit'
 	const isCreateMode = currentMode === 'create'
@@ -170,15 +173,40 @@ const WritePostModal = ({
 		}
 	}
 
-	const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = Array.from(e.target.files || [])
 		if (selectedFiles.length > 0) {
-			console.log('선택된 파일:', selectedFiles)
-			setFiles((prevFiles) => {
-				const newFiles = [...prevFiles, ...selectedFiles]
-				console.log('업데이트된 파일 목록:', newFiles)
-				return newFiles
-			})
+			// 수정 모드이고 postId가 있으면 즉시 업로드
+			if (isEditMode && postId && projectId) {
+				try {
+					// 모든 파일을 순차적으로 업로드하고 attachments에 추가
+					for (const file of selectedFiles) {
+						const response = await uploadPostFile(projectId, postId, file)
+						const uploadedDoc = response.body
+						if (uploadedDoc) {
+							// 업로드된 파일을 attachments에 추가
+							const newAttachment: PostAttachment = {
+								id: String(uploadedDoc.document_id),
+								type: uploadedDoc.document_type === 'LINK' ? 'link' : 'file',
+								name: uploadedDoc.title,
+								fileName: uploadedDoc.file_name || undefined,
+								url: uploadedDoc.download_url || uploadedDoc.link_url || undefined,
+							}
+							setAttachments((prev) => [...prev, newAttachment])
+						}
+					}
+					// 파일 업로드 후 게시글 상세 정보 갱신
+					queryClient.invalidateQueries({
+						queryKey: ['postDetail', projectId, postId],
+					})
+				} catch (error) {
+					console.error('파일 업로드 실패:', error)
+					// TODO: 에러 처리 (토스트 메시지 등)
+				}
+			} else {
+				// 생성 모드이거나 postId가 없으면 files 배열에 추가 (저장 시 업로드)
+				setFiles((prevFiles) => [...prevFiles, ...selectedFiles])
+			}
 			// 파일 선택 후 input value를 초기화하여 같은 파일을 다시 선택해도 onChange가 트리거되도록 함
 			if (e.target) {
 				e.target.value = ''
