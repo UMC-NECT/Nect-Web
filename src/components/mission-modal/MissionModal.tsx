@@ -79,7 +79,7 @@ const formatTimestampDisplay = (date: Date | string): string => {
 
 const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
 	const isLeader = variant === 'leader'
-	const { roles } = useTeamStore()
+	const { roles, persons } = useTeamStore()
 	const {
 		editingMissionId,
 		projectId,
@@ -124,6 +124,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		removeFile,
 		closeMissionModal,
 		mentionedPersons,
+		setMentionedPersons,
 	} = useMissionModalStore()
 
 	const { projectId: pageProjectId } = useProjectIdStore()
@@ -214,6 +215,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 			}
 		})
 		setFiles(fileItems)
+
+		const mentionIds = body.mention_user_ids ?? []
+		const mentionedList = persons.filter(p => mentionIds.includes(p.id))
+		setMentionedPersons(mentionedList)
 	}, [
 		isEditMode,
 		processDetail,
@@ -229,7 +234,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setTasks,
 		setFeedbacks,
 		setFiles,
+		setMentionedPersons,
 		roles,
+		persons,
 	])
 
 	const sensors = useSensors(
