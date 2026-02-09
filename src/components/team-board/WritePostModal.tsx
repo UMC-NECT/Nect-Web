@@ -93,7 +93,8 @@ const WritePostModal = ({
 			setFiles([]) // 모달 열릴 때 새로 추가된 파일은 초기화
 			setAttachments(initialAttachments)
 		}
-	}, [isOpen, initialTitle, initialContent, initialIsNotice, initialAttachments])
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen, initialTitle, initialContent, initialIsNotice, initialAttachmentsString])
 
 	useClickOutside(modalRef, () => {
 		if (isOpen && !ctaModalType) {
