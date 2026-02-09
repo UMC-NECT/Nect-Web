@@ -24,17 +24,17 @@ const TeamBoardHeader = ({
 	const infoItems = [
 		{
 			label: '공지사항',
-			content: notice,
+			content: notice || '공지사항이 없습니다',
 			textColor: 'text-primary-600-normal',
 			contentClassName: 'justify-center',
 		},
 		{
 			label: '정기회의',
-			content: regularMeeting,
+			content: regularMeeting || '정기회의가 없습니다',
 			textColor: 'text-neutral-900',
 			contentClassName: 'flex-1 justify-center',
 		},
-	].filter(item => item.content) // 내용이 있는 항목만 필터링
+	]
 
 	return (
 		<div className='self-stretch w-[1224px] inline-flex justify-between items-start'>

@@ -6,8 +6,8 @@ export interface TeamBoardBasicInfo {
 	project_id: number
 	title: string
 	description: string
-	notice_text: string
-	regular_meeting_text: string
+	notice_text: string | null
+	regular_meeting_text: string | null
 	planned_started_on: string // "2026-01-01" 형식
 	planned_ended_on: string // "2026-02-01" 형식
 	remaining_days: number

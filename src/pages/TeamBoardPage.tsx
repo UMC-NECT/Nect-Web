@@ -310,8 +310,8 @@ const TeamBoardPage = () => {
 		return {
 			title: overview.basic_info.title,
 			description: overview.basic_info.description,
-			notice: overview.basic_info.notice_text,
-			regularMeeting: overview.basic_info.regular_meeting_text,
+			notice: overview.basic_info.notice_text || '공지사항이 없습니다',
+			regularMeeting: overview.basic_info.regular_meeting_text || '정기회의가 없습니다',
 			startDate: formatDateForDisplay(overview.basic_info.planned_started_on),
 			endDate: formatDateForDisplay(overview.basic_info.planned_ended_on),
 		}
