@@ -4,8 +4,9 @@ import ContentBox from '@/components/main/ContentBox';
 import TabGroup from '@/components/main/TabGroup';
 import CategoryDropdown from '@/components/main/CategoryDropdown';
 import RecommendationMemberCard from '@/components/common/RecommendationMemberCard';
-import BackgroundImage from '@/assets/icons/common/projectBackground.svg';  // 배경 이미지
-import CharacterImage from '@/assets/icons/main/profile.svg'; // 캐릭터 이미지
+import BackgroundImage from '@/assets/icons/common/projectBackground.svg';
+import CharacterImage from '@/assets/icons/main/profile.svg';
+import { useMatchableMembers } from '@/hooks/queries/home';
 
 const CATEGORIES = [
     'IT · 웹/모바일 서비스',
@@ -20,31 +21,16 @@ const CATEGORIES = [
 
 const TABS = ['기획자', '디자이너', '개발자', '마케터', '기타'];
 
-// 테스트용 넥터 데이터
-const mockNecter = {
-    id: 1,
-    background: BackgroundImage,
-    character: CharacterImage,
-    category: '매칭가능',
-    name: '김넥터',
-    position: 'Product Designer',
-    description: '안녕하세요. UI/UX 디자이너 김넥터입니다. 사용자 중심의 디자인을 추구합니다.',
-};
-
-const mockNecters = Array.from({ length: 13 }, (_, index) => ({
-    ...mockNecter,
-    id: index + 1
-}));
-
 const NecterListPage = () => {
     const [selectedTab, setSelectedTab] = useState('디자이너');
     const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
+    
+    // API 호출 (100개 요청)
+    const { data: members, isLoading, error } = useMatchableMembers(100);
 
     useEffect(() => {
-        // 페이지 진입 시 body 배경색 변경
         document.body.style.backgroundColor = '#FAFAFA';
         
-        // 페이지 이탈 시 원래대로 복구
         return () => {
             document.body.style.backgroundColor = '';
         };
@@ -85,16 +71,45 @@ const NecterListPage = () => {
                         />
                     </div>
 
+                    {/* 로딩/에러/데이터 처리 */}
+                    {isLoading && (
+                        <div className="mt-6 mx-5 flex justify-center items-center h-64">
+                            <p className="text-neutral-500">로딩 중...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="mt-6 mx-5 flex justify-center items-center h-64">
+                            <p className="text-red-500">에러가 발생했습니다</p>
+                        </div>
+                    )}
+
+                    {!isLoading && !error && members && members.length === 0 && (
+                        <div className="mt-6 mx-5 flex justify-center items-center h-64">
+                            <p className="text-neutral-500">매칭 가능한 넥터가 없습니다</p>
+                        </div>
+                    )}
+
                     {/* 넥터 카드 그리드 */}
-                    <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px]">
-                        {mockNecters.map(necter => (
-                            <RecommendationMemberCard 
-                                key={necter.id}
-                                member={necter} 
-                                variant="list" 
-                            />
-                        ))}
-                    </div>
+                    {!isLoading && !error && members && members.length > 0 && (
+                        <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px]">
+                            {members.map(member => (
+                                <RecommendationMemberCard 
+                                    key={member.userId}
+                                    member={{
+                                        id: member.userId,
+                                        background: BackgroundImage,
+                                        character: member.imageUrl || CharacterImage,
+                                        category: member.status,
+                                        name: member.name,
+                                        position: member.part,
+                                        description: member.introduction,
+                                    }} 
+                                    variant="list" 
+                                />
+                            ))}
+                        </div>
+                    )}
                 </ContentBox>
             </div>
         </div>

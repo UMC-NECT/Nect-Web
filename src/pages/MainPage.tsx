@@ -9,8 +9,24 @@ import ProjectShowcase from '@/components/main/ProjectShowcase';
 import NewsSection from '@/components/main/NewsSection';
 import CallToAction from '@/components/main/CallToAction';
 import Footer from '@/components/common/Footer'
+import { LOCAL_STORAGE_KEY } from '@/constants/key';
+import { useEffect, useState } from 'react';
 
 const MainPage = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(
+        !!localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+    );
+
+    useEffect(() => {
+        // 1초마다 로그인 상태 체크
+        const interval = setInterval(() => {
+            const currentLoginState = !!localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN);
+            setIsLoggedIn(currentLoginState);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <div className="relative">
             {/* 배경 레이어 - 뷰포트 전체 너비 */}
@@ -64,16 +80,18 @@ const MainPage = () => {
                 </section>
                 
                 {/* 소식 섹션 */}
-                <section className="w-[1233px] mx-auto mt-[116px]">
+                <section className="w-[1233px] h-[736px] mx-auto pt-[116px]">
                     <NewsSection />
                 </section>
 
-                {/* CTA 섹션 */}
-                <section className="relative bg-white z-10 w-screen -ml-[calc((100vw-100%)/2)] border-b border-b-neutral-200">
-                    <div className="w-[1233px] mx-auto">
-                    <CallToAction />
-                    </div>
-                </section>
+                {/* CTA 섹션 - 비로그인 시에만 표시 */}
+                {!isLoggedIn && (
+                    <section className="relative bg-white z-10 w-screen -ml-[calc((100vw-100%)/2)] border-b border-b-neutral-200">
+                        <div className="w-[1233px] mx-auto">
+                            <CallToAction />
+                        </div>
+                    </section>
+                )}
 
                 {/* footer - 흰색 배경 */}
                 <section className="relative bg-white z-10 w-screen -ml-[calc((100vw-100%)/2)]">

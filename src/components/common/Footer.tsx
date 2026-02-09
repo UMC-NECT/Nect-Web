@@ -1,46 +1,45 @@
 import logo from '@/assets/icons/common/nect-logo.svg';
+import BarIcon from '@/assets/icons/common/Bar.svg?react';
 
 const Footer = () => {
-    const companyInfo = [
-        '(주)NECT  |  대표이사 이복기',
-        '서울특별시 송파구 올림픽로 300, 롯데월드타워 35층  |  전화번호: 02-539-7118',
-        '사업자등록번호: 299-86-00021  |  통신판매번호: 2020-서울송파-3147  |  유료직업소개사업자등록번호: (국내) 제2020-3240259-14-5-00018호'
-    ];
-
-    const links = [
-        '채용서비스 문의',
-        '원티드스페이스 문의',
-        '원티드긱스 문의',
-        '프리온보딩 관리',
-        '취업지원시스템 문의',
-        'IR 문의'
-    ];
+    const companyInfo = {
+        line1: ['(주)넥트', '대표 강승희'],
+        line2: ['서울특별시 유엠시 유엠대로 486', '전화번호: 02-123-4567'],
+        line3: ['사업자등록번호: 123-45-67890', '이메일: seungheekang31@gmail.com'],
+        line4: '© 2026. 넥트 (NECT) Co. All rights reserved.'
+    };
 
     return (
-        <footer className="w-full h-89.25 bg-white pl-13 pt-6.75">
-            <div className="w-282 mx-auto py-12">
+        <footer className="w-full h-[394px] bg-white">
+            <div className="w-282 mx-auto pt-[144px] gap-[50px]">
                 {/* 로고 */}
-                <img src={logo} alt="NECT Logo" className="w-28.25 h-5 mb-6" />
+                <img src={logo} alt="NECT Logo" className="w-28.25 h-5 mb-[50px]" />
                 
                 {/* 회사 정보 */}
-                <div className="mt-10">
-                    {companyInfo.map((info, index) => (
-                        <p key={index} className="text-neutral-600 text-sm mb-1">
-                            {info}
-                        </p>
-                    ))}
-                </div>
+                <div className="mt-10 space-y-2 text-[14px]">
+                    {/* 첫 번째 줄 */}
+                    <div className="flex items-center gap-2 text-neutral-400 text-body2">
+                        <span>{companyInfo.line1[0]}</span>
+                        <BarIcon className="w-[1px] h-3" />
+                        <span>{companyInfo.line1[1]}</span>
+                    </div>
 
-                {/* 링크 */}
-                <div className="mt-10 flex gap-4 text-md text-neutral-700">
-                    {links.map((link, index) => (
-                        <a 
-                            key={index}
-                            href="#" 
-                        >
-                            {link}
-                        </a>
-                    ))}
+                    {/* 두 번째 줄 */}
+                    <div className="flex items-center gap-2 text-neutral-400 text-body2">
+                        <span>{companyInfo.line2[0]}</span>
+                        <BarIcon className="w-[1px] h-3" />
+                        <span>{companyInfo.line2[1]}</span>
+                    </div>
+
+                    {/* 세 번째 줄 */}
+                    <div className="flex items-center gap-2 text-neutral-400 text-body2">
+                        <span>{companyInfo.line3[0]}</span>
+                        <BarIcon className="w-[1px] h-3" />
+                        <span>{companyInfo.line3[1]}</span>
+                    </div>
+
+                    {/* 네 번째 줄 */}
+                    <p className="text-neutral-400 text-body2">{companyInfo.line4}</p>
                 </div>
             </div>
         </footer>

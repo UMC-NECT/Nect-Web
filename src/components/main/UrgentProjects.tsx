@@ -1,105 +1,115 @@
 import More from '@/assets/icons/common/chevron-right.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { Link } from 'react-router-dom';
-
 import { getTagStyle } from '@/utils/tagStyles';
+import { useRecruitingProjects } from '@/hooks/queries/home';
 
 const UrgentProjects = () => {
+    const { data: projects, isLoading, isError } = useRecruitingProjects(4);
 
-    const projects = [
-        {
-            id: 1,
-            dDay: 'D-22',
-            title: '넥트 (Nect)',
-            category: 'UX.UI・개발・엔지니어',
-            description: '아이디어 분석 & 팀원 매칭 & 협업 보드까지, 사이드 프로젝트 웹 개발',
-            tags: ['Design (1)', 'Frontend (2)', 'Backend (1)'],
-            members: '5/10'
-        },
-        {
-            id: 2,
-            dDay: 'D-12',
-            title: '에어비엔비 UX 개선',
-            category: 'UX.UI・개발・엔지니어',
-            description: '사용자의 탐색 및 결제 Flow로 개선하는 리디자인 및 구현 프로젝트',
-            tags: ['Design (1)', 'Backend (2)'],
-            members: '4/7'
-        },
-        {
-            id: 3,
-            dDay: 'D-32',
-            title: 'OOO',
-            category: '모집 중인・분야들',
-            description: 'AI를 활용한 어쩌고',
-            tags: ['Frontend (2)', 'Backend (1)', 'Server (1)', 'Data (1)', '...'],
-            members: '0/00'
-        },
-        {
-            id: 4,
-            dDay: 'D-48',
-            title: '스포티파이 캠페인 영상 제작',
-            category: '영상/모션・기획/홍보',
-            description: '프로젝트 설명',
-            tags: ['Design (2)', 'Video Director (1)', 'Music Director (1)', '...'],
-            members: '0/00'
-        },
-    ];
+    // roles 객체를 태그 배열로 변환
+    const getRoleTags = (roles: Record<string, number>) => {
+        const tags = Object.entries(roles).map(([role, count]) => `${role} (${count})`);
+        // 최대 4개까지만 표시, 나머지는 '...'
+        if (tags.length > 4) {
+            return [...tags.slice(0, 4), '...'];
+        }
+        return tags;
+    };
+
+    // authorPart 한글 변환
+    const getDisplayPart = (part: string) => {
+        const partMap: Record<string, string> = {
+            'DEVELOPER': '개발',
+            'DESIGNER': '디자인',
+            'PLANNER': '기획',
+            'OTHER': '기타',
+        };
+        return partMap[part] || part;
+    };
 
     return (
         <div className="w-138 h-142.5">
             <div className="flex justify-between items-center mb-5 w-138 h-7.5">
                 <h2 className="text-[22px] text-neutral-900 font-bold">모집 중인 프로젝트</h2>
-                <Link 
-                    to="/projectList"
-                    className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700"
-                >
-                    더보기
-                    <More className="w-4 h-4 stroke-neutral-500 hover:stroke-neutral-700 mr-1" />
-                </Link>
-            </div>  
+                {!isLoading && !isError && projects && projects.length > 0 && (
+                    <Link 
+                        to="/projectList"
+                        className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700"
+                    >
+                        더보기
+                        <More className="w-4 h-4 stroke-neutral-500 hover:stroke-neutral-700 mr-1" />
+                    </Link>
+                )}
+            </div>
+
+            {/* 로딩 상태 */}
+            {isLoading && (
+                <div className="flex items-center justify-center h-100 text-neutral-500">
+                    로딩 중...
+                </div>
+            )}
+
+            {/* 에러 상태 */}
+            {isError && (
+                <div className="flex items-center justify-center h-100 text-neutral-500">
+                    프로젝트를 불러오는데 실패했습니다.
+                </div>
+            )}
+
+            {/* 빈 데이터 상태 */}
+            {!isLoading && !isError && (!projects || projects.length === 0) && (
+                <div className="flex items-center justify-center h-100 text-neutral-500">
+                    모집 중인 프로젝트가 없습니다.
+                </div>
+            )}
             
             {/* 프로젝트 리스트 */}
-            <div className="flex flex-col gap-2">
-                {projects.map((project) => (
-                    <Link
-                        key={project.id}
-                        to="/recruiting-projects"
-                        className="w-138 h-31 px-5.5 py-4 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors block"
-                    >
-                        {/* 상단: 제목 + 날짜 */}
-                        <div className="flex justify-between items-start mb-3 h-13.25">
-                            <div className="flex flex-col gap-1.5">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-[16px] text-neutral-900 font-semibold">{project.title}</h3>
-                                    <BarIcon className="w-0.5 h-3" />
-                                    <span className="text-[14px] text-neutral-500 font-semibold">{project.category}</span>
+            {!isLoading && !isError && projects && projects.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    {projects.map((project) => (
+                        <Link
+                            key={project.projectId}
+                            to="/recruiting-projects"
+                            className="w-138 h-31 px-5.5 py-4 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors block"
+                        >
+                            {/* 상단: 제목 + 날짜 */}
+                            <div className="flex justify-between items-start mb-3 h-13.25">
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-[16px] text-neutral-900 font-semibold">{project.projectName}</h3>
+                                        <BarIcon className="w-0.5 h-3" />
+                                        <span className="text-[14px] text-neutral-500 font-semibold">
+                                            {project.authorName} · {getDisplayPart(project.authorPart)}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm font-medium text-neutral-600">{project.introduction}</p>
                                 </div>
-                                <p className="text-sm font-medium text-neutral-600">{project.description}</p>
+                                <span className="text-xl font-bold text-primary-500-normal whitespace-nowrap ml-4">
+                                    D-{project.leftDays}
+                                </span>
                             </div>
-                            <span className="text-xl font-bold text-primary-500-normal whitespace-nowrap ml-4">
-                                {project.dDay}
-                            </span>
-                        </div>
-                        
-                        {/* 하단: 태그 + 인원 */}
-                        <div className="flex justify-between items-center">
-                            <div className="flex gap-2 flex-wrap">
-                                {project.tags.map((tag, index) => (
-                                    <span 
-                                        key={index}
-                                        className={`px-2 py-1 gap-0.5 text-sm text-neutral-800 rounded-md h-6 flex justify-center items-center ${getTagStyle(tag)}`}
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
+                            
+                            {/* 하단: 태그 + 인원 */}
+                            <div className="flex justify-between items-center">
+                                <div className="flex gap-2 flex-wrap">
+                                    {getRoleTags(project.roles).map((tag, index) => (
+                                        <span 
+                                            key={index}
+                                            className={`px-2 py-1 gap-0.5 text-sm text-neutral-800 rounded-md h-6 flex justify-center items-center ${getTagStyle(tag)}`}
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                                <span className="text-[16px] text-neutral-500 whitespace-nowrap w-14.75 h-6">
+                                    팀원 <span className="text-neutral-700">{project.curMemberCount}/{project.maxMemberCount}</span>
+                                </span>
                             </div>
-                            <span className="text-[16px] text-neutral-500 whitespace-nowrap w-14.75 h-6">
-                                팀원 <p className="inline text-neutral-700">{project.members}</p>
-                            </span>
-                        </div>
-                    </Link>
-                ))}
-            </div>
+                        </Link>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

@@ -2,15 +2,64 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
 import { useRef } from 'react';
-
-import { recommendationMembers } from '@/constants/RecommendationMembers';
 import { useLocation } from 'react-router';
 import RecommendationMemberCard from '@/components/common/RecommendationMemberCard';
+import { useRecommendationMembers } from '@/hooks/queries/home';
 
 const RecommendationMember = () => {
     const paginationRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
     const isProfileAnalysisPage = location.pathname === '/profile-analysis';
+
+    const { data: members, isLoading, isError } = useRecommendationMembers(15);
+
+    // 로딩 상태
+    if (isLoading) {
+        return (
+            <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative -ml-11.5">
+                {!isProfileAnalysisPage && (
+                    <div className="w-282 mx-auto mb-4">
+                        <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 팀원</h2>
+                    </div>
+                )}
+                <div className="flex items-center justify-center h-80 text-neutral-500">
+                    로딩 중...
+                </div>
+            </div>
+        );
+    }
+
+    // 에러 상태
+    if (isError) {
+        return (
+            <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative -ml-11.5">
+                {!isProfileAnalysisPage && (
+                    <div className="w-282 mx-auto mb-4">
+                        <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 팀원</h2>
+                    </div>
+                )}
+                <div className="flex items-center justify-center h-80 text-neutral-500">
+                    팀원을 불러오는데 실패했습니다.
+                </div>
+            </div>
+        );
+    }
+
+    // 빈 데이터 상태
+    if (!members || members.length === 0) {
+        return (
+            <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative -ml-11.5">
+                {!isProfileAnalysisPage && (
+                    <div className="w-282 mx-auto mb-4">
+                        <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 팀원</h2>
+                    </div>
+                )}
+                <div className="flex items-center justify-center h-80 text-neutral-500">
+                    추천 팀원이 없습니다.
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative -ml-11.5">
@@ -35,11 +84,15 @@ const RecommendationMember = () => {
                     }}
                     onSwiper={(swiper) => {
                         setTimeout(() => {
-                            if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object') {
-                                swiper.params.pagination.el = paginationRef.current;
-                                swiper.pagination?.init();
-                                swiper.pagination?.render();
-                                swiper.pagination?.update();
+                            try {
+                                if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object' && swiper.pagination) {
+                                    swiper.params.pagination.el = paginationRef.current;
+                                    swiper.pagination.init();
+                                    swiper.pagination.render();
+                                    swiper.pagination.update();
+                                }
+                            } catch {
+                                // 페이지네이션 초기화 실패 시 무시
                             }
                         }, 0);
                     }}
@@ -47,12 +100,12 @@ const RecommendationMember = () => {
                         delay: 5000,
                         disableOnInteraction: false,
                     }}
-                    loop={true}
+                    loop={members.length > 3}
                     className="!pt-3 recommendation-member-swiper"
                 >
-                    {recommendationMembers.map((member) => (
-                        <SwiperSlide key={member.id}>
-                            <RecommendationMemberCard member={member} />
+                    {members.map((member) => (
+                        <SwiperSlide key={member.userId}>
+                            <RecommendationMemberCard member={member} showRoles={false} />
                         </SwiperSlide>
                     ))}
                 </Swiper>

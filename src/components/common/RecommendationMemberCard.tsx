@@ -1,26 +1,40 @@
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { getTagStyle } from '@/utils/tagStyles';
+import type { MemberCard } from '@/types/api/home';
+import projectBg from '@/assets/icons/main/projectImage.svg';
+import profile from '@/assets/icons/main/profile.svg';
+import type { FC } from 'react';
 
-interface RecommendationMemberCardProps {
-    member: {
-        id: number;
-        background: string;
-        character: string;
-        category: string;
-        name: string;
-        position: string;
-        description: string;
-        tags?: string[]; // optional로 변경
-    };
+export interface RecommendationMemberCardProps {
+    member: MemberCard;
     variant?: 'default' | 'list';
+    showRoles?: boolean; // 역할 태그 표시 여부
 }
 
-const RecommendationMemberCard = ({ member, variant = 'default' }: RecommendationMemberCardProps) => {
+const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, variant = 'default', showRoles = true }) => {
+    // status 변환: "JOB_SEEKING" → "매칭 가능", "EMPLOYED" → "재직 중"
+    const statusMap: Record<string, string> = {
+        'JOB_SEEKING': '매칭 가능',
+        'EMPLOYED': '재직 중',
+    };
+    
+    // part 변환: "DESIGNER" → "디자인", "DEVELOPER" → "개발" 등
+    const partMap: Record<string, string> = {
+        'DESIGNER': 'Design',
+        'DEVELOPER': 'Develop',
+        'PLANNER': 'PM',
+        'OTHER': '기타',
+    };
+    
+    const displayStatus = member.status ? (statusMap[member.status] || member.status) : '매칭 가능';
+    const displayPart = member.part ? (partMap[member.part] || member.part) : '기타';
+    const displayIntroduction = member.introduction || '자기소개가 없습니다.';
+
     // variant에 따른 스타일 설정
     const sizeStyles = {
         default: {
             card: 'w-90',
-            height: member.description.length > 40 ? 'h-85' : 'h-80',
+            height: displayIntroduction.length > 40 ? 'h-[316px]' : 'h-[296px]',
             background: 'h-45',
             character: 'w-16 h-16',
         },
@@ -39,14 +53,14 @@ const RecommendationMemberCard = ({ member, variant = 'default' }: Recommendatio
             {/* 상단: 배경 + 캐릭터 영역 */}
             <div className={`relative ${styles.background}`}>
                 <img
-                    src={member.background}
+                    src={projectBg}
                     alt="background"
                     className="absolute inset-0 w-full h-full object-cover rounded-xl"
                 />
                 <img
-                    src={member.character}
+                    src={member.imageUrl || profile}
                     alt="character"
-                    className={`absolute bottom-0 left-4 ${styles.character} translate-y-1/2 border border-neutral-100 rounded-full bg-white`}
+                    className={`absolute bottom-0 left-4 ${styles.character} translate-y-1/2 border border-neutral-100 rounded-full bg-white object-cover`}
                 />
             </div>
 
@@ -55,7 +69,7 @@ const RecommendationMemberCard = ({ member, variant = 'default' }: Recommendatio
                 <div className="flex items-center justify-center gap-1 border border-primary-200-light rounded-2xl w-21.5 h-6.5">
                     <span className="w-2.5 h-2.5 bg-primary-500-normal rounded-full"></span>
                     <span className="text-[14px] text-neutral-700 font-semibold">
-                        {member.category}
+                        {displayStatus}
                     </span>
                 </div>
             </div>
@@ -65,22 +79,22 @@ const RecommendationMemberCard = ({ member, variant = 'default' }: Recommendatio
                 <div className="flex h-6.5 items-center text-[16px] text-neutral-900 gap-1.5 mb-1.5">
                     <span className='font-semibold'>{member.name}</span>
                     <BarIcon className="w-0.5 h-3" />
-                    <span className="text-neutral-500 font-medium">{member.position}</span>
+                    <span className="text-neutral-500 font-medium">{displayPart}</span>
                 </div>
 
                 <p className="text-[13px] text-neutral-600 line-clamp-2 mb-3">
-                    {member.description}
+                    {displayIntroduction}
                 </p>
 
-                {/* 포지션 태그 - tags가 있을 때만 렌더링 */}
-                {member.tags && member.tags.length > 0 && (
+                {/* 역할 태그 - showRoles가 true이고 roles가 있을 때만 렌더링 */}
+                {showRoles && member.roles && member.roles.length > 0 && (
                     <div className="flex gap-2 flex-wrap h-6">
-                        {member.tags.map((tag, index) => (
+                        {member.roles.map((role, index) => (
                             <span
                                 key={index}
-                                className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(tag)}`}
+                                className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(role)}`}
                             >
-                                {tag}
+                                {role}
                             </span>
                         ))}
                     </div>
