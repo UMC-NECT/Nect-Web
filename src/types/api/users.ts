@@ -12,6 +12,7 @@ export type ResponseLoginDto = CommonResponse<{
     refreshToken: string
     accessTokenExpiresAt: number
     refreshTokenExpiresAt: number
+    isOnboardingCompleted: boolean
 }>
 
 export type RequestSignupDto = {

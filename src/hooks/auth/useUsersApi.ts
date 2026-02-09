@@ -20,6 +20,7 @@ export const useLogoutMutation = () => {
 		onSuccess: () => {
 			localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 			localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+			localStorage.removeItem(LOCAL_STORAGE_KEY.ONBOARDING_COMPLETED)
 			queryClient.removeQueries({ queryKey: QUERY_KEY.users.profile() })
 			navigate('/')
 		},

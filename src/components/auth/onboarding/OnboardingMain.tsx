@@ -15,6 +15,8 @@ import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import { useCheckMutation, useSetupMutation } from '@/hooks/auth/useUsersApi'
 import type { RequestSetupDto } from '@/types/api/users'
 import { useNavigate } from 'react-router'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { LOCAL_STORAGE_KEY } from '@/constants/key'
 
 type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
@@ -87,6 +89,9 @@ const OnboardingMain = () => {
 	const { skillCategories, skillsByCategory } = useOnboardingEnums()
 	const checkMutation = useCheckMutation()
 	const setupMutation = useSetupMutation()
+	const { setItem: setOnboardingCompleted } = useLocalStorage(LOCAL_STORAGE_KEY.ONBOARDING_COMPLETED)
+	const onboardingCompleted = useLocalStorage(LOCAL_STORAGE_KEY.ONBOARDING_COMPLETED).getItem()
+	const isOnboardingRequired = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN).getItem() && onboardingCompleted !== 'true'
 	const isSubmitting = setupMutation.isPending
 
 	const methods = useOnboardingForm() // 온보딩 1~6단계용 커스텀 useForm
@@ -187,6 +192,7 @@ const OnboardingMain = () => {
 					const formData = methods.getValues()
 					const body = toRequestSetupDto(formData, skillCategories, skillsByCategory)
 					await setupMutation.mutateAsync(body)
+					setOnboardingCompleted('true')
 					navigate('/')
 				} catch {
 					console.error('프로필 설정에 실패했습니다. 다시 시도해주세요.')
@@ -195,12 +201,13 @@ const OnboardingMain = () => {
 			}
 		}
 	}
-	// 뒤로가기 버튼 핸들러
+	// 뒤로가기 버튼 핸들러 (필수 온보딩 중 1단계에서는 나가기 방지)
 	const handleBack = () => {
 		if (currentStep > 1) {
 			setCurrentStep(prev => (prev - 1) as STEPS)
 		}
 	}
+	const isBackDisabled = isOnboardingRequired && currentStep === 1
 
 	return (
 		<FormProvider {...methods}>
@@ -208,8 +215,11 @@ const OnboardingMain = () => {
 				onSubmit={e => e.preventDefault()}
 				className='relative min-h-screen w-screen flex pt-24.75 left-1/2 -translate-x-1/2'
 			>
-				{/* 뒤로가기 */}
-				<div className='hidden md:block absolute left-18 top-[50%]' onClick={handleBack}>
+				{/* 뒤로가기 (필수 온보딩 1단계에서는 비활성화) */}
+				<div
+					className={`hidden md:block absolute left-18 top-[50%] ${isBackDisabled ? 'pointer-events-none opacity-40' : 'cursor-pointer'}`}
+					onClick={handleBack}
+				>
 					<BackButton />
 				</div>
 

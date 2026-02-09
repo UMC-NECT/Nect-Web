@@ -18,6 +18,7 @@ const AuthForm = () => {
 	const navigate = useNavigate()
 	const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+	const { setItem: setOnboardingCompleted } = useLocalStorage(LOCAL_STORAGE_KEY.ONBOARDING_COMPLETED)
 	const loginMutation = useLoginMutation()
 
 	// 유효성 검사용
@@ -48,7 +49,8 @@ const AuthForm = () => {
 			if (tokenData?.accessToken && tokenData?.refreshToken) {
 				setAccessToken(tokenData.accessToken)
 				setRefreshToken(tokenData.refreshToken)
-				navigate('/')
+				setOnboardingCompleted(tokenData.isOnboardingCompleted === true ? 'true' : 'false')
+				navigate(tokenData.isOnboardingCompleted === false ? '/onboarding' : '/')
 			} else {
 				setLoginError('로그인에 실패했습니다. 다시 시도해주세요.')
 			}
