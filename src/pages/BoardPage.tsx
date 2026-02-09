@@ -6,6 +6,8 @@ import BoardPagination from '@/components/team-board/BoardPagination'
 import WritePostModal from '@/components/team-board/WritePostModal'
 import { usePostList } from '@/hooks/team-board/usePostList'
 import { useCreatePostMutation } from '@/hooks/team-board/useCreatePost'
+import { usePostDetail } from '@/hooks/team-board/usePostDetail'
+import type { PostAttachment } from '@/components/team-board/WritePostModalContent'
 
 const BoardPage = () => {
 	// TODO: URL에서 projectId 가져오기
@@ -14,13 +16,7 @@ const BoardPage = () => {
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
 	const [isViewModalOpen, setIsViewModalOpen] = useState(false)
-	const [selectedPost, setSelectedPost] = useState<{
-		title: string
-		content: string
-		isNotice: boolean
-		tag?: string
-		author?: string
-	} | null>(null)
+	const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
 
 	// 게시글 목록 API 호출 (페이지는 0부터 시작하므로 currentPage - 1)
 	const { data: postListResponse, isLoading } = usePostList(projectId, {
@@ -31,11 +27,15 @@ const BoardPage = () => {
 	// 게시글 생성 mutation
 	const createPostMutation = useCreatePostMutation(projectId)
 
+	// 게시글 상세 조회
+	const { data: postDetailResponse } = usePostDetail(projectId, selectedPostId)
+	const postDetail = postDetailResponse?.body
+
 	const handleWriteClick = () => {
 		setIsWriteModalOpen(true)
 	}
 
-	const handleSavePost = (title: string, content: string, isNotice: boolean, files: File[]) => {
+	const handleSavePost = (title: string, content: string, isNotice: boolean, _files: File[]) => {
 		// API 호출로 게시글 저장
 		createPostMutation.mutate({
 			title,
@@ -48,15 +48,9 @@ const BoardPage = () => {
 		setIsWriteModalOpen(false)
 	}
 
-	const handleItemClick = (item: { tag?: string; title: string; author: string; date: string }) => {
-		// 샘플 데이터로 모달 열기 (실제로는 API에서 가져온 데이터 사용)
-		setSelectedPost({
-			title: item.title,
-			content: '프로젝트 공동 경비 사용 내역 프로젝트 공동 경비 사용 내역프로젝트 공동 경비 사용 내역\n링크 첨부해두겠습니다',
-			isNotice: !!item.tag,
-			tag: item.tag,
-			author: item.author,
-		})
+	const handleItemClick = (item: { postId: number; tag?: string; title: string; author: string; date: string }) => {
+		// 게시글 상세 조회
+		setSelectedPostId(item.postId)
 		setIsViewModalOpen(true)
 	}
 
@@ -103,6 +97,7 @@ const BoardPage = () => {
 			}
 
 			return {
+				postId: post.post_id,
 				tag,
 				title: post.title,
 				author: '', // API 응답에 작성자 정보가 없음
@@ -115,298 +110,6 @@ const BoardPage = () => {
 	const totalPages = postList?.page_info?.total_pages || 1
 	const currentItems = boardItems
 
-	// 샘플 데이터 (로딩 중이거나 데이터가 없을 때 사용하지 않음)
-	const sampleBoardItems = [
-		{
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			tag: '[공지]',
-			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
-			author: '시루',
-			date: '0000.00.00',
-		},
-		{
-			tag: '[필독]',
-			title: '팀별 주간 업무 보고 양식 안내',
-			author: '이방토',
-			date: '2024.1.10',
-		},
-		{
-			title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
-			author: '닉네임5자',
-			date: '2024.01.10',
-		},
-		{
-			title: '회의록 (댓글에 변동사항 추가)',
-			author: '시루',
-			date: '2024.1.10',
-		},
-		{
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-        {
-			title: '프로젝트 공동 경비 사용 내역',
-			author: '이방토',
-			date: '0000.00.00',
-		},
-	]
-
 	return (
 		<div className="flex flex-col w-full mx-auto px-6 py-[64px] gap-[30px]">
 			<ContentHeader
@@ -418,29 +121,27 @@ const BoardPage = () => {
 
 			{/* 게시판 리스트 컨테이너 */}
 			<div className="w-[1224px] h-[596px] bg-neutral-000 rounded-xl border border-neutral-200 shadow-drop-neutral-2 flex flex-col overflow-hidden">
-				
+				{isLoading ? (
+					<div className="flex items-center justify-center h-full text-neutral-500">게시글 로딩 중...</div>
+				) : currentItems.length === 0 ? (
+					<div className="flex items-center justify-center h-full text-neutral-500">게시글이 없습니다.</div>
+				) : (
                 <div className="flex flex-col justify-between h-full">
                     {/* 리스트 아이템들 */}
                     <div className="flex flex-col">
                         {/* 헤더 */}
                         <BoardListHeader />
                     
-                        {isLoading ? (
-							<div className="flex items-center justify-center h-full">로딩 중...</div>
-						) : currentItems.length > 0 ? (
-							currentItems.map((item, index) => (
-								                            <BoardListItem
-	                                key={`${item.title}-${index}`}
-	                                tag={item.tag}
-	                                title={item.title}
-	                                author={item.author}
-	                                date={item.date}
-	                                onClick={() => handleItemClick(item)}
-	                            />
-	                        ))
-						) : (
-							<div className="flex items-center justify-center h-full text-neutral-400">게시글이 없습니다.</div>
-						)}
+                        {currentItems.map((item, index) => (
+                            <BoardListItem
+                                key={index}
+                                tag={item.tag}
+                                title={item.title}
+                                author={item.author}
+                                date={item.date}
+                                onClick={() => handleItemClick(item)}
+                            />
+                        ))}
                     </div>
 
                     {/* 페이지네이션 */}
@@ -454,6 +155,7 @@ const BoardPage = () => {
                         </div>
                     )}
 			    </div>
+				)}
             </div>
 
 			{/* 글쓰기 모달 */}
@@ -464,34 +166,38 @@ const BoardPage = () => {
 			/>
 
 			{/* 게시글 조회 모달 */}
-			{selectedPost && (
+			{selectedPostId && postDetail && (
 				<WritePostModal
 					mode="view"
 					isOpen={isViewModalOpen}
 					onClose={() => {
 						setIsViewModalOpen(false)
-						setSelectedPost(null)
+						setSelectedPostId(null)
 					}}
-					initialTitle={selectedPost.title}
-					initialContent={selectedPost.content}
-					initialIsNotice={selectedPost.isNotice}
-					initialAttachments={[
-						{
-							id: '1',
+					initialTitle={postDetail.title}
+					initialContent={postDetail.content}
+					initialIsNotice={postDetail.post_type === 'NOTICE'}
+					initialAttachments={postDetail.attachments.map((attachment): PostAttachment => {
+						if (attachment.document_type === 'LINK') {
+							return {
+								id: String(attachment.document_id),
 							type: 'link',
-							name: '파일 정보',
-							url: 'https://www.figma.com/',
-						},
-						{
-							id: '2',
+								name: attachment.title,
+								url: attachment.link_url || undefined,
+							}
+						} else {
+							return {
+								id: String(attachment.document_id),
 							type: 'file',
-							name: '파일 정보',
-							fileName: '파일명: 파일명 한 줄까지 미리보기.png',
-						},
-					]}
+								name: attachment.title,
+								fileName: attachment.file_name || undefined,
+								url: attachment.download_url || undefined,
+							}
+						}
+					})}
 					onUpdate={handleUpdatePost}
 					onDelete={handleDeletePost}
-					isOwner={false}
+					isOwner={false} // TODO: 작성자 확인 로직 추가
 				/>
 			)}
 		</div>
