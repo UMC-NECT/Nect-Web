@@ -1,7 +1,6 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import PlusIcon from '@/assets/icons/common/plus.svg?react'
 import LinkIcon from '@/assets/icons/team-board/link.svg?react'
-import XIcon from '@/assets/icons/common/X.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
 import MoreIcon from '@/components/mission-modal/MoreIcon.svg?react'
 import FigmaIcon from '@/assets/icons/app/figma.svg?react'
@@ -40,6 +39,8 @@ interface WritePostModalContentProps {
 	onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onFileRemove?: (index: number) => void
 	onAttachmentRemove?: (id: string) => void
+	onAttachmentRename?: (id: string, newName: string) => void
+	onAttachmentUnlink?: (documentId: number) => void
 	fileInputRef?: React.RefObject<HTMLInputElement | null>
 }
 
@@ -56,17 +57,63 @@ const WritePostModalContent = ({
 	onFileChange,
 	onFileRemove,
 	onAttachmentRemove,
+	onAttachmentRename,
+	onAttachmentUnlink,
 	fileInputRef: externalFileInputRef,
 }: WritePostModalContentProps) => {
 	const internalFileInputRef = useRef<HTMLInputElement | null>(null)
 	const fileInputRef = (externalFileInputRef || internalFileInputRef) as React.RefObject<HTMLInputElement | null>
+	const [showMenuId, setShowMenuId] = useState<string | null>(null)
+	const [editingAttachmentId, setEditingAttachmentId] = useState<string | null>(null)
+	const [editName, setEditName] = useState('')
+	const menuRefs = useRef<Record<string, HTMLDivElement | null>>({})
+	const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 	const isViewMode = mode === 'view'
 	const isCreateMode = mode === 'create'
 	const isEditMode = mode === 'edit'
 	const isEditable = isCreateMode || isEditMode
 
+	// 메뉴 외부 클릭 감지
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (showMenuId) {
+				const menuRef = menuRefs.current[showMenuId]
+				if (menuRef && !menuRef.contains(event.target as Node)) {
+					setShowMenuId(null)
+				}
+			}
+		}
+
+		if (showMenuId) {
+			document.addEventListener('mousedown', handleClickOutside)
+		}
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [showMenuId])
+
+	// 편집 모드일 때 입력 필드에 포커스
+	useEffect(() => {
+		if (editingAttachmentId && inputRefs.current[editingAttachmentId]) {
+			inputRefs.current[editingAttachmentId]?.focus()
+			inputRefs.current[editingAttachmentId]?.select()
+		}
+	}, [editingAttachmentId])
+
+	// 편집 모드일 때 이름 초기화
+	useEffect(() => {
+		if (editingAttachmentId) {
+			const attachment = attachments.find((att) => att.id === editingAttachmentId)
+			if (attachment) {
+				setEditName(attachment.name)
+			}
+		}
+	}, [editingAttachmentId, attachments])
+
 	const handleFileAdd = () => {
-		fileInputRef.current?.click()
+		// 파일 입력 value를 초기화하여 같은 파일을 다시 선택해도 onChange가 트리거되도록 함
+		if (fileInputRef.current) {
+			fileInputRef.current.value = ''
+			fileInputRef.current.click()
+		}
 	}
 
 	// 파일 추가는 부모 컴포넌트에서 처리
@@ -268,58 +315,139 @@ const WritePostModalContent = ({
 					) : (
 						<div className="flex flex-col gap-0 w-full">
 							{/* 기존 첨부 파일 */}
-							{attachments.map((attachment) => (
-								<div key={attachment.id} className="flex gap-2.5 items-center px-3.5 py-2 w-full relative group">
-									{/* 아이콘 */}
-									<div className="relative shrink-0 w-7 h-7">
-										<div
-											className={`absolute inset-0 rounded-[6.222px] ${
-												attachment.type === 'link' && attachment.url?.includes('figma.com')
-													? 'bg-[#141515]'
-													: 'bg-neutral-50'
-											} shadow-inner-neutral-1`}
-										/>
-										<div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-											{getAttachmentIcon(attachment)}
-										</div>
-									</div>
+							{attachments.map((attachment) => {
+								const isEditing = editingAttachmentId === attachment.id
+								const detailText = attachment.type === 'link'
+									? attachment.url
+									: `파일명: ${attachment.fileName || '알 수 없음'}`
 
-									{/* 파일 정보 */}
-									<div className="flex-1 min-w-0 flex items-center">
-										<div className="flex flex-col flex-1 min-w-0">
-											<div className="caption-1 font-semibold text-neutral-800 truncate">
-												{attachment.name}
-											</div>
-											<div className="text-[9px] leading-[1.4] text-neutral-400 truncate">
-												{attachment.type === 'link'
-													? attachment.url
-													: `파일명: ${attachment.fileName || '알 수 없음'}`}
+								// 키보드 이벤트 핸들러
+								const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+									if (e.key === 'Enter') {
+										if (editName.trim()) {
+											onAttachmentRename?.(attachment.id, editName.trim())
+											setEditingAttachmentId(null)
+										}
+									}
+									if (e.key === 'Escape') {
+										setEditingAttachmentId(null)
+									}
+								}
+
+								return (
+									<div key={attachment.id} className="flex gap-2.5 items-center px-3.5 py-2 w-full relative group">
+										{/* 아이콘 */}
+										<div className="relative shrink-0 w-7 h-7">
+											<div
+												className={`absolute inset-0 rounded-[6.222px] ${
+													attachment.type === 'link' && attachment.url?.includes('figma.com')
+														? 'bg-[#141515]'
+														: 'bg-neutral-50'
+												} shadow-inner-neutral-1`}
+											/>
+											<div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+												{getAttachmentIcon(attachment)}
 											</div>
 										</div>
 
-										{/* 더보기 메뉴 - view 모드에서는 표시하지 않음 */}
-										{isEditable && onAttachmentRemove && (
-											<div className="relative shrink-0">
-												<button
-													onClick={(e) => {
-														e.stopPropagation()
-														onAttachmentRemove(attachment.id)
+										{/* 파일 정보 */}
+										<div className="flex-1 min-w-0 flex items-center">
+											{isEditing ? (
+												<div className="flex flex-col flex-1 min-w-0">
+													<input
+														ref={(el) => {
+															inputRefs.current[attachment.id] = el
+														}}
+														type="text"
+														value={editName}
+														onChange={(e) => setEditName(e.target.value)}
+														onKeyDown={handleKeyDown}
+														onBlur={() => {
+															if (editName.trim()) {
+																onAttachmentRename?.(attachment.id, editName.trim())
+															}
+															setEditingAttachmentId(null)
+														}}
+														className="caption-1 font-semibold text-neutral-800 bg-transparent border-none outline-none w-full"
+													/>
+													<div className="text-[9px] leading-[1.4] text-neutral-400 truncate">
+														{detailText}
+													</div>
+												</div>
+											) : (
+												<div className="flex flex-col flex-1 min-w-0">
+													<div className="caption-1 font-semibold text-neutral-800 truncate">
+														{attachment.name}
+													</div>
+													<div className="text-[9px] leading-[1.4] text-neutral-400 truncate">
+														{detailText}
+													</div>
+												</div>
+											)}
+
+											{/* 더보기 메뉴 - view 모드에서는 표시하지 않음 */}
+											{isEditable && !isEditing && (
+												<div
+													className="relative shrink-0"
+													ref={(el) => {
+														menuRefs.current[attachment.id] = el
 													}}
-													className="w-4 h-4 flex items-center justify-center hover:bg-neutral-200 rounded-md transition-colors"
 												>
-													<MoreIcon className="w-4 h-4" />
-												</button>
-											</div>
-										)}
+													<button
+														onClick={(e) => {
+															e.stopPropagation()
+															setShowMenuId(showMenuId === attachment.id ? null : attachment.id)
+														}}
+														className="w-4 h-4 flex items-center justify-center hover:bg-neutral-200 rounded-md transition-colors"
+													>
+														<MoreIcon className="w-4 h-4" />
+													</button>
+
+													{/* 드롭다운 메뉴 */}
+													{showMenuId === attachment.id && (
+														<div className="absolute right-[-10px] top-full mt-1 bg-white rounded-10 shadow-drop-neutral-1 py-0.5 z-50 w-[138px]">
+															{onAttachmentRename && (
+																<button
+																	className="w-full pl-5 pr-3 py-2 text-left caption-1 text-neutral-700 hover:bg-neutral-50 transition-colors"
+																	onClick={(e) => {
+																		e.stopPropagation()
+																		setEditingAttachmentId(attachment.id)
+																		setShowMenuId(null)
+																	}}
+																>
+																	이름 바꾸기
+																</button>
+															)}
+															{onAttachmentUnlink && (
+																<button
+																	className="w-full pl-5 pr-3 py-2 text-left caption-1 text-danger-700 hover:bg-neutral-50 transition-colors"
+																	onClick={(e) => {
+																		e.stopPropagation()
+																		const documentId = parseInt(attachment.id, 10)
+																		if (!isNaN(documentId)) {
+																			onAttachmentUnlink(documentId)
+																		}
+																		setShowMenuId(null)
+																	}}
+																>
+																	첨부 해제
+																</button>
+															)}
+														</div>
+													)}
+												</div>
+											)}
+										</div>
 									</div>
-								</div>
-							))}
+								)
+							})}
 
 							{/* 새로 추가된 파일 */}
 							{files.map((file, index) => {
 								const fileIcon = getFileIconByExtension(file.name)
+								const fileMenuId = `file-${index}`
 								return (
-									<div key={`file-${index}`} className="flex gap-2.5 items-center px-3.5 py-2 w-full">
+									<div key={`file-${index}`} className="flex gap-2.5 items-center px-3.5 py-2 w-full relative group">
 										{/* 아이콘 */}
 										<div className="relative shrink-0 w-7 h-7">
 											<div className="absolute inset-0 rounded-[6.222px] bg-neutral-50 shadow-inner-neutral-1" />
@@ -331,12 +459,38 @@ const WritePostModalContent = ({
 											<div className="caption-1 font-semibold text-neutral-900 truncate">{file.name}</div>
 										</div>
 										{isEditable && onFileRemove && (
-											<button
-												onClick={() => onFileRemove(index)}
-												className="w-4 h-4 flex items-center justify-center shrink-0 hover:opacity-70 transition-opacity"
+											<div
+												className="relative shrink-0"
+												ref={(el) => {
+													menuRefs.current[fileMenuId] = el
+												}}
 											>
-												<XIcon className="w-4 h-4 text-neutral-400" />
-											</button>
+												<button
+													onClick={(e) => {
+														e.stopPropagation()
+														setShowMenuId(showMenuId === fileMenuId ? null : fileMenuId)
+													}}
+													className="w-4 h-4 flex items-center justify-center hover:bg-neutral-200 rounded-md transition-colors"
+												>
+													<MoreIcon className="w-4 h-4" />
+												</button>
+
+												{/* 드롭다운 메뉴 */}
+												{showMenuId === fileMenuId && (
+													<div className="absolute right-[-10px] top-full mt-1 bg-white rounded-10 shadow-drop-neutral-1 py-0.5 z-50 w-[138px]">
+														<button
+															className="w-full pl-5 pr-3 py-2 text-left caption-1 text-danger-700 hover:bg-neutral-50 transition-colors"
+															onClick={(e) => {
+																e.stopPropagation()
+																onFileRemove(index)
+																setShowMenuId(null)
+															}}
+														>
+															삭제
+														</button>
+													</div>
+												)}
+											</div>
 										)}
 									</div>
 								)

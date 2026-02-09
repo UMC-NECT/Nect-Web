@@ -32,7 +32,7 @@ const SharedDocumentsPage = () => {
 			case 'name':
 				return 'NAME'
 			case 'fileType':
-				return 'TYPE'
+				return 'FORMAT'
 			default:
 				return 'RECENT'
 		}

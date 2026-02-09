@@ -198,6 +198,24 @@ export const updatePost = async (
 }
 
 /**
+ * 게시글에 첨부된 문서를 해제합니다.
+ * @param projectId - 프로젝트 ID
+ * @param postId - 게시글 ID
+ * @param documentId - 문서 ID (SharedDocument ID)
+ * @returns 해제 결과
+ */
+export const unlinkPostAttachment = async (
+	projectId: number,
+	postId: number,
+	documentId: number,
+): Promise<CommonResponse> => {
+	const { data } = await api.delete(
+		`/api/v1/projects/${projectId}/boards/posts/${postId}/attachments/${documentId}`,
+	)
+	return data
+}
+
+/**
  * 공유 문서함 목록을 조회합니다.
  * @param projectId - 프로젝트 ID
  * @param options - 옵션 파라미터 (page, size, type, sort)

@@ -245,6 +245,8 @@ const BoardPage = () => {
 				<WritePostModal
 					mode="view"
 					isOpen={isViewModalOpen}
+					projectId={projectId}
+					postId={selectedPostId}
 					onClose={() => {
 						setIsViewModalOpen(false)
 						setSelectedPostId(null)

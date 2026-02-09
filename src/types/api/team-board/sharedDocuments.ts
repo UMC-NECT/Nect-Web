@@ -1,7 +1,7 @@
 import type { CommonResponse } from '../commonResponse'
 
 export type DocumentType = 'FILE' | 'LINK'
-export type SortOption = 'RECENT' | 'OLDEST' | 'NAME' | 'TYPE'
+export type SortOption = 'RECENT' | 'OLDEST' | 'NAME' | 'FORMAT'
 
 export interface SharedDocumentUploader {
 	user_id: number
