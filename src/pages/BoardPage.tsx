@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import BoardListItem from '@/components/team-board/BoardListItem'
 import BoardListHeader from '@/components/team-board/BoardListHeader'
@@ -7,6 +8,7 @@ import WritePostModal from '@/components/team-board/WritePostModal'
 import { usePostList } from '@/hooks/team-board/usePostList'
 import { useCreatePostMutation } from '@/hooks/team-board/useCreatePost'
 import { usePostDetail } from '@/hooks/team-board/usePostDetail'
+import { useUpdatePostMutation } from '@/hooks/team-board/useUpdatePost'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { uploadPostFile } from '@/api/team-board/boards'
 import type { PostAttachment } from '@/components/team-board/WritePostModalContent'
@@ -14,6 +16,7 @@ import type { PostAttachment } from '@/components/team-board/WritePostModalConte
 const BoardPage = () => {
 	// TODO: URL에서 projectId 가져오기
 	const projectId = 1
+	const queryClient = useQueryClient()
 
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
@@ -32,6 +35,9 @@ const BoardPage = () => {
 	// 게시글 상세 조회
 	const { data: postDetailResponse } = usePostDetail(projectId, selectedPostId)
 	const postDetail = postDetailResponse?.body
+
+	// 게시글 수정 mutation
+	const updatePostMutation = useUpdatePostMutation(projectId, selectedPostId || 0)
 
 	// 현재 사용자 프로필 정보
 	const { data: profileData } = useGetProfileQuery()
@@ -86,8 +92,46 @@ const BoardPage = () => {
 	}
 
 	const handleUpdatePost = (title: string, content: string, isNotice: boolean, files: File[]) => {
-		console.log('게시글 수정:', { title, content, isNotice, files })
-		// TODO: API 호출로 게시글 수정
+		if (!selectedPostId) return
+
+		// API 호출로 게시글 수정
+		updatePostMutation.mutate(
+			{
+				title,
+				content,
+				is_notice: isNotice,
+				mention_user_ids: [], // TODO: 멘션 기능 추가 시 구현
+			},
+			{
+				onSuccess: async () => {
+					// 게시글 수정 성공 후 새로 추가된 파일이 있으면 업로드
+					if (files.length > 0) {
+						try {
+							// 모든 파일을 순차적으로 업로드
+							for (const file of files) {
+								await uploadPostFile(projectId, selectedPostId, file)
+							}
+							// 파일 업로드 후 게시글 상세 정보 갱신
+							if (selectedPostId) {
+								queryClient.invalidateQueries({
+									queryKey: ['postDetail', projectId, selectedPostId],
+								})
+							}
+						} catch (error) {
+							console.error('파일 업로드 실패:', error)
+							// TODO: 에러 처리 (토스트 메시지 등)
+						}
+					}
+					// 모달은 열려있게 유지 (모달을 닫지 않음)
+					// useUpdatePostMutation의 onSuccess에서 이미 invalidateQueries를 호출하므로
+					// 여기서는 추가 refetch가 필요 없음
+				},
+				onError: (error) => {
+					console.error('게시글 수정 실패:', error)
+					// TODO: 에러 처리 (토스트 메시지 등)
+				},
+			}
+		)
 	}
 
 	const handleDeletePost = () => {

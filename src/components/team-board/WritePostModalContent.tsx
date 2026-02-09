@@ -236,7 +236,13 @@ const WritePostModalContent = ({
 				{/* 파일 목록 영역 */}
 				<div
 					className={`border border-neutral-100 rounded-md flex flex-1 flex-col items-start py-2 w-full min-h-0 ${
-						isViewMode || attachments.length > 0 || files.length > 0 ? '' : 'bg-neutral-50'
+						isViewMode
+							? ''
+							: isEditMode
+								? ''
+								: attachments.length > 0 || files.length > 0
+									? ''
+									: 'bg-neutral-50'
 					}`}
 				>
 					{attachments.length === 0 && files.length === 0 ? (

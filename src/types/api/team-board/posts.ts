@@ -10,6 +10,15 @@ export interface CreatePostRequest {
 	mention_user_ids?: number[]
 }
 
+export interface UpdatePostRequest {
+	title: string
+	content: string
+	is_notice: boolean
+	mention_user_ids?: number[]
+}
+
+export type UpdatePostResponse = CommonResponse
+
 export interface CreatePostResponseBody {
 	post_id: number
 }

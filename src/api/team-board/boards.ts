@@ -2,7 +2,7 @@ import type { GetTeamBoardOverviewResponse } from '@/types/api/team-board/overvi
 import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
 import type { CreateScheduleRequest, CreateScheduleResponse } from '@/types/api/team-board/schedule'
-import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse, UploadPostFileResponse } from '@/types/api/team-board/posts'
+import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse, UploadPostFileResponse, UpdatePostRequest, UpdatePostResponse } from '@/types/api/team-board/posts'
 import type { GetSharedDocumentListResponse, DocumentType, SortOption } from '@/types/api/team-board/sharedDocuments'
 import type { CommonResponse } from '@/types/api/commonResponse'
 import { api } from '@/utils/AxiosInstance'
@@ -148,6 +148,22 @@ export const uploadPostFile = async (
 			},
 		}
 	)
+	return data
+}
+
+/**
+ * 게시글을 수정합니다.
+ * @param projectId - 프로젝트 ID
+ * @param postId - 게시글 ID
+ * @param postData - 게시글 수정 데이터
+ * @returns 수정 결과
+ */
+export const updatePost = async (
+	projectId: number,
+	postId: number,
+	postData: UpdatePostRequest,
+): Promise<UpdatePostResponse> => {
+	const { data } = await api.patch(`/api/v1/projects/${projectId}/boards/posts/${postId}`, postData)
 	return data
 }
 
