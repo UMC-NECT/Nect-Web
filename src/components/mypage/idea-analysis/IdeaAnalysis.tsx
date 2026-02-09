@@ -14,16 +14,19 @@ import { useCTAModal } from '@/stores/useCTAModal'
 import ChevronLeftIcon from '@/assets/icons/common/chevron-left.svg?react'
 import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
 import { useAnalysisQuery, useDeleteAnalysisMutation, useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEY } from '@/constants/key'
 
 const IdeaAnalysis = () => {
 	const [page, setPage] = useState('0')
 
 	const navigate = useNavigate()
 	const { modalType, open, close } = useCTAModal()
+	const queryClient = useQueryClient()
 
 	const { data: analysisResponse } = useAnalysisQuery(page)
 	const { data: profileResponse } = useMypageProfileQuery()
-	const { mutateAsync: deleteAnalysis } = useDeleteAnalysisMutation()
+	const { mutateAsync: deleteAnalysis, isPending: isDeleting } = useDeleteAnalysisMutation()
 
 	const analysisData = analysisResponse?.body?.analysis
 	const pageInfo = analysisResponse?.body?.page_info
@@ -47,7 +50,10 @@ const IdeaAnalysis = () => {
 		if (!analysisData) return
 		try {
 			await deleteAnalysis(analysisData.analysis_id)
+			// 페이지를 0으로 설정
 			setPage('0')
+			await queryClient.invalidateQueries({ queryKey: [...QUERY_KEY.mypage.all, 'analysis'] })
+			await queryClient.refetchQueries({ queryKey: QUERY_KEY.mypage.analysis('0') })
 			open('deleteComplete')
 		} catch (error) {
 			console.error('Failed to delete analysis:', error)
@@ -104,12 +110,10 @@ const IdeaAnalysis = () => {
 							{/* 프로젝트 생성하기 */}
 							<div className='flex justify-between items-center w-full'>
 								{pageInfo?.has_previous ? (
-									<button
-										className='w-10 h-10 p-2 cursor-pointer text-neutral-700 hover:bg-neutral-100 rounded-12 duration-200 ease-in-out'
+									<ChevronLeftIcon
+										className='w-10 h-10 p-2 cursor-pointer text-neutral-700 hover:bg-neutral-000 rounded-12 duration-200 ease-in-out'
 										onClick={handlePrevPage}
-									>
-										<ChevronLeftIcon className='w-full h-full' />
-									</button>
+									/>
 								) : (
 									<div className='w-10 h-10' />
 								)}
@@ -121,12 +125,10 @@ const IdeaAnalysis = () => {
 									프로젝트 생성하기
 								</Button>
 								{pageInfo?.has_next ? (
-									<button
-										className='w-10 h-10 p-2 cursor-pointer text-neutral-700 hover:bg-neutral-100 rounded-12 duration-200 ease-in-out'
+									<ChevronRightIcon
+										className='w-10 h-10 p-2 cursor-pointer text-neutral-700 hover:bg-neutral-000 rounded-12 duration-200 ease-in-out'
 										onClick={handleNextPage}
-									>
-										<ChevronRightIcon className='w-full h-full' />
-									</button>
+									/>
 								) : (
 									<div className='w-10 h-10' />
 								)}
@@ -147,7 +149,7 @@ const IdeaAnalysis = () => {
 					message='{삭제} 하시겠습니까?'
 					isMessageHighlight={false}
 					leftButtonMsg='돌아가기'
-					rightButtonMsg='삭제'
+					rightButtonMsg={isDeleting ? '삭제중...' : '삭제'}
 					onLeftClick={close}
 					onRightClick={handleDelete}
 				/>
