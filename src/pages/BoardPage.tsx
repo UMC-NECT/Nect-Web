@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import BoardListItem from '@/components/team-board/BoardListItem'
 import BoardListHeader from '@/components/team-board/BoardListHeader'
 import BoardPagination from '@/components/team-board/BoardPagination'
 import WritePostModal from '@/components/team-board/WritePostModal'
+import { usePostList } from '@/hooks/team-board/usePostList'
 
 const BoardPage = () => {
+	// TODO: URL에서 projectId 가져오기
+	const projectId = 1
+
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
 	const [isViewModalOpen, setIsViewModalOpen] = useState(false)
@@ -16,6 +20,12 @@ const BoardPage = () => {
 		tag?: string
 		author?: string
 	} | null>(null)
+
+	// 게시글 목록 API 호출 (페이지는 0부터 시작하므로 currentPage - 1)
+	const { data: postListResponse, isLoading } = usePostList(projectId, {
+		page: currentPage - 1, // API는 0부터 시작
+	})
+	const postList = postListResponse?.body
 
 	const handleWriteClick = () => {
 		setIsWriteModalOpen(true)
@@ -50,11 +60,51 @@ const BoardPage = () => {
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page)
-		// TODO: 페이지 변경 시 API 호출
 	}
 
-	// 샘플 데이터
-	const boardItems = [
+	/**
+	 * ISO 날짜 포맷 변환: "2026-01-31T10:00:00" -> "2026.01.31"
+	 */
+	const formatISODateForDisplay = (isoDateString: string): string => {
+		const date = new Date(isoDateString)
+		const year = date.getFullYear()
+		const month = String(date.getMonth() + 1).padStart(2, '0')
+		const day = String(date.getDate()).padStart(2, '0')
+		return `${year}.${month}.${day}`
+	}
+
+	/**
+	 * 게시글 데이터를 BoardListItem 형식으로 변환
+	 */
+	const boardItems = useMemo(() => {
+		if (!postList?.posts || postList.posts.length === 0) {
+			return []
+		}
+
+		return postList.posts.map((post) => {
+			// post_type에 따른 tag 설정
+			let tag: string | undefined
+			if (post.post_type === 'NOTICE') {
+				tag = '[공지]'
+			} else if (post.post_type === 'REQUIRED') {
+				tag = '[필독]'
+			}
+
+			return {
+				tag,
+				title: post.title,
+				author: '', // API 응답에 작성자 정보가 없음
+				date: formatISODateForDisplay(post.created_at),
+			}
+		})
+	}, [postList])
+
+	// 페이지네이션 정보 (API에서 받은 정보 사용)
+	const totalPages = postList?.page_info?.total_pages || 1
+	const currentItems = boardItems
+
+	// 샘플 데이터 (로딩 중이거나 데이터가 없을 때 사용하지 않음)
+	const sampleBoardItems = [
 		{
 			tag: '[공지]',
 			title: '공지 내용 이거는 팀보드 공지사항이랑 별개입니다 그냥 게시판 공지',
@@ -345,13 +395,6 @@ const BoardPage = () => {
 		},
 	]
 
-	// 페이지네이션 계산 (한 페이지당 10개)
-	const itemsPerPage = 10
-	const totalPages = Math.ceil(boardItems.length / itemsPerPage)
-	const startIndex = (currentPage - 1) * itemsPerPage
-	const endIndex = startIndex + itemsPerPage
-	const currentItems = boardItems.slice(startIndex, endIndex)
-
 	return (
 		<div className="flex flex-col w-full mx-auto px-6 py-[64px] gap-[30px]">
 			<ContentHeader
@@ -370,16 +413,22 @@ const BoardPage = () => {
                         {/* 헤더 */}
                         <BoardListHeader />
                     
-                        {currentItems.map((item, index) => (
-                            <BoardListItem
-                                key={index}
-                                tag={item.tag}
-                                title={item.title}
-                                author={item.author}
-                                date={item.date}
-                                onClick={() => handleItemClick(item)}
-                            />
-                        ))}
+                        {isLoading ? (
+							<div className="flex items-center justify-center h-full">로딩 중...</div>
+						) : currentItems.length > 0 ? (
+							currentItems.map((item, index) => (
+								                            <BoardListItem
+	                                key={`${item.title}-${index}`}
+	                                tag={item.tag}
+	                                title={item.title}
+	                                author={item.author}
+	                                date={item.date}
+	                                onClick={() => handleItemClick(item)}
+	                            />
+	                        ))
+						) : (
+							<div className="flex items-center justify-center h-full text-neutral-400">게시글이 없습니다.</div>
+						)}
                     </div>
 
                     {/* 페이지네이션 */}

@@ -2,6 +2,7 @@ import type { GetTeamBoardOverviewResponse } from '@/types/api/team-board/overvi
 import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
 import type { CreateScheduleRequest, CreateScheduleResponse } from '@/types/api/team-board/schedule'
+import type { GetPostListResponse } from '@/types/api/team-board/posts'
 import { api } from '@/utils/AxiosInstance'
 
 /**
@@ -66,5 +67,29 @@ export const createSchedule = async (
 	scheduleData: CreateScheduleRequest,
 ): Promise<CreateScheduleResponse> => {
 	const { data } = await api.post(`/api/v1/projects/${projectId}/boards/schedules`, scheduleData)
+	return data
+}
+
+/**
+ * 게시글 목록을 조회합니다.
+ * @param projectId - 프로젝트 ID
+ * @param options - 옵션 파라미터
+ * @returns 게시글 목록 및 페이지 정보
+ */
+export const getPostList = async (
+	projectId: number,
+	options?: {
+		type?: PostType
+		page?: number
+	},
+): Promise<GetPostListResponse> => {
+	const params = new URLSearchParams()
+	if (options?.type) params.append('type', options.type)
+	if (options?.page !== undefined) params.append('page', options.page.toString())
+
+	const queryString = params.toString()
+	const url = `/api/v1/projects/${projectId}/boards/posts${queryString ? `?${queryString}` : ''}`
+
+	const { data } = await api.get(url)
 	return data
 }
