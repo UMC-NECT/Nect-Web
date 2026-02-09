@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router'
 import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
+import PdfIcon from '@/assets/icons/app/pdf.svg?react'
+import FigmaIcon from '@/assets/icons/app/figma.svg?react'
+import EtcIcon from '@/assets/icons/app/Etc.svg?react'
 
 interface ContentListItem {
 	title: string
@@ -14,11 +18,24 @@ interface ContentListCardProps {
 }
 
 const ContentListCard = ({ type, items, className = '' }: ContentListCardProps) => {
+	const navigate = useNavigate()
+
+	const handleHeaderClick = () => {
+		if (type === '게시판') {
+			navigate('/board')
+		} else if (type === '공유 문서함') {
+			navigate('/shared-documents')
+		}
+	}
+
 	return (
 		<div className={`w-[392px] h-[216px] p-5 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 inline-flex flex-col justify-start items-start gap-2.5 ${className}`}>
             <div className={`self-stretch ${type === '게시판' ? 'h-44' : ''} flex flex-col justify-start items-start gap-4`}>
 				{/* 헤더 */}
-				<div className="self-stretch inline-flex justify-start items-center gap-2">
+				<div 
+					className="self-stretch inline-flex justify-start items-center gap-2 cursor-pointer hover:opacity-70 transition-opacity"
+					onClick={handleHeaderClick}
+				>
 					<div className="justify-start text-neutral-900 title-2 font-bold">{type}</div>
 					<div className="w-4 h-4 flex justify-center items-center gap-2.5">
 						<ChevronRightIcon className="w-4 h-4 text-neutral-700" /> 
@@ -43,15 +60,25 @@ const ContentListCard = ({ type, items, className = '' }: ContentListCardProps) 
 								</div>
 							) : (
 								<div className="flex justify-start items-center gap-1.5">
-									<div className="w-5 h-5 bg-neutral-200 rounded-md shrink-0" />
+									<div className="w-5 h-5 shrink-0">
+										{item.fileType === 'PDF' ? (
+											<PdfIcon className="w-5 h-5" />
+										) : item.fileType === 'Figma' ? (
+											<FigmaIcon className="w-5 h-5" />
+										) : (
+											<EtcIcon className="w-5 h-5" />
+										)}
+									</div>
 									<div className="w-64 justify-center text-neutral-900 body-1 font-medium line-clamp-1">
 										{item.title}
 									</div>
 								</div>
 							)}
-							<div className="w-20 text-right justify-center text-neutral-400 body-2 font-medium">
-								{item.date}
-							</div>
+							{type === '게시판' && (
+								<div className="w-20 text-right justify-center text-neutral-400 body-2 font-medium">
+									{item.date}
+								</div>
+							)}
 						</div>
 					))}
 				</div>

@@ -1,4 +1,3 @@
-import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
 import TeamProfileCard from './TeamProfileCard'
 import TeamProfileCardMain from './TeamProfileCardMain'
 
@@ -24,15 +23,10 @@ interface TeamProfileBoardProps {
 const TeamProfileBoard = ({ mainProfile, profiles = [], className = '' }: TeamProfileBoardProps) => {
 	return (
 		<div
-			className={`w-[808px] h-[518px] p-5 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 inline-flex flex-col justify-start items-start gap-4 ${className}`}
+			className={`w-[808px] h-[518px] p-5 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 inline-flex flex-col justify-start items-start gap-[18px] ${className}`}
 		>
 			{/* 헤더 */}
-			<div className="self-stretch inline-flex justify-start items-center gap-2">
-				<div className="justify-start text-neutral-900 title-2 font-bold">팀원 프로필 보드</div>
-				<div className="w-4 h-4 flex justify-center items-center gap-2.5">
-					<ChevronRightIcon className="w-4 h-4 text-neutral-700" />
-				</div>
-			</div>
+			<div className="self-stretch text-neutral-900 title-2 font-bold">팀원 프로필 보드</div>
 
 			{/* 프로필 카드 영역 */}
 			<div className="self-stretch flex flex-col justify-start items-start gap-4">

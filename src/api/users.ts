@@ -1,5 +1,5 @@
 import type { CommonResponse } from "@/types/api/commonResponse"
-import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestRefreshTokenDto, RequestSetupDto, RequestSignupDto, ResponseCheckDto, ResponseEmailDto, ResponseLoginDto, ResponseRefreshTokenDto } from "@/types/api/users"
+import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestRefreshTokenDto, RequestSetupDto, RequestSignupDto, ResponseCheckDto, ResponseEmailDto, ResponseLoginDto, ResponseProfileDto, ResponseRefreshTokenDto } from "@/types/api/users"
 import { api } from "@/utils/AxiosInstance"
 
 /** 이메일과 비밀번호로 로그인합니다. 성공 시 액세스 토큰과 리프레시 토큰을 발급합니다. autoLoginEnabled가 true면 자동 로그인 활성화, false면 비활성화입니다. */
@@ -49,5 +49,11 @@ export  const getEmail = async (): Promise<ResponseEmailDto> => {
 /** 리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급합니다. 리프레시 토큰도 함께 갱신됩니다. */
 export const postRefreshToken = async (body: RequestRefreshTokenDto): Promise<ResponseRefreshTokenDto> => {
     const {data} = await api.post('/api/v1/users/refresh', body)
+    return data
+}
+
+/** 헤더에 표시할 프로필 정보를 조회합니다. */
+export  const getProfile = async (): Promise<ResponseProfileDto> => {
+    const {data} = await api.get('/api/v1/home/profile')
     return data
 }

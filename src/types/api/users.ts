@@ -68,3 +68,11 @@ export type ResponseRefreshTokenDto = CommonResponse<{
     accessTokenExpiresAt: string
     refreshTokenExpiresAt: string
 }>
+
+export type ResponseProfileDto = CommonResponse<{
+    userId: number
+    imageUrl: string
+    name: string
+    email: string
+    role: string
+}>

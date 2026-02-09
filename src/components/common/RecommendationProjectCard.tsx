@@ -62,7 +62,7 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
                 {/* 모집 중 태그 */}
                 <div className={`absolute ${styles.chipPosition} right-3`}>
                     <RecruitmentStatusChip
-                        status={project.status as '모집 전' | '모집 중' | '모집 완료'} 
+                        status={project.status as '모집 전' | '모집 중' | '모집 완료'}
                     />
                 </div>
             </div>
@@ -108,5 +108,4 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
         </div>
     );
 };
-
 export default RecommendationProjectCard;

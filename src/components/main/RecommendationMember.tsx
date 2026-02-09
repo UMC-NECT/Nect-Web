@@ -62,7 +62,7 @@ const RecommendationMember = () => {
     }
 
     return (
-        <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative -ml-11.5">
+        <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative">
             {!isProfileAnalysisPage && (
                 <div className="w-282 mx-auto mb-4">
                     <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 팀원</h2>
@@ -79,7 +79,7 @@ const RecommendationMember = () => {
                         nextEl: '.member-custom-next',
                         prevEl: '.member-custom-prev',
                     }}
-                    pagination={{ 
+                    pagination={{
                         clickable: true,
                     }}
                     onSwiper={(swiper) => {

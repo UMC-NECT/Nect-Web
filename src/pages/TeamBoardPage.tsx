@@ -1,12 +1,15 @@
+import { useState } from 'react'
 import TeamBoardHeader from '@/components/team-board/TeamBoardHeader'
 import RadarChartCard from '@/components/team-board/RadarChartCard'
 import ContentListCard from '@/components/team-board/ContentListCard'
 import TeamProfileBoard from '@/components/team-board/TeamProfileBoard'
 import Calendar from '@/components/team-board/Calendar'
 import AddScheduleButton from '@/components/team-board/AddScheduleButton'
+import AddScheduleModal from '@/components/team-board/AddScheduleModal'
 import UpcomingTeamSchedule from '@/components/team-board/UpcomingTeamSchedule'
 
 const TeamBoardPage = () => {
+	const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
 	// 샘플 데이터
 
 	const radarChartData = [
@@ -293,7 +296,7 @@ const TeamBoardPage = () => {
 				{/* 오른쪽 영역 (392x990) */}
 				<div className="flex flex-col gap-4 w-[392px]">
 					{/* 상단: Calendar + AddScheduleButton (392x448) */}
-					<div className="flex flex-col gap-4 h-[448px]">
+					<div className="flex flex-col gap-4 h-[448px] relative">
 						<Calendar
 							year={2026}
 							month={12}
@@ -302,7 +305,17 @@ const TeamBoardPage = () => {
 							onNextMonth={() => console.log('다음 달')}
 							onDayClick={(date) => console.log('날짜 클릭:', date)}
 						/>
-						<AddScheduleButton onClick={() => console.log('새 일정 추가')} />
+						<div className="relative">
+							<AddScheduleButton onClick={() => setIsScheduleModalOpen(true)} />
+							<AddScheduleModal
+								isOpen={isScheduleModalOpen}
+								onClose={() => setIsScheduleModalOpen(false)}
+								onSave={(title, startDate, endDate, time) => {
+									console.log('일정 저장:', { title, startDate, endDate, time })
+									// TODO: API 호출로 일정 저장
+								}}
+							/>
+						</div>
 					</div>
 
 					{/* 하단: UpcomingTeamSchedule (392x518) */}
