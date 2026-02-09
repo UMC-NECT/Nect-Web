@@ -8,24 +8,11 @@ import Statistics from '@/components/main/Statistics';
 import ProjectShowcase from '@/components/main/ProjectShowcase';
 import NewsSection from '@/components/main/NewsSection';
 import CallToAction from '@/components/main/CallToAction';
-import Footer from '@/components/common/Footer'
-import { LOCAL_STORAGE_KEY } from '@/constants/key';
-import { useEffect, useState } from 'react';
+import Footer from '@/components/common/Footer';
+import { useAuthStore } from '@/stores/authStore';
 
 const MainPage = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(
-        !!localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
-    );
-
-    useEffect(() => {
-        // 1초마다 로그인 상태 체크
-        const interval = setInterval(() => {
-            const currentLoginState = !!localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN);
-            setIsLoggedIn(currentLoginState);
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, []);
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
     return (
         <div className="relative">
