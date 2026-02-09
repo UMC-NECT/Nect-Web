@@ -34,8 +34,8 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
     const sizeStyles = {
         default: {
             card: 'w-90',
-            height: displayIntroduction.length > 40 ? 'h-[316px]' : 'h-[296px]',
-            background: 'h-45',
+            height: displayIntroduction.length > 40 ? 'h-[336px]' : 'h-[326px]',
+            background: 'h-50',
             character: 'w-16 h-16',
         },
         list: {
