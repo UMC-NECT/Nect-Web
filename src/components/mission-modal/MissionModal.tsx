@@ -23,7 +23,13 @@ import Tooltip from '@/components/common/Tooltip'
 import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox/checkbox-gray.svg?react'
 import InfoIcon from '@/assets/icons/common/info.svg?react'
-import { useMissionListQuery, useMissionDetailQuery, usePatchTaskItemMutation } from '@/hooks/process/useWeekMissionApi'
+import {
+	useMissionListQuery,
+	useMissionDetailQuery,
+	usePatchTaskItemMutation,
+	useDeleteTaskItemMutation,
+	usePatchMissionStatusMutation,
+} from '@/hooks/process/useWeekMissionApi'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { usePostProcessMutation, usePostFileMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
 import {
@@ -90,6 +96,18 @@ const roleFieldMatches = (
 	return (a !== '' && a === ga) || (b !== '' && b === gb) || (a !== '' && a === gb) || (b !== '' && b === ga)
 }
 
+/** role_field 값이 있으면 role_field만 보내고 custom_role_field_name은 null, 없으면 그 반대 */
+const toRoleFieldPayload = (
+	part: { role_field?: string | null; custom_role_field_name?: string | null } | null | undefined
+) => {
+	if (part == null) return { role_field: null as string | null, custom_role_field_name: null as string | null }
+	const hasRoleField = !!part.role_field?.trim()
+	return {
+		role_field: hasRoleField ? part.role_field! : null,
+		custom_role_field_name: hasRoleField ? null : (part.custom_role_field_name ?? null),
+	}
+}
+
 const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
 	const isLeader = variant === 'leader'
 	const { roles, persons } = useTeamStore()
@@ -130,6 +148,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		toggleTask,
 		reorderTasks,
 		setRoleTasks,
+		roleTasks,
+		addRoleTask,
+		updateRoleTask,
+		toggleRoleTask,
 		addFeedback,
 		updateFeedback,
 		removeFeedback,
@@ -154,6 +176,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	})
 	const { data: missionListData } = useMissionListQuery(projectIdForList)
 	const patchTaskItemMutation = usePatchTaskItemMutation()
+	const deleteTaskItemMutation = useDeleteTaskItemMutation()
+	const patchMissionStatusMutation = usePatchMissionStatusMutation()
 
 	useEffect(() => {
 		if (!missionListData?.body?.missions) return
@@ -336,6 +360,25 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 			})))
 			setRoleTasks([])
 		}
+		// 위크미션 상세 attachments → 파일/링크 목록 렌더링용
+		const fileItems = (body.attachments ?? []).map(att => {
+			if (att.type === 'FILE') {
+				return {
+					id: att.id,
+					type: 'file' as const,
+					name: att.file_name ?? '',
+					url: att.file_url ?? '',
+					fileName: att.file_name ?? '',
+				}
+			}
+			return {
+				id: att.id,
+				type: 'link' as const,
+				name: att.title ?? att.url ?? '',
+				url: att.url ?? '',
+			}
+		})
+		setFiles(fileItems)
 	}, [
 		isEditMode,
 		isTask,
@@ -352,6 +395,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setSelectedParts,
 		setTasks,
 		setRoleTasks,
+		setFiles,
 	])
 
 	// 위크미션(task) 모달에서 담당 파트 변경 시 해당 파트의 task_groups items만 tasks에 반영
@@ -398,14 +442,15 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 			newOrderIds.length > 0
 		) {
 			const firstPart = selectedParts[0]
+			const rolePayload = toRoleFieldPayload(firstPart ?? undefined)
 			patchTaskItemsOrderMutation.mutate(
 				{
 					projectId,
 					processId: String(editingMissionId),
 					body: {
 						ordered_task_item_ids: newOrderIds,
-						role_field: firstPart?.role_field ?? '',
-						custom_role_field_name: firstPart?.custom_role_field_name ?? '',
+						role_field: rolePayload.role_field,
+						custom_role_field_name: rolePayload.custom_role_field_name,
 					},
 				},
 				)
@@ -472,6 +517,15 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 				mention_user_ids: mentionedPersons.map(p => p.id),
 			}
 			try {
+				// 위크미션 task: 작업 상태는 patchMissionStatus API로 전송
+				if (isTask) {
+					const statusForApi = missionStatus === 'completed' ? 'DONE' : missionStatus.toUpperCase()
+					await patchMissionStatusMutation.mutateAsync({
+						projectId,
+						processId: String(editingMissionId),
+						body: { status: statusForApi as 'PLANNING' | 'IN_PROGRESS' | 'DONE' | 'BACKLOG' },
+					})
+				}
 				await patchProcessMutation.mutateAsync({
 					projectId,
 					processId: String(editingMissionId),
@@ -611,6 +665,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		const firstPart = selectedParts[0]
 		if (isEditMode && projectId != null && editingMissionId != null && task) {
 			if (isTask) {
+				const rolePayload = toRoleFieldPayload(firstPart ?? undefined)
 				patchTaskItemMutation.mutate(
 					{
 						projectId,
@@ -619,8 +674,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 						body: {
 							content: editingTaskContent.trim(),
 							is_done: task.isComplete,
-							role_field: firstPart?.role_field ?? '',
-							custom_role_field_name: firstPart?.custom_role_field_name ?? '',
+							...rolePayload,
 						},
 					},
 					{
@@ -663,6 +717,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		if (isEditMode && projectId != null && editingMissionId != null) {
 			const firstPart = selectedParts[0]
 			if (isTask) {
+				const rolePayload = toRoleFieldPayload(firstPart ?? undefined)
 				patchTaskItemMutation.mutate(
 					{
 						projectId,
@@ -671,8 +726,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 						body: {
 							content: task.content,
 							is_done: !task.isComplete,
-							role_field: firstPart?.role_field ?? '',
-							custom_role_field_name: firstPart?.custom_role_field_name ?? '',
+							...rolePayload,
 						},
 					},
 					{
@@ -708,19 +762,20 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 	const handleTaskDelete = (taskId: number) => {
 		if (isEditMode && projectId != null && editingMissionId != null) {
-			deleteTaskItemsMutation.mutate(
-				{
-					projectId,
-					processId: String(editingMissionId),
-					taskItemId: String(taskId),
-				},
-				{
-					onSuccess: () => {
-						removeTask(taskId)
-						setEditingTaskId(prev => (prev === taskId ? null : prev))
-					},
-				}
-			)
+			const onSuccess = () => {
+				removeTask(taskId)
+				setEditingTaskId(prev => (prev === taskId ? null : prev))
+			}
+			const variables = {
+				projectId,
+				processId: String(editingMissionId),
+				taskItemId: String(taskId),
+			}
+			if (isTask) {
+				deleteTaskItemMutation.mutate(variables, { onSuccess })
+			} else {
+				deleteTaskItemsMutation.mutate(variables, { onSuccess })
+			}
 		} else {
 			removeTask(taskId)
 			setEditingTaskId(prev => (prev === taskId ? null : prev))
@@ -914,6 +969,115 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 	}
 
+	// 리더형 모달 + 편집 모드: RoleTaskPanel 업무 추가/수정/토글 API 연동
+	const rolePanelApiHandlers =
+		isLeader && isEditMode && projectId != null && editingMissionId != null
+			? {
+					onAddTask: (roleId: number, content: string) => {
+						const sortOrder = roleTasks.filter(t => t.roleId === roleId).length
+						postTaskItemsMutation.mutate(
+							{
+								projectId,
+								processId: String(editingMissionId),
+								body: { content, is_done: false, sort_order: sortOrder },
+							},
+							{
+								onSuccess: res => {
+									if (res?.body) {
+										addRoleTask({
+											id: res.body.task_item_id,
+											roleId,
+											content,
+											isComplete: false,
+										})
+									}
+								},
+							}
+						)
+					},
+					onToggleTask: (taskId: number) => {
+						const task = roleTasks.find(t => t.id === taskId)
+						if (!task) return
+						const part = roles.find(r => r.part_id === task.roleId)
+						if (isTask) {
+							const rolePayload = toRoleFieldPayload(part ?? undefined)
+							patchTaskItemMutation.mutate(
+								{
+									projectId,
+									processId: String(editingMissionId),
+									taskItemId: String(taskId),
+									body: {
+										content: task.content,
+										is_done: !task.isComplete,
+										...rolePayload,
+									},
+								},
+								{
+									onSuccess: () => toggleRoleTask(taskId),
+								}
+							)
+						} else {
+							const sortOrder = roleTasks.findIndex(t => t.id === taskId)
+							patchTaskItemsMutation.mutate(
+								{
+									projectId,
+									processId: String(editingMissionId),
+									taskItemId: String(taskId),
+									body: {
+										content: task.content,
+										is_done: !task.isComplete,
+										sort_order: sortOrder,
+									},
+								},
+								{
+									onSuccess: () => toggleRoleTask(taskId),
+								}
+							)
+						}
+					},
+					onUpdateTask: (taskId: number, content: string) => {
+						const task = roleTasks.find(t => t.id === taskId)
+						if (!task) return
+						const part = roles.find(r => r.part_id === task.roleId)
+						if (isTask) {
+							const rolePayload = toRoleFieldPayload(part ?? undefined)
+							patchTaskItemMutation.mutate(
+								{
+									projectId,
+									processId: String(editingMissionId),
+									taskItemId: String(taskId),
+									body: {
+										content,
+										is_done: task.isComplete,
+										...rolePayload,
+									},
+								},
+								{
+									onSuccess: () => updateRoleTask(taskId, { content }),
+								}
+							)
+						} else {
+							const sortOrder = roleTasks.findIndex(t => t.id === taskId)
+							patchTaskItemsMutation.mutate(
+								{
+									projectId,
+									processId: String(editingMissionId),
+									taskItemId: String(taskId),
+									body: {
+										content,
+										is_done: task.isComplete,
+										sort_order: sortOrder,
+									},
+								},
+								{
+									onSuccess: () => updateRoleTask(taskId, { content }),
+								}
+							)
+						}
+					},
+				}
+			: undefined
+
 	return (
 		<div
 			className={cn(
@@ -947,6 +1111,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 							postProcessMutation.isPending ||
 							postFileMutation.isPending ||
 							patchProcessMutation.isPending ||
+							patchMissionStatusMutation.isPending ||
 							postUploadAttachmentFileMutation.isPending ||
 							postAttachmentLinksMutation.isPending
 						}
@@ -956,6 +1121,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 						{postProcessMutation.isPending ||
 						postFileMutation.isPending ||
 						patchProcessMutation.isPending ||
+						patchMissionStatusMutation.isPending ||
 						postUploadAttachmentFileMutation.isPending ||
 						postAttachmentLinksMutation.isPending
 							? '저장 중...'
@@ -1132,7 +1298,11 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 								</div>
 
 								{/* Right: Role Task Panel */}
-								<RoleTaskPanel />
+								<RoleTaskPanel
+									onAddTask={rolePanelApiHandlers?.onAddTask}
+									onToggleTask={rolePanelApiHandlers?.onToggleTask}
+									onUpdateTask={rolePanelApiHandlers?.onUpdateTask}
+								/>
 							</div>
 						) : (
 							/* 기본 모달 레이아웃 */

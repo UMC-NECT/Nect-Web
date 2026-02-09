@@ -5,6 +5,7 @@ import {
 	getMissionDetail,
 	patchMissionStatus,
 	patchTaskItem,
+	deleteTaskItem,
 } from '@/api/process/weekMission'
 import type { RequestStatusPatchDto, RequestTaskPatchDto } from '@/types/api/process/weekMission'
 import { QUERY_KEY } from '@/constants/key'
@@ -77,6 +78,26 @@ export const usePatchTaskItemMutation = () => {
 			taskItemId: string
 			body: RequestTaskPatchDto
 		}) => patchTaskItem(projectId, processId, taskItemId, body),
+		onSuccess: (_, { projectId, processId }) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.detail(projectId, processId) })
+		},
+	})
+}
+
+/** 위크미션 TaskItem 삭제 */
+export const useDeleteTaskItemMutation = () => {
+	const queryClient = useQueryClient()
+	return useMutation({
+		mutationFn: ({
+			projectId,
+			processId,
+			taskItemId,
+		}: {
+			projectId: string
+			processId: string
+			taskItemId: string
+		}) => deleteTaskItem(projectId, processId, taskItemId),
 		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectId) })
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.detail(projectId, processId) })

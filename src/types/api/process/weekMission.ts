@@ -45,16 +45,29 @@ export interface WeekMissionTaskItem {
     done_at: string | null
 }
 
+/** 위크미션 상세 attachments 항목 (파일 또는 링크) */
+export interface WeekMissionAttachmentItem {
+    type: 'FILE' | 'LINK'
+    id: number
+    created_at: string
+    title: string | null
+    url: string | null
+    file_name: string | null
+    file_url: string | null
+    file_type: string | null
+    file_size: number | null
+}
+
 export type ResponseMissionDetailDto = CommonResponse<{
     process_id: number
     mission_number: number
     title: string
-    content: string
+    content: string | null
     status: string
     start_date: string
     dead_line: string
     assignee: Assignees
-    attachments: []
+    attachments: WeekMissionAttachmentItem[]
     task_groups: {
         role_field: string | null
         custom_field_name: string | null
@@ -74,8 +87,8 @@ export type ResponseStatusPatchDto = CommonResponse<void>
 export type RequestTaskPatchDto = {
     content: string
     is_done: boolean
-    role_field: string
-    custom_role_field_name: string
+    role_field: string | null
+    custom_role_field_name: string | null
 }
 
 export type ResponseTaskPatchDto = CommonResponse<{

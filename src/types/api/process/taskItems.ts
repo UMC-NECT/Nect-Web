@@ -18,8 +18,8 @@ export type ResponseTaskItemsPostDto = CommonResponse<TaskItems>
 
 export type RequestTaskItemsOrderPatchDto = {
     ordered_task_item_ids: number[]
-    role_field: string
-    custom_role_field_name: string
+    role_field: string | null
+    custom_role_field_name: string | null
 }
 
 export type ResponseTaskItemsOrderPatchDto = CommonResponse<{

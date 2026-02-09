@@ -93,17 +93,44 @@ const RoleTaskSection = ({ roleId, roleName, tasks, onToggleTask, onUpdateTask, 
 	)
 }
 
-const RoleTaskPanel = () => {
+export interface RoleTaskPanelProps {
+	/** 편집 모드에서 API 연동 시 사용 (제공 시 스토어 대신 호출) */
+	onAddTask?: (roleId: number, content: string) => void
+	onToggleTask?: (taskId: number) => void
+	onUpdateTask?: (taskId: number, content: string) => void
+}
+
+const RoleTaskPanel = ({ onAddTask, onToggleTask, onUpdateTask }: RoleTaskPanelProps = {}) => {
 	const { roles } = useTeamStore()
 	const { roleTasks, toggleRoleTask, updateRoleTask, addRoleTask } = useMissionModalStore()
 
 	const handleAddTask = (roleId: number, content: string) => {
-		addRoleTask({
-			id: Date.now(),
-			roleId,
-			content,
-			isComplete: false,
-		})
+		if (onAddTask) {
+			onAddTask(roleId, content)
+		} else {
+			addRoleTask({
+				id: Date.now(),
+				roleId,
+				content,
+				isComplete: false,
+			})
+		}
+	}
+
+	const handleToggleTask = (taskId: number) => {
+		if (onToggleTask) {
+			onToggleTask(taskId)
+		} else {
+			toggleRoleTask(taskId)
+		}
+	}
+
+	const handleUpdateTask = (taskId: number, content: string) => {
+		if (onUpdateTask) {
+			onUpdateTask(taskId, content)
+		} else {
+			updateRoleTask(taskId, { content })
+		}
 	}
 
 	// 역할별로 태스크 그룹화
@@ -120,8 +147,8 @@ const RoleTaskPanel = () => {
 					roleId={role.part_id}
 					roleName={getRoleDisplayName(role)}
 					tasks={tasks}
-					onToggleTask={toggleRoleTask}
-					onUpdateTask={(taskId, content) => updateRoleTask(taskId, { content })}
+					onToggleTask={handleToggleTask}
+					onUpdateTask={handleUpdateTask}
 					onAddTask={handleAddTask}
 				/>
 			))}
