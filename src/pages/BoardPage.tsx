@@ -100,7 +100,7 @@ const BoardPage = () => {
 				postId: post.post_id,
 				tag,
 				title: post.title,
-				author: '', // API 응답에 작성자 정보가 없음
+				author: post.author?.nickname || post.author?.user_name || '',
 				date: formatISODateForDisplay(post.created_at),
 			}
 		})

@@ -82,12 +82,19 @@ export interface SharedDocumentPreview {
 
 export type PostType = 'NOTICE' | 'FREE' | 'REQUIRED'
 
+export interface PostPreviewAuthor {
+	user_id: number
+	user_name: string
+	nickname: string
+}
+
 export interface PostPreview {
 	post_id: number
 	post_type: PostType
 	title: string
 	content_preview?: string
 	like_count?: number
+	author: PostPreviewAuthor
 	created_at: string // ISO 형식
 }
 
