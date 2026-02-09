@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { getStatistics } from '@/api/home';
+import { getStatistics } from '@/api/home/statistics';
 
-export const useStatics = () => {
+export const useStatistics = () => {
     return useQuery({
-        queryKey: ['home', 'statistics'],
+        queryKey: ['statistics'],
         queryFn: getStatistics,
         select: (data) => data.body,
     });
