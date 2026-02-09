@@ -14,6 +14,8 @@ export interface WorkStatusItem {
 	}
 	mission_number?: number
 	dueDate?: string // "2025.11.21" 형식
+	/** API 응답 left_day (D-day 표시용) */
+	leftDay?: number
 	participants?: { id: number; name: string; avatar: string }[]
 	links?: string | string[]
 	attachments?: number

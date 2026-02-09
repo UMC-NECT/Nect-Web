@@ -68,6 +68,7 @@ const mapPartProcessToWorkStatusItem = (
 	todo: { id: p.process_id, done: p.complete_check_list, total: p.whole_check_list },
 	mission_number: p.mission_number ?? undefined,
 	dueDate: p.dead_line ? p.dead_line.replace(/-/g, '.') : undefined,
+	leftDay: p.left_day,
 	participants: p.assignee?.map(a => ({
 		id: a.user_id,
 		name: a.nickname ?? a.user_name,
@@ -178,6 +179,7 @@ const SortableTodoBlock = ({ item, status, onItemClick }: SortableTodoBlockProps
 				title={item.title}
 				todo={item.todo}
 				dueDate={item.dueDate}
+				leftDay={item.leftDay}
 				participants={item.participants}
 				links={item.links}
 				attachments={item.attachments}
@@ -410,6 +412,7 @@ const WorkStatusPage = () => {
 									title={activeItem.title}
 									todo={activeItem.todo}
 									dueDate={activeItem.dueDate}
+									leftDay={activeItem.leftDay}
 									participants={activeItem.participants}
 									links={activeItem.links}
 									attachments={activeItem.attachments}

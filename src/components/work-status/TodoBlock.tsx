@@ -19,6 +19,8 @@ interface TodoBlockProps {
 		total: number // 전체 작업 수 (없으면 done + inProgress로 계산)
 	}
 	dueDate?: string // "2025.11.21" 형식
+	/** API 응답 left_day (있으면 D-day 표시에 사용, 없으면 dueDate로 계산) */
+	leftDay?: number
 	participants?: { id: number; name: string; avatar: string }[] // 사용자 아바타 이미지 URL 배열
 	links?: string | string[]
 	attachments?: number // 첨부파일 개수
@@ -45,6 +47,7 @@ const TodoBlock = ({
 	title,
 	todo,
 	dueDate,
+	leftDay,
 	participants = [],
     links,
     attachments,
@@ -80,10 +83,11 @@ const TodoBlock = ({
 	const progressSegments = 4
 	const completedSegments = todo.total > 0 ? Math.round((todo.done / todo.total) * progressSegments) : 0
 
-	// D-day 계산
+	// D-day 계산: API left_day 우선, 없으면 dueDate로 계산
 	let daysRemaining: number | null = null
-	if (dueDate) {
-		// 현재 날짜를 "YYYY.MM.DD" 형식으로 변환
+	if (leftDay !== undefined && leftDay !== null) {
+		daysRemaining = leftDay
+	} else if (dueDate) {
 		const today = new Date()
 		const todayStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`
 		daysRemaining = calculateDateSpan(todayStr, dueDate)
