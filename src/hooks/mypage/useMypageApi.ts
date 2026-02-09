@@ -50,8 +50,8 @@ export const useDeleteAnalysisMutation = () => {
 
 	return useMutation({
 		mutationFn: (analysisId: number) => deleteAnalysis(analysisId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [...QUERY_KEY.mypage.all, 'analysis'] })
+		onSuccess: async () => {
+			await queryClient.refetchQueries({ queryKey: [...QUERY_KEY.mypage.all, 'analysis'] })
 		},
 	})
 }

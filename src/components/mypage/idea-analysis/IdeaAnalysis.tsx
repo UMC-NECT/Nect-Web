@@ -16,7 +16,6 @@ import ChevronRightIcon from '@/assets/icons/common/chevron-right.svg?react'
 import { useAnalysisQuery, useDeleteAnalysisMutation, useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
 
 const IdeaAnalysis = () => {
-	const [openWeeks, setOpenWeeks] = useState<number[]>([])
 	const [page, setPage] = useState('0')
 
 	const navigate = useNavigate()
@@ -24,41 +23,35 @@ const IdeaAnalysis = () => {
 
 	const { data: analysisResponse } = useAnalysisQuery(page)
 	const { data: profileResponse } = useMypageProfileQuery()
-	const { mutate: deleteAnalysis } = useDeleteAnalysisMutation()
+	const { mutateAsync: deleteAnalysis } = useDeleteAnalysisMutation()
 
 	const analysisData = analysisResponse?.body?.analysis
 	const pageInfo = analysisResponse?.body?.page_info
 	const userName = profileResponse?.body?.name
 
-	// 주차별 로드맵 토글용
-	const toggleWeek = (week: number) => {
-		setOpenWeeks(prev => (prev.includes(week) ? prev.filter(w => w !== week) : [...prev, week]))
-	}
-
 	// 페이지네이션
 	const handlePrevPage = () => {
 		if (pageInfo?.has_previous) {
 			setPage(prev => String(Number(prev) - 1))
-			setOpenWeeks([])
 		}
 	}
 
 	const handleNextPage = () => {
 		if (pageInfo?.has_next) {
 			setPage(prev => String(Number(prev) + 1))
-			setOpenWeeks([])
 		}
 	}
 
 	// (모달 핸들러) 삭제 확인
-	const handleDelete = () => {
+	const handleDelete = async () => {
 		if (!analysisData) return
-		deleteAnalysis(analysisData.analysis_id, {
-			onSuccess: () => {
-				setPage('0')
-				open('deleteComplete')
-			},
-		})
+		try {
+			await deleteAnalysis(analysisData.analysis_id)
+			setPage('0')
+			open('deleteComplete')
+		} catch (error) {
+			console.error('Failed to delete analysis:', error)
+		}
 	}
 
 	// (모달 핸들러) 프로젝트 등록 후 이동
@@ -105,7 +98,7 @@ const IdeaAnalysis = () => {
 								<Section03Improvements analysisData={analysisData} />
 
 								{/* 섹션 04. 주차별 로드맵을 생성했어요! */}
-								<Section04Roadmap analysisData={analysisData} openWeeks={openWeeks} toggleWeek={toggleWeek} />
+								<Section04Roadmap analysisData={analysisData} />
 							</div>
 
 							{/* 프로젝트 생성하기 */}
