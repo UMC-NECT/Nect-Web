@@ -1,7 +1,7 @@
 import type { GetTeamBoardOverviewResponse } from '@/types/api/team-board/overview'
 import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
-import type { CreateScheduleRequest, CreateScheduleResponse } from '@/types/api/team-board/schedule'
+import type { CreateScheduleRequest, CreateScheduleResponse, UpdateScheduleRequest, UpdateScheduleResponse } from '@/types/api/team-board/schedule'
 import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse, UploadPostFileResponse, UpdatePostRequest, UpdatePostResponse } from '@/types/api/team-board/posts'
 import type { GetSharedDocumentListResponse, DocumentType, SortOption } from '@/types/api/team-board/sharedDocuments'
 import type { CommonResponse } from '@/types/api/commonResponse'
@@ -69,6 +69,36 @@ export const createSchedule = async (
 	scheduleData: CreateScheduleRequest,
 ): Promise<CreateScheduleResponse> => {
 	const { data } = await api.post(`/api/v1/projects/${projectId}/boards/schedules`, scheduleData)
+	return data
+}
+
+/**
+ * 팀 일정을 수정합니다.
+ * @param projectId - 프로젝트 ID
+ * @param scheduleId - 일정 ID
+ * @param scheduleData - 일정 수정 데이터
+ * @returns 수정 결과
+ */
+export const updateSchedule = async (
+	projectId: number,
+	scheduleId: number,
+	scheduleData: UpdateScheduleRequest,
+): Promise<UpdateScheduleResponse> => {
+	const { data } = await api.patch(`/api/v1/projects/${projectId}/boards/schedules/${scheduleId}`, scheduleData)
+	return data
+}
+
+/**
+ * 팀 일정을 삭제합니다.
+ * @param projectId - 프로젝트 ID
+ * @param scheduleId - 일정 ID
+ * @returns 삭제 결과
+ */
+export const deleteSchedule = async (
+	projectId: number,
+	scheduleId: number,
+): Promise<CommonResponse> => {
+	const { data } = await api.delete(`/api/v1/projects/${projectId}/boards/schedules/${scheduleId}`)
 	return data
 }
 

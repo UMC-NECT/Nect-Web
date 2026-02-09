@@ -1,4 +1,8 @@
+import { useState } from 'react'
+import ScheduleMenu from './ScheduleMenu'
+
 interface UpcomingTeamScheduleItem {
+	scheduleId?: number // 일정 ID
 	dayOfWeek: string // "Fri", "Wed", "Mon" 등
 	date: number // 12, 17, 19 등
 	title: string
@@ -11,9 +15,23 @@ interface UpcomingTeamScheduleItem {
 interface UpcomingTeamScheduleProps {
 	items: UpcomingTeamScheduleItem[]
 	className?: string
+	onEdit?: (scheduleId: number) => void
+	onDelete?: (scheduleId: number) => void
 }
 
-const UpcomingTeamSchedule = ({ items, className = '' }: UpcomingTeamScheduleProps) => {
+const UpcomingTeamSchedule = ({ items, className = '', onEdit, onDelete }: UpcomingTeamScheduleProps) => {
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; scheduleId: number } | null>(null)
+
+	const handleContextMenu = (e: React.MouseEvent, scheduleId?: number) => {
+		if (!scheduleId) return
+		e.preventDefault()
+		setContextMenu({
+			x: e.clientX,
+			y: e.clientY,
+			scheduleId,
+		})
+	}
+
 	return (
 		<div
 			className={`w-[392px] h-[518px] px-5 pt-5 pb-3.5 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 inline-flex justify-center items-start gap-2.5 ${className}`}
@@ -34,6 +52,7 @@ const UpcomingTeamSchedule = ({ items, className = '' }: UpcomingTeamSchedulePro
 							<div
 								key={index}
 								className={`${isLast ? '' : 'self-stretch'} rounded-xl inline-flex justify-start items-center overflow-hidden`}
+								onContextMenu={(e) => handleContextMenu(e, item.scheduleId)}
 							>
 								{/* 날짜 박스 */}
 								<div className={`w-[54px] h-[60px] ${bgColor} flex justify-center items-center`}>
@@ -72,6 +91,17 @@ const UpcomingTeamSchedule = ({ items, className = '' }: UpcomingTeamSchedulePro
 					})}
 				</div>
 			</div>
+
+			{/* 컨텍스트 메뉴 */}
+			{contextMenu && (
+				<ScheduleMenu
+					x={contextMenu.x}
+					y={contextMenu.y}
+					onClose={() => setContextMenu(null)}
+					onEdit={() => onEdit?.(contextMenu.scheduleId)}
+					onDelete={() => onDelete?.(contextMenu.scheduleId)}
+				/>
+			)}
 		</div>
 	)
 }

@@ -10,10 +10,13 @@ import UpcomingTeamSchedule from '@/components/team-board/UpcomingTeamSchedule'
 import { useTeamBoardOverview } from '@/hooks/team-board/useTeamBoardOverview'
 import { useCalendarMonth } from '@/hooks/team-board/useCalendarMonth'
 import { useCreateScheduleMutation } from '@/hooks/team-board/useCreateSchedule'
+import { useUpdateScheduleMutation } from '@/hooks/team-board/useUpdateSchedule'
+import { useDeleteScheduleMutation } from '@/hooks/team-board/useDeleteSchedule'
 import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
 	const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+	const [editingScheduleId, setEditingScheduleId] = useState<number | null>(null)
 	
 	// TODO: URL에서 projectId 가져오기
 	const projectId = 1
@@ -38,6 +41,12 @@ const TeamBoardPage = () => {
 
 	// 일정 생성 mutation
 	const createScheduleMutation = useCreateScheduleMutation(projectId)
+	
+	// 일정 수정 mutation
+	const updateScheduleMutation = useUpdateScheduleMutation(projectId)
+	
+	// 일정 삭제 mutation
+	const deleteScheduleMutation = useDeleteScheduleMutation(projectId)
 
 	/**
 	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"
@@ -225,6 +234,7 @@ const TeamBoardPage = () => {
 				startDate.getDate() === selectedDate
 
 			return {
+				scheduleId: schedule.schedule_id,
 				dayOfWeek: getDayOfWeek(startDate),
 				date: startDate.getDate(),
 				title: schedule.title,
@@ -477,10 +487,20 @@ const TeamBoardPage = () => {
 							onDayClick={handleDayClick}
 						/>
 						<div className="relative">
-							<AddScheduleButton onClick={() => setIsScheduleModalOpen(true)} />
+							<AddScheduleButton onClick={() => {
+								setEditingScheduleId(null)
+								setIsScheduleModalOpen(true)
+							}} />
 							<AddScheduleModal
 								isOpen={isScheduleModalOpen}
-								onClose={() => setIsScheduleModalOpen(false)}
+								onClose={() => {
+									setIsScheduleModalOpen(false)
+									setEditingScheduleId(null)
+								}}
+								initialTitle={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.title : undefined}
+								initialStartDate={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.start_at : undefined}
+								initialEndDate={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.end_at : undefined}
+								initialAllDay={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.all_day : undefined}
 								onSave={(title, startDate, endDate, time) => {
 									// 날짜 파싱: "2026년 02월 01일" -> Date 객체
 									const parseDateString = (dateStr: string): Date => {
@@ -552,26 +572,33 @@ const TeamBoardPage = () => {
 											endMinute,
 										)
 
-										// 디버깅: 실제 전송되는 값 확인
-										console.log('일정 생성 데이터:', {
-											title,
-											start_at: startAt,
-											end_at: endAt,
-											all_day: allDay,
-											parsedTime: { startHour, startMinute, endHour, endMinute },
-										})
-
-										// API 호출
-										createScheduleMutation.mutate({
-											title,
-											description: '', // description 필수이므로 빈 문자열로 전송
-											start_at: startAt,
-											end_at: endAt,
-											all_day: allDay,
-										})
+										// 수정 모드인지 확인
+										if (editingScheduleId) {
+											// 일정 수정 API 호출
+											updateScheduleMutation.mutate({
+												scheduleId: editingScheduleId,
+												scheduleData: {
+													title,
+													description: '', // description 필수이므로 빈 문자열로 전송
+													start_at: startAt,
+													end_at: endAt,
+													all_day: allDay,
+												},
+											})
+										} else {
+											// 일정 생성 API 호출
+											createScheduleMutation.mutate({
+												title,
+												description: '', // description 필수이므로 빈 문자열로 전송
+												start_at: startAt,
+												end_at: endAt,
+												all_day: allDay,
+											})
+										}
 
 										// 성공 시 모달 닫기
 										setIsScheduleModalOpen(false)
+										setEditingScheduleId(null)
 									} catch (error) {
 										console.error('일정 생성 실패:', error)
 										// TODO: 에러 처리 (토스트 메시지 등)
@@ -583,7 +610,16 @@ const TeamBoardPage = () => {
 
 					{/* 하단: UpcomingTeamSchedule (392x518) */}
 					<div className="h-[518px]">
-						<UpcomingTeamSchedule items={upcomingScheduleItems} />
+						<UpcomingTeamSchedule
+							items={upcomingScheduleItems}
+							onEdit={(scheduleId) => {
+								setEditingScheduleId(scheduleId)
+								setIsScheduleModalOpen(true)
+							}}
+							onDelete={(scheduleId) => {
+								deleteScheduleMutation.mutate(scheduleId)
+							}}
+						/>
 					</div>
 				</div>
 			</div>
