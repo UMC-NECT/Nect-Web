@@ -12,6 +12,7 @@ export interface WorkStatusItem {
 		done: number
 		total: number
 	}
+	mission_number?: number
 	dueDate?: string // "2025.11.21" 형식
 	participants?: { id: number; name: string; avatar: string }[]
 	links?: string | string[]

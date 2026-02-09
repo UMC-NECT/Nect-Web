@@ -187,9 +187,11 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 			is_current: m.is_current,
 		}))
 		setMissions(list)
+		// 편집 모드(기존 프로세스 조회)에서는 openMissionModal에서 넘긴 missionNumber 사용, mission list로 덮어쓰지 않음
+		if (editingMissionId != null) return
 		const current = list.find(m => m.is_current)
 		if (current) setMissionNumber(current.missionNumber)
-	}, [missionListData, setMissions, setMissionNumber])
+	}, [missionListData, setMissions, setMissionNumber, editingMissionId])
 
 	const appliedDetailKeyRef = useRef<string | null>(null)
 	useEffect(() => {
@@ -210,6 +212,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 		const status = statusMap[body.process_status ?? ''] ?? 'planning'
 		setMissionStatus(status)
+
+		if (body.mission_number != null) setMissionNumber(body.mission_number)
 
 		const roleFieldValues = (body.role_fields ?? []) as string[]
 		const matchedParts = roleFieldValues
@@ -275,6 +279,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setStartDate,
 		setDeadline,
 		setMissionStatus,
+		setMissionNumber,
 		setSelectedParts,
 		setSelectedAssignees,
 		setTasks,

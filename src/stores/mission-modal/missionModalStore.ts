@@ -130,7 +130,7 @@ interface MissionModalStore {
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean) => void
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean, initialMissionStatus?: MissionStatus, initialMissionNumber?: number) => void
 	closeMissionModal: () => void
 }
 
@@ -326,7 +326,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean) =>
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean, initialMissionStatus?: MissionStatus, initialMissionNumber?: number) =>
 		set(state => {
 			const isNewMission = missionId === undefined && sectionIndex === undefined
 			if (isNewMission) {
@@ -337,6 +337,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 					projectId: null,
 					isCreateMode: isCreateMode ?? false,
 					...initialMissionModalState,
+					...(initialMissionStatus && { missionStatus: initialMissionStatus }),
 				}
 			}
 			return {
@@ -346,6 +347,7 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 				projectId: projectId ?? state.projectId ?? null,
 				isCreateMode: isCreateMode ?? state.isCreateMode ?? false,
 				isTask: isTask ?? false,
+				...(initialMissionNumber != null && { missionNumber: initialMissionNumber }),
 			}
 		}),
 	closeMissionModal: () =>

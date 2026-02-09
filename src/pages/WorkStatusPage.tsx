@@ -20,8 +20,11 @@ import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
-import { useProgressSummaryQuery, useProcessHistoryQuery, useProcessPartQuery } from '@/hooks/process/useProcessApi'
+import { useProgressSummaryQuery, useProcessHistoryQuery, useProcessPartQuery, usePatchProcessStatusMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery } from '@/hooks/project/useProjectApi'
+import { useQueryClient } from '@tanstack/react-query'
+import { getMissionList } from '@/api/process/weekMission'
+import { QUERY_KEY } from '@/constants/key'
 import type { Progress } from '@/types/progress'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import type { ProcessWeekProcessItem } from '@/types/api/process/process'
@@ -63,6 +66,7 @@ const mapPartProcessToWorkStatusItem = (
 	title: p.title ?? '',
 	status,
 	todo: { id: p.process_id, done: p.complete_check_list, total: p.whole_check_list },
+	mission_number: p.mission_number ?? undefined,
 	dueDate: p.dead_line ? p.dead_line.replace(/-/g, '.') : undefined,
 	participants: p.assignee?.map(a => ({
 		id: a.user_id,
@@ -135,7 +139,7 @@ const DroppableColumn = ({ id, children }: DroppableColumnProps) => {
 interface SortableTodoBlockProps {
 	item: WorkStatusItem
 	status: MissionStatus
-	onItemClick: (itemId: number) => void
+	onItemClick: (itemId: number, missionNumber?: number) => void
 }
 
 const SortableTodoBlock = ({ item, status, onItemClick }: SortableTodoBlockProps) => {
@@ -163,7 +167,7 @@ const SortableTodoBlock = ({ item, status, onItemClick }: SortableTodoBlockProps
 			wasDraggingRef.current = false
 			return
 		}
-		onItemClick(item.id)
+		onItemClick(item.id, item.mission_number)
 	}
 
 	return (
@@ -191,6 +195,7 @@ const WorkStatusPage = () => {
 	const segments = ['Team', ...roles.map(role => getRoleDisplayName(role))]
 	const statuses: MissionStatus[] = ['planning', 'in_progress', 'completed', 'backlog']
 	const { openMissionModal } = useMissionModalStore()
+	const queryClient = useQueryClient()
 
 	// 커스텀 훅들
 	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
@@ -215,6 +220,15 @@ const WorkStatusPage = () => {
 	const { data: partsData } = usePartsQuery(projectIdStr)
 	const setWorkStatusItems = useWorkStatusStore(s => s.setWorkStatusItems)
 	const parts = useMemo(() => partsData?.body?.parts ?? [], [partsData?.body?.parts])
+
+	// 미션 모달 드롭다운용 리스트 미리 로드 (위크미션 페이지와 동일)
+	useEffect(() => {
+		if (!projectIdStr) return
+		queryClient.prefetchQuery({
+			queryKey: QUERY_KEY.process.weekMission.missionList(projectIdStr),
+			queryFn: () => getMissionList(projectIdStr),
+		})
+	}, [projectIdStr, queryClient])
 
 	// 파트 API 응답을 스토어에 동기화 (미션 카드 렌더링/드래그/필터용) - team은 role_fields와 parts의 role_field 매칭 후 part_label 사용
 	useEffect(() => {
@@ -274,12 +288,36 @@ const WorkStatusPage = () => {
 		setDeltas(prev => [...prev, { team, prevStatus, newStatus }])
 	}, [])
 
+	const patchProcessStatusMutation = usePatchProcessStatusMutation()
+	const missionStatusToApi = useCallback((s: MissionStatus): string => {
+		const map: Record<MissionStatus, string> = {
+			planning: 'PLANNING',
+			in_progress: 'IN_PROGRESS',
+			completed: 'DONE',
+			backlog: 'BACKLOG',
+		}
+		return map[s]
+	}, [])
+
 	const { activeId, sensors, handleDragStart, handleDragEnd } = useWorkStatusDragAndDrop({
 		statuses,
 		getFilteredItemsByStatus,
 		onStatusChange: (activeId, prevStatus, newStatus) => {
 			const item = workStatusItems.find(i => i.id === activeId)
 			if (item) updateProgressOnMove(item.team, prevStatus, newStatus)
+			patchProcessStatusMutation.mutate(
+				{
+					projectId: projectIdStr,
+					processId: String(activeId),
+					body: { status: missionStatusToApi(newStatus) },
+				},
+				{
+					onSuccess: () => {
+						queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.part(projectIdStr, fieldId) })
+						queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.progressSummary(projectIdStr) })
+					},
+				}
+			)
 		},
 	})
 
@@ -324,7 +362,7 @@ const WorkStatusPage = () => {
 								<button
 									type='button'
 									className='bg-neutral-000 flex gap-0.5 items-center justify-center p-1.5 relative rounded-full shrink-0 w-7 h-7 shadow-[0px_0px_2.68px_0px_rgba(165,165,165,0.3)] '
-									onClick={() => {openMissionModal()}}
+									onClick={() => openMissionModal(undefined, undefined, undefined, true, false, status)}
 								>
 									<PlusIcon className='w-4 h-4 shrink-0 stroke-neutral-700' />
 								</button>
@@ -353,7 +391,7 @@ const WorkStatusPage = () => {
 													key={item.id}
 													item={item}
 													status={status}
-													onItemClick={(itemId) => openMissionModal(itemId)}
+													onItemClick={(itemId, missionNumber) => openMissionModal(itemId, undefined, projectIdStr, false, false, undefined, missionNumber)}
 												/>
 											))}
 										</TodoSection>

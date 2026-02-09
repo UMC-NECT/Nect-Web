@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import AvatarGroup from '@/components/common/AvatarGroup'
 import ProgressBar from '@/components/week-mission/ProgressBar'
 import LinkIcon from '@/assets/icons/work-status/link.svg?react'
@@ -5,6 +6,8 @@ import DoIcon from '@/assets/icons/work-status/do.svg?react'
 import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
 import { calculateDateSpan } from '@/utils/dateUtils'
 import LinkChip from './LinkChip'
+import ProfileModal from '@/components/week-mission/ProfileModal'
+import type { Assignees } from '@/types/api/assignees'
 
 interface TodoBlockProps {
 	id: number
@@ -49,8 +52,29 @@ const TodoBlock = ({
 	isEdit = false,
 	onClick,
 }: TodoBlockProps) => {
+	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+	const profileDropdownRef = useRef<HTMLDivElement>(null)
+
 	const isMinimum = variant === 'Minimum'
 	const isDefault = variant === 'Default'
+
+	// participants를 ProfileModal용 Assignees 형식으로 변환
+	const assignees: Assignees[] = participants.map(p => ({
+		user_id: p.id,
+		name: p.name,
+		nickname: p.name,
+		profile_image_url: p.avatar ?? '',
+	}))
+
+	useEffect(() => {
+		if (!isProfileModalOpen) return
+		const handleClickOutside = (e: MouseEvent) => {
+			if (profileDropdownRef.current?.contains(e.target as Node)) return
+			setIsProfileModalOpen(false)
+		}
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [isProfileModalOpen])
 
 	// 진행률 계산 (4개 세그먼트 기준)
 	const progressSegments = 4
@@ -147,7 +171,7 @@ const TodoBlock = ({
 						</div>
 
 						{/* 진행률 바 + 마감일 + D-day + 아바타 */}
-						<div className='flex flex-col gap-[6px] items-start relative shrink-0 w-full'>
+						<div className='flex flex-col gap-2 items-start relative shrink-0 w-full'>
 							{/* 진행률 바 */}
 							<div className='w-[132px]'>
 								<ProgressBar completed={completedSegments} total={progressSegments} />
@@ -174,15 +198,32 @@ const TodoBlock = ({
 										</div>
 									)}
 
-									{/* 아바타 그룹 */}
-									{participants.length > 0 && (
-										<div className='flex items-center justify-end relative shrink-0'>
-											<AvatarGroup avatars={participants.map(participant => participant.avatar)} maxCount={2} size={22.533} />
+									{/* 아바타 그룹 + 드롭다운 */}
+								<div ref={profileDropdownRef} className='relative'>
+									<div
+										className='flex gap-[2px] items-center justify-end hover:bg-neutral-000 rounded-16 p-0.5 transition-all duration-300 cursor-pointer'
+										onClick={e => {
+											e.stopPropagation()
+											setIsProfileModalOpen(prev => !prev)
+										}}
+									>
+										{participants.length > 0 && (
+											<div className='flex items-center justify-end relative shrink-0'>
+												<AvatarGroup avatars={participants.map(p => p.avatar)} maxCount={2} size={22} />
+											</div>
+										)}
+										<div className='w-[14.839px] h-[14.839px] shrink-0 flex items-center justify-center'>
+											<ChevronDownIcon className='w-full h-full text-neutral-600' />
 										</div>
+									</div>
+									{isProfileModalOpen && (
+										<ProfileModal
+											isOpen={isProfileModalOpen}
+											onClose={() => setIsProfileModalOpen(false)}
+											assignees={assignees}
+										/>
 									)}
-
-									{/* 드롭다운 아이콘 */}
-									<ChevronDownIcon className='w-4 h-4 hover:cursor-pointer' style={{ stroke: '#838391' }} />
+								</div>
 								</div>
 							</div>
 						</div>

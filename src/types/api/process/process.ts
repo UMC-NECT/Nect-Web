@@ -127,6 +127,7 @@ export type ResponseProcessDetailDto = CommonResponse<{
     process_status: string
     start_date: string
     dead_line: string
+    mission_number?: number
     status_order: number
     role_fields: string[]
     custom_fields: string[]
