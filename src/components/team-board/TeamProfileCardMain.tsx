@@ -52,7 +52,7 @@ const TeamProfileCardMain = ({
 	const [isWorking, setIsWorking] = useState(initialIsWorking)
 	const [displayTime, setDisplayTime] = useState(time)
 	const initialSecondsRef = useRef<number>(parseTimeToSeconds(time))
-	const intervalRef = useRef<NodeJS.Timeout | null>(null)
+	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
 	// API의 is_working 값이 변경되면 로컬 상태 동기화
 	useEffect(() => {

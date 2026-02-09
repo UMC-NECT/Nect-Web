@@ -53,9 +53,9 @@ export const Sidebar = () => {
 
 	const handleBottomMenuClick = (menuId: BottomMenuId) => {
 		setActiveBottomMenu(menuId)
-		// projectId가 있으면 포함하여 네비게이션
+		// projectId가 있으면 포함하여 네비게이션 (team-board만 projectId 필요)
 		const projectId = params.projectId
-		if (projectId && (menuId === 'board' || menuId === 'shared-documents' || menuId === 'team-board')) {
+		if (projectId && menuId === 'team-board') {
 			navigate(`/${menuId}/${projectId}`)
 		} else {
 			navigate(`/${menuId}`)

@@ -227,7 +227,7 @@ const WritePostModal = ({
 	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId || 0)
 
 	// 첨부 해제 mutation
-	const unlinkAttachmentMutation = useUnlinkPostAttachmentMutation(projectId || 0, postId)
+	const unlinkAttachmentMutation = useUnlinkPostAttachmentMutation(projectId || 0, postId ?? null)
 
 	const handleAttachmentRename = (id: string, newName: string) => {
 		if (!projectId) return
@@ -304,7 +304,6 @@ const WritePostModal = ({
 						onNoticeChange={setIsNotice}
 						onFileChange={handleFileInputChange}
 						onFileRemove={handleFileRemove}
-						onAttachmentRemove={handleAttachmentRemove}
 						onAttachmentRename={handleAttachmentRename}
 						onAttachmentUnlink={handleAttachmentUnlink}
 						fileInputRef={fileInputRef}

@@ -1,4 +1,3 @@
-import SettingsIcon from '@/assets/icons/common/settings.svg?react'
 import { calculateDDay } from '@/utils/dateUtils'
 
 interface TeamBoardHeaderProps {

@@ -23,24 +23,13 @@ const TeamBoardPage = () => {
 	const navigate = useNavigate()
 	const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
 	const [editingScheduleId, setEditingScheduleId] = useState<number | null>(null)
-	const [projects, setProjects] = useState<Array<{ projectId: number; projectTitle: string }>>([])
 	
 	// 프로젝트 목록 조회 및 projectId 설정
 	useEffect(() => {
 		const fetchProjects = async () => {
 			try {
 				const response = await getProjectUsers()
-				console.log('=== 현재 참여하고 있는 프로젝트 목록 ===')
-				console.log('전체 응답:', response)
-				console.log('프로젝트 목록:', response.body)
 				if (response.body) {
-					setProjects(response.body)
-					if (response.body.length > 0) {
-						response.body.forEach((project, index) => {
-							console.log(`${index + 1}. 프로젝트 ID: ${project.projectId}, 제목: ${project.projectTitle}, 멤버 타입: ${project.memberType}`)
-						})
-					}
-					
 					// URL에 projectId가 없으면 첫 번째 프로젝트로 리다이렉트
 					if (!projectIdParam && response.body.length > 0) {
 						navigate(`/team-board/${response.body[0].projectId}`, { replace: true })

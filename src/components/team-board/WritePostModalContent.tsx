@@ -38,7 +38,6 @@ interface WritePostModalContentProps {
 	onNoticeChange?: (isNotice: boolean) => void
 	onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onFileRemove?: (index: number) => void
-	onAttachmentRemove?: (id: string) => void
 	onAttachmentRename?: (id: string, newName: string) => void
 	onAttachmentUnlink?: (documentId: number) => void
 	fileInputRef?: React.RefObject<HTMLInputElement | null>
@@ -56,7 +55,6 @@ const WritePostModalContent = ({
 	onNoticeChange,
 	onFileChange,
 	onFileRemove,
-	onAttachmentRemove,
 	onAttachmentRename,
 	onAttachmentUnlink,
 	fileInputRef: externalFileInputRef,
