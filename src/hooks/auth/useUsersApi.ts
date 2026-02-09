@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestSetupDto, RequestSignupDto } from '@/types/api/users'
+import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestSetupDto, RequestSignupDto, ResponseSignupDto } from '@/types/api/users'
 import { postLogin, postLogout, postSignup, postSetup, postAgree, postCheck, getProfile } from '@/api/users'
 import { LOCAL_STORAGE_KEY, QUERY_KEY } from '@/constants/key'
 import { useNavigate } from 'react-router'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 export const useLoginMutation = () => {
 	return useMutation({
@@ -26,8 +27,18 @@ export const useLogoutMutation = () => {
 }
 
 export const useSignupMutation = () => {
+	const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+	const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+
 	return useMutation({
 		mutationFn: (body: RequestSignupDto) => postSignup(body),
+		onSuccess: (data: ResponseSignupDto) => {
+			const tokenData = data.body
+			if (tokenData?.accessToken && tokenData?.refreshToken) {
+				setAccessToken(tokenData.accessToken)
+				setRefreshToken(tokenData.refreshToken)
+			}
+		},
 	})
 }
 

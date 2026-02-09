@@ -1,5 +1,5 @@
 import type { CommonResponse } from "@/types/api/commonResponse"
-import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestRefreshTokenDto, RequestSetupDto, RequestSignupDto, ResponseCheckDto, ResponseEmailDto, ResponseLoginDto, ResponseProfileDto, ResponseRefreshTokenDto } from "@/types/api/users"
+import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestRefreshTokenDto, RequestSetupDto, RequestSignupDto, ResponseCheckDto, ResponseEmailDto, ResponseLoginDto, ResponseProfileDto, ResponseRefreshTokenDto, ResponseSignupDto } from "@/types/api/users"
 import { api } from "@/utils/AxiosInstance"
 
 /** 이메일과 비밀번호로 로그인합니다. 성공 시 액세스 토큰과 리프레시 토큰을 발급합니다. autoLoginEnabled가 true면 자동 로그인 활성화, false면 비활성화입니다. */
@@ -15,7 +15,7 @@ export const postLogout = async (): Promise<CommonResponse> => {
 }
 
 /** 새로운 계정을 생성합니다. 닉네임, 생년월일, 직업, 역할 등은 프로필 설정 API에서 입력합니다. */
-export const postSignup = async (body: RequestSignupDto): Promise<CommonResponse> => {
+export const postSignup = async (body: RequestSignupDto): Promise<ResponseSignupDto> => {
     const {data} = await api.post('/api/v1/users/signup', body)
     return data
 }

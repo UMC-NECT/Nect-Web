@@ -22,6 +22,14 @@ export type RequestSignupDto = {
     phoneNumber: string
 }
 
+export type ResponseSignupDto = CommonResponse<{
+    grantType: string
+    accessToken: string
+    refreshToken: string
+    accessTokenExpiresAt: number
+    refreshTokenExpiresAt: number
+}>
+
 export type RequestSetupDto = {
 	nickname: string
 	birthDate: string

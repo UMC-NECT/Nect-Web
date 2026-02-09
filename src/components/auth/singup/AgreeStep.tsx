@@ -42,13 +42,17 @@ const AgreeStep = () => {
 		setErrorMessage('')
 
 		try {
-			await signupMutation.mutateAsync({
+			const signupResponse = await signupMutation.mutateAsync({
 				email: signupData.email,
 				password: signupData.password,
 				passwordConfirm: signupData.passwordConfirm,
 				name: signupData.name,
 				phoneNumber: signupData.phoneNumber,
 			})
+			if (!signupResponse.body?.accessToken || !signupResponse.body?.refreshToken) {
+				setErrorMessage('회원가입 응답 오류입니다. 다시 시도해주세요.')
+				return
+			}
 			await agreeMutation.mutateAsync({
 				termsAgreed: agree2,
 				privacyAgreed: agree3,
