@@ -5,6 +5,7 @@ import BoardListHeader from '@/components/team-board/BoardListHeader'
 import BoardPagination from '@/components/team-board/BoardPagination'
 import WritePostModal from '@/components/team-board/WritePostModal'
 import { usePostList } from '@/hooks/team-board/usePostList'
+import { useCreatePostMutation } from '@/hooks/team-board/useCreatePost'
 
 const BoardPage = () => {
 	// TODO: URL에서 projectId 가져오기
@@ -27,13 +28,24 @@ const BoardPage = () => {
 	})
 	const postList = postListResponse?.body
 
+	// 게시글 생성 mutation
+	const createPostMutation = useCreatePostMutation(projectId)
+
 	const handleWriteClick = () => {
 		setIsWriteModalOpen(true)
 	}
 
 	const handleSavePost = (title: string, content: string, isNotice: boolean, files: File[]) => {
-		console.log('게시글 저장:', { title, content, isNotice, files })
-		// TODO: API 호출로 게시글 저장
+		// API 호출로 게시글 저장
+		createPostMutation.mutate({
+			title,
+			content,
+			is_notice: isNotice,
+			mention_user_ids: [], // TODO: 멘션 기능 추가 시 구현
+		})
+
+		// 성공 시 모달 닫기
+		setIsWriteModalOpen(false)
 	}
 
 	const handleItemClick = (item: { tag?: string; title: string; author: string; date: string }) => {
