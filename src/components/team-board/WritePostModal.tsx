@@ -165,10 +165,6 @@ const WritePostModal = ({
 		}
 	}
 
-	const handleFileAdd = () => {
-		fileInputRef.current?.click()
-	}
-
 	const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = Array.from(e.target.files || [])
 		setFiles([...files, ...selectedFiles])
@@ -211,7 +207,6 @@ const WritePostModal = ({
 						onTitleChange={setTitle}
 						onContentChange={setContent}
 						onNoticeChange={setIsNotice}
-						onFileAdd={handleFileAdd}
 						onFileChange={handleFileInputChange}
 						onFileRemove={handleFileRemove}
 						onAttachmentRemove={handleAttachmentRemove}

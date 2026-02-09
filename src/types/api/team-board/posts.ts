@@ -10,7 +10,24 @@ export interface CreatePostRequest {
 	mention_user_ids?: number[]
 }
 
-export type CreatePostResponse = CommonResponse
+export interface CreatePostResponseBody {
+	post_id: number
+}
+
+export type CreatePostResponse = CommonResponse<CreatePostResponseBody>
+
+export interface UploadPostFileResponseBody {
+	document_id: number
+	document_type: 'FILE' | 'LINK'
+	title: string
+	link_url: string | null
+	file_name: string | null
+	file_ext: string | null
+	file_size: number
+	download_url: string | null
+}
+
+export type UploadPostFileResponse = CommonResponse<UploadPostFileResponseBody>
 
 export interface PostAttachmentResponse {
 	document_id: number

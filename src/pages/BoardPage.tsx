@@ -7,6 +7,7 @@ import WritePostModal from '@/components/team-board/WritePostModal'
 import { usePostList } from '@/hooks/team-board/usePostList'
 import { useCreatePostMutation } from '@/hooks/team-board/useCreatePost'
 import { usePostDetail } from '@/hooks/team-board/usePostDetail'
+import { uploadPostFile } from '@/api/team-board/boards'
 import type { PostAttachment } from '@/components/team-board/WritePostModalContent'
 
 const BoardPage = () => {
@@ -35,17 +36,36 @@ const BoardPage = () => {
 		setIsWriteModalOpen(true)
 	}
 
-	const handleSavePost = (title: string, content: string, isNotice: boolean, _files: File[]) => {
+	const handleSavePost = (title: string, content: string, isNotice: boolean, files: File[]) => {
 		// API 호출로 게시글 저장
-		createPostMutation.mutate({
-			title,
-			content,
-			is_notice: isNotice,
-			mention_user_ids: [], // TODO: 멘션 기능 추가 시 구현
-		})
+		createPostMutation.mutate(
+			{
+				title,
+				content,
+				is_notice: isNotice,
+				mention_user_ids: [], // TODO: 멘션 기능 추가 시 구현
+			},
+			{
+				onSuccess: async (response) => {
+					// 게시글 생성 성공 후 파일 업로드
+					const postId = response.body?.post_id
+					if (postId && files.length > 0) {
+						try {
+							// 모든 파일을 순차적으로 업로드
+							for (const file of files) {
+								await uploadPostFile(projectId, postId, file)
+							}
+						} catch (error) {
+							console.error('파일 업로드 실패:', error)
+							// TODO: 에러 처리 (토스트 메시지 등)
+						}
+					}
 
-		// 성공 시 모달 닫기
-		setIsWriteModalOpen(false)
+					// 성공 시 모달 닫기
+					setIsWriteModalOpen(false)
+				},
+			}
+		)
 	}
 
 	const handleItemClick = (item: { postId: number; tag?: string; title: string; author: string; date: string }) => {

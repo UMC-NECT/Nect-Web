@@ -2,7 +2,7 @@ import type { GetTeamBoardOverviewResponse } from '@/types/api/team-board/overvi
 import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
 import type { CreateScheduleRequest, CreateScheduleResponse } from '@/types/api/team-board/schedule'
-import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse } from '@/types/api/team-board/posts'
+import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse, UploadPostFileResponse } from '@/types/api/team-board/posts'
 import { api } from '@/utils/AxiosInstance'
 
 /**
@@ -119,5 +119,32 @@ export const getPostDetail = async (
 	postId: number,
 ): Promise<GetPostDetailResponse> => {
 	const { data } = await api.get(`/api/v1/projects/${projectId}/boards/posts/${postId}`)
+	return data
+}
+
+/**
+ * 게시글에 파일을 업로드하고 첨부합니다.
+ * @param projectId - 프로젝트 ID
+ * @param postId - 게시글 ID
+ * @param file - 업로드할 파일
+ * @returns 업로드된 파일 정보
+ */
+export const uploadPostFile = async (
+	projectId: number,
+	postId: number,
+	file: File,
+): Promise<UploadPostFileResponse> => {
+	const formData = new FormData()
+	formData.append('file', file)
+
+	const { data } = await api.post(
+		`/api/v1/projects/${projectId}/boards/posts/${postId}/attachments/files`,
+		formData,
+		{
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		}
+	)
 	return data
 }

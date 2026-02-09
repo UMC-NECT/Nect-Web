@@ -6,6 +6,16 @@ import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
 import MoreIcon from '@/components/mission-modal/MoreIcon.svg?react'
 import FigmaIcon from '@/assets/icons/app/figma.svg?react'
 import PdfIcon from '@/assets/icons/app/pdf.svg?react'
+import WordIcon from '@/assets/icons/app/Word.svg?react'
+import ExcelIcon from '@/assets/icons/app/Excel.svg?react'
+import PPTIcon from '@/assets/icons/app/PPT.svg?react'
+import ZipIcon from '@/assets/icons/app/Zip.svg?react'
+import JPEGIcon from '@/assets/icons/app/JPEG.svg?react'
+import JPGIcon from '@/assets/icons/app/JPG.svg?react'
+import PNGIcon from '@/assets/icons/app/PNG.svg?react'
+import MP4Icon from '@/assets/icons/app/MP4.svg?react'
+import MOVIcon from '@/assets/icons/app/MOV.svg?react'
+import EtcIcon from '@/assets/icons/app/Etc.svg?react'
 
 export interface PostAttachment {
 	id: string
@@ -27,7 +37,6 @@ interface WritePostModalContentProps {
 	onTitleChange?: (title: string) => void
 	onContentChange?: (content: string) => void
 	onNoticeChange?: (isNotice: boolean) => void
-	onFileAdd?: () => void
 	onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onFileRemove?: (index: number) => void
 	onAttachmentRemove?: (id: string) => void
@@ -44,7 +53,6 @@ const WritePostModalContent = ({
 	onTitleChange,
 	onContentChange,
 	onNoticeChange,
-	onFileAdd,
 	onFileChange,
 	onFileRemove,
 	onAttachmentRemove,
@@ -59,10 +67,52 @@ const WritePostModalContent = ({
 
 	const handleFileAdd = () => {
 		fileInputRef.current?.click()
-		onFileAdd?.()
 	}
 
 	// 파일 추가는 부모 컴포넌트에서 처리
+
+	/**
+	 * 파일 확장자에 따른 아이콘 반환
+	 */
+	const getFileIconByExtension = (fileName?: string) => {
+		if (!fileName) return null
+
+		const extension = fileName.split('.').pop()?.toUpperCase()
+		if (!extension) return null
+
+		switch (extension) {
+			case 'FIGMA':
+				return <FigmaIcon className="w-7 h-7" />
+			case 'PDF':
+				return <PdfIcon className="w-7 h-7" />
+			case 'DOC':
+			case 'DOCX':
+				return <WordIcon className="w-7 h-7" />
+			case 'XLS':
+			case 'XLSX':
+			case 'CSV':
+				return <ExcelIcon className="w-7 h-7" />
+			case 'PPT':
+			case 'PPTX':
+				return <PPTIcon className="w-7 h-7" />
+			case 'ZIP':
+			case 'RAR':
+			case '7Z':
+				return <ZipIcon className="w-7 h-7" />
+			case 'JPEG':
+				return <JPEGIcon className="w-7 h-7" />
+			case 'JPG':
+				return <JPGIcon className="w-7 h-7" />
+			case 'PNG':
+				return <PNGIcon className="w-7 h-7" />
+			case 'MP4':
+				return <MP4Icon className="w-7 h-7" />
+			case 'MOV':
+				return <MOVIcon className="w-7 h-7" />
+			default:
+				return <EtcIcon className="w-7 h-7" />
+		}
+	}
 
 	const getAttachmentIcon = (attachment: PostAttachment) => {
 		if (attachment.type === 'link') {
@@ -71,10 +121,12 @@ const WritePostModalContent = ({
 			}
 			return <LinkIcon className="w-[18px] h-[18px] text-neutral-400" />
 		}
-		if (attachment.fileName?.toLowerCase().endsWith('.pdf')) {
-			return <PdfIcon className="w-[18px] h-[18px]" />
+		// 파일 타입인 경우 확장자에 따라 아이콘 반환
+		if (attachment.fileName) {
+			const icon = getFileIconByExtension(attachment.fileName)
+			if (icon) return icon
 		}
-		return <LinkIcon className="w-[18px] h-[18px] text-neutral-400" />
+		return <EtcIcon className="w-7 h-7" />
 	}
 
 	return (
@@ -258,22 +310,31 @@ const WritePostModalContent = ({
 							))}
 
 							{/* 새로 추가된 파일 */}
-							{files.map((file, index) => (
-								<div key={`file-${index}`} className="flex gap-2.5 items-center px-3.5 py-2 w-full">
-									<LinkIcon className="w-5 h-5 text-neutral-400 shrink-0" />
-									<div className="flex-1 min-w-0">
-										<div className="caption-1 font-semibold text-neutral-900 truncate">{file.name}</div>
+							{files.map((file, index) => {
+								const fileIcon = getFileIconByExtension(file.name)
+								return (
+									<div key={`file-${index}`} className="flex gap-2.5 items-center px-3.5 py-2 w-full">
+										{/* 아이콘 */}
+										<div className="relative shrink-0 w-7 h-7">
+											<div className="absolute inset-0 rounded-[6.222px] bg-neutral-50 shadow-inner-neutral-1" />
+											<div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+												{fileIcon || <EtcIcon className="w-7 h-7" />}
+											</div>
+										</div>
+										<div className="flex-1 min-w-0">
+											<div className="caption-1 font-semibold text-neutral-900 truncate">{file.name}</div>
+										</div>
+										{isEditable && onFileRemove && (
+											<button
+												onClick={() => onFileRemove(index)}
+												className="w-4 h-4 flex items-center justify-center shrink-0 hover:opacity-70 transition-opacity"
+											>
+												<XIcon className="w-4 h-4 text-neutral-400" />
+											</button>
+										)}
 									</div>
-									{isEditable && onFileRemove && (
-										<button
-											onClick={() => onFileRemove(index)}
-											className="w-4 h-4 flex items-center justify-center shrink-0 hover:opacity-70 transition-opacity"
-										>
-											<XIcon className="w-4 h-4 text-neutral-400" />
-										</button>
-									)}
-								</div>
-							))}
+								)
+							})}
 						</div>
 					)}
 				</div>
