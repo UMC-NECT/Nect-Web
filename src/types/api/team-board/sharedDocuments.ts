@@ -33,3 +33,10 @@ export interface SharedDocumentListResponse {
 }
 
 export type GetSharedDocumentListResponse = CommonResponse<SharedDocumentListResponse>
+
+export interface UpdateSharedDocumentNameRequest {
+	title: string
+	name?: string | null
+}
+
+export type UpdateSharedDocumentNameResponse = CommonResponse

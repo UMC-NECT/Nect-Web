@@ -5,6 +5,7 @@ import FileItem from '@/components/mission-modal/FileItem'
 import SortDropdown, { type SortOption } from '@/components/team-board/SortDropdown'
 import { useSharedDocumentList } from '@/hooks/team-board/useSharedDocumentList'
 import { useDeleteSharedDocumentMutation } from '@/hooks/team-board/useDeleteSharedDocument'
+import { useUpdateSharedDocumentNameMutation } from '@/hooks/team-board/useUpdateSharedDocumentName'
 import type { FileItem as FileItemData } from '@/stores/mission-modal/missionModalStore'
 import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
 import LinkIcon from '@/assets/icons/team-board/link.svg?react'
@@ -17,6 +18,7 @@ const SharedDocumentsPage = () => {
 	const [currentPage] = useState(1)
 	const [isUploading, setIsUploading] = useState(false)
 	const [selectedFileId, setSelectedFileId] = useState<number | null>(null)
+	const [editingFileId, setEditingFileId] = useState<number | null>(null)
 	const [sortOrder, setSortOrder] = useState<SortOption>('latest')
 	const [documentType] = useState<'FILE' | 'LINK' | undefined>(undefined)
 
@@ -47,6 +49,9 @@ const SharedDocumentsPage = () => {
 
 	// 공유 문서 삭제 mutation
 	const deleteDocumentMutation = useDeleteSharedDocumentMutation(projectId)
+	
+	// 공유 문서 이름 변경 mutation
+	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId)
 
 	const handleUploadClick = () => {
 		// TODO: 파일 업로드 모달 또는 파일 선택 다이얼로그 열기
@@ -128,8 +133,32 @@ const SharedDocumentsPage = () => {
 	}
 
 	const handleRename = (id: number) => {
-		// TODO: 이름 바꾸기 기능 구현
-		console.log('이름 바꾸기:', id)
+		setEditingFileId(id)
+	}
+
+	const handleSaveName = (id: number, newName: string) => {
+		updateDocumentNameMutation.mutate(
+			{
+				documentId: id,
+				nameData: {
+					title: newName,
+					name: null,
+				},
+			},
+			{
+				onSuccess: () => {
+					setEditingFileId(null)
+				},
+				onError: (error) => {
+					console.error('문서 이름 변경 실패:', error)
+					// TODO: 에러 처리 (토스트 메시지 등)
+				},
+			},
+		)
+	}
+
+	const handleCancelRename = () => {
+		setEditingFileId(null)
 	}
 
 	return (
@@ -181,10 +210,13 @@ const SharedDocumentsPage = () => {
 									key={file.id}
 									data={file}
 									isSelected={selectedFileId === file.id}
+									isEditing={editingFileId === file.id}
 									onClick={() => handleFileClick(file)}
 									onDelete={() => handleFileDelete(file.id)}
 									onDownload={file.type === 'file' ? () => handleFileDownload(file) : undefined}
 									onRename={() => handleRename(file.id)}
+									onSave={(name) => handleSaveName(file.id, name)}
+									onCancel={handleCancelRename}
 								/>
 							))}
 

@@ -3,7 +3,7 @@ import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
 import type { CreateScheduleRequest, CreateScheduleResponse, UpdateScheduleRequest, UpdateScheduleResponse } from '@/types/api/team-board/schedule'
 import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse, UploadPostFileResponse, UpdatePostRequest, UpdatePostResponse } from '@/types/api/team-board/posts'
-import type { GetSharedDocumentListResponse, DocumentType, SortOption } from '@/types/api/team-board/sharedDocuments'
+import type { GetSharedDocumentListResponse, DocumentType, SortOption, UpdateSharedDocumentNameRequest, UpdateSharedDocumentNameResponse } from '@/types/api/team-board/sharedDocuments'
 import type { CommonResponse } from '@/types/api/commonResponse'
 import { api } from '@/utils/AxiosInstance'
 
@@ -222,6 +222,25 @@ export const getSharedDocumentList = async (
 	const url = `/api/v1/projects/${projectId}/boards/shared-documents${queryString ? `?${queryString}` : ''}`
 
 	const { data } = await api.get(url)
+	return data
+}
+
+/**
+ * 공유 문서의 표시명(title)을 변경합니다.
+ * @param projectId - 프로젝트 ID
+ * @param documentId - 문서 ID
+ * @param nameData - 이름 변경 데이터
+ * @returns 변경 결과
+ */
+export const updateSharedDocumentName = async (
+	projectId: number,
+	documentId: number,
+	nameData: UpdateSharedDocumentNameRequest,
+): Promise<UpdateSharedDocumentNameResponse> => {
+	const { data } = await api.patch(
+		`/api/v1/projects/${projectId}/boards/shared-documents/${documentId}/name`,
+		nameData,
+	)
 	return data
 }
 
