@@ -1,8 +1,8 @@
 import React from 'react';
-import { useStatics } from '@/hooks/queries/home';
+import { useStatistics } from '@/hooks/queries/home';
 
 const Statistics = () => {
-    const { data: stats } = useStatics();
+    const { data: stats } = useStatistics();
 
     // 숫자를 포맷팅하는 함수
     const formatNumber = (num: number) => {
