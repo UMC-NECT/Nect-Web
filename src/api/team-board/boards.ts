@@ -3,6 +3,8 @@ import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
 import type { CreateScheduleRequest, CreateScheduleResponse } from '@/types/api/team-board/schedule'
 import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse, UploadPostFileResponse } from '@/types/api/team-board/posts'
+import type { GetSharedDocumentListResponse, DocumentType, SortOption } from '@/types/api/team-board/sharedDocuments'
+import type { CommonResponse } from '@/types/api/commonResponse'
 import { api } from '@/utils/AxiosInstance'
 
 /**
@@ -146,5 +148,47 @@ export const uploadPostFile = async (
 			},
 		}
 	)
+	return data
+}
+
+/**
+ * 공유 문서함 목록을 조회합니다.
+ * @param projectId - 프로젝트 ID
+ * @param options - 옵션 파라미터 (page, size, type, sort)
+ * @returns 공유 문서함 목록 및 페이지 정보
+ */
+export const getSharedDocumentList = async (
+	projectId: number,
+	options?: {
+		page?: number
+		size?: number
+		type?: DocumentType
+		sort?: SortOption
+	},
+): Promise<GetSharedDocumentListResponse> => {
+	const params = new URLSearchParams()
+	if (options?.page !== undefined) params.append('page', options.page.toString())
+	if (options?.size !== undefined) params.append('size', options.size.toString())
+	if (options?.type) params.append('type', options.type)
+	if (options?.sort) params.append('sort', options.sort)
+
+	const queryString = params.toString()
+	const url = `/api/v1/projects/${projectId}/boards/shared-documents${queryString ? `?${queryString}` : ''}`
+
+	const { data } = await api.get(url)
+	return data
+}
+
+/**
+ * 공유 문서를 삭제합니다 (소프트 삭제).
+ * @param projectId - 프로젝트 ID
+ * @param documentId - 문서 ID
+ * @returns 삭제 결과
+ */
+export const deleteSharedDocument = async (
+	projectId: number,
+	documentId: number,
+): Promise<CommonResponse> => {
+	const { data } = await api.delete(`/api/v1/projects/${projectId}/boards/shared-documents/${documentId}`)
 	return data
 }

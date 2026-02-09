@@ -162,8 +162,8 @@ const SharedDocumentItem = ({
 					<div className="caption-1 font-semibold text-neutral-900 w-full whitespace-nowrap">
 						<span className="leading-[1.4] overflow-hidden truncate block">{data.name}</span>
 					</div>
-					<div className="text-[9px] leading-[1.4] font-regular text-neutral-400 w-full">
-						<span className="whitespace-pre-wrap truncate block">{detailText}</span>
+					<div className="text-[9px] leading-[1.4] font-regular text-neutral-400 w-full whitespace-nowrap">
+						<span className="overflow-hidden truncate block">{detailText}</span>
 					</div>
 				</div>
 

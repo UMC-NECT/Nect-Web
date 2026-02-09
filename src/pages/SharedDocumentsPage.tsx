@@ -1,93 +1,111 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import SharedDocumentItem from '@/components/team-board/SharedDocumentItem'
 import FileItem from '@/components/mission-modal/FileItem'
 import SortDropdown, { type SortOption } from '@/components/team-board/SortDropdown'
+import { useSharedDocumentList } from '@/hooks/team-board/useSharedDocumentList'
+import { useDeleteSharedDocumentMutation } from '@/hooks/team-board/useDeleteSharedDocument'
 import type { FileItem as FileItemData } from '@/stores/mission-modal/missionModalStore'
+import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
 import LinkIcon from '@/assets/icons/team-board/link.svg?react'
 import PlusIcon from '@/assets/icons/common/plus.svg?react'
 
 const SharedDocumentsPage = () => {
-	// 샘플 데이터 (테스트용)
-	const sampleFiles: FileItemData[] = [
-		{
-			id: 1,
-			type: 'file',
-			name: 'PM_프로젝트 기획서',
-			fileName: 'PM_프로젝트 기획서.pdf',
-			url: '#',
-		},
-		{
-			id: 2,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.docx',
-			url: '#',
-		},
-		{
-			id: 3,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.png',
-			url: '#',
-		},
-		{
-			id: 4,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.ppt',
-			url: '#',
-		},
-		{
-			id: 5,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.mp4',
-			url: '#',
-		},
-		{
-			id: 6,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.xlsx',
-			url: '#',
-		},
-		{
-			id: 7,
-			type: 'link',
-			name: '링크 일 경우',
-			url: 'www.figma.com',
-		},
-		{
-			id: 8,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.zip',
-			url: '#',
-		},
-	]
+	// TODO: URL에서 projectId 가져오기
+	const projectId = 1
 
-	const [files, setFiles] = useState<FileItemData[]>(sampleFiles)
+	const [currentPage] = useState(1)
 	const [isUploading, setIsUploading] = useState(false)
 	const [selectedFileId, setSelectedFileId] = useState<number | null>(null)
 	const [sortOrder, setSortOrder] = useState<SortOption>('latest')
+	const [documentType] = useState<'FILE' | 'LINK' | undefined>(undefined)
+
+	// SortOption을 API SortOption으로 변환
+	const apiSortOption: APISortOption = useMemo(() => {
+		switch (sortOrder) {
+			case 'latest':
+				return 'RECENT'
+			case 'oldest':
+				return 'OLDEST'
+			case 'name':
+				return 'NAME'
+			case 'fileType':
+				return 'TYPE'
+			default:
+				return 'RECENT'
+		}
+	}, [sortOrder])
+
+	// 공유 문서함 목록 API 호출 (페이지는 0부터 시작하므로 currentPage - 1)
+	const { data: documentListResponse, isLoading } = useSharedDocumentList(projectId, {
+		page: currentPage - 1, // API는 0부터 시작
+		size: 20,
+		type: documentType,
+		sort: apiSortOption,
+	})
+	const documentList = documentListResponse?.body
+
+	// 공유 문서 삭제 mutation
+	const deleteDocumentMutation = useDeleteSharedDocumentMutation(projectId)
 
 	const handleUploadClick = () => {
 		// TODO: 파일 업로드 모달 또는 파일 선택 다이얼로그 열기
 		setIsUploading(true)
 	}
 
-	const handleFileAdd = (fileData: Omit<FileItemData, 'id'>) => {
-		const newFile: FileItemData = {
-			id: Date.now(),
-			...fileData,
+	/**
+	 * API 응답 데이터를 FileItemData 형식으로 변환
+	 */
+	const files = useMemo(() => {
+		if (!documentList?.documents || documentList.documents.length === 0) {
+			return []
 		}
-		setFiles([...files, newFile])
+
+		// 고정된 문서를 먼저, 그 다음 일반 문서 순으로 정렬
+		const sortedDocuments = [...documentList.documents].sort((a, b) => {
+			if (a.is_pinned && !b.is_pinned) return -1
+			if (!a.is_pinned && b.is_pinned) return 1
+			return 0
+		})
+
+		return sortedDocuments.map((doc) => {
+			if (doc.document_type === 'LINK') {
+				return {
+					id: doc.document_id,
+					type: 'link' as const,
+					name: doc.title,
+					url: doc.link_url || undefined,
+				}
+			} else {
+				return {
+					id: doc.document_id,
+					type: 'file' as const,
+					name: doc.title,
+					fileName: doc.file_name || undefined,
+					url: doc.file_url || undefined,
+				}
+			}
+		})
+	}, [documentList])
+
+	const handleFileAdd = () => {
+		// TODO: API 호출로 파일 추가
 		setIsUploading(false)
 	}
 
 	const handleFileDelete = (id: number) => {
-		setFiles(files.filter((file) => file.id !== id))
+		deleteDocumentMutation.mutate(id, {
+			onSuccess: () => {
+				// 삭제 성공 시 선택 해제
+				if (selectedFileId === id) {
+					setSelectedFileId(null)
+				}
+			},
+			onError: (error) => {
+				console.error('문서 삭제 실패:', error)
+				// TODO: 에러 처리 (토스트 메시지 등)
+			},
+		})
 	}
 
 	const handleFileDownload = (file: FileItemData) => {
@@ -132,7 +150,9 @@ const SharedDocumentsPage = () => {
 
 				{/* 파일 목록 영역 */}
 				<div className="px-5 py-[18px] flex-1 overflow-y-auto">
-					{files.length === 0 && !isUploading ? (
+					{isLoading ? (
+						<div className="flex items-center justify-center h-full">로딩 중...</div>
+					) : files.length === 0 && !isUploading ? (
 						// 빈 상태: 업로드 플레이스홀더
 						<div className="bg-neutral-50 border border-neutral-100 rounded-md flex gap-2.5 h-[46px] items-center pl-2 pr-2.5 py-1.5 w-[284px]">
 							<div className="relative shrink-0 w-7 h-7">
