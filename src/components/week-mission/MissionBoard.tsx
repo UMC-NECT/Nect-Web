@@ -377,7 +377,8 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 											task={mission.task}
 											missionNumber={mission.mission_number}
 											title={mission.title}
-											progress={mission.progress}
+											progressCompleted={mission.progressCompleted}
+											progressTotal={mission.progressTotal}
 											startDate={mission.start_date}
 											dueDate={mission.dead_line}
 											daysRemaining={mission.left_day}

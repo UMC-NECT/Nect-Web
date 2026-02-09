@@ -6,7 +6,10 @@ export interface Mission {
     task?: boolean
     mission_number: number
     title: string
-    progress: number
+    /** 진행률: 완료된 체크 수 (complete_check_list / done_count) */
+    progressCompleted: number
+    /** 진행률: 전체 체크 수 (whole_check_list / total_count) */
+    progressTotal: number
     start_date: string // "2025.11.17" 형식
     dead_line: string // "2025.11.30" 형식
     left_day: number

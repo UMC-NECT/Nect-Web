@@ -52,8 +52,8 @@ function buildMissionsFromWeekMission(missionsFromApi: WeekMissionItem[]): Missi
 			dead_line: formatDateForBoard(m.dead_line),
 			left_day: m.left_day ?? 0,
 			status: (m.status as StatusType) ?? 'PLANNING',
-			progress:
-				m.total_count > 0 ? Math.round((m.done_count / m.total_count) * 100) : 0,
+			progressCompleted: m.done_count ?? 0,
+			progressTotal: m.total_count ?? 0,
 			sectionIndex: 0,
 			task: true,
 			assignee: assigneeList.length > 0 ? assigneeList : undefined,
@@ -87,10 +87,8 @@ function buildMissionsFromProcessWeeks(
 			dead_line: formatDateForBoard(item.dead_line),
 			status: (item.process_status as StatusType) ?? 'PLANNING',
 			mission_number: item.mission_number ?? 0,
-			progress:
-				item.whole_check_list > 0
-					? Math.round((item.complete_check_list / item.whole_check_list) * 100)
-					: 0,
+			progressCompleted: item.complete_check_list ?? 0,
+			progressTotal: item.whole_check_list ?? 0,
 			left_day: item.left_day ?? 0,
 			sectionIndex,
 			task: sectionIndex === 0,

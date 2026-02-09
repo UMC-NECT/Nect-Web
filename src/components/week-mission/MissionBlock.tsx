@@ -13,7 +13,10 @@ interface MissionBlockProps {
 	task?: boolean
 	missionNumber: number
 	title: string
-	progress: number // 0-4 사이의 값
+	/** 완료된 체크 수 (complete_check_list) */
+	progressCompleted: number
+	/** 전체 체크 수 (whole_check_list) */
+	progressTotal: number
 	startDate: string // "2025.11.17" 형식
 	dueDate: string // "2025.11.30" 형식
 	daysRemaining: number // D-13의 13
@@ -33,7 +36,8 @@ const MissionBlock = memo(
 		task,
 		missionNumber,
 		title,
-		progress,
+		progressCompleted,
+		progressTotal,
 		startDate,
 		dueDate,
 		daysRemaining,
@@ -162,10 +166,17 @@ const MissionBlock = memo(
 					</div>
 				</div>
 
-				{/* 중단: 제목과 진행률 바 */}
+				{/* 중단: 제목과 진행률 바 (항상 4칸, complete/whole 비율로 채움) */}
 				<div className='flex flex-col items-start w-full'>
 					<p className='title-3 text-neutral-900 font-semibold leading-6 line-clamp-1 mb-3'>{title}</p>
-					<ProgressBar completed={progress} total={4} />
+					<ProgressBar
+						completed={
+							progressTotal > 0
+								? Math.min(4, Math.round((progressCompleted / progressTotal) * 4))
+								: 0
+						}
+						total={4}
+					/>
 				</div>
 
 				{/* 하단: 날짜 정보와 D-날짜 + 아바타/드롭다운 */}
