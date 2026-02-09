@@ -4,8 +4,6 @@ import ContentBox from '@/components/main/ContentBox';
 import TabGroup from '@/components/main/TabGroup';
 import CategoryDropdown from '@/components/main/CategoryDropdown';
 import RecommendationMemberCard from '@/components/common/RecommendationMemberCard';
-import BackgroundImage from '@/assets/icons/common/projectBackground.svg';
-import CharacterImage from '@/assets/icons/main/profile.svg';
 import { useMatchableMembers } from '@/hooks/queries/home';
 
 const CATEGORIES = [
@@ -19,14 +17,36 @@ const CATEGORIES = [
     '기타'
 ];
 
-const TABS = ['기획자', '디자이너', '개발자', '마케터', '기타'];
+const TABS = ['전체', '기획자', '디자이너', '개발자', '마케터', '기타'];
+
+// part Enum 매핑
+const PART_MAP: Record<string, string> = {
+    'PLANNER': '기획자',
+    'DESIGNER': '디자이너',
+    'DEVELOPER': '개발자',
+    'MARKETER': '마케터',
+    'OTHER': '기타',
+};
 
 const NecterListPage = () => {
-    const [selectedTab, setSelectedTab] = useState('디자이너');
+    const [selectedTab, setSelectedTab] = useState('전체');
     const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
     
     // API 호출 (100개 요청)
     const { data: members, isLoading, error } = useMatchableMembers(100);
+
+    // 탭에 따라 필터링
+    const filteredMembers = members?.filter(member => {
+        if (selectedTab === '전체') return true;
+        
+        // part가 null이면 '기타'로 처리
+        if (!member.part) {
+            return selectedTab === '기타';
+        }
+        
+        const memberPart = PART_MAP[member.part] || '기타';
+        return memberPart === selectedTab;
+    }) || [];
 
     useEffect(() => {
         document.body.style.backgroundColor = '#FAFAFA';
@@ -84,27 +104,19 @@ const NecterListPage = () => {
                         </div>
                     )}
 
-                    {!isLoading && !error && members && members.length === 0 && (
+                    {!isLoading && !error && filteredMembers.length === 0 && (
                         <div className="mt-6 mx-5 flex justify-center items-center h-64">
                             <p className="text-neutral-500">매칭 가능한 넥터가 없습니다</p>
                         </div>
                     )}
 
                     {/* 넥터 카드 그리드 */}
-                    {!isLoading && !error && members && members.length > 0 && (
+                    {!isLoading && !error && filteredMembers.length > 0 && (
                         <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px]">
-                            {members.map(member => (
+                            {filteredMembers.map(member => (
                                 <RecommendationMemberCard 
                                     key={member.userId}
-                                    member={{
-                                        id: member.userId,
-                                        background: BackgroundImage,
-                                        character: member.imageUrl || CharacterImage,
-                                        category: member.status,
-                                        name: member.name,
-                                        position: member.part,
-                                        description: member.introduction,
-                                    }} 
+                                    member={member}
                                     variant="list" 
                                 />
                             ))}
