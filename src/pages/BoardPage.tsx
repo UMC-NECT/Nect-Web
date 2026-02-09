@@ -7,6 +7,7 @@ import WritePostModal from '@/components/team-board/WritePostModal'
 import { usePostList } from '@/hooks/team-board/usePostList'
 import { useCreatePostMutation } from '@/hooks/team-board/useCreatePost'
 import { usePostDetail } from '@/hooks/team-board/usePostDetail'
+import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { uploadPostFile } from '@/api/team-board/boards'
 import type { PostAttachment } from '@/components/team-board/WritePostModalContent'
 
@@ -31,6 +32,16 @@ const BoardPage = () => {
 	// 게시글 상세 조회
 	const { data: postDetailResponse } = usePostDetail(projectId, selectedPostId)
 	const postDetail = postDetailResponse?.body
+
+	// 현재 사용자 프로필 정보
+	const { data: profileData } = useGetProfileQuery()
+	const currentUserId = profileData?.body?.userId
+
+	// 작성자 여부 확인
+	const isOwner = useMemo(() => {
+		if (!postDetail?.author || !currentUserId) return false
+		return postDetail.author.user_id === currentUserId
+	}, [postDetail?.author, currentUserId])
 
 	const handleWriteClick = () => {
 		setIsWriteModalOpen(true)
@@ -217,7 +228,7 @@ const BoardPage = () => {
 					})}
 					onUpdate={handleUpdatePost}
 					onDelete={handleDeletePost}
-					isOwner={false} // TODO: 작성자 확인 로직 추가
+					isOwner={isOwner}
 				/>
 			)}
 		</div>
