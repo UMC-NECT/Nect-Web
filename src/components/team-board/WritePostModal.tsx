@@ -219,9 +219,6 @@ const WritePostModal = ({
 		setFiles(files.filter((_, i) => i !== index))
 	}
 
-	const handleAttachmentRemove = (id: string) => {
-		setAttachments(attachments.filter((att) => att.id !== id))
-	}
 
 	// 이름 변경 mutation
 	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId || 0)
