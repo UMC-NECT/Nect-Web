@@ -8,6 +8,8 @@ interface SortableTaskItemProps {
     isComplete?: boolean
     isEditing?: boolean
     autoFocus?: boolean
+    /** true면 드래그/수정/삭제 비활성화 */
+    readOnly?: boolean
     onClick?: () => void
     onContentClick?: () => void
     onChange?: (value: string) => void
@@ -21,6 +23,7 @@ const SortableTaskItem = ({
     isComplete,
     isEditing,
     autoFocus,
+    readOnly = false,
     onClick,
     onContentClick,
     onChange,
@@ -34,7 +37,7 @@ const SortableTaskItem = ({
         transform,
         transition,
         isDragging,
-    } = useSortable({ id })
+    } = useSortable({ id, disabled: readOnly })
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -46,15 +49,15 @@ const SortableTaskItem = ({
             <TaskItem
                 content={content}
                 isComplete={isComplete}
-                isEditing={isEditing}
+                isEditing={readOnly ? false : isEditing}
                 autoFocus={autoFocus}
                 isDragging={isDragging}
-                dragHandleProps={{ ...attributes, ...listeners }}
-                onClick={onClick}
-                onContentClick={onContentClick}
-                onChange={onChange}
-                onSubmit={onSubmit}
-                onDelete={onDelete}
+                dragHandleProps={readOnly ? undefined : { ...attributes, ...listeners }}
+                onClick={readOnly ? undefined : onClick}
+                onContentClick={readOnly ? undefined : onContentClick}
+                onChange={readOnly ? undefined : onChange}
+                onSubmit={readOnly ? undefined : onSubmit}
+                onDelete={readOnly ? undefined : onDelete}
             />
         </div>
     )

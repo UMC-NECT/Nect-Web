@@ -17,6 +17,8 @@ import type {
 import { getMissionList } from '@/api/process/weekMission'
 import { useDeleteProcessMutation, usePatchProcessMutation, usePatchProcessStatusMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery, useUsersQuery } from '@/hooks/project/useProjectApi'
+import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
+import { useProjectLeaderStore } from '@/stores/projectLeaderStore'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useCallback } from 'react'
 import type { Mission } from '@/types/mission'
@@ -145,6 +147,9 @@ const WeekMissionPage = () => {
 	}, [projectIdStr, queryClient])
 	const { data: partsData } = usePartsQuery(projectIdStr)
 	const { data: usersData } = useUsersQuery(projectIdStr)
+	const { data: profileData } = useGetProfileQuery()
+	const isLeader = useProjectLeaderStore(s => s.isLeader)
+	const setIsLeader = useProjectLeaderStore(s => s.setIsLeader)
 	const patchProcessStatusMutation = usePatchProcessStatusMutation()
 	const patchProcessMutation = usePatchProcessMutation()
 	const deleteProcessMutation = useDeleteProcessMutation()
@@ -175,6 +180,18 @@ const WeekMissionPage = () => {
 	useEffect(() => {
 		if (partsData?.body?.parts?.length) setRoles(partsData.body.parts)
 	}, [partsData?.body?.parts, setRoles])
+
+	// 현재 유저가 프로젝트 멤버이며 member_type이 LEADER인지 체크하여 store에 설정
+	useEffect(() => {
+		const myUserId = profileData?.body?.userId
+		const users = usersData?.body?.users ?? []
+		if (myUserId == null || users.length === 0) {
+			setIsLeader(false)
+			return
+		}
+		const me = users.find(u => u.user_id === myUserId)
+		setIsLeader(me?.member_type === 'LEADER')
+	}, [profileData?.body?.userId, usersData?.body?.users, setIsLeader])
 
 	useEffect(() => {
 		if (!usersData?.body?.users?.length) return
@@ -299,13 +316,15 @@ const WeekMissionPage = () => {
 			<div className='flex items-center justify-between pl-[72px] mt-[31px]'>
 				<WeekSelector />
 				<div className='flex items-center gap-4'>
-					{/* 일정 추가 버튼 */}
-					<button
-						className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors'
-						onClick={() => openMissionModal()}
-					>
-						<ScheduleAddIcon className='w-6 h-6' />
-					</button>
+					{/* 일정 추가 버튼 (리더만 표시) */}
+					{isLeader && (
+						<button
+							className='flex items-center justify-center p-1 bg-neutral-50 shadow-inner-neutral-2 rounded-[14px] w-10 h-10 hover:bg-neutral-100 transition-colors'
+							onClick={() => openMissionModal()}
+						>
+							<ScheduleAddIcon className='w-6 h-6' />
+						</button>
+					)}
 				</div>
 			</div>
 
@@ -317,6 +336,7 @@ const WeekMissionPage = () => {
 				projectId={projectIdStr}
 				onMissionUpdate={handleMissionUpdate}
 				onDeleteMission={handleDeleteMission}
+				isTaskEditable={isLeader}
 			/>
 			</div>
 		</div>

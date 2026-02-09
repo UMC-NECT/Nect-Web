@@ -5,6 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import 'overlayscrollbars/overlayscrollbars.css'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
+import { useProjectLeaderStore } from '@/stores/projectLeaderStore'
 import { useProcessDetailQuery } from '@/hooks/process/useProcessApi'
 import { useTeamStore } from '@/stores/teamStore'
 import type { MissionStatus } from '@/types/missionStatus'
@@ -109,7 +110,8 @@ const toRoleFieldPayload = (
 }
 
 const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => {
-	const isLeader = variant === 'leader'
+	const isLeaderVariant = variant === 'leader'
+	const isProjectLeader = useProjectLeaderStore(s => s.isLeader)
 	const { roles, persons } = useTeamStore()
 	const {
 		editingMissionId,
@@ -163,6 +165,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setMentionedPersons,
 		isTask,
 	} = useMissionModalStore()
+	const isTaskReadOnly = !!isTask && !isProjectLeader
 
 	const { projectId: pageProjectId } = useProjectIdStore()
 	const projectIdForList = projectId ?? pageProjectId?.toString() ?? ''
@@ -430,6 +433,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	)
 
 	const handleDragEnd = (event: DragEndEvent) => {
+		if (isTaskReadOnly) return
 		const { active, over } = event
 		if (!over || active.id === over.id) return
 		const fromIndex = tasks.findIndex(t => t.id === active.id)
@@ -976,7 +980,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 	// 리더형 모달 + 편집 모드: RoleTaskPanel 업무 추가/수정/토글 API 연동
 	const rolePanelApiHandlers =
-		isLeader && isEditMode && projectId != null && editingMissionId != null
+		isLeaderVariant && isEditMode && projectId != null && editingMissionId != null
 			? {
 					onAddTask: (roleId: number, content: string) => {
 						const sortOrder = roleTasks.filter(t => t.roleId === roleId).length
@@ -1092,7 +1096,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		>
 			<section className='flex items-center justify-between w-full px-[58px] mt-[34px] mb-[26px]'>
 				<div ref={missionDropdownRef} className=' relative'>
-					<div onClick={() => toggleDropdown('mission')} className='cursor-pointer'>
+					<div
+						onClick={() => !isTaskReadOnly && toggleDropdown('mission')}
+						className={isTaskReadOnly ? 'cursor-default' : 'cursor-pointer'}
+					>
 						<MissionTagChip missionNumber={missionNumber} />
 					</div>
 					{openDropdown === 'mission' && (
@@ -1109,29 +1116,30 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 				</div>
 
 				<div className='flex gap-2.5'>
-
-					<button
-						type='button'
-						disabled={
-							postProcessMutation.isPending ||
+					{!isTaskReadOnly && (
+						<button
+							type='button'
+							disabled={
+								postProcessMutation.isPending ||
+								postFileMutation.isPending ||
+								patchProcessMutation.isPending ||
+								patchMissionStatusMutation.isPending ||
+								postUploadAttachmentFileMutation.isPending ||
+								postAttachmentLinksMutation.isPending
+							}
+							onClick={handleSave}
+							className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-primary-150-light text-primary-500-normal min-w-[60px] hover:bg-primary-200-light transition-all duration-300 ease-in-out disabled:opacity-50 disabled:pointer-events-none'
+						>
+							{postProcessMutation.isPending ||
 							postFileMutation.isPending ||
 							patchProcessMutation.isPending ||
 							patchMissionStatusMutation.isPending ||
 							postUploadAttachmentFileMutation.isPending ||
 							postAttachmentLinksMutation.isPending
-						}
-						onClick={handleSave}
-						className='button-1 font-semibold px-2.5 py-1.5 rounded-6 bg-primary-150-light text-primary-500-normal min-w-[60px] hover:bg-primary-200-light transition-all duration-300 ease-in-out disabled:opacity-50 disabled:pointer-events-none'
-					>
-						{postProcessMutation.isPending ||
-						postFileMutation.isPending ||
-						patchProcessMutation.isPending ||
-						patchMissionStatusMutation.isPending ||
-						postUploadAttachmentFileMutation.isPending ||
-						postAttachmentLinksMutation.isPending
-							? '저장 중...'
-							: '저장'}
-					</button>
+								? '저장 중...'
+								: '저장'}
+						</button>
+					)}
 				</div>
 			</section>
 			<OverlayScrollbarsComponent
@@ -1155,9 +1163,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 							placeholder='새 미션 업무'
 							value={title}
 							onChange={e => setTitle(e.target.value)}
+							readOnly={isTaskReadOnly}
 						/>
 
-						{isLeader ? (
+						{isLeaderVariant ? (
 							/* 리더형 모달 레이아웃 */
 							<div className='flex gap-8'>
 								{/* Left: Form Fields + Files */}
@@ -1169,10 +1178,11 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											<PartSelector
 												variant='person'
 												selectedPersons={selectedAssignees}
-												onPersonRemove={removeSelectedAssignee}
-												onClick={() => toggleDropdown('assignees')}
+												onPersonRemove={isTaskReadOnly ? undefined : removeSelectedAssignee}
+												onClick={isTaskReadOnly ? undefined : () => toggleDropdown('assignees')}
+												className={isTaskReadOnly ? 'cursor-default' : ''}
 											/>
-											{openDropdown === 'assignees' && (
+											{!isTaskReadOnly && openDropdown === 'assignees' && (
 												<div className='absolute top-full left-[76px] mt-1 z-10'>
 													<TagChipList
 														variant='person'
@@ -1192,7 +1202,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											<input
 												type='text'
 												value={startDate && deadline ? `${startDate} ~ ${deadline}` : startDate || ''}
+												readOnly={isTaskReadOnly}
 												onChange={e => {
+													if (isTaskReadOnly) return
 													const value = e.target.value.replace(/[^0-9]/g, '')
 													let formatted = ''
 
@@ -1218,7 +1230,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 														'bg-neutral-50 hover:bg-neutral-100 shadow-inner-neutral-2 px-2',
 													(startDate || deadline) && 'hover:bg-neutral-100',
 													'button-1 font-medium text-neutral-700 placeholder:text-neutral-300',
-													'outline-none border-none'
+													'outline-none border-none',
+													isTaskReadOnly && 'cursor-default'
 												)}
 											/>
 										</div>
@@ -1226,10 +1239,13 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 										{/* 작업 상태 */}
 										<div className='flex gap-2.5 items-center relative'>
 											<span className='body-2 font-medium text-neutral-500 w-[70px]'>작업 상태</span>
-											<div onClick={() => toggleDropdown('status')}>
+											<div
+												onClick={() => !isTaskReadOnly && toggleDropdown('status')}
+												className={isTaskReadOnly ? 'cursor-default' : ''}
+											>
 												<StatusChip state={missionStatus} hover={true} />
 											</div>
-											{openDropdown === 'status' && (
+											{!isTaskReadOnly && openDropdown === 'status' && (
 												<div className='absolute top-full left-[76px] mt-1 z-10'>
 													<StatusChipList
 														onStatusChange={status => {
@@ -1249,6 +1265,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											<p className='text-[16px] font-semibold text-neutral-900 tracking-[-0.32px]'>
 												업로드 파일 & 링크
 											</p>
+											{!isTaskReadOnly && (
 											<button
 												className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-6 shadow-inner-neutral-2'
 												onClick={() => setIsAddingFile(true)}
@@ -1258,6 +1275,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 													추가
 												</span>
 											</button>
+											)}
 										</div>
 
 										{/* Content */}
@@ -1267,6 +1285,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 													<FileItem
 														key={file.id}
 														data={file}
+														disableDelete={isTaskReadOnly}
 														onClick={() => {
 															if (file.url) {
 																const url =
@@ -1290,7 +1309,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 														}}
 													/>
 												))}
-												{isAddingFile && (
+												{isAddingFile && !isTaskReadOnly && (
 													<FileItem
 														isEditing
 														onSave={handleFileSave}
@@ -1304,6 +1323,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 								{/* Right: Role Task Panel */}
 								<RoleTaskPanel
+									readOnly={isTaskReadOnly}
 									onAddTask={rolePanelApiHandlers?.onAddTask}
 									onToggleTask={rolePanelApiHandlers?.onToggleTask}
 									onUpdateTask={rolePanelApiHandlers?.onUpdateTask}
@@ -1344,10 +1364,11 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											<PartSelector
 												variant='person'
 												selectedPersons={selectedAssignees}
-												onPersonRemove={removeSelectedAssignee}
-												onClick={() => toggleDropdown('assignees')}
+												onPersonRemove={isTaskReadOnly ? undefined : removeSelectedAssignee}
+												onClick={isTaskReadOnly ? undefined : () => toggleDropdown('assignees')}
+												className={isTaskReadOnly ? 'cursor-default' : ''}
 											/>
-											{openDropdown === 'assignees' && (
+											{!isTaskReadOnly && openDropdown === 'assignees' && (
 												<div className='absolute top-full left-[76px] mt-1 z-10'>
 													<TagChipList
 														variant='person'
@@ -1367,7 +1388,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											<input
 												type='text'
 												value={startDate && deadline ? `${startDate} ~ ${deadline}` : startDate || ''}
+												readOnly={isTaskReadOnly}
 												onChange={e => {
+													if (isTaskReadOnly) return
 													const value = e.target.value.replace(/[^0-9]/g, '')
 													let formatted = ''
 
@@ -1394,7 +1417,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 														'bg-neutral-50 hover:bg-neutral-100 shadow-inner-neutral-2 px-2',
 													(startDate || deadline) && 'hover:bg-neutral-100',
 													'button-1 font-normal text-neutral-700 placeholder:text-neutral-300',
-													'outline-none border-none'
+													'outline-none border-none',
+													isTaskReadOnly && 'cursor-default'
 												)}
 											/>
 										</div>
@@ -1402,10 +1426,13 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 										{/* 작업 상태 */}
 										<div className='flex gap-2.5 items-center relative'>
 											<span className='body-2 font-medium text-neutral-500 w-[70px]'>작업 상태</span>
-											<div onClick={() => toggleDropdown('status')}>
+											<div
+												onClick={() => !isTaskReadOnly && toggleDropdown('status')}
+												className={isTaskReadOnly ? 'cursor-default' : ''}
+											>
 												<StatusChip state={missionStatus} hover={true} />
 											</div>
-											{openDropdown === 'status' && (
+											{!isTaskReadOnly && openDropdown === 'status' && (
 												<div className='absolute top-full left-[76px] mt-1 z-10'>
 													<StatusChipList
 														onStatusChange={status => {
@@ -1465,6 +1492,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 																isComplete={task.isComplete}
 																isEditing={editingTaskId === task.id}
 																autoFocus={editingTaskId === task.id}
+																readOnly={isTaskReadOnly}
 																onClick={() => handleTaskToggle(task)}
 																onContentClick={() => handleTaskEdit(task.id, task.content)}
 																onChange={setEditingTaskContent}
@@ -1472,7 +1500,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 																onDelete={() => handleTaskDelete(task.id)}
 															/>
 														))}
-														{/* 아래 입력칸 항상 표시 (업무를 다 지워도 추가 가능) */}
+														{/* 아래 입력칸 항상 표시 (업무를 다 지워도 추가 가능) - 리더가 아니면 숨김 */}
+														{!isTaskReadOnly && (
 														<TaskItem
 															content={newTaskContent}
 															isEditing
@@ -1482,6 +1511,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 															onSubmit={handleTaskSubmit}
 															onDelete={() => setNewTaskContent('')}
 														/>
+														)}
 													</div>
 												</SortableContext>
 											</DndContext>
@@ -1561,6 +1591,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											<p className='text-[16px] font-semibold text-neutral-900 tracking-[-0.32px]'>
 												업로드 파일 & 링크
 											</p>
+											{!isTaskReadOnly && (
 											<button
 												className='flex gap-0.5 items-center px-1.5 pr-2.5 py-0.5 bg-neutral-50/20 border border-neutral-200 rounded-6 shadow-inner-neutral-2'
 												onClick={() => setIsAddingFile(true)}
@@ -1570,6 +1601,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 													추가
 												</span>
 											</button>
+											)}
 										</div>
 
 										{/* Content */}
@@ -1580,6 +1612,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 													<FileItem
 														key={file.id}
 														data={file}
+														disableDelete={isTaskReadOnly}
 														onClick={() => {
 															if (file.url) {
 																const url =
@@ -1604,7 +1637,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 													/>
 												))}
 												{/* 파일 추가 입력 */}
-												{isAddingFile && (
+												{isAddingFile && !isTaskReadOnly && (
 													<FileItem
 														isEditing
 														onSave={handleFileSave}

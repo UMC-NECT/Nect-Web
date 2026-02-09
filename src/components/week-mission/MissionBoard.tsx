@@ -28,9 +28,11 @@ interface MissionBoardProps {
 		updates: { start_date?: string; dead_line?: string; sectionIndex?: number; status?: StatusType }
 	) => void
 	onDeleteMission?: (processId: number) => void
+	/** 위크미션 task 블록 수정 가능 여부 (리더만 true) */
+	isTaskEditable?: boolean
 }
 
-const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onDeleteMission }: MissionBoardProps) => {
+const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onDeleteMission, isTaskEditable = false }: MissionBoardProps) => {
 	// 공유 스크롤 컨테이너 ref
 	const boardScrollRef = useRef<HTMLDivElement>(null)
 	const weekDatesRef = useRef<HTMLDivElement>(null)
@@ -385,6 +387,7 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 											status={statusToMissionStatus(mission.status)}
 											assignees={mission.assignee}
 											gridColumnSize={tempColSpan}
+											isTaskEditable={isTaskEditable}
 											onClick={() => {
 												if (!justDraggedRef.current) {
 													openMissionModal(mission.process_id, mission.sectionIndex, projectId, undefined, mission.task)
@@ -452,8 +455,8 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 											<div
 												className='absolute inset-0 flex items-center mt-3 justify-center transition-opacity duration-300'
 												style={{
-													opacity: isHovered ? 1 : 0,
-													pointerEvents: isHovered ? 'auto' : 'none',
+													opacity: isHovered && (sectionIndex > 0 || isTaskEditable) ? 1 : 0,
+													pointerEvents: isHovered && (sectionIndex > 0 || isTaskEditable) ? 'auto' : 'none',
 												}}
 											>
 												<PlusBlock onClick={() => openMissionModal(undefined, undefined, undefined, true)} />

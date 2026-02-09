@@ -13,6 +13,8 @@ interface MissionBlockProps {
 	task?: boolean
 	missionNumber: number
 	title: string
+	/** 위크미션 task일 때 수정 가능 여부 (리더만 true, 비리더는 확인만 가능) */
+	isTaskEditable?: boolean
 	/** 완료된 체크 수 (complete_check_list) */
 	progressCompleted: number
 	/** 전체 체크 수 (whole_check_list) */
@@ -36,6 +38,7 @@ const MissionBlock = memo(
 		task,
 		missionNumber,
 		title,
+		isTaskEditable = false,
 		progressCompleted,
 		progressTotal,
 		startDate,
@@ -51,6 +54,7 @@ const MissionBlock = memo(
 		isDragging = false,
 		isResizing = false,
 	}: MissionBlockProps) => {
+		const canEditTask = !task || isTaskEditable
 		const [isStatusListOpen, setIsStatusListOpen] = useState(false)
 		const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 		const [isBlockHovered, setIsBlockHovered] = useState(false)
@@ -64,11 +68,13 @@ const MissionBlock = memo(
 		const showBlockHover = isBlockHovered && !isExcludedAreaHovered
 
 		const handleStatusListOpen = () => {
+			if (!canEditTask) return
 			setIsStatusListOpen(!isStatusListOpen)
 		}
 
 		const handleDragStart = (e: React.MouseEvent) => {
 			if (task) return
+			if (!canEditTask) return
 			if ((e.target as HTMLElement).closest('.status-chip-container')) {
 				return
 			}
@@ -96,6 +102,7 @@ const MissionBlock = memo(
 
 		const handleResizeStart = (e: React.MouseEvent) => {
 			if (task) return
+			if (!canEditTask) return
 			e.preventDefault()
 			e.stopPropagation()
 			if (onResizeStart) {
@@ -138,7 +145,7 @@ const MissionBlock = memo(
 						{gridColumnSize > 1 ? `Misson ${missionNumber}` : `M${missionNumber}`}
 					</p>
 					<div
-						className='relative flex items-center justify-center status-chip-container cursor-pointer'
+						className={cn('relative flex items-center justify-center status-chip-container', canEditTask ? 'cursor-pointer' : 'cursor-default')}
 						onMouseEnter={() => {
 							statusChipHoveredRef.current = true
 							updateExcludedAreaHovered()
@@ -150,7 +157,7 @@ const MissionBlock = memo(
 						}}
 						onClick={e => e.stopPropagation()}
 					>
-						<StatusChip state={status} gridColumnSize={gridColumnSize} hover={true} onClick={handleStatusListOpen} />
+						<StatusChip state={status} gridColumnSize={gridColumnSize} hover={canEditTask} onClick={handleStatusListOpen} />
 						{isStatusListOpen && (
 							<div ref={statusListRef} className='absolute z-1200 top-full'>
 								<StatusChipList
