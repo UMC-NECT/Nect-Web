@@ -105,13 +105,15 @@ const AuthForm = () => {
 					</span>
 				</label>
 
-				{/* 에러 메시지 영역 */}
-				{(errors.email || loginError) && (
-					<div className='flex items-center mb-3'>
-						<CheckIcon className='w-3 h-3 text-danger-700 mr-1' />
-						<p className='body-2 text-danger-700'>{errors.email?.message || loginError}</p>
-					</div>
-				)}
+				<div className='flex items-center mb-3'>
+					{/* 에러 메시지 영역 */}
+					{(errors.email || loginError) ? (
+						<>
+							<CheckIcon className='w-3 h-3 text-danger-700 mr-1' />
+							<p className='body-2 text-danger-700'>{errors.email?.message || loginError}</p>
+						</>
+					) : <div className='h-[21px]'></div>}
+				</div>
 
 				{/* 로그인 버튼 */}
 				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled || loginMutation.isPending}>
