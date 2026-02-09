@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { WORK_STATUS_CONFIG } from '@/constants/workStatus'
 import ResetIcon from '@/assets/icons/common/reset.svg?react'
 import PlayIcon from '@/assets/icons/common/play.svg?react'
@@ -20,6 +20,25 @@ interface TeamProfileCardMainProps {
 	className?: string
 }
 
+/**
+ * 시간 문자열을 초로 변환: "04:58:57" -> 17937
+ */
+const parseTimeToSeconds = (timeStr: string): number => {
+	const parts = timeStr.split(':').map(Number)
+	if (parts.length !== 3) return 0
+	return parts[0] * 3600 + parts[1] * 60 + parts[2]
+}
+
+/**
+ * 초를 시간 문자열로 변환: 17937 -> "04:58:57"
+ */
+const formatSecondsToTime = (seconds: number): string => {
+	const hours = Math.floor(seconds / 3600)
+	const minutes = Math.floor((seconds % 3600) / 60)
+	const secs = seconds % 60
+	return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
+
 const TeamProfileCardMain = ({
 	name,
 	role,
@@ -31,11 +50,48 @@ const TeamProfileCardMain = ({
 	className = '',
 }: TeamProfileCardMainProps) => {
 	const [isWorking, setIsWorking] = useState(initialIsWorking)
+	const [displayTime, setDisplayTime] = useState(time)
+	const initialSecondsRef = useRef<number>(parseTimeToSeconds(time))
+	const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
 	// API의 is_working 값이 변경되면 로컬 상태 동기화
 	useEffect(() => {
 		setIsWorking(initialIsWorking)
 	}, [initialIsWorking])
+
+	// time prop이 변경되면 초기 시간 업데이트
+	useEffect(() => {
+		const newSeconds = parseTimeToSeconds(time)
+		initialSecondsRef.current = newSeconds
+		setDisplayTime(time)
+	}, [time])
+
+	// 작업 중일 때 실시간 타이머 증가
+	useEffect(() => {
+		if (isWorking) {
+			// 작업 시작 시 현재 시간을 기준으로 시작
+			const startSeconds = initialSecondsRef.current
+			let currentSeconds = startSeconds
+
+			intervalRef.current = setInterval(() => {
+				currentSeconds += 1
+				setDisplayTime(formatSecondsToTime(currentSeconds))
+			}, 1000)
+		} else {
+			// 작업 정지 시 interval 정리
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current)
+				intervalRef.current = null
+			}
+		}
+
+		return () => {
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current)
+				intervalRef.current = null
+			}
+		}
+	}, [isWorking])
 
 	const statusItems = WORK_STATUS_CONFIG.map((config) => ({
 		...config,
@@ -95,7 +151,9 @@ const TeamProfileCardMain = ({
 						<div className="w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center">
 							<ResetIcon className="w-6 h-6 text-neutral-300" />
 						</div>
-						<div className="text-right justify-center text-primary-500-normal heading-1 font-bold">{time}</div>
+						<div className={`text-right justify-center heading-1 font-bold ${
+							isWorking ? 'text-primary-500-normal' : 'text-neutral-400'
+						}`}>{displayTime}</div>
 					</div>
 				</div>
 

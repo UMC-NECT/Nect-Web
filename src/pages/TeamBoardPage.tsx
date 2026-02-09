@@ -12,6 +12,8 @@ import { useCalendarMonth } from '@/hooks/team-board/useCalendarMonth'
 import { useCreateScheduleMutation } from '@/hooks/team-board/useCreateSchedule'
 import { useUpdateScheduleMutation } from '@/hooks/team-board/useUpdateSchedule'
 import { useDeleteScheduleMutation } from '@/hooks/team-board/useDeleteSchedule'
+import { useStartWorkMutation } from '@/hooks/team-board/useStartWork'
+import { useStopWorkMutation } from '@/hooks/team-board/useStopWork'
 import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
@@ -47,6 +49,12 @@ const TeamBoardPage = () => {
 	
 	// 일정 삭제 mutation
 	const deleteScheduleMutation = useDeleteScheduleMutation(projectId)
+
+	// 작업 시작 mutation
+	const startWorkMutation = useStartWorkMutation(projectId)
+
+	// 작업 정지 mutation
+	const stopWorkMutation = useStopWorkMutation(projectId)
 
 	/**
 	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"
@@ -300,9 +308,17 @@ const TeamBoardPage = () => {
 				completed: targetMember.counts.done,
 			},
 			isWorking: targetMember.is_working,
-			onStartWork: () => console.log('작업 시작'),
+			onStartWork: () => {
+				if (targetMember.is_working) {
+					// 작업 중이면 정지
+					stopWorkMutation.mutate()
+				} else {
+					// 작업 중이 아니면 시작
+					startWorkMutation.mutate()
+				}
+			},
 		}
-	}, [overview])
+	}, [overview, startWorkMutation, stopWorkMutation])
 
 	// 헤더 데이터
 	const headerData = useMemo(() => {

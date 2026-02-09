@@ -275,3 +275,27 @@ export const deleteSharedDocument = async (
 	const { data } = await api.delete(`/api/v1/projects/${projectId}/boards/shared-documents/${documentId}`)
 	return data
 }
+
+/**
+ * 팀보드에서 작업 타이머를 시작합니다.
+ * @param projectId - 프로젝트 ID
+ * @returns 작업 시작 결과
+ */
+export const startWork = async (
+	projectId: number,
+): Promise<CommonResponse> => {
+	const { data } = await api.post(`/api/v1/projects/${projectId}/boards/work/start`)
+	return data
+}
+
+/**
+ * 팀보드에서 작업 타이머를 정지합니다.
+ * @param projectId - 프로젝트 ID
+ * @returns 작업 정지 결과
+ */
+export const stopWork = async (
+	projectId: number,
+): Promise<CommonResponse> => {
+	const { data } = await api.post(`/api/v1/projects/${projectId}/boards/work/stop`)
+	return data
+}
