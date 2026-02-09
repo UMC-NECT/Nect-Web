@@ -1,6 +1,7 @@
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
 import { useNavigate } from 'react-router'
+import NecttyIcon from '@/assets/icons/mypage/nectty.png'
 
 const EmptyIdeaAnalysis = () => {
 	const navigate = useNavigate()
@@ -12,7 +13,7 @@ const EmptyIdeaAnalysis = () => {
 
 			{/* 컨텐츠 컨테이너 */}
 			<div className='w-full flex items-center justify-center bg-bg-gray border border-neutral-200 rounded-12 px-11.5 py-14'>
-				<div className='flex flex-col items-center gap-8 w-full'>
+				<div className='flex flex-col items-center w-full'>
 					{/* 설명글 */}
 					<div className='flex flex-col items-center gap-5 w-full'>
 						<span className='title-3 font-semibold text-primary-600-normal text-center'>NECT Analysis Report</span>
@@ -27,7 +28,7 @@ const EmptyIdeaAnalysis = () => {
 					</div>
 
 					{/* 썸네일 이미지 */}
-					<div className='w-65 h-65 bg-[#D9D9D9]' />
+					<img src={NecttyIcon} className='w-58.25 h-58.25 px-[22.25px] py-[37.5px] mt-4 mb-12' />
 
 					{/* AI 아이디어 분석하기 버튼 */}
 					<Button
