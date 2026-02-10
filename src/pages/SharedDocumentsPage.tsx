@@ -244,7 +244,6 @@ const SharedDocumentsPage = () => {
 					type: 'file',
 					name: file.name.replace(/\.[^/.]+$/, ''), // 확장자 제거
 					fileName: file.name,
-					url: URL.createObjectURL(file),
 				},
 				file
 			)

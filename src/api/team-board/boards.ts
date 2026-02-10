@@ -406,9 +406,8 @@ export const downloadSharedDocumentFile = async (
 			}
 		)
 		
-		// Blob을 다운로드 링크로 변환
-		const blob = new Blob([response.data])
-		const downloadUrl = window.URL.createObjectURL(blob)
+		// response.data는 이미 Blob 객체이므로 직접 사용
+		const downloadUrl = window.URL.createObjectURL(response.data)
 		const link = document.createElement('a')
 		link.href = downloadUrl
 		link.download = fileName || 'download' // 파일명이 제공되면 사용, 없으면 기본값
