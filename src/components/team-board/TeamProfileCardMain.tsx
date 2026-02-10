@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { WORK_STATUS_CONFIG } from '@/constants/workStatus'
-import ResetIcon from '@/assets/icons/common/reset.svg?react'
 import PlayIcon from '@/assets/icons/common/play.svg?react'
 
 interface WorkStatus {
