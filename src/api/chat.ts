@@ -11,7 +11,6 @@ import type {
 	ChatRoomResponseDto,
 	CommonResponse,
 	GroupChatRoomCreateRequestDto,
-	ProjectMemberDto,
 	ResponseGetChatRoomsDto,
 	ResponseGetProjectAlbumsDto,
 	ResponseGetProjectMembersDto,

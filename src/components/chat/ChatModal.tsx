@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ChatMessageItem } from './ChatMessageItem'
 import ChatRoom from './ChatRoom'
 import ChatMemberSelectModal from './ChatMemberSelectModal'
@@ -107,6 +107,8 @@ interface ChatModalProps {
 					setView('list')
 				}}
 				onConfirm={async (roomName, selectedAvatar) => {
+					// 현재는 선택한 아바타를 사용하지 않지만, 추후 확장을 위해 파라미터를 유지합니다.
+					void selectedAvatar
 					try {
 						console.log('채팅방 생성 요청:', {
 							projectId,

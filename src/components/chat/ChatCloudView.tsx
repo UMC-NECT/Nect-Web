@@ -3,7 +3,6 @@ import ChatSidebar from './ChatSidebar'
 import ChatHeader from './ChatHeader'
 import CloudImageViewer from './CloudImageViewer'
 import { getChatRooms, getChatRoomAlbum } from '@/api/chat'
-import type { ChatRoomAlbumDetailDto, ChatRoomListDto } from '@/types/api/chat'
 import { useQuery } from '@tanstack/react-query'
 
 interface CloudRoom {

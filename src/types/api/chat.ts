@@ -1,4 +1,5 @@
 import type { CommonResponse } from "./commonResponse"
+export type { CommonResponse } from "./commonResponse"
 
 // ========== 채팅방 관리 (ChatMessageController) ==========
 

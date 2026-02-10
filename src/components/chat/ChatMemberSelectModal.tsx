@@ -5,7 +5,6 @@ import ChatSidebar from './ChatSidebar'
 import ChatActionButtons from './ChatActionButtons'
 import { getProjectMembers } from '@/api/chat'
 import { useQuery } from '@tanstack/react-query'
-import type { ProjectMemberDto } from '@/types/api/chat'
 
 interface Contact {
 	id: number

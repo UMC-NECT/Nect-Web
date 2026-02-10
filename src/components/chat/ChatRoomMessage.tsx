@@ -33,6 +33,8 @@ export const ChatRoomMessage = ({
 	onRegisterToSharedDocs,
 	onDeleteFile,
 }: ChatRoomMessageProps) => {
+	// 현재 컴포넌트에서는 fileId를 직접 사용하지 않지만, 상위 컴포넌트에서 전달받아야 하므로 유지합니다.
+	void fileId
 	// 파일 첨부 메시지
 	if (fileAttachment) {
 		return (
