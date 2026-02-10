@@ -3,6 +3,31 @@ import { NotificationItem } from './NotificationItem'
 import { type Notification } from '@/types/notification'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
 import { groupNotificationsByDate, flattenGroupedNotifications } from '@/utils/notificationUtils'
+import { useNotificationList } from '@/hooks/notification/useNotificationList'
+import type { NotificationDto } from '@/types/api/notification'
+
+/**
+ * API 응답의 NotificationDto를 UI용 Notification 타입으로 변환
+ */
+const convertNotificationDtoToNotification = (dto: NotificationDto): Notification => {
+	// classification을 category로 사용, 없으면 기본값
+	const category = dto.classification || '알림'
+	
+	// mainMessage를 title로 사용
+	const title = dto.mainMessage
+	
+	// contentMessage를 description으로 사용
+	const description = dto.contentMessage || ''
+
+	return {
+		id: dto.noticeId,
+		category,
+		title,
+		description,
+		time: dto.createdDate,
+		isRead: dto.isRead,
+	}
+}
 
 interface NotificationDropdownProps {
 	defaultTab?: 'nect' | 'team'
@@ -11,64 +36,19 @@ interface NotificationDropdownProps {
 const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps) => {
 	const [activeTab, setActiveTab] = useState<'nect' | 'team'>(defaultTab)
 
-	const notifications: Notification[] = [
-		{
-			id: 1,
-			category: '넥트(NECT)',
-			title: 'PM 시루님이 나를 @언급함',
-			description: '"예원님 이거 수정사항 생겨서 여기에 정리해두었어요!"',
-			time: '오늘 16:00',
-			isRead: false,
-		},
-		{
-			id: 2,
-			category: '넥트(NECT)',
-			title: '새로운 위크 미션이 등록되었습니다.',
-			description: '"Misson 2 온보딩 페이지 만들기" (교체필요 큰 위크미션등록 X)',
-			time: '어제 16:00',
-			isRead: true,
-		},
-		{
-			id: 3,
-			category: '넥트(NECT)',
-			title: '위크 미션에 Design 업무가 등록되었습니다.',
-			description: '"Misson 2 온보딩 페이지 UI 구현"',
-			time: '1월 26일',
-			isRead: false,
-		},
-		{
-			id: 4,
-			category: '넥트(NECT)',
-			title: '패',
-			description: '',
-			time: '1월 27일',
-			isRead: true,
-		},
-		{
-			id: 5,
-			category: '넥트(NECT)',
-			title: '매',
-			description: '',
-			time: '1월 1일',
-			isRead: true,
-		},
-		{
-			id: 6,
-			category: '넥트(NECT)',
-			title: '우',
-			description: '',
-			time: '2025.12.26',
-			isRead: false,
-		},
-		{
-			id: 7,
-			category: '마이 매칭',
-			title: '우디님과의 매칭이 자동 거절되었습니다.',
-			description: '',
-			time: '오늘 16:00',
-			isRead: false,
-		},
-	]
+	// 활성 탭에 따라 필터 결정: 'nect' -> EXPLORATION, 'team' -> WORKSPACES
+	const filter = activeTab === 'nect' ? 'EXPLORATION' : 'WORKSPACES'
+
+	// 알림 목록 조회
+	const { data: notificationResponse, isLoading } = useNotificationList({
+		filter,
+		size: 20,
+	})
+
+	// API 응답을 UI용 Notification 타입으로 변환
+	const notifications: Notification[] = notificationResponse?.body?.notifications
+		? notificationResponse.body.notifications.map(convertNotificationDtoToNotification)
+		: []
 
 	// 날짜별로 그룹화된 알림을 렌더링용 배열로 변환
 	const flattenedNotifications = useMemo(() => {
@@ -98,29 +78,39 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 
 			{/* 알림 리스트 - 스크롤 영역 */}
 			<div className='flex flex-col gap-0 h-[556px] items-center relative shrink-0 w-full overflow-y-auto notification-scroll'>
-				<div className='flex flex-col items-start relative shrink-0 w-full'>
-					{flattenedNotifications.map((item, index) => {
-						if (item.type === 'divider') {
-							return (
-								<div key={`divider-${index}`} className='flex flex-col items-center justify-center relative shrink-0 w-full my-0'>
-									<div className='relative w-full h-0'>
-										<div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[343px] h-px'>
-											<div className='absolute inset-0 border-t border-neutral-200' />
+				{isLoading ? (
+					<div className='flex items-center justify-center h-full text-neutral-500'>
+						알림을 불러오는 중...
+					</div>
+				) : flattenedNotifications.length === 0 ? (
+					<div className='flex items-center justify-center h-full text-neutral-500'>
+						알림이 없습니다.
+					</div>
+				) : (
+					<div className='flex flex-col items-start relative shrink-0 w-full'>
+						{flattenedNotifications.map((item, index) => {
+							if (item.type === 'divider') {
+								return (
+									<div key={`divider-${index}`} className='flex flex-col items-center justify-center relative shrink-0 w-full my-0'>
+										<div className='relative w-full h-0'>
+											<div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[343px] h-px'>
+												<div className='absolute inset-0 border-t border-neutral-200' />
+											</div>
+										</div>
+										<div className='bg-white flex items-center px-2 py-1 relative -mt-3'>
+											<span className='caption-1 text-neutral-400 font-medium'>{item.label}</span>
 										</div>
 									</div>
-									<div className='bg-white flex items-center px-2 py-1 relative -mt-3'>
-										<span className='caption-1 text-neutral-400 font-medium'>{item.label}</span>
-									</div>
+								)
+							}
+							return (
+								<div key={item.notification.id} className='w-full'>
+									<NotificationItem notification={item.notification} />
 								</div>
 							)
-						}
-						return (
-							<div key={item.notification.id} className='w-full'>
-								<NotificationItem notification={item.notification} />
-							</div>
-						)
-					})}
-				</div>
+						})}
+					</div>
+				)}
 			</div>
 
 			{/* 하단 그라데이션 페이드 */}

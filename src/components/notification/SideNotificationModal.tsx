@@ -29,9 +29,9 @@ const convertNotificationDtoToNotification = (dto: NotificationDto): Notificatio
 }
 
 const SideNotificationModal = () => {
-	// WORKSPACE_ONLY 필터로 알림 목록 조회 (사이드바 알림 모달용)
+	// WORKSPACES 필터로 알림 목록 조회 (사이드바 알림 모달용)
 	const { data: notificationResponse, isLoading } = useNotificationList({
-		filter: 'WORKSPACE_ONLY',
+		filter: 'WORKSPACES',
 		size: 20,
 	})
 
