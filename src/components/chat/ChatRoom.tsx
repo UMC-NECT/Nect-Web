@@ -404,6 +404,7 @@ const ChatRoom = ({
 			{/* 사이드바 */}
 			<ChatSidebar
 				unreadCount={unreadCount}
+				selectedView="message"
 				onMessageClick={onClose}
 				onCloudClick={() => {}}
 				onSettingsClick={() => {}}

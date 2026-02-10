@@ -116,20 +116,6 @@ const TeamBoardPage = () => {
 	}
 
 	/**
-	 * 필드 타입에 따른 라벨 매핑
-	 */
-	const getFieldLabel = (fieldType: FieldType, customName: string | null): string => {
-		const labelMap: Record<FieldType, string> = {
-			PM: 'PM',
-			DESIGN: 'Design',
-			FRONTEND: 'Frontend',
-			BACKEND: 'Backend',
-			CUSTOM: customName || 'Custom',
-		}
-		return labelMap[fieldType] || 'Unknown'
-	}
-
-	/**
 	 * 미션 진행도 데이터를 RadarChart 형식으로 변환
 	 */
 	const radarChartData = useMemo(() => {
@@ -146,7 +132,7 @@ const TeamBoardPage = () => {
 			const maxScore = team.total_count
 
 			return {
-				label: getFieldLabel(team.field.type, team.field.custom_name),
+				label: team.field.custom_name || team.field.type, // 프로필 보드와 동일하게 처리
 				score,
 				maxScore,
 				color: fieldColor,
@@ -480,7 +466,7 @@ const TeamBoardPage = () => {
 	}
 
 	return (
-		<div className="flex flex-col w-full max-w-main mx-auto px-6 py-8 gap-7">
+		<div className="flex flex-col w-full max-w-main mx-auto px-10 py-16 gap-7">
 			{/* 상단 헤더 영역 (1224x180) */}
 			<div className="w-[1224px] h-[180px]">
 				{isLoading ? (

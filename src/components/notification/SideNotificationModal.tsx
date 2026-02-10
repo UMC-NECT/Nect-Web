@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { NotificationItem } from './NotificationItem'
 import { type Notification } from '@/types/notification'
 import { useNotificationList } from '@/hooks/notification/useNotificationList'
 import type { NotificationDto } from '@/types/api/notification'
 import { groupNotificationsByDate, flattenGroupedNotifications } from '@/utils/notificationUtils'
+import { getNotificationList } from '@/api/notification'
 
 /**
  * API 응답의 NotificationDto를 UI용 Notification 타입으로 변환
@@ -29,21 +30,69 @@ const convertNotificationDtoToNotification = (dto: NotificationDto): Notificatio
 }
 
 const SideNotificationModal = () => {
-	// WORKSPACE_ONLY 필터로 알림 목록 조회 (사이드바 알림 모달용)
+	const [allNotifications, setAllNotifications] = useState<Notification[]>([])
+	const [cursor, setCursor] = useState<number | null>(null)
+	const [isLoadingMore, setIsLoadingMore] = useState(false)
+	const [hasNext, setHasNext] = useState(true)
+	const scrollRef = useRef<HTMLDivElement>(null)
+
+	// WORKSPACES 필터로 알림 목록 조회 (사이드바 알림 모달용)
 	const { data: notificationResponse, isLoading } = useNotificationList({
-		filter: 'WORKSPACE_ONLY',
+		filter: 'WORKSPACES',
 		size: 20,
 	})
 
-	const notifications: Notification[] = notificationResponse?.body?.notifications
-		? notificationResponse.body.notifications.map(convertNotificationDtoToNotification)
-		: []
+	// 초기 데이터 로드
+	useEffect(() => {
+		if (notificationResponse?.body) {
+			const newNotifications = notificationResponse.body.notifications.map(convertNotificationDtoToNotification)
+			setAllNotifications(newNotifications)
+			setCursor(notificationResponse.body.nextCursor)
+			setHasNext(notificationResponse.body.nextCursor !== null)
+		}
+	}, [notificationResponse])
+
+	// 다음 페이지 로드
+	const loadMore = useCallback(async () => {
+		if (isLoadingMore || !hasNext) return
+
+		setIsLoadingMore(true)
+		try {
+			const response = await getNotificationList({
+				filter: 'WORKSPACES',
+				cursor,
+				size: 20,
+			})
+
+			if (response.body) {
+				const newNotifications = response.body.notifications.map(convertNotificationDtoToNotification)
+				setAllNotifications(prev => [...prev, ...newNotifications])
+				setCursor(response.body.nextCursor)
+				setHasNext(response.body.nextCursor !== null)
+			}
+		} catch (error) {
+			console.error('알림 추가 로드 실패:', error)
+		} finally {
+			setIsLoadingMore(false)
+		}
+	}, [cursor, isLoadingMore, hasNext])
+
+	// 스크롤 이벤트 핸들러
+	const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+		const target = e.currentTarget
+		const scrollBottom = target.scrollHeight - target.scrollTop - target.clientHeight
+
+		// 하단 100px 이내에 도달하면 다음 페이지 로드
+		if (scrollBottom < 100 && hasNext && !isLoadingMore) {
+			loadMore()
+		}
+	}, [hasNext, isLoadingMore, loadMore])
 
 	// 날짜별로 그룹화된 알림을 렌더링용 배열로 변환
 	const flattenedNotifications = useMemo(() => {
-		const grouped = groupNotificationsByDate(notifications)
+		const grouped = groupNotificationsByDate(allNotifications)
 		return flattenGroupedNotifications(grouped)
-	}, [notifications])
+	}, [allNotifications])
 
 	return (
 		<div className='w-[380px] bg-white flex flex-col items-start justify-start pt-6 rounded-md shadow-drop-neutral-1 overflow-hidden z-50'>
@@ -55,7 +104,11 @@ const SideNotificationModal = () => {
 			</div>
 
 			{/* 알림 리스트 - 스크롤 영역 */}
-			<div className='flex flex-col gap-0 h-[556px] items-center relative shrink-0 w-full rounded-md overflow-y-auto notification-scroll'>
+			<div 
+				ref={scrollRef}
+				className='flex flex-col gap-0 h-[556px] items-center relative shrink-0 w-full rounded-md overflow-y-auto notification-scroll'
+				onScroll={handleScroll}
+			>
 				{isLoading ? (
 					<div className='flex items-center justify-center h-full text-neutral-500'>
 						알림을 불러오는 중...
@@ -87,6 +140,11 @@ const SideNotificationModal = () => {
 								</div>
 							)
 						})}
+						{isLoadingMore && (
+							<div className='flex items-center justify-center w-full py-4 text-neutral-500'>
+								더 불러오는 중...
+							</div>
+						)}
 					</div>
 				)}
 			</div>

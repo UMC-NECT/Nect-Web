@@ -30,6 +30,7 @@ const ChatRoomInfoModal = ({ onClose, onConfirm }: ChatRoomInfoModalProps) => {
 			{/* 사이드바 */}
 			<ChatSidebar
 				unreadCount={0}
+				selectedView="message"
 				onMessageClick={() => {}}
 				onCloudClick={() => {}}
 				onSettingsClick={() => {}}

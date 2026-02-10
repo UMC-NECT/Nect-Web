@@ -48,4 +48,10 @@ export const QUERY_KEY = {
 		analysis: (page?: string) => [...QUERY_KEY.mypage.all, 'analysis', page] as const, // 나의 아이디어 분석
 		profileAnalysis: () => [...QUERY_KEY.mypage.all, 'profileAnalysis'] as const, // 나의 프로필 분석
 	},
+	matching: {
+		all: ['matching'] as const,
+		count: () => [...QUERY_KEY.matching.all, 'count'] as const,
+		received: (target: string, status: string) => [...QUERY_KEY.matching.all, 'received', target, status] as const,
+		sent: (target: string, status: string) => [...QUERY_KEY.matching.all, 'sent', target, status] as const,
+	},
 }
