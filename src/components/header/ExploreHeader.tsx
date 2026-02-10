@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import LogoIcon from '@/assets/icons/header/Logo.svg?react'
 import BarIcon from '@/assets/icons/common/Bar.svg?react'
 import MessageIcon from '@/assets/icons/common/message.svg?react'
@@ -14,6 +14,7 @@ import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { Link, useNavigate } from 'react-router'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import { useNotificationList } from '@/hooks/notification/useNotificationList'
 
 interface ExploreHeaderProps {
 	onNavigate: () => void
@@ -30,8 +31,18 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const projectData = useGetProjectUsers()
 	const { setProjectId } = useProjectIdStore()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
-	// 읽지 않은 알림 개수 (더미 데이터)
-	const unreadNotifications = 3
+
+	// 알림 목록 조회 (읽지 않은 알림 확인용)
+	const { data: notificationResponse } = useNotificationList({
+		filter: 'WORKSPACES',
+		size: 20,
+	})
+
+	// 읽지 않은 알림이 있는지 확인
+	const hasUnreadNotifications = useMemo(() => {
+		const notifications = notificationResponse?.body?.notifications || []
+		return notifications.some(notification => !notification.isRead)
+	}, [notificationResponse])
 
 	// 외부 클릭 감지를 위한 ref
 	const notificationRef = useRef<HTMLDivElement>(null)
@@ -155,10 +166,12 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 											setShowProfile(false)
 										}}
 									>
-										<NotificationIcon className='h-6 w-6 text-neutral-700' />
-										{unreadNotifications > 0 && (
-											<div className='absolute top-2 right-2 w-[3.2px] h-[3.2px] bg-danger-600 rounded-full'></div>
-										)}
+										<div className='relative'>
+											<NotificationIcon className='h-6 w-6 text-neutral-700' />
+											{hasUnreadNotifications && (
+												<div className='bg-primary-500-normal absolute top-px right-px w-1 h-1 rounded-full' />
+											)}
+										</div>
 									</button>
 									{showNotifications && <NotificationDropdown defaultTab='team' />}
 								</div>

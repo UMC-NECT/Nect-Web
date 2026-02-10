@@ -198,7 +198,7 @@ const WritePostModalContent = ({
 						className={`heading-2 font-bold leading-[1.3] bg-transparent border-none outline-none w-[572px] overflow-hidden text-ellipsis whitespace-nowrap ${
 							title ? 'text-neutral-900' : 'text-neutral-300'
 						} placeholder:text-neutral-300`}
-						placeholder="제목을 작성해주세요제목을 작성해주세요제목을작성"
+						placeholder="제목을 작성해 주세요"
 					/>
 				)}
 

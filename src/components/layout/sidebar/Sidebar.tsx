@@ -20,7 +20,7 @@ export const Sidebar = () => {
 
 	// 알림 목록 조회 (읽지 않은 알림 확인용)
 	const { data: notificationResponse } = useNotificationList({
-		filter: 'WORKSPACE_ONLY',
+		filter: 'WORKSPACES',
 		size: 20,
 	})
 
