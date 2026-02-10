@@ -64,7 +64,7 @@ export const Sidebar = () => {
 
 	return (
 		<>
-			<div className='w-16 h-[890px] mt-[66px] px-1.5 py-5 bg-white border-r border-neutral-100 fixed top-0 left-0 justify-center items-start'>
+			<div className='w-[70px] h-[890px] mt-[66px] px-1.5 py-5 bg-white border-r border-neutral-100 fixed top-0 left-0 justify-center items-start'>
 				<div className='w-14 inline-flex flex-col justify-start items-center gap-5'>
 					<div className='w-10 h-10 relative'>
 						<img
