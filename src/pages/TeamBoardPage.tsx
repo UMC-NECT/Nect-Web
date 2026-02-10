@@ -466,7 +466,7 @@ const TeamBoardPage = () => {
 	}
 
 	return (
-		<div className="flex flex-col w-full max-w-main mx-auto px-6 py-8 gap-7">
+		<div className="flex flex-col w-full max-w-main mx-auto px-10 py-16 gap-7">
 			{/* 상단 헤더 영역 (1224x180) */}
 			<div className="w-[1224px] h-[180px]">
 				{isLoading ? (
