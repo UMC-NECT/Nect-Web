@@ -45,7 +45,6 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 		size: 20,
 	})
 
-	// API 응답을 UI용 Notification 타입으로 변환
 	const notifications: Notification[] = notificationResponse?.body?.notifications
 		? notificationResponse.body.notifications.map(convertNotificationDtoToNotification)
 		: []
