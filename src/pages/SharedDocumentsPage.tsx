@@ -9,6 +9,7 @@ import { useDeleteSharedDocumentMutation } from '@/hooks/team-board/useDeleteSha
 import { useUpdateSharedDocumentNameMutation } from '@/hooks/team-board/useUpdateSharedDocumentName'
 import { useUploadSharedDocumentFileMutation } from '@/hooks/team-board/useUploadSharedDocumentFile'
 import { useCreateSharedDocumentLinkMutation } from '@/hooks/team-board/useCreateSharedDocumentLink'
+import { downloadSharedDocumentFile } from '@/api/team-board/boards'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { FileItem as FileItemData } from '@/stores/mission-modal/missionModalStore'
 import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
@@ -47,6 +48,7 @@ const SharedDocumentsPage = () => {
 	const [editingFileId, setEditingFileId] = useState<number | null>(null)
 	const [sortOrder, setSortOrder] = useState<SortOption>('latest')
 	const [documentType] = useState<'FILE' | 'LINK' | undefined>(undefined)
+	const [isDragOver, setIsDragOver] = useState(false)
 
 	// SortOption을 API SortOption으로 변환
 	const apiSortOption: APISortOption = useMemo(() => {
@@ -161,14 +163,14 @@ const SharedDocumentsPage = () => {
 		})
 	}
 
-	const handleFileDownload = (file: FileItemData) => {
-		if (file.url && file.fileName) {
-			const link = document.createElement('a')
-			link.href = file.url
-			link.download = file.fileName
-			document.body.appendChild(link)
-			link.click()
-			document.body.removeChild(link)
+	const handleFileDownload = async (file: FileItemData) => {
+		if (!projectId || !file.id) return
+		
+		try {
+			await downloadSharedDocumentFile(projectId, file.id, file.fileName)
+		} catch (error) {
+			console.error('파일 다운로드 실패:', error)
+			// TODO: 에러 처리 (토스트 메시지 등)
 		}
 	}
 
@@ -209,11 +211,50 @@ const SharedDocumentsPage = () => {
 		setEditingFileId(null)
 	}
 
+	// 드래그 앤 드롭 핸들러
+	const handleDragOver = (e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(true)
+	}
+
+	const handleDragLeave = (e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(false)
+	}
+
+	const handleDrop = (e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(false)
+
+		const files = e.dataTransfer.files
+		if (files.length > 0) {
+			const file = files[0]
+			// FileItem 편집 모드 활성화하고 파일 업로드
+			setIsUploading(true)
+			// FileItem이 드롭된 파일을 처리할 수 있도록 약간의 지연 후 업로드
+			// FileItem 컴포넌트는 내부적으로 드래그 앤 드롭을 처리하므로,
+			// 여기서는 편집 모드만 활성화하고 FileItem이 파일을 받도록 함
+			// 실제로는 FileItem에 직접 파일을 전달할 수 없으므로,
+			// 드롭된 파일을 즉시 업로드하는 방식으로 처리
+			handleFileAdd(
+				{
+					type: 'file',
+					name: file.name.replace(/\.[^/.]+$/, ''), // 확장자 제거
+					fileName: file.name,
+				},
+				file
+			)
+		}
+	}
+
 	return (
 		<div className="flex flex-col w-full mx-auto px-6 py-[64px] gap-[30px]">
 			<ContentHeader
 				title="공유 문서함"
-				description="~~~하는 프로젝트 공유 문서 클라우드"
+				description="프로젝트 자료를 한곳에 모으는 공유 문서 클라우드"
 				buttonText="업로드"
 				onButtonClick={handleUploadClick}
 			/>
@@ -226,7 +267,12 @@ const SharedDocumentsPage = () => {
 				</div>
 
 				{/* 파일 목록 영역 */}
-				<div className="px-5 py-[18px] flex-1 overflow-y-auto">
+				<div
+					className={`px-5 py-[18px] flex-1 overflow-y-auto ${isDragOver ? 'bg-primary-50' : ''}`}
+					onDragOver={handleDragOver}
+					onDragLeave={handleDragLeave}
+					onDrop={handleDrop}
+				>
 					{isLoading ? (
 						<div className="flex items-center justify-center h-full">로딩 중...</div>
 					) : files.length === 0 && !isUploading ? (

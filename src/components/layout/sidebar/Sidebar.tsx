@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
 import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
 import SideNotificationModal from '@/components/notification/SideNotificationModal'
 import ChatModal from '@/components/chat/ChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useNavigate, useParams } from 'react-router'
+import { useNotificationList } from '@/hooks/notification/useNotificationList'
 
 export const Sidebar = () => {
 	const [activeTopMenu, setActiveTopMenu] = useState<TopMenuId | null>(null)
@@ -16,6 +17,18 @@ export const Sidebar = () => {
 
 	const notificationModalRef = useRef<HTMLDivElement>(null)
 	const chatModalRef = useRef<HTMLDivElement>(null)
+
+	// 알림 목록 조회 (읽지 않은 알림 확인용)
+	const { data: notificationResponse } = useNotificationList({
+		filter: 'WORKSPACE_ONLY',
+		size: 20,
+	})
+
+	// 읽지 않은 알림이 있는지 확인
+	const hasUnreadNotifications = useMemo(() => {
+		const notifications = notificationResponse?.body?.notifications || []
+		return notifications.some(notification => !notification.isRead)
+	}, [notificationResponse])
 
 	useClickOutside(
 		notificationModalRef,
@@ -64,7 +77,7 @@ export const Sidebar = () => {
 
 	return (
 		<>
-			<div className='w-16 h-[890px] mt-[66px] px-1.5 py-5 bg-white border-r border-neutral-100 fixed top-0 left-0 justify-center items-start'>
+			<div className='w-[70px] h-[890px] mt-[66px] px-1.5 py-5 bg-white border-r border-neutral-100 fixed top-0 left-0 justify-center items-start'>
 				<div className='w-14 inline-flex flex-col justify-start items-center gap-5'>
 					<div className='w-10 h-10 relative'>
 						<img
@@ -88,7 +101,7 @@ export const Sidebar = () => {
 										isActive={activeTopMenu === menu.id}
 										alwaysDark={true}
 										shadowType='neutral-1'
-										hasBadge={menu.id === 'notification'}
+										hasBadge={menu.id === 'notification' && hasUnreadNotifications}
 									/>
 								</div>
 							))}
@@ -116,12 +129,12 @@ export const Sidebar = () => {
 				</div>
 			</div>
 			{showNotificationModal && (
-				<div ref={notificationModalRef} className='fixed top-[148px] left-16 z-40'>
+				<div ref={notificationModalRef} className='fixed top-[148px] left-[70px] z-40'>
 					<SideNotificationModal />
 				</div>
 			)}
 			{showChatModal && (
-				<div ref={chatModalRef} className='fixed top-[130px] left-16 z-40 h-[calc(100vh-130px-20px)]'>
+				<div ref={chatModalRef} className='fixed top-[130px] left-[70px] z-40 h-[calc(100vh-130px-20px)]'>
 					<ChatModal />
 				</div>
 			)}
