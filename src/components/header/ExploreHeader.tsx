@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import LogoIcon from '@/assets/icons/header/Logo.svg?react'
 import BarIcon from '@/assets/icons/common/Bar.svg?react'
 import MessageIcon from '@/assets/icons/common/message.svg?react'
@@ -8,10 +9,11 @@ import PortfolioIcon from '@/assets/icons/header/Portfolio.svg?react'
 import NotificationDropdown from '@/components/notification/NotificationDropdown'
 import MessageDropdown from '@/components/chat/MessageDropdown'
 import ProfileDropdown from '@/components/header/ProfileDropdown'
+import CTAModal from '@/components/common/CTAModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useNotificationList } from '@/hooks/notification/useNotificationList'
@@ -21,16 +23,18 @@ interface ExploreHeaderProps {
 }
 
 const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
-	const [activeSubMenu, setActiveSubMenu] = useState('프로젝트 찾기')
 	const [showNotifications, setShowNotifications] = useState(false)
 	const [showMessages, setShowMessages] = useState(false)
 	const [showProfile, setShowProfile] = useState(false)
 	const [isScrolled, setIsScrolled] = useState(false)
-	const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
+	const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false)
+	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)
 	const navigate = useNavigate()
 	const projectData = useGetProjectUsers()
 	const { setProjectId } = useProjectIdStore()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+	const location = useLocation()
+	const currentPath = location.pathname
 
 	// 알림 목록 조회 (읽지 않은 알림 확인용)
 	const { data: notificationResponse } = useNotificationList({
@@ -54,11 +58,15 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	useClickOutside(messageRef, () => setShowMessages(false), showMessages)
 	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
-	const subMenuItems = [{ name: '홈' }, { name: '프로젝트 찾기' }, { name: '팀원 찾기' }, { name: '출시 프로젝트' }]
-	const workspaceMenuItems = [
-        {projectId: projectData?.[0]?.projectId, name: `${projectData?.[0]?.projectTitle}` },
-        {projectId: projectData?.[1]?.projectId, name: `${projectData?.[1]?.projectTitle}` },
-    ];
+	const subMenuItems = [{ name: '홈', href: '/' }, { name: '프로젝트 찾기', href: '/projectList' }, { name: '팀원 찾기', href: '/necterList' }]
+	// body가 []이면 projectData는 [], 유효한 프로젝트만 리스트에 넣음 (undefined 노출 방지)
+	const filteredWorkspaceItems = useMemo(() => {
+		if (!projectData || !Array.isArray(projectData) || projectData.length === 0) return []
+		return projectData
+			.slice(0, 2)
+			.filter(p => p != null && p.projectId != null && String(p.projectTitle ?? '').trim() !== '')
+			.map(p => ({ projectId: p.projectId!, name: p.projectTitle! }))
+	}, [projectData])
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {
@@ -102,34 +110,52 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
 					{/* 네비게이션 */}
 					<nav className='flex items-center gap-4'>
-						<button className='title-3 font-medium text-neutral-900 transition-colors tracking-tight'>
+						<Link to='/' className='title-3 font-medium text-neutral-900 transition-colors tracking-tight'>
 							프로젝트<span className='-mx-1'>ㆍ</span>팀원 탐색
-						</button>
+						</Link>
 						<BarIcon />
 						<div className='relative'>
 							<button
 								onClick={() => {
+									if (!isLoggedIn) {
+										navigate('/login')
+										return
+									}
+									const hasProject = filteredWorkspaceItems.length > 0
+									if (!hasProject) {
+										setShowNoWorkspaceModal(true)
+										return
+									}
 									onNavigate?.()
 									setProjectId(projectData?.[0]?.projectId ?? null)
 									navigate('/team-board')
 								}}
 								onMouseEnter={() => setShowWorkspaceMenu(true)}
-								className='title-3 font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
+								className='title-3 font-medium text-neutral-400 hover:text-primary-500-normal transition-colors'
 							>
 								팀 작업실
 							</button>
-							{/* 팀 작업실 드롭다운 */}
-
-							{showWorkspaceMenu && (
+							{showNoWorkspaceModal &&
+								createPortal(
+									<CTAModal
+										message='생성된 작업실이 없습니다.'
+										subMessage='프로젝트 등록 후 이용 할 수 있습니다.'
+										buttonMsg='확인'
+										onButtonClick={() => setShowNoWorkspaceModal(false)}
+									/>,
+									document.body
+								)}
+							{/* 팀 작업실 드롭다운 - 데이터 2개 이상일 때만 표시 */}
+							{showWorkspaceMenu && filteredWorkspaceItems.length > 1 && (
 									<div
-										className="absolute top-[46px] left-[-20px] w-[160px] bg-white rounded-12 border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
+										className="absolute top-[46px] left-[-20px] min-w-[160px] bg-white rounded-12 border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
 										onMouseEnter={() => setShowWorkspaceMenu(true)}
 										onMouseLeave={() => setShowWorkspaceMenu(false)}
 									>
-										{workspaceMenuItems.map((item, index) => (
-											<div key={item.name}>
+										{filteredWorkspaceItems.map((item, index) => (
+											<div key={item.projectId}>
 												<button
-													className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center"
+													className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center whitespace-nowrap"
 													onClick={() => {
 														setProjectId(item.projectId ?? null)
 														navigate('/team-board')
@@ -137,7 +163,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 												>
 													{item.name}
 												</button>
-												{index < workspaceMenuItems.length - 1 && (
+												{index < filteredWorkspaceItems.length - 1 && (
 													<div className="border-b border-neutral-200"></div>
 												)}
 											</div>
@@ -233,9 +259,9 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						{subMenuItems.map(item => (
 							<button
 								key={item.name}
-								onClick={() => setActiveSubMenu(item.name)}
+								onClick={() => navigate(item.href)}
 								className={`px-4 py-2 text-[16px] font-medium rounded-xl transition-colors mr-[10px] ${
-									activeSubMenu === item.name
+									currentPath === item.href
 										? 'text-neutral-900 bg-neutral-100'
 										: 'text-neutral-700 hover:bg-neutral-50'
 								}`}

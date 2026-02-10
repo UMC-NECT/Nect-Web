@@ -1,5 +1,5 @@
 import { Outlet } from "react-router"
-import ExploreHeader from "../header/ExploreHeader"
+import ExploreHeader from "@/components/header/ExploreHeader"
 
 const StudioLayout = () => {
 	return (
