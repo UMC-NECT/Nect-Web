@@ -15,6 +15,7 @@ import { useNotificationList } from '@/hooks/notification/useNotificationList'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
+import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 
 const AnalysisHeader = () => {
@@ -23,20 +24,13 @@ const AnalysisHeader = () => {
 	const isLoggedIn = getAccessToken()
 	const projectData = useGetProjectUsers()
 	const { setProjectId } = useProjectIdStore()
+	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
 
 	const [showNotifications, setShowNotifications] = useState(false)
 	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)
 	const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false)
 	const [showMessages, setShowMessages] = useState(false)
 	const [showProfile, setShowProfile] = useState(false)
-
-	const filteredWorkspaceItems = useMemo(() => {
-		if (!projectData || !Array.isArray(projectData) || projectData.length === 0) return []
-		return projectData
-			.slice(0, 2)
-			.filter(p => p != null && p.projectId != null && String(p.projectTitle ?? '').trim() !== '')
-			.map(p => ({ projectId: p.projectId!, name: p.projectTitle! }))
-	}, [projectData])
 
 	// 알림 목록 조회 (읽지 않은 알림 확인용)
 	const { data: notificationResponse } = useNotificationList({

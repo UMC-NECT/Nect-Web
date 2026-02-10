@@ -15,6 +15,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { Link, useLocation, useNavigate } from 'react-router'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
+import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useNotificationList } from '@/hooks/notification/useNotificationList'
 
@@ -59,14 +60,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
 	const subMenuItems = [{ name: '홈', href: '/' }, { name: '프로젝트 찾기', href: '/projectList' }, { name: '팀원 찾기', href: '/necterList' }]
-	// body가 []이면 projectData는 [], 유효한 프로젝트만 리스트에 넣음 (undefined 노출 방지)
-	const filteredWorkspaceItems = useMemo(() => {
-		if (!projectData || !Array.isArray(projectData) || projectData.length === 0) return []
-		return projectData
-			.slice(0, 2)
-			.filter(p => p != null && p.projectId != null && String(p.projectTitle ?? '').trim() !== '')
-			.map(p => ({ projectId: p.projectId!, name: p.projectTitle! }))
-	}, [projectData])
+	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {
