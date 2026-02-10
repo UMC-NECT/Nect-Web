@@ -235,17 +235,13 @@ const ChatRoom = ({
 
 	// 초기 메시지 로드 및 WebSocket 연결
 	useEffect(() => {
-		console.log('ChatRoom useEffect 실행:', { roomId, currentUserId })
-		
 		if (!currentUserId) {
-			console.warn('currentUserId가 없어서 WebSocket 연결을 건너뜁니다')
 			return
 		}
 
 		loadMessages()
 
 		// WebSocket 연결
-		console.log('WebSocket 연결 시작:', { roomId, currentUserId })
 		chatWebSocketClient
 			.connect(roomId, currentUserId, {
 				onMessage: (message: ChatMessageDto) => {
@@ -257,20 +253,19 @@ const ChatRoom = ({
 						messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
 					}, 100)
 				},
-				onError: (error) => {
-					console.error('WebSocket 오류:', error)
+				onError: () => {
+					console.error('WebSocket 오류 발생')
 				},
 				onConnect: () => {
-					console.log('WebSocket 연결됨')
+					// WebSocket 연결 완료
 				},
 			})
-			.catch((error) => {
-				console.error('WebSocket 연결 실패:', error)
+			.catch(() => {
+				console.error('WebSocket 연결 실패')
 			})
 
 		return () => {
 			// cleanup: 연결 해제
-			console.log('ChatRoom cleanup: WebSocket 연결 해제')
 			chatWebSocketClient.disconnect()
 		}
 	}, [roomId, currentUserId])
@@ -434,7 +429,6 @@ const ChatRoom = ({
 						type="room"
 						onClose={() => setIsMenuOpen(false)}
 						onTurnOffNotification={() => {
-							console.log('알림 끄기')
 							// TODO: 알림 끄기 로직 구현
 						}}
 						onInviteContact={() => {

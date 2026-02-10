@@ -167,15 +167,12 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 						imageUrl={selectedImage}
 						onClose={() => setSelectedImage(null)}
 						onDownload={() => {
-							console.log('다운로드:', selectedImage)
 							// TODO: 다운로드 로직 구현
 						}}
 						onForward={() => {
-							console.log('전달:', selectedImage)
 							// TODO: 전달 로직 구현
 						}}
 						onDelete={() => {
-							console.log('삭제:', selectedImage)
 							// TODO: 삭제 로직 구현
 							setSelectedImage(null)
 						}}

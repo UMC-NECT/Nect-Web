@@ -89,8 +89,6 @@ interface ChatModalProps {
 				onConfirm={(selectedContacts) => {
 					// 선택한 멤버 ID 저장
 					const memberIds = selectedContacts.map((c) => c.id)
-					console.log('선택한 멤버:', selectedContacts)
-					console.log('멤버 ID 목록:', memberIds)
 					setSelectedMemberIds(memberIds)
 					// 멤버 선택 완료 후 방 정보 설정으로 이동
 					setView('roomInfo')
@@ -110,12 +108,6 @@ interface ChatModalProps {
 					// 현재는 선택한 아바타를 사용하지 않지만, 추후 확장을 위해 파라미터를 유지합니다.
 					void selectedAvatar
 					try {
-						console.log('채팅방 생성 요청:', {
-							projectId,
-							roomName,
-							memberIds: selectedMemberIds,
-						})
-						
 						if (selectedMemberIds.length === 0) {
 							alert('최소 1명 이상의 멤버를 선택해주세요.')
 							return
@@ -183,14 +175,11 @@ interface ChatModalProps {
 								message={message}
 								showDivider={index === 0}
 								onClick={() => {
-									console.log('채팅방 클릭:', message)
 									if (message.roomId) {
 										const roomData = message.roomData as any
 										const roomId = roomData?.room_id || roomData?.roomId || message.roomId
 										const roomName = roomData?.room_name || roomData?.roomName || message.senderName
 										const unreadCount = roomData?.unread_count || roomData?.unreadCount || message.unreadCount || 0
-										
-										console.log('채팅방 진입:', { roomId, roomName, unreadCount })
 										
 										setSelectedRoomId(roomId)
 										setSelectedRoom({

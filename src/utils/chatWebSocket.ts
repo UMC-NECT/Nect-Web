@@ -29,7 +29,7 @@ class ChatWebSocketClient {
 	 * WebSocket 연결 초기화
 	 */
 	async connect(roomId: number, userId: number, callbacks: ChatWebSocketCallbacks = {}) {
-		console.log('chatWebSocketClient.connect 호출됨:', { roomId, userId })
+		// WebSocket 연결 시작
 		
 		// 이미 같은 roomId와 userId로 연결되어 있으면 기존 연결 재사용
 		if (this.client && this.client.connected && this.roomId === roomId && this.userId === userId) {
@@ -127,9 +127,7 @@ class ChatWebSocketClient {
 			// SockJS는 토큰을 쿼리 파라미터로 전달해야 함
 			const brokerURL = `${wsUrl}${wsPath}?token=${encodeURIComponent(accessToken)}`.replace(/([^:]\/)\/+/g, "$1") // 중복 슬래시 제거
 			
-			console.log("SockJS 연결 시도:", brokerURL)
-			console.log("API URL:", apiUrl)
-			console.log("WebSocket URL:", wsUrl)
+			// WebSocket 연결 시도 (토큰 정보는 로그에 출력하지 않음)
 
 			// STOMP 클라이언트 생성 (SockJS 사용)
 			this.client = new Client({
@@ -137,7 +135,7 @@ class ChatWebSocketClient {
 					const sock = new (SockJS as any)(brokerURL, null, {
 						transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
 					})
-					console.log('SockJS 인스턴스 생성:', brokerURL)
+					// SockJS 인스턴스 생성 (토큰 정보는 로그에 출력하지 않음)
 					
 					// WebSocket 실패 오류를 조용히 처리 (SockJS가 자동으로 폴백함)
 					// 이 오류는 정상적인 폴백 과정이므로 콘솔에 표시하지 않음
@@ -223,12 +221,10 @@ class ChatWebSocketClient {
 					this.handleReconnect()
 				},
 				onWebSocketError: (event: any) => {
-					console.error("WebSocket 오류:", event)
-					console.error("WebSocket 오류 타입:", event.type)
-					console.error("WebSocket 오류 타겟:", event.target)
+					console.error("WebSocket 오류:", event.type)
 					if (event.target) {
 						console.error("WebSocket 상태:", event.target.readyState)
-						console.error("WebSocket URL:", event.target.url)
+						// URL은 토큰 정보가 포함될 수 있으므로 로그에 출력하지 않음
 					}
 					this.callbacks.onError?.(new Error("WebSocket 연결 오류"))
 					// 재연결 시도는 잠시 후에 (너무 빠른 재연결 방지)
