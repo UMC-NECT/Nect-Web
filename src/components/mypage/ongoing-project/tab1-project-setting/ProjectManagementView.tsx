@@ -62,7 +62,7 @@ const ProjectManagementView = ({
 	}, [openPartSettings, teamMembersByRole])
 
 	const handleRecruitmentStatusChange = (status: '모집 전' | '모집 중' | '모집 완료') => {
-		setValue('recruitmentStatus', status)
+		setValue('recruitmentStatus', status, { shouldDirty: true })
 	}
 
 	return (

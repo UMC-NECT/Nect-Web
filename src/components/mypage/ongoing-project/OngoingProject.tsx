@@ -60,7 +60,7 @@ const OngoingProject = () => {
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
 
 	// 폼 관련
-	const { control, setValue, handleSubmit, isDirty, watch, reset } = useOngoingProjectForm()
+	const { control, setValue, handleSubmit, isDirty, watch, reset, getValues } = useOngoingProjectForm()
 
 	// 섹션 01. 프로젝트 분야 - projectId 도출
 	const { data: profileData } = useMypageProfileQuery()
@@ -129,6 +129,20 @@ const OngoingProject = () => {
 			})
 		}
 	}, [serviceUsersData, setValue])
+
+	// 초기 API 데이터 로드 후 폼 baseline 동기화 (isDirty 오탐 방지)
+	const isFormBaselineSetRef = useRef(false)
+	useEffect(() => {
+		if (isFormBaselineSetRef.current) return
+		if (projectFieldData && purposesData && functionsData && serviceUsersData) {
+			// queueMicrotask 기반 setValue 완료 후 실행되도록 setTimeout 사용
+			const timer = setTimeout(() => {
+				isFormBaselineSetRef.current = true
+				reset(getValues())
+			}, 0)
+			return () => clearTimeout(timer)
+		}
+	}, [projectFieldData, purposesData, functionsData, serviceUsersData, reset, getValues])
 
 	// 섹션 03. 팀 구성 데이터 조회
 	const { data: teamRolesData } = useMypageTeamRolesQuery(projectId)
@@ -375,8 +389,8 @@ const OngoingProject = () => {
 	// 페이지 이탈 감지 훅
 	const {
 		isBlocked,
+		handleLeaveWithoutSaving,
 		handleSaveAndLeave,
-		handleCloseModal: handleCancelNavigation,
 	} = useNavigationBlocker({
 		isDirty,
 		onSave: handleSave,
@@ -494,7 +508,13 @@ const OngoingProject = () => {
 						setValue={setValue}
 						watch={watch}
 						selectedField={selectedField}
-						onSelectField={value => setSelectedField(prev => (prev === value ? '' : value))}
+						onSelectField={value =>
+							setSelectedField(prev => {
+								const newValue = prev === value ? '' : value
+								setValue('selectedFields', newValue ? [newValue] : [], { shouldDirty: true })
+								return newValue
+							})
+						}
 						projectId={projectId}
 						onRecruitmentDataChange={handleRecruitmentDataChange}
 						leaderInfo={leaderInfo}
@@ -590,7 +610,7 @@ const OngoingProject = () => {
 					message={`저장되지 않았습니다\n저장 후 페이지를 나가시겠습니까?`}
 					leftButtonMsg='나가기'
 					rightButtonMsg='저장 후 나가기'
-					onLeftClick={handleCancelNavigation}
+					onLeftClick={handleLeaveWithoutSaving}
 					onRightClick={handleSaveAndLeave}
 				/>
 			)}
