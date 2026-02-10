@@ -46,13 +46,6 @@ export const MyPageSidebar = () => {
 					{/* 이름 */}
 					<div className='w-fit h-7 flex items-center gap-1.5'>
 						<span className='title-2 font-bold text-neutral-900'>{profile?.nickname}</span>
-
-						{/* 백엔드에서 프로 유무 필드를 안주셔서, 임시로 이름이 있다면 프로사용자로 되게끔 설정함 (추후 수정 예정) */}
-						{profile?.nickname && (
-							<span className='text-primary-500-normal text-[13px] font-bold px-2 py-0.5 rounded-100 bg-primary-200-light leading-[130%] tracking-[-0.5px]'>
-								PRO
-							</span>
-						)}
 					</div>
 
 					{/* 소개 */}
