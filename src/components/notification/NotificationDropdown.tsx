@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { NotificationItem } from './NotificationItem'
 import { type Notification } from '@/types/notification'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
 import { groupNotificationsByDate, flattenGroupedNotifications } from '@/utils/notificationUtils'
 import { useNotificationList } from '@/hooks/notification/useNotificationList'
 import type { NotificationDto } from '@/types/api/notification'
+import { getNotificationList } from '@/api/notification'
 
 /**
  * API 응답의 NotificationDto를 UI용 Notification 타입으로 변환
@@ -35,25 +36,80 @@ interface NotificationDropdownProps {
 
 const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps) => {
 	const [activeTab, setActiveTab] = useState<'nect' | 'team'>(defaultTab)
+	const [allNotifications, setAllNotifications] = useState<Notification[]>([])
+	const [cursor, setCursor] = useState<number | null>(null)
+	const [isLoadingMore, setIsLoadingMore] = useState(false)
+	const [hasNext, setHasNext] = useState(true)
+	const scrollRef = useRef<HTMLDivElement>(null)
 
 	// 활성 탭에 따라 필터 결정: 'nect' -> EXPLORATION, 'team' -> WORKSPACES
 	const filter = activeTab === 'nect' ? 'EXPLORATION' : 'WORKSPACES'
 
-	// 알림 목록 조회
+	// 초기 알림 목록 조회
 	const { data: notificationResponse, isLoading } = useNotificationList({
 		filter,
 		size: 20,
 	})
 
-	const notifications: Notification[] = notificationResponse?.body?.notifications
-		? notificationResponse.body.notifications.map(convertNotificationDtoToNotification)
-		: []
+	// 탭 변경 시 알림 목록 초기화
+	useEffect(() => {
+		setAllNotifications([])
+		setCursor(null)
+		setHasNext(true)
+		setIsLoadingMore(false)
+	}, [activeTab])
+
+	// 초기 데이터 로드
+	useEffect(() => {
+		if (notificationResponse?.body) {
+			const newNotifications = notificationResponse.body.notifications.map(convertNotificationDtoToNotification)
+			setAllNotifications(newNotifications)
+			setCursor(notificationResponse.body.nextCursor)
+			setHasNext(notificationResponse.body.nextCursor !== null)
+		}
+	}, [notificationResponse])
+
+	// 다음 페이지 로드
+	const loadMore = useCallback(async () => {
+		if (isLoadingMore || !hasNext) return
+
+		setIsLoadingMore(true)
+		try {
+			const response = await getNotificationList({
+				filter,
+				cursor,
+				size: 20,
+			})
+
+			if (response.body) {
+				const newNotifications = response.body.notifications.map(convertNotificationDtoToNotification)
+				setAllNotifications(prev => [...prev, ...newNotifications])
+				setCursor(response.body.nextCursor)
+				setHasNext(response.body.nextCursor !== null)
+			}
+		} catch (error) {
+			console.error('알림 추가 로드 실패:', error)
+		} finally {
+			setIsLoadingMore(false)
+		}
+	}, [filter, cursor, isLoadingMore, hasNext])
+
+	// 스크롤 이벤트 핸들러
+	const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+		const target = e.currentTarget
+		const scrollBottom = target.scrollHeight - target.scrollTop - target.clientHeight
+
+		// 하단 100px 이내에 도달하면 다음 페이지 로드
+		if (scrollBottom < 100 && hasNext && !isLoadingMore) {
+			loadMore()
+		}
+	}, [hasNext, isLoadingMore, loadMore])
 
 	// 날짜별로 그룹화된 알림을 렌더링용 배열로 변환
 	const flattenedNotifications = useMemo(() => {
-		const grouped = groupNotificationsByDate(notifications)
+		const grouped = groupNotificationsByDate(allNotifications)
 		return flattenGroupedNotifications(grouped)
-	}, [notifications])
+	}, [allNotifications])
 
 	return (
 		<div className='absolute top-full -right-[128px] mt-2 bg-white flex flex-col items-start justify-start pt-6 rounded-6 shadow-drop-neutral-1 w-[380px] h-[682px] overflow-hidden z-50'>
@@ -76,7 +132,11 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 			</div>
 
 			{/* 알림 리스트 - 스크롤 영역 */}
-			<div className='flex flex-col gap-0 h-[556px] items-center relative shrink-0 w-full overflow-y-auto notification-scroll'>
+			<div 
+				ref={scrollRef}
+				className='flex flex-col gap-0 h-[556px] items-center relative shrink-0 w-full overflow-y-auto notification-scroll'
+				onScroll={handleScroll}
+			>
 				{isLoading ? (
 					<div className='flex items-center justify-center h-full text-neutral-500'>
 						알림을 불러오는 중...
@@ -108,6 +168,11 @@ const NotificationDropdown = ({ defaultTab = 'team' }: NotificationDropdownProps
 								</div>
 							)
 						})}
+						{isLoadingMore && (
+							<div className='flex items-center justify-center w-full py-4 text-neutral-500'>
+								더 불러오는 중...
+							</div>
+						)}
 					</div>
 				)}
 			</div>
