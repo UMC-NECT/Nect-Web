@@ -3,6 +3,7 @@ import RecruitmentStatusChip from '@/components/common/RecruitmentStatusChip';
 import type { ProjectCard } from '@/types/api/home';
 import projectBg from '@/assets/icons/main/projectImage.svg';
 import type { FC } from 'react';
+import { Link } from 'react-router-dom';
 
 export interface RecommendationProjectCardProps {
     project: ProjectCard;
@@ -50,7 +51,7 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
     const styles = sizeStyles[variant];
 
     return (
-        <div className={`${styles.card} ${styles.height} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300`}>
+        <Link to={`/recruiting-projects/${project.projectId}`} className={`${styles.card} ${styles.height} bg-white rounded-xl cursor-pointer border border-neutral-100 hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300 block`}>
             {/* 이미지 영역 */}
             <div className={`relative ${styles.image} rounded-xl overflow-hidden`}>
                 <img
@@ -105,7 +106,7 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
                     </span>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 };
 export default RecommendationProjectCard;

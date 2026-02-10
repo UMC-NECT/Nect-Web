@@ -1,25 +1,54 @@
+import type { ProjectDetailDto } from '@/types/api/project';
+
 interface ProjectBasicInfoProps {
+    projectData: ProjectDetailDto;
     getPositionStyle: (position: string) => string;
 }
 
-const ProjectBasicInfo = ({ getPositionStyle }: ProjectBasicInfoProps) => {
+const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoProps) => {
+    // 날짜 포맷팅 함수
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}`;
+    };
+
+    // 남은 일수 계산
+    const calculateDaysLeft = (endDate: string | null) => {
+        if (!endDate) return null;
+        const end = new Date(endDate);
+        const today = new Date();
+        const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        return diff > 0 ? diff : 0;
+    };
+
+    const daysLeft = calculateDaysLeft(projectData.defaultInfo.planned_ended_on);
+
     return (
         <>
             {/* 프로젝트 정보 내용 */}
             <div className='flex h-[178px] text-[16px]'>
-                <div className='w-[320px] h-[178px] bg-neutral-200 rounded-lg mr-[28px]'></div>
+                <div className='w-[320px] h-[178px] bg-neutral-200 rounded-lg mr-[28px]'>
+                    {projectData.defaultInfo.image_name && (
+                        <img 
+                            src={projectData.defaultInfo.image_name} 
+                            alt={projectData.defaultInfo.project_title}
+                            className='w-full h-full object-cover rounded-lg'
+                        />
+                    )}
+                </div>
                 <div className='flex-1'>
                     <div className='mb-4 flex gap-[20px] items-start'>
                         <p className='text-neutral-600 mb-1 w-[100px] whitespace-nowrap'>프로젝트 이름</p>
-                        <p className='font-semibold text-primary-600-normal'>넥트(Nect)</p>
+                        <p className='font-semibold text-primary-600-normal'>{projectData.defaultInfo.project_title || '-'}</p>
                     </div>
                     <div className='mb-4 flex gap-[20px] items-start'>
                         <p className='text-neutral-600 mb-1 w-[100px] whitespace-nowrap'>프로젝트 소개</p>
-                        <p className='ml-3'>아이디어 분석으로 프로젝트 등록, 팀원 매칭, 협업 보드까지, 사이드 프로젝트 팀 플랫폼 개발</p>
+                        <p className='ml-3'>{projectData.defaultInfo.description || '프로젝트 소개가 없습니다.'}</p>
                     </div>
                     <div className='mb-4 flex gap-[20px] items-start'>
                         <p className='text-neutral-600 mb-1 w-[100px] whitespace-nowrap'>예상 기간</p>
-                        <p>2025. 11. 13 ~ 2026. 02. 11</p>
+                        <p>{formatDate(projectData.defaultInfo.planned_started_on)} ~ {formatDate(projectData.defaultInfo.planned_ended_on)}</p>
                     </div>
                     <div className='mb-4 flex gap-[20px] items-start'>
                         <p className='text-neutral-600 mb-1 w-[100px] whitespace-nowrap'>모집 여부</p>
@@ -28,7 +57,9 @@ const ProjectBasicInfo = ({ getPositionStyle }: ProjectBasicInfoProps) => {
                                 <span className='inline-block w-[10px] h-[10px] bg-primary-500-normal rounded-full'></span>
                                 <span className='text-[14px]'>모집 중</span>
                             </div>
-                            <span className='text-primary-500-normal font-bold text-[18px] ml-[10px]'>D-22</span>
+                            {daysLeft !== null && (
+                                <span className='text-primary-500-normal font-bold text-[18px] ml-[10px]'>D-{daysLeft}</span>
+                            )}
                         </p>
                     </div>
                 </div>
@@ -40,14 +71,26 @@ const ProjectBasicInfo = ({ getPositionStyle }: ProjectBasicInfoProps) => {
                     프로젝트 분야
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
-                <div className='flex gap-[10px]'>
-                    <p className='w-[165px] h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
-                        ITㆍ웹,모바일 서비스
-                    </p>
-                    <p className='w-[155px] h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
-                        네트워킹ㆍ커뮤니티
-                    </p>
-                </div>
+                {(() => {
+                    console.log('All fields:', projectData.fields?.fields);
+                    const selectedFields = projectData.fields?.fields?.filter(f => f.is_selected) || [];
+                    console.log('Selected fields:', selectedFields);
+                    console.log('Selected fields length:', selectedFields.length);
+                    
+                    if (selectedFields.length > 0) {
+                        return (
+                            <div className='flex gap-[10px] flex-wrap'>
+                                {selectedFields.map((field, index) => (
+                                    <p key={index} className='px-4 h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
+                                        {field.field_name}
+                                    </p>
+                                ))}
+                            </div>
+                        );
+                    } else {
+                        return <p className='text-[16px] text-neutral-500'>프로젝트 분야 정보가 없습니다.</p>;
+                    }
+                })()}
             </div>
 
             {/* 모집 정보 및 필수 스택 */}
@@ -57,33 +100,24 @@ const ProjectBasicInfo = ({ getPositionStyle }: ProjectBasicInfoProps) => {
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
                 
-                <div className='space-y-4'>
-                    <div className='flex gap-8'>
-                        <div className='w-[120px] flex-shrink-0'>
-                            <span className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle('design')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                Design (1)
-                            </span>
-                        </div>
-                        <ul className='flex-1 space-y-2 list-disc list-outside text-[16px] pl-5'>
-                            <li>사용자 경험을 고려한 플랫폼의 UI/UX 디자인을 담당합니다.</li>
-                            <li>UI디자인을 위한 Figma / Illustrator 사용 가능하셔야합니다.</li>
-                            <li>개발팀과 협업하여 디자인을 구현합니다.</li>
-                        </ul>
+                {projectData.defaultInfo.team_roles && projectData.defaultInfo.team_roles.length > 0 ? (
+                    <div className='space-y-4'>
+                        {projectData.defaultInfo.team_roles.map((role, index) => (
+                            <div key={index}>
+                                <div className='mb-2'>
+                                    <span className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(role.role_field.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
+                                        {role.role_field} ({role.required_count})
+                                    </span>
+                                </div>
+                                <div className='text-[16px] text-neutral-600 ml-2'>
+                                    모집 인원 {role.required_count}명
+                                </div>
+                            </div>
+                        ))}
                     </div>
-
-                    <div className='flex gap-8'>
-                        <div className='w-[120px] flex-shrink-0'>
-                            <span className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle('backend')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                Backend (2)
-                            </span>
-                        </div>
-                        <ul className='flex-1 space-y-2 list-disc list-outside text-[16px] pl-5'>
-                            <li>사용자 경험을 고려한 플랫폼의 UI/UX 디자인을 담당합니다.</li>
-                            <li>UI디자인을 위한 Figma / Illustrator 사용 가능하셔야합니다.</li>
-                            <li>개발팀과 협업하여 디자인을 구현합니다.</li>
-                        </ul>
-                    </div>
-                </div>
+                ) : (
+                    <p className='text-[16px] text-neutral-500'>모집 정보가 없습니다.</p>
+                )}
             </div>
 
             {/* 프로젝트 파트 / 팀원 구성 */}
@@ -93,40 +127,68 @@ const ProjectBasicInfo = ({ getPositionStyle }: ProjectBasicInfoProps) => {
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
 
-                <div className='space-y-6'>
-                    <div className='flex items-center gap-6'>
-                        <p className='w-[90px] text-[16px] font-medium'>기획</p>
-                        <p className='w-[50px] text-[16px]'>1명</p>
-                        <div className='flex gap-2'>
-                            <span className={`inline-flex items-center justify-center w-[57px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('pm')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                PM (1)
-                            </span>
-                        </div>
+                {projectData.defaultInfo.team_roles && projectData.defaultInfo.team_roles.length > 0 ? (
+                    <div className='space-y-6'>
+                        {(() => {
+                            // role을 파트별로 그룹화
+                            const groupByPart = (roles: typeof projectData.defaultInfo.team_roles) => {
+                                const partMap: Record<string, { label: string; roles: typeof roles }> = {};
+                                
+                                roles.forEach(role => {
+                                    const field = role.role_field.toLowerCase();
+                                    let partKey = '';
+                                    let partLabel = '';
+                                    
+                                    if (field.includes('pm') || field.includes('기획')) {
+                                        partKey = 'planning';
+                                        partLabel = '기획';
+                                    } else if (field.includes('design') || field.includes('디자인')) {
+                                        partKey = 'design';
+                                        partLabel = '디자인';
+                                    } else if (field.includes('frontend') || field.includes('backend') || field.includes('개발')) {
+                                        partKey = 'development';
+                                        partLabel = '개발';
+                                    } else {
+                                        partKey = 'other';
+                                        partLabel = '기타';
+                                    }
+                                    
+                                    if (!partMap[partKey]) {
+                                        partMap[partKey] = { label: partLabel, roles: [] };
+                                    }
+                                    partMap[partKey].roles.push(role);
+                                });
+                                
+                                return partMap;
+                            };
+                            
+                            const grouped = groupByPart(projectData.defaultInfo.team_roles);
+                            
+                            return Object.entries(grouped).map(([key, { label, roles }]) => {
+                                const totalCount = roles.reduce((sum, role) => sum + role.required_count, 0);
+                                
+                                return (
+                                    <div key={key} className='flex items-center gap-6'>
+                                        <p className='w-[90px] text-[16px] font-medium'>{label}</p>
+                                        <p className='w-[50px] text-[16px]'>{totalCount}명</p>
+                                        <div className='flex gap-2 flex-wrap'>
+                                            {roles.map((role, idx) => (
+                                                <span 
+                                                    key={idx}
+                                                    className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(role.role_field.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}
+                                                >
+                                                    {role.role_field} ({role.required_count})
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            });
+                        })()}
                     </div>
-
-                    <div className='flex items-center gap-6'>
-                        <p className='w-[90px] text-[16px] font-medium'>디자인</p>
-                        <p className='w-[50px] text-[16px]'>1명</p>
-                        <div className='flex gap-2'>
-                            <span className={`inline-flex items-center justify-center w-[82px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('design')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                Design (2)
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className='flex items-center gap-6'>
-                        <p className='w-[90px] text-[16px] font-medium'>개발</p>
-                        <p className='w-[50px] text-[16px]'>8명</p>
-                        <div className='flex gap-2'>
-                            <span className={`inline-flex items-center justify-center w-[96px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('frontend')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                Frontend (4)
-                            </span>
-                            <span className={`inline-flex items-center justify-center w-[94px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('backend')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                Backend (4)
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                ) : (
+                    <p className='text-[16px] text-neutral-500'>팀원 구성 정보가 없습니다.</p>
+                )}
             </div>
         </>
     );

@@ -69,7 +69,7 @@ const AvailableNecters = () => {
                     {displayMembers.map((member) => (
                         <Link 
                             key={member.userId}
-                            to="/matching-available"
+                            to={`/matching-available/${member.userId}`}
                             className="w-68 h-64 rounded-xl overflow-hidden cursor-pointer bg-white border-neutral-100 border-[1.5px] hover:border-primary-400-normal hover:shadow-lg transition-all duration-200 block"
                         >
                             {/* 상단: 배경 + 이미지 영역 */}

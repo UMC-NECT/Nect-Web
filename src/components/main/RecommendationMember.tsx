@@ -2,13 +2,14 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
 import { useRef } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import RecommendationMemberCard from '@/components/common/RecommendationMemberCard';
 import { useRecommendationMembers } from '@/hooks/queries/home';
 
 const RecommendationMember = () => {
     const paginationRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
+    const navigate = useNavigate();
     const isProfileAnalysisPage = location.pathname === '/profile-analysis';
 
     const { data: members, isLoading, isError } = useRecommendationMembers(15);
@@ -61,6 +62,11 @@ const RecommendationMember = () => {
         );
     }
 
+    // 카드 클릭 핸들러
+    const handleCardClick = (userId: number) => {
+        navigate(`/matching-available/${userId}`);
+    };
+
     return (
         <div className="w-308.25 h-111.75 mx-auto mb-11.25 relative">
             {!isProfileAnalysisPage && (
@@ -105,7 +111,9 @@ const RecommendationMember = () => {
                 >
                     {members.map((member) => (
                         <SwiperSlide key={member.userId}>
-                            <RecommendationMemberCard member={member} showRoles={false} />
+                            <div onClick={() => handleCardClick(member.userId)}>
+                                <RecommendationMemberCard member={member} showRoles={false} />
+                            </div>
                         </SwiperSlide>
                     ))}
                 </Swiper>

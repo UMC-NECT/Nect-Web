@@ -70,7 +70,7 @@ const UrgentProjects = () => {
                     {projects.map((project) => (
                         <Link
                             key={project.projectId}
-                            to="/recruiting-projects"
+                            to={`/recruiting-projects/${project.projectId}`}
                             className="w-138 h-31 px-5.5 py-4 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors block"
                         >
                             {/* 상단: 제목 + 날짜 */}
