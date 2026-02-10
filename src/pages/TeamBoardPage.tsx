@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router'
 import TeamBoardHeader from '@/components/team-board/TeamBoardHeader'
 import RadarChartCard from '@/components/team-board/RadarChartCard'
 import ContentListCard from '@/components/team-board/ContentListCard'
@@ -7,253 +8,500 @@ import Calendar from '@/components/team-board/Calendar'
 import AddScheduleButton from '@/components/team-board/AddScheduleButton'
 import AddScheduleModal from '@/components/team-board/AddScheduleModal'
 import UpcomingTeamSchedule from '@/components/team-board/UpcomingTeamSchedule'
+import { useTeamBoardOverview } from '@/hooks/team-board/useTeamBoardOverview'
+import { useCalendarMonth } from '@/hooks/team-board/useCalendarMonth'
+import { useCreateScheduleMutation } from '@/hooks/team-board/useCreateSchedule'
+import { useUpdateScheduleMutation } from '@/hooks/team-board/useUpdateSchedule'
+import { useDeleteScheduleMutation } from '@/hooks/team-board/useDeleteSchedule'
+import { useStartWorkMutation } from '@/hooks/team-board/useStartWork'
+import { useStopWorkMutation } from '@/hooks/team-board/useStopWork'
+import { useUpdateTeamBoardBasicInfoMutation } from '@/hooks/team-board/useUpdateTeamBoardBasicInfo'
+import { getProjectUsers } from '@/api/project-users/projectUsers'
+import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
+	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
+	const navigate = useNavigate()
 	const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
-	// 샘플 데이터
+	const [editingScheduleId, setEditingScheduleId] = useState<number | null>(null)
+	
+	// 프로젝트 목록 조회 및 projectId 설정
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await getProjectUsers()
+				if (response.body) {
+					// URL에 projectId가 없으면 첫 번째 프로젝트로 리다이렉트
+					if (!projectIdParam && response.body.length > 0) {
+						navigate(`/team-board/${response.body[0].projectId}`, { replace: true })
+						return
+					}
+				}
+			} catch (error) {
+				console.error('프로젝트 목록 조회 실패:', error)
+			}
+		}
+		fetchProjects()
+	}, [projectIdParam, navigate])
 
-	const radarChartData = [
-		{
-			label: 'PM',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-purple)',
-			roleColor: 'var(--color-roletag-purple)',
-			angle: 0, // 12시 방향
-		},
-		{
-			label: 'Design',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-pink)',
-			roleColor: 'var(--color-roletag-pink)',
-			angle: 60, // 2시 방향
-		},
-		{
-			label: 'Role',
-			score: 18,
-			maxScore: 20,
-			color: 'var(--color-roletag-orange)',
-			roleColor: 'var(--color-roletag-orange)',
-			angle: 120, // 4시 방향
-		},
-		{
-			label: 'Backend',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-blue)',
-			roleColor: 'var(--color-roletag-blue)',
-			angle: 180, // 6시 방향
-		},
-		{
-			label: 'Frontend',
-			score: 16,
-			maxScore: 20,
-			color: 'var(--color-roletag-green)',
-			roleColor: 'var(--color-roletag-green)',
-			angle: 240, // 8시 방향
-		},
-		{
-			label: 'Role',
-			score: 18,
-			maxScore: 20,
-			color: 'var(--color-roletag-yellow)',
-			roleColor: 'var(--color-roletag-yellow)',
-			angle: 300, // 10시 방향
-		},
-	]
+	// URL에서 projectId 가져오기
+	const projectId = projectIdParam ? parseInt(projectIdParam, 10) : null
 
-	const bulletinBoardItems = [
-		{ title: '팀별 주간 업무 보고 양식 안내', date: '2024.1.10', tag: '[필독]' },
-		{ title: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~', date: '2024.01.10', tag: '[공지]' },
-		{ title: '회의록 (댓글에 변동사항 추가)', date: '2024.1.10' },
-		{ title: '프로젝트 공동 경비 사용 내역', date: '0000.00.00' },
-	]
+	// 현재 캘린더 월/년도 상태
+	const today = new Date()
+	const [calendarYear, setCalendarYear] = useState(today.getFullYear())
+	const [calendarMonth, setCalendarMonth] = useState(today.getMonth() + 1)
+	const [selectedDate, setSelectedDate] = useState<number | null>(null)
 
-	const sharedDocumentItems = [
-		{ title: '서비스 기획안 & 기능 명세서', date: '2024.1.10', fileType: 'PDF' as const },
-		{ title: 'UI/UX 디자인 시스템', date: '2024.1.10', fileType: 'Figma' as const },
-		{ title: 'UI 구현 피그마 페이지', date: '2024.1.10', fileType: 'Figma' as const },
-		{ title: '웹사이트 개발 임시 배포 링크', date: '0000.00.00', fileType: 'PDF' as const },
-	]
+	// API 호출 (projectId가 있을 때만)
+	const { data: overviewResponse, isLoading } = useTeamBoardOverview(projectId, {
+		docsLimit: 4,
+		postsLimit: 4,
+		scheduleLimit: 6,
+	})
+	const overview = overviewResponse?.body
 
-	const upcomingScheduleItems = [
-		{
-			dayOfWeek: 'Mon',
-			date: 16,
-			title: '개발 스프링부트 데이',
-			dateString: '12월 16일 - 12월 17일',
-			isHighlighted: false,
-			outlineColor: 'neutral-100' as const,
-		},
-		{
-			dayOfWeek: 'Wed',
-			date: 18,
-			title: '프로젝트 회의',
-			dateString: '12월 18일',
-			time: '14:00 - 15:30',
-			isHighlighted: true,
-			outlineColor: 'primary-300' as const,
-		},
-		{
-			dayOfWeek: 'Fri',
-			date: 26,
-			title: '개발 스프링부트 데이',
-			dateString: '12월 26일 - 12월 27일',
-			isHighlighted: false,
-			outlineColor: 'neutral-100' as const,
-		},
-		{
-			dayOfWeek: 'Fri',
-			date: 2,
-			title: '파트 팀장 회의',
-			dateString: '2026년 1월 2일',
-			time: '13:15 - 14:30',
-			isHighlighted: false,
-			outlineColor: 'neutral-100' as const,
-		},
-	]
+	// 캘린더 월간 인디케이터 API 호출
+	const { data: calendarResponse } = useCalendarMonth(projectId, calendarYear, calendarMonth)
+	const calendarData = calendarResponse?.body
 
-	const calendarDays = [
-		// 일요일
-		[
-			{ date: 30, isActive: false, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 7, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 14, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 21, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 28, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 월요일
-		[
-			{ date: 1, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 8, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 15, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 22, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 29, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 화요일
-		[
-			{ date: 2, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 9, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 16, isActive: true, isToday: true, isSelected: true, hasTasks: true },
-			{ date: 23, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 30, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 수요일
-		[
-			{ date: 3, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 10, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 17, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 24, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 31, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 목요일
-		[
-			{ date: 4, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 11, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 18, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 25, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 1, isActive: false, isToday: false, isSelected: false, hasTasks: false },
-		],
-		// 금요일
-		[
-			{ date: 5, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 12, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 19, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 26, isActive: true, isToday: false, isSelected: false, hasTasks: true },
-			{ date: 2, isActive: false, isToday: false, isSelected: false, hasTasks: true },
-		],
-		// 토요일
-		[
-			{ date: 6, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 13, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 20, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 27, isActive: true, isToday: false, isSelected: false, hasTasks: false },
-			{ date: 3, isActive: false, isToday: false, isSelected: false, hasTasks: false },
-		],
-	]
+	// 일정 생성 mutation (projectId가 있을 때만)
+	const createScheduleMutation = useCreateScheduleMutation(projectId || 0)
+	
+	// 일정 수정 mutation (projectId가 있을 때만)
+	const updateScheduleMutation = useUpdateScheduleMutation(projectId || 0)
+	
+	// 일정 삭제 mutation (projectId가 있을 때만)
+	const deleteScheduleMutation = useDeleteScheduleMutation(projectId || 0)
 
-	const teamProfiles = [
-		{
-			name: '닉네임5자',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:08:56',
+	// 작업 시작 mutation (projectId가 있을 때만)
+	const startWorkMutation = useStartWorkMutation(projectId || 0)
+
+	// 작업 정지 mutation (projectId가 있을 때만)
+	const stopWorkMutation = useStopWorkMutation(projectId || 0)
+
+	// 팀보드 기본 정보 수정 mutation (projectId가 있을 때만)
+	const updateBasicInfoMutation = useUpdateTeamBoardBasicInfoMutation(projectId || 0)
+
+	/**
+	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"
+	 */
+	const formatDateForDisplay = (dateString: string): string => {
+		return dateString.replace(/-/g, '.')
+	}
+
+	/**
+	 * ISO 날짜 포맷 변환: "2026-01-31T10:00:00" -> "2026.01.31"
+	 */
+	const formatISODateForDisplay = (isoDateString: string): string => {
+		const date = new Date(isoDateString)
+		const year = date.getFullYear()
+		const month = String(date.getMonth() + 1).padStart(2, '0')
+		const day = String(date.getDate()).padStart(2, '0')
+		return `${year}.${month}.${day}`
+	}
+
+	/**
+	 * 필드 타입에 따른 색상 매핑
+	 */
+	const getFieldColor = (fieldType: FieldType, index: number): string => {
+		const colorMap: Record<FieldType, string> = {
+			PM: 'var(--color-roletag-purple)',
+			DESIGN: 'var(--color-roletag-pink)',
+			FRONTEND: 'var(--color-roletag-green)',
+			BACKEND: 'var(--color-roletag-blue)',
+			CUSTOM: index % 2 === 0 ? 'var(--color-roletag-yellow)' : 'var(--color-roletag-orange)',
+		}
+		return colorMap[fieldType] || 'var(--color-roletag-gray)'
+	}
+
+	/**
+	 * 필드 타입에 따른 라벨 매핑
+	 */
+	const getFieldLabel = (fieldType: FieldType, customName: string | null): string => {
+		const labelMap: Record<FieldType, string> = {
+			PM: 'PM',
+			DESIGN: 'Design',
+			FRONTEND: 'Frontend',
+			BACKEND: 'Backend',
+			CUSTOM: customName || 'Custom',
+		}
+		return labelMap[fieldType] || 'Unknown'
+	}
+
+	/**
+	 * 미션 진행도 데이터를 RadarChart 형식으로 변환
+	 */
+	const radarChartData = useMemo(() => {
+		if (!overview?.mission_progress?.teams || overview.mission_progress.teams.length === 0) {
+			return []
+		}
+
+		const angleStep = 360 / overview.mission_progress.teams.length
+
+		return overview.mission_progress.teams.map((team, index) => {
+			const fieldColor = getFieldColor(team.field.type, index)
+			// completed_count를 score로, total_count를 maxScore로 사용
+			const score = team.completed_count
+			const maxScore = team.total_count
+
+			return {
+				label: getFieldLabel(team.field.type, team.field.custom_name),
+				score,
+				maxScore,
+				color: fieldColor,
+				roleColor: fieldColor,
+				angle: index * angleStep,
+			}
+		})
+	}, [overview])
+
+	/**
+	 * 전체 미션 완료 개수 (Total completed count)
+	 * API 스펙: total.completed_count
+	 */
+	const totalCompletedCount = useMemo(() => {
+		if (!overview?.mission_progress?.total) return 0
+		return overview.mission_progress.total.completed_count
+	}, [overview])
+
+	/**
+	 * 전체 미션 총 개수 (Total count)
+	 * API 스펙: total.total_count
+	 */
+	const totalCount = useMemo(() => {
+		if (!overview?.mission_progress?.total) return 0
+		return overview.mission_progress.total.total_count
+	}, [overview])
+
+	/**
+	 * 게시글 프리뷰 데이터를 ContentListCard 형식으로 변환
+	 */
+	const bulletinBoardItems = useMemo(() => {
+		if (!overview?.posts_preview?.posts || overview.posts_preview.posts.length === 0) {
+			return []
+		}
+
+		return overview.posts_preview.posts.map((post) => {
+			let tag: string | undefined
+			if (post.post_type === 'NOTICE') {
+				tag = '[공지]'
+			} else if (post.post_type === 'REQUIRED') {
+				tag = '[필독]'
+			}
+
+			return {
+				title: post.title,
+				date: formatISODateForDisplay(post.created_at),
+				tag,
+			}
+		})
+	}, [overview])
+
+	/**
+	 * 공유 문서함 프리뷰 데이터를 ContentListCard 형식으로 변환
+	 */
+	const sharedDocumentItems = useMemo(() => {
+		if (!overview?.shared_documents_preview?.documents || overview.shared_documents_preview.documents.length === 0) {
+			return []
+		}
+
+		return overview.shared_documents_preview.documents.map((document) => ({
+			title: document.title,
+			date: formatISODateForDisplay(document.created_at),
+			fileExt: document.file_ext, // 파일 확장자를 직접 전달
+		}))
+	}, [overview])
+
+	/**
+	 * 시간 포맷 변환: "2026-02-01T10:00:00" -> "10:00"
+	 */
+	const formatTimeFromISO = (isoDateString: string): string => {
+		const date = new Date(isoDateString)
+		const hours = String(date.getHours()).padStart(2, '0')
+		const minutes = String(date.getMinutes()).padStart(2, '0')
+		return `${hours}:${minutes}`
+	}
+
+	/**
+	 * 날짜 포맷 변환: ISO -> "12월 16일" 또는 "12월 16일 - 12월 17일"
+	 */
+	const formatScheduleDateString = (startAt: string, endAt: string, isMultiDay: boolean): string => {
+		const startDate = new Date(startAt)
+		const endDate = new Date(endAt)
+		
+		const startMonth = startDate.getMonth() + 1
+		const startDay = startDate.getDate()
+		const endMonth = endDate.getMonth() + 1
+		const endDay = endDate.getDate()
+		
+		if (isMultiDay) {
+			return `${startMonth}월 ${startDay}일 - ${endMonth}월 ${endDay}일`
+		}
+		return `${startMonth}월 ${startDay}일`
+	}
+
+	/**
+	 * 요일 추출: Date -> "Mon", "Wed" 등
+	 */
+	const getDayOfWeek = (date: Date): string => {
+		const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+		return days[date.getDay()]
+	}
+
+	/**
+	 * 다가오는 일정 데이터를 UpcomingTeamSchedule 형식으로 변환
+	 */
+	const upcomingScheduleItems = useMemo(() => {
+		if (!overview?.upcoming_schedules?.items || overview.upcoming_schedules.items.length === 0) {
+			return []
+		}
+
+		return overview.upcoming_schedules.items.map((schedule) => {
+			const startDate = new Date(schedule.start_at)
+			
+			let time: string | undefined
+			if (!schedule.all_day) {
+				const startTime = formatTimeFromISO(schedule.start_at)
+				const endTime = formatTimeFromISO(schedule.end_at)
+				time = `${startTime} - ${endTime}`
+			}
+
+			// 오늘 날짜인지 확인
+			const today = new Date()
+			const isToday = startDate.getFullYear() === today.getFullYear() &&
+				startDate.getMonth() === today.getMonth() &&
+				startDate.getDate() === today.getDate()
+
+			// 선택된 날짜와 일치하는지 확인
+			const isSelectedDate = selectedDate !== null &&
+				startDate.getFullYear() === calendarYear &&
+				startDate.getMonth() + 1 === calendarMonth &&
+				startDate.getDate() === selectedDate
+
+			return {
+				scheduleId: schedule.schedule_id,
+				dayOfWeek: getDayOfWeek(startDate),
+				date: startDate.getDate(),
+				title: schedule.title,
+				dateString: formatScheduleDateString(schedule.start_at, schedule.end_at, schedule.is_multi_day),
+				time,
+				isHighlighted: isToday, // 오늘 날짜면 primary-500 배경
+				outlineColor: isSelectedDate ? ('primary-300' as const) : ('neutral-100' as const),
+			}
+		})
+	}, [overview, selectedDate, calendarYear, calendarMonth])
+
+	/**
+	 * 작업 시간을 "HH:MM:SS" 형식으로 변환
+	 */
+	const formatWorkTime = (seconds: number): string => {
+		const hours = Math.floor(seconds / 3600)
+		const minutes = Math.floor((seconds % 3600) / 60)
+		const secs = seconds % 60
+		return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+	}
+
+	/**
+	 * 팀원 데이터를 TeamProfileBoard 형식으로 변환
+	 */
+	const teamProfiles = useMemo(() => {
+		if (!overview?.members?.members || overview.members.members.length === 0) {
+			return []
+		}
+
+		return overview.members.members.map((member) => ({
+			name: member.nickname || member.name,
+			role: member.field.custom_name || member.field.type, // 백엔드 값 그대로 사용
+			contact: '',
+			time: formatWorkTime(member.today_work_seconds),
+			avatarUrl: member.profile_image_url || undefined,
 			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
+				beforeProgress: member.counts.planning,
+				inProgress: member.counts.in_progress,
+				completed: member.counts.done,
 			},
-		},
-		{
-			name: '이방토',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:58:57',
+			isWorking: member.is_working || false,
+		}))
+	}, [overview])
+
+	/**
+	 * 메인 프로필 (리더 또는 첫 번째 팀원)
+	 */
+	const mainProfile = useMemo(() => {
+		if (!overview?.members?.members || overview.members.members.length === 0) {
+			return undefined
+		}
+
+		const leader = overview.members.members.find((m) => m.member_type === 'LEADER')
+		const targetMember = leader || overview.members.members[0]
+
+		return {
+			name: targetMember.nickname || targetMember.name,
+			role: targetMember.field.custom_name || targetMember.field.type, // 백엔드 값 그대로 사용
+			time: formatWorkTime(targetMember.today_work_seconds),
+			avatarUrl: targetMember.profile_image_url || undefined,
 			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
+				beforeProgress: targetMember.counts.planning,
+				inProgress: targetMember.counts.in_progress,
+				completed: targetMember.counts.done,
 			},
-		},
-		{
-			name: '닉네임5자',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:08:56',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
+			isWorking: targetMember.is_working,
+			onStartWork: () => {
+				if (targetMember.is_working) {
+					// 작업 중이면 정지
+					stopWorkMutation.mutate()
+				} else {
+					// 작업 중이 아니면 시작
+					startWorkMutation.mutate()
+				}
 			},
-		},
-		{
-			name: '이방토',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:58:57',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-		{
-			name: '닉네임5자',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:08:56',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-		{
-			name: '이방토',
-			role: '파트',
-			contact: '000-0000-000',
-			time: '04:58:57',
-			status: {
-				beforeProgress: 0,
-				inProgress: 0,
-				completed: 0,
-			},
-		},
-	]
+		}
+	}, [overview, startWorkMutation, stopWorkMutation])
+
+	// 헤더 데이터
+	const headerData = useMemo(() => {
+		if (!overview?.basic_info) {
+			return {
+				title: '넥트 웹사이트 개발 프로젝트',
+				description: '크리에이터를 위한 사이드 프로젝트 매칭 & 협업 플랫폼',
+				notice: '이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~',
+				regularMeeting: '매주 금요일 PM 8:30 / 강남 사거리역 스타벅스',
+				startDate: '2025.11.14',
+				endDate: '2026.2.20',
+			}
+		}
+
+		return {
+			title: overview.basic_info.title,
+			description: overview.basic_info.description,
+			notice: overview.basic_info.notice_text || '공지사항이 없습니다',
+			regularMeeting: overview.basic_info.regular_meeting_text || '정기회의가 없습니다',
+			startDate: formatDateForDisplay(overview.basic_info.planned_started_on),
+			endDate: formatDateForDisplay(overview.basic_info.planned_ended_on),
+		}
+	}, [overview])
+
+	/**
+	 * 캘린더 데이터를 Calendar 컴포넌트 형식으로 변환
+	 */
+	const calendarDays = useMemo(() => {
+		// API 데이터에서 일정이 있는 날짜를 Map으로 변환
+		const scheduleDaysMap = new Map<string, number>()
+		if (calendarData?.days) {
+			calendarData.days.forEach((day) => {
+				scheduleDaysMap.set(day.date, day.event_count)
+			})
+		}
+
+		// 해당 월의 첫 날과 마지막 날 계산
+		const firstDayOfMonth = new Date(calendarYear, calendarMonth - 1, 1)
+		const lastDayOfMonth = new Date(calendarYear, calendarMonth, 0)
+		const daysInMonth = lastDayOfMonth.getDate()
+		const startingDayOfWeek = firstDayOfMonth.getDay() // 0 = 일요일, 6 = 토요일
+
+		// 오늘 날짜 확인
+		const todayDate = new Date()
+		const isCurrentMonth = todayDate.getFullYear() === calendarYear && todayDate.getMonth() + 1 === calendarMonth
+
+		// 7x6 그리드 생성 (최대 6주)
+		const daysGrid: Array<Array<{ date: number; isActive: boolean; isToday: boolean; isSelected: boolean; hasTasks: boolean }>> = Array.from({ length: 7 }, () => [])
+
+		let dayCounter = 1
+		for (let week = 0; week < 6; week++) {
+			for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+				if (week === 0 && dayOfWeek < startingDayOfWeek) {
+					// 이전 달의 날짜 (표시하지 않음)
+					daysGrid[dayOfWeek].push({ date: 0, isActive: false, isToday: false, isSelected: false, hasTasks: false })
+				} else if (dayCounter > daysInMonth) {
+					// 다음 달의 날짜 (표시하지 않음)
+					daysGrid[dayOfWeek].push({ date: 0, isActive: false, isToday: false, isSelected: false, hasTasks: false })
+				} else {
+					// 현재 달의 날짜
+					const dateString = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`
+					const hasTasks = scheduleDaysMap.has(dateString) && (scheduleDaysMap.get(dateString) || 0) > 0
+					const isToday = isCurrentMonth && dayCounter === todayDate.getDate()
+					const isSelected = selectedDate === dayCounter && hasTasks
+
+					daysGrid[dayOfWeek].push({
+						date: dayCounter,
+						isActive: true,
+						isToday,
+						isSelected,
+						hasTasks,
+					})
+					dayCounter++
+				}
+			}
+			if (dayCounter > daysInMonth) break // 모든 날짜를 채웠으면 종료
+		}
+
+		return daysGrid
+	}, [calendarData, calendarYear, calendarMonth, selectedDate])
+
+	/**
+	 * 이전 달로 이동
+	 */
+	const handlePreviousMonth = () => {
+		setSelectedDate(null) // 월 변경 시 선택 해제
+		if (calendarMonth === 1) {
+			setCalendarYear(calendarYear - 1)
+			setCalendarMonth(12)
+		} else {
+			setCalendarMonth(calendarMonth - 1)
+		}
+	}
+
+	/**
+	 * 다음 달로 이동
+	 */
+	const handleNextMonth = () => {
+		setSelectedDate(null) // 월 변경 시 선택 해제
+		if (calendarMonth === 12) {
+			setCalendarYear(calendarYear + 1)
+			setCalendarMonth(1)
+		} else {
+			setCalendarMonth(calendarMonth + 1)
+		}
+	}
+
+	/**
+	 * 날짜 클릭 핸들러 (일정이 있는 날짜만 선택)
+	 */
+	const handleDayClick = (date: number) => {
+		// 해당 날짜에 일정이 있는지 확인
+		const dateString = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(date).padStart(2, '0')}`
+		const hasTasks = calendarData?.days?.some((day) => day.date === dateString && day.event_count > 0) || false
+
+		if (hasTasks) {
+			// 이미 선택된 날짜를 다시 클릭하면 선택 해제, 아니면 선택
+			setSelectedDate(selectedDate === date ? null : date)
+		}
+	}
 
 	return (
-		<div className="flex flex-col w-full max-w-[1440px] mx-auto px-6 py-8 gap-7">
+		<div className="flex flex-col w-full max-w-main mx-auto px-6 py-8 gap-7">
 			{/* 상단 헤더 영역 (1224x180) */}
 			<div className="w-[1224px] h-[180px]">
-				<TeamBoardHeader
-					title="넥트 웹사이트 개발 프로젝트"
-					description="크리에이터를 위한 사이드 프로젝트 매칭 & 협업 플랫폼"
-					notice="이번주 회의는 없습니다 ! 다음주에 대면 회의로 만나요 ~"
-					regularMeeting="매주 금요일 PM 8:30 / 강남 사거리역 스타벅스"
-					startDate="2025.11.14"
-					endDate="2026.2.20"
-				/>
+				{isLoading ? (
+					<div className="flex items-center justify-center h-full">로딩 중...</div>
+				) : (
+					<TeamBoardHeader
+						title={headerData.title}
+						description={headerData.description}
+						notice={headerData.notice}
+						regularMeeting={headerData.regularMeeting}
+						startDate={headerData.startDate}
+						endDate={headerData.endDate}
+						onUpdateBasicInfo={
+							projectId && overview?.basic_info?.can_edit
+								? (payload) => {
+										updateBasicInfoMutation.mutate(payload)
+									}
+								: undefined
+						}
+					/>
+				)}
 			</div>
 
 			{/* 헤더/메인 구분선 */}
@@ -266,7 +514,12 @@ const TeamBoardPage = () => {
 					{/* 상단: RadarChartCard + ContentListCard 두 개 (808x448) */}
 					<div className="flex gap-6 h-[448px]">
 						{/* RadarChartCard (392x448) */}
-						<RadarChartCard title="팀 역할별 역량" totalScore={80} maxScore={80} data={radarChartData} />
+						<RadarChartCard 
+							title="팀 미션 진행 현황" 
+							totalScore={totalCompletedCount} 
+							maxScore={totalCount} 
+							data={radarChartData} 
+						/>
 						{/* ContentListCard 두 개 (세로 배치, 392x216 각각) */}
 						<div className="flex flex-col gap-4">
 							<ContentListCard type="게시판" items={bulletinBoardItems} />
@@ -277,17 +530,7 @@ const TeamBoardPage = () => {
 					{/* 하단: TeamProfileBoard (808x518) */}
 					<div className="h-[518px]">
 						<TeamProfileBoard
-							mainProfile={{
-								name: '이방토',
-								role: 'Design',
-								time: '04:58:57',
-								status: {
-									beforeProgress: 20,
-									inProgress: 20,
-									completed: 20,
-								},
-								onStartWork: () => console.log('작업 시작'),
-							}}
+							mainProfile={mainProfile}
 							profiles={teamProfiles}
 						/>
 					</div>
@@ -298,21 +541,130 @@ const TeamBoardPage = () => {
 					{/* 상단: Calendar + AddScheduleButton (392x448) */}
 					<div className="flex flex-col gap-4 h-[448px] relative">
 						<Calendar
-							year={2026}
-							month={12}
+							year={calendarYear}
+							month={calendarMonth}
 							days={calendarDays}
-							onPreviousMonth={() => console.log('이전 달')}
-							onNextMonth={() => console.log('다음 달')}
-							onDayClick={(date) => console.log('날짜 클릭:', date)}
+							onPreviousMonth={handlePreviousMonth}
+							onNextMonth={handleNextMonth}
+							onDayClick={handleDayClick}
 						/>
 						<div className="relative">
-							<AddScheduleButton onClick={() => setIsScheduleModalOpen(true)} />
+							<AddScheduleButton onClick={() => {
+								setEditingScheduleId(null)
+								setIsScheduleModalOpen(true)
+							}} />
 							<AddScheduleModal
 								isOpen={isScheduleModalOpen}
-								onClose={() => setIsScheduleModalOpen(false)}
+								onClose={() => {
+									setIsScheduleModalOpen(false)
+									setEditingScheduleId(null)
+								}}
+								initialTitle={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.title : undefined}
+								initialStartDate={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.start_at : undefined}
+								initialEndDate={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.end_at : undefined}
+								initialAllDay={editingScheduleId ? overview?.upcoming_schedules?.items.find(s => s.schedule_id === editingScheduleId)?.all_day : undefined}
 								onSave={(title, startDate, endDate, time) => {
-									console.log('일정 저장:', { title, startDate, endDate, time })
-									// TODO: API 호출로 일정 저장
+									// 날짜 파싱: "2026년 02월 01일" -> Date 객체
+									const parseDateString = (dateStr: string): Date => {
+										const numbers = dateStr.replace(/[^0-9]/g, '')
+										if (numbers.length !== 8) {
+											throw new Error('Invalid date format')
+										}
+										const year = parseInt(numbers.slice(0, 4), 10)
+										const month = parseInt(numbers.slice(4, 6), 10)
+										const day = parseInt(numbers.slice(6, 8), 10)
+										return new Date(year, month - 1, day)
+									}
+
+									try {
+										const startDateObj = parseDateString(startDate)
+										const endDateObj = endDate ? parseDateString(endDate) : startDateObj
+
+										// 시간 파싱: "15:00 - 17:00" 또는 "15:00-17:00" 형식 지원
+										let allDay = true
+										let startHour = 0
+										let startMinute = 0
+										let endHour = 23
+										let endMinute = 59
+
+										if (time && time.trim()) {
+											// 더 유연한 정규식: 공백과 하이픈 형식 다양하게 지원
+											const timeMatch = time.trim().match(/^(\d{1,2}):(\d{1,2})\s*[-~]\s*(\d{1,2}):(\d{1,2})$/)
+											if (timeMatch) {
+												allDay = false
+												startHour = parseInt(timeMatch[1], 10)
+												startMinute = parseInt(timeMatch[2], 10)
+												endHour = parseInt(timeMatch[3], 10)
+												endMinute = parseInt(timeMatch[4], 10)
+
+												// 시간 유효성 검사
+												if (startHour < 0 || startHour > 23 || startMinute < 0 || startMinute > 59 ||
+													endHour < 0 || endHour > 23 || endMinute < 0 || endMinute > 59) {
+													throw new Error('Invalid time format')
+												}
+											} else {
+												// 시간 형식이 맞지 않으면 allDay로 처리
+												console.warn('시간 형식이 올바르지 않습니다:', time)
+											}
+										}
+
+										// ISO 형식으로 변환 (입력한 시간 그대로, 시간대 변환 없이)
+										const formatToISO = (year: number, month: number, day: number, hour: number, minute: number): string => {
+											const yearStr = String(year).padStart(4, '0')
+											const monthStr = String(month + 1).padStart(2, '0')
+											const dayStr = String(day).padStart(2, '0')
+											const hourStr = String(hour).padStart(2, '0')
+											const minuteStr = String(minute).padStart(2, '0')
+											return `${yearStr}-${monthStr}-${dayStr}T${hourStr}:${minuteStr}:00`
+										}
+
+										const startAt = formatToISO(
+											startDateObj.getFullYear(),
+											startDateObj.getMonth(),
+											startDateObj.getDate(),
+											startHour,
+											startMinute,
+										)
+
+										const endAt = formatToISO(
+											endDateObj.getFullYear(),
+											endDateObj.getMonth(),
+											endDateObj.getDate(),
+											endHour,
+											endMinute,
+										)
+
+										// 수정 모드인지 확인
+										if (editingScheduleId) {
+											// 일정 수정 API 호출
+											updateScheduleMutation.mutate({
+												scheduleId: editingScheduleId,
+												scheduleData: {
+													title,
+													description: '', // description 필수이므로 빈 문자열로 전송
+													start_at: startAt,
+													end_at: endAt,
+													all_day: allDay,
+												},
+											})
+										} else {
+											// 일정 생성 API 호출
+											createScheduleMutation.mutate({
+												title,
+												description: '', // description 필수이므로 빈 문자열로 전송
+												start_at: startAt,
+												end_at: endAt,
+												all_day: allDay,
+											})
+										}
+
+										// 성공 시 모달 닫기
+										setIsScheduleModalOpen(false)
+										setEditingScheduleId(null)
+									} catch (error) {
+										console.error('일정 생성 실패:', error)
+										// TODO: 에러 처리 (토스트 메시지 등)
+									}
 								}}
 							/>
 						</div>
@@ -320,7 +672,16 @@ const TeamBoardPage = () => {
 
 					{/* 하단: UpcomingTeamSchedule (392x518) */}
 					<div className="h-[518px]">
-						<UpcomingTeamSchedule items={upcomingScheduleItems} />
+						<UpcomingTeamSchedule
+							items={upcomingScheduleItems}
+							onEdit={(scheduleId) => {
+								setEditingScheduleId(scheduleId)
+								setIsScheduleModalOpen(true)
+							}}
+							onDelete={(scheduleId) => {
+								deleteScheduleMutation.mutate(scheduleId)
+							}}
+						/>
 					</div>
 				</div>
 			</div>

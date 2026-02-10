@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import CheckIcon from '@/assets/icons/team-board/check.svg?react'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { formatDateInput, formatTimeInput } from '@/utils/dateUtils'
@@ -7,9 +7,46 @@ interface AddScheduleModalProps {
 	isOpen: boolean
 	onClose: () => void
 	onSave: (title: string, startDate: string, endDate: string, time: string) => void
+	// 수정 모드용 props
+	initialTitle?: string
+	initialStartDate?: string // ISO 형식: "2026-02-01T10:00:00"
+	initialEndDate?: string // ISO 형식: "2026-02-01T11:00:00"
+	initialAllDay?: boolean
 }
 
-const AddScheduleModal = ({ isOpen, onClose, onSave }: AddScheduleModalProps) => {
+/**
+ * ISO 날짜를 "2026년 02월 01일" 형식으로 변환
+ */
+const formatISODateToInput = (isoDate: string): string => {
+	const date = new Date(isoDate)
+	const year = date.getFullYear()
+	const month = String(date.getMonth() + 1).padStart(2, '0')
+	const day = String(date.getDate()).padStart(2, '0')
+	return `${year}년 ${month}월 ${day}일`
+}
+
+/**
+ * ISO 시간을 "15:00 - 17:00" 형식으로 변환
+ */
+const formatISOTimeToInput = (startAt: string, endAt: string): string => {
+	const startDate = new Date(startAt)
+	const endDate = new Date(endAt)
+	const startHour = String(startDate.getHours()).padStart(2, '0')
+	const startMinute = String(startDate.getMinutes()).padStart(2, '0')
+	const endHour = String(endDate.getHours()).padStart(2, '0')
+	const endMinute = String(endDate.getMinutes()).padStart(2, '0')
+	return `${startHour}:${startMinute} - ${endHour}:${endMinute}`
+}
+
+const AddScheduleModal = ({ 
+	isOpen, 
+	onClose, 
+	onSave,
+	initialTitle,
+	initialStartDate,
+	initialEndDate,
+	initialAllDay,
+}: AddScheduleModalProps) => {
 	const [title, setTitle] = useState('')
 	const [startDate, setStartDate] = useState('')
 	const [endDate, setEndDate] = useState('')
@@ -18,13 +55,36 @@ const AddScheduleModal = ({ isOpen, onClose, onSave }: AddScheduleModalProps) =>
 	const [previousEndDate, setPreviousEndDate] = useState('')
 	const [previousTime, setPreviousTime] = useState('')
 
+	// 수정 모드일 때 초기값 설정
+	useEffect(() => {
+		if (isOpen && initialTitle && initialStartDate && initialEndDate) {
+			setTitle(initialTitle)
+			setStartDate(formatISODateToInput(initialStartDate))
+			setEndDate(formatISODateToInput(initialEndDate))
+			if (!initialAllDay) {
+				setTime(formatISOTimeToInput(initialStartDate, initialEndDate))
+			} else {
+				setTime('')
+			}
+		} else if (isOpen && !initialTitle) {
+			// 생성 모드일 때 초기화
+			setTitle('')
+			setStartDate('')
+			setEndDate('')
+			setTime('')
+		}
+	}, [isOpen, initialTitle, initialStartDate, initialEndDate, initialAllDay])
+
 	const modalRef = useRef<HTMLDivElement>(null)
 	useClickOutside(modalRef, () => {
 		if (isOpen) {
-            setTitle('')
-            setStartDate('')
-            setEndDate('')
-            setTime('')
+			// 수정 모드가 아닐 때만 초기화
+			if (!initialTitle) {
+				setTitle('')
+				setStartDate('')
+				setEndDate('')
+				setTime('')
+			}
 			onClose()
 		}
 	}, isOpen)
@@ -35,11 +95,13 @@ const AddScheduleModal = ({ isOpen, onClose, onSave }: AddScheduleModalProps) =>
 			return
 		}
 		onSave(title, startDate, endDate, time)
-		// 저장 후 폼 초기화
-		setTitle('')
-		setStartDate('')
-		setEndDate('')
-		setTime('')
+		// 저장 후 폼 초기화 (수정 모드가 아닐 때만)
+		if (!initialTitle) {
+			setTitle('')
+			setStartDate('')
+			setEndDate('')
+			setTime('')
+		}
 		onClose()
 	}
 

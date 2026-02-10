@@ -16,7 +16,7 @@ const AddScheduleButton = ({ onClick, className = '' }: AddScheduleButtonProps) 
 					<div className="self-stretch inline-flex justify-center items-center gap-1.5">
 						{/* 플러스 아이콘 */}
 						<PlusIcon className="w-4 h-4 text-neutral-400" />
-						<div className="justify-start text-neutral-400 body-1 font-medium line-clamp-1">새 일정 추가하기</div>
+						<div className="justify-start text-neutral-400 body-1 font-regular line-clamp-1">새 일정 추가하기</div>
 					</div>
 				</div>
 			</div>
