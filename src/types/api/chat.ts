@@ -102,13 +102,16 @@ export type ChatRoomResponseDto = CommonResponse<{
 // 2-2. 채팅방에 멤버 초대
 export type ChatRoomInviteRequestDto = {
 	/**
-	 * 백엔드 요청 스펙 (snake_case)
-	 * 예: { "target_user_ids": [5, 6] }
+	 * 백엔드 요청 스펙 (camelCase)
+	 * 예: { "targetUserIds": [5, 6] }
+	 */
+	targetUserIds?: number[]
+	/**
+	 * 기존 snake_case 호환용 (필요시에만)
 	 */
 	target_user_ids?: number[]
 	/**
-	 * 프론트 내부 호환용 (camelCase)
-	 * - 기존 코드에서 { memberIds }로 호출하던 부분을 깨지 않기 위해 남겨둠
+	 * 기존 memberIds 호환용
 	 */
 	memberIds?: number[]
 }

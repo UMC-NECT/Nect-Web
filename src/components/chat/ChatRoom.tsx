@@ -332,8 +332,8 @@ const ChatRoom = ({
 	// 멤버 초대
 	const handleInviteMembers = async (memberIds: number[]) => {
 		try {
-			// 백엔드 스펙에 맞게 { target_user_ids: [...] } 형태로 전송
-			await inviteChatRoomMembers(roomId, { target_user_ids: memberIds })
+			// 백엔드 스펙에 맞게 { targetUserIds: [...] } 형태로 전송
+			await inviteChatRoomMembers(roomId, { targetUserIds: memberIds })
 			setIsSelectContactOpen(false)
 			alert('멤버를 초대했습니다.')
 		} catch (error) {

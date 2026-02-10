@@ -107,19 +107,18 @@ export const createGroupChatRoom = async (
 
 /** 기존 채팅방에 멤버 초대 */
 export const inviteChatRoomMembers = async (
-	roomId: number,
-	body: ChatRoomInviteRequestDto
+  roomId: number,
+  body: ChatRoomInviteRequestDto
 ): Promise<ChatRoomInviteResponseDto> => {
-	// API 스펙에 맞게 snake_case로 전송 (target_user_ids)
-	const targetUserIds = body.target_user_ids ?? body.memberIds
-	if (!targetUserIds || targetUserIds.length === 0) {
-		throw new Error("초대할 대상 유저가 없습니다. target_user_ids를 확인해주세요.")
-	}
-	const requestBody = { target_user_ids: targetUserIds }
-	const { data } = await api.post(`/api/v1/chats/rooms/${roomId}/invite`, requestBody)
-	return data
+  // 백엔드 스펙에 맞게 camelCase(targetUserIds)로 전송
+  const targetUserIds = body.targetUserIds ?? body.memberIds ?? body.target_user_ids
+  if (!targetUserIds || targetUserIds.length === 0) {
+    throw new Error('초대할 대상 유저가 없습니다. targetUserIds를 확인해주세요.')
+  }
+  const requestBody = { targetUserIds }
+  const { data } = await api.post(`/api/v1/chats/rooms/${roomId}/invite`, requestBody)
+  return data
 }
-
 /** 프로젝트의 전체 멤버 조회 */
 export const getProjectUsers = async (projectId: number): Promise<ResponseGetProjectUsersDto> => {
 	const { data } = await api.get(`/api/v1/chats/rooms/${projectId}/users`)
