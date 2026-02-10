@@ -6,7 +6,7 @@ import type { RequestPostAnalysisDto } from '@/types/api/analysis'
 import FormInput from '@/components/idea-analyze/FormInput'
 import FeaturesInput from '@/components/idea-analyze/FeaturesInput'
 import NumberedSection from '@/components/common/NumberedSection'
-import AnalysisScreen from '@/components/idea-analyze/AnalysisScreen'
+import AnalysisScreen from '@/components/splash/AnalysisScreen'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { usePostAnalysisMutation } from '@/hooks/analysis/useAnalysisApi'
 

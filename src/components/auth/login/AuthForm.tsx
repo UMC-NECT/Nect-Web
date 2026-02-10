@@ -18,6 +18,7 @@ const AuthForm = () => {
 	const navigate = useNavigate()
 	const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+	const { setItem: setOnboardingCompleted } = useLocalStorage(LOCAL_STORAGE_KEY.ONBOARDING_COMPLETED)
 	const loginMutation = useLoginMutation()
 
 	// 유효성 검사용
@@ -48,7 +49,8 @@ const AuthForm = () => {
 			if (tokenData?.accessToken && tokenData?.refreshToken) {
 				setAccessToken(tokenData.accessToken)
 				setRefreshToken(tokenData.refreshToken)
-				navigate('/')
+				setOnboardingCompleted(tokenData.isOnboardingCompleted === true ? 'true' : 'false')
+				navigate(tokenData.isOnboardingCompleted === false ? '/onboarding' : '/')
 			} else {
 				setLoginError('로그인에 실패했습니다. 다시 시도해주세요.')
 			}
@@ -105,13 +107,15 @@ const AuthForm = () => {
 					</span>
 				</label>
 
-				{/* 에러 메시지 영역 */}
-				{(errors.email || loginError) && (
-					<div className='flex items-center mb-3'>
-						<CheckIcon className='w-3 h-3 text-danger-700 mr-1' />
-						<p className='body-2 text-danger-700'>{errors.email?.message || loginError}</p>
-					</div>
-				)}
+				<div className='flex items-center mb-3'>
+					{/* 에러 메시지 영역 */}
+					{(errors.email || loginError) ? (
+						<>
+							<CheckIcon className='w-3 h-3 text-danger-700 mr-1' />
+							<p className='body-2 text-danger-700'>{errors.email?.message || loginError}</p>
+						</>
+					) : <div className='h-[21px]'></div>}
+				</div>
 
 				{/* 로그인 버튼 */}
 				<Button color='auth' size='lg' fullWidth disabled={!isFormFilled || loginMutation.isPending}>

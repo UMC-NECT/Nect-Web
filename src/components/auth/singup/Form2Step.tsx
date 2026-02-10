@@ -141,6 +141,7 @@ const EmailStep = () => {
 						}
 					>
 						<Input
+							type='password'
 							category='auth'
 							placeholder='비밀번호를 입력해주세요'
 							className={`placeholder:text-neutral-300 placeholder:title-2 ${errors.password ? 'border-danger-700 focus:border-danger-700' : ''}`}
@@ -168,6 +169,7 @@ const EmailStep = () => {
 						}
 					>
 						<Input
+							type='password'
 							category='auth'
 							placeholder='비밀번호를 다시 입력해주세요'
 							className={`placeholder:text-neutral-300 placeholder:title-2 ${errors.password2 ? 'border-danger-700 focus:border-danger-700' : ''}`}

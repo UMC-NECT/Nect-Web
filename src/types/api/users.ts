@@ -12,6 +12,7 @@ export type ResponseLoginDto = CommonResponse<{
     refreshToken: string
     accessTokenExpiresAt: number
     refreshTokenExpiresAt: number
+    isOnboardingCompleted: boolean
 }>
 
 export type RequestSignupDto = {
@@ -21,6 +22,14 @@ export type RequestSignupDto = {
     name: string
     phoneNumber: string
 }
+
+export type ResponseSignupDto = CommonResponse<{
+    grantType: string
+    accessToken: string
+    refreshToken: string
+    accessTokenExpiresAt: number
+    refreshTokenExpiresAt: number
+}>
 
 export type RequestSetupDto = {
 	nickname: string
@@ -75,4 +84,31 @@ export type ResponseProfileDto = CommonResponse<{
     name: string
     email: string
     role: string
+}>
+
+export type ResponseProfileAnalysisDto = CommonResponse<{
+    profileType: string
+    tags: string[]
+    collaborationStyle: {
+        planning: number
+        logic: number
+        supporter: number
+        execution: number
+        empathy: number
+        leadership: number
+    }
+    skills: {
+        category: string
+        skill_names: string[]
+    }[]
+    roleRecommendation: {
+        leader: string
+        team_member: string
+    }
+    growthGuide: {
+        order: number
+        tip: string
+        title: string
+        content: string
+    }[]
 }>

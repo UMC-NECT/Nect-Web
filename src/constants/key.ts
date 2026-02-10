@@ -1,6 +1,7 @@
 export const LOCAL_STORAGE_KEY = {
 	ACCESS_TOKEN: 'accessToken',
 	REFRESH_TOKEN: 'refreshToken',
+	ONBOARDING_COMPLETED: 'onboardingCompleted',
 }
 
 export const QUERY_KEY = {
@@ -9,6 +10,7 @@ export const QUERY_KEY = {
 		all: ['users'] as const,
 		email: () => [...QUERY_KEY.users.all, 'email'] as const,
 		profile: () => [...QUERY_KEY.users.all, 'profile'] as const,
+		profileAnalysis: () => [...QUERY_KEY.users.all, 'profileAnalysis'] as const,
 	},
 	analysis: {
 		all: ['analysis'] as const,

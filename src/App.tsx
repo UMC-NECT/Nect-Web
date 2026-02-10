@@ -6,6 +6,7 @@ import { AuthLayout } from './components/layout/AuthLayout'
 import OnboardingPage from './pages/auth/OnboardingPage'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
+import AuthCallbackPage from './pages/auth/AuthCallbackPage'
 import WeekMissionPage from './pages/WeekMissionPage'
 import TeamBoardPage from './pages/TeamBoardPage'
 import SignupPage from './pages/auth/SignupPage'
@@ -116,7 +117,7 @@ const router = createBrowserRouter([
 		element: <AnalysisLayout />,
 		children: [
 			{
-				path: '/profile-analysis',
+				path: '/profile-analyze',
 				element: <ProfileAnalysisPage />,
 			},
 			{
@@ -135,6 +136,10 @@ const router = createBrowserRouter([
 			{
 				path: '/login',
 				element: <LoginPage />,
+			},
+			{
+				path: '/auth/callback',
+				element: <AuthCallbackPage />,
 			},
 			{
 				path: '/onboarding',
