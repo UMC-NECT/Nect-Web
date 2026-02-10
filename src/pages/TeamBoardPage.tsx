@@ -308,7 +308,7 @@ const TeamBoardPage = () => {
 
 		return overview.members.members.map((member) => ({
 			name: member.nickname || member.name,
-			role: getFieldLabel(member.field.type, member.field.custom_name),
+			role: member.field.custom_name || member.field.type, // 백엔드 값 그대로 사용
 			contact: '',
 			time: formatWorkTime(member.today_work_seconds),
 			avatarUrl: member.profile_image_url || undefined,
@@ -317,6 +317,7 @@ const TeamBoardPage = () => {
 				inProgress: member.counts.in_progress,
 				completed: member.counts.done,
 			},
+			isWorking: member.is_working || false,
 		}))
 	}, [overview])
 
@@ -333,7 +334,7 @@ const TeamBoardPage = () => {
 
 		return {
 			name: targetMember.nickname || targetMember.name,
-			role: getFieldLabel(targetMember.field.type, targetMember.field.custom_name),
+			role: targetMember.field.custom_name || targetMember.field.type, // 백엔드 값 그대로 사용
 			time: formatWorkTime(targetMember.today_work_seconds),
 			avatarUrl: targetMember.profile_image_url || undefined,
 			status: {

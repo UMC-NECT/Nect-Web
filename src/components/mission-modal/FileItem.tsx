@@ -175,10 +175,10 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 			const blobUrl = URL.createObjectURL(droppedFile)
 			onSave?.(
 				{
-					type: 'file',
-					name: editName.trim(),
-					fileName: droppedFile.name,
-					url: blobUrl,
+				type: 'file',
+				name: editName.trim(),
+				fileName: droppedFile.name,
+				url: blobUrl,
 				},
 				droppedFile // 실제 File 객체도 함께 전달
 			)
