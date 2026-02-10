@@ -2,9 +2,19 @@ import { useState } from 'react';
 import clip from '@/assets/icons/common/clip.svg';
 import chevronDown from '@/assets/icons/common/chevron-down.svg'
 import chevronUp from '@/assets/icons/common/chevron-up.svg'
+import type { ProjectDetailDto } from '@/types/api/project';
 
-const ProjectGoalsSection = () => {
+interface ProjectGoalsSectionProps {
+    projectData: ProjectDetailDto;
+}
+
+const ProjectGoalsSection = ({ projectData }: ProjectGoalsSectionProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
+
+    const hasPurposes = projectData.purposes?.values && projectData.purposes.values.length > 0;
+    const hasFunctions = projectData.functions?.values && projectData.functions.values.length > 0;
+    const hasServiceUsers = projectData.serviceUsers?.values && projectData.serviceUsers.values.length > 0;
+    const hasPlanFiles = projectData.planFiles?.files && projectData.planFiles.files.length > 0;
 
     return (
         <div className='mt-[64px] ml-[10px]'>
@@ -14,60 +24,75 @@ const ProjectGoalsSection = () => {
             </h2>
 
             <div className='relative'>
-                <ul className={`space-y-2 list-disc list-outside text-[16px] pl-5 transition-all ${!isExpanded ? 'max-h-[150px] overflow-hidden' : ''}`}>
-                    <li>사이드 프로젝트를 함께 할 팀원을 신뢰성있고 쉽게 찾을 수 있게함</li>
-                    <li>프로젝트 팀 매칭 서비스부터 협업 플랫폼까지 원스톱 생태계 구축</li>
-                    <li>팀 중심의 크리에이터에게 새로운 협업 문화 확산</li>
-                </ul>
+                {hasPurposes ? (
+                    <ul className={`space-y-2 list-disc list-outside text-[16px] pl-5 transition-all ${!isExpanded ? 'max-h-[150px] overflow-hidden' : ''}`}>
+                        {(projectData.purposes?.values ?? []).map((purpose: string, index: number) => (
+                            <li key={index}>{purpose}</li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className='text-[16px] text-neutral-500'>프로젝트 목표가 없습니다.</p>
+                )}
 
-                {!isExpanded && (
+                {!isExpanded && hasPurposes && (
                     <div className='absolute bottom-0 left-0 right-0 h-[60px] bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none'></div>
                 )}
             </div>
 
             {isExpanded && (
                 <div>
-                    <div className='mt-[64px]'>
-                        <h3 className='font-bold text-[20px] mb-4'>
-                            주요 기능
-                            <span className='text-red-500 text-[16px] ml-1'>*</span>
-                        </h3>
-                        <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
-                            <li>관심사ㆍ목표 기반 매칭 시스템 (관심분야ㆍ역할ㆍ목표 등 입력)</li>
-                            <li>아이디어 분석 기능 (프로젝트 아이디어 입력시, 달성을 위한 목표ㆍ팀구성ㆍ기간 등을 정리해줌)</li>
-                            <li>협업 보드 (매칭 후 프로젝트 내에서 역할ㆍ일정ㆍ작업을 한눈에 관리)</li>
-                            <li>기본 알림 및 커뮤니케이션 기능 (초대, 역할 변경, 일정 마감 등의 주요 이벤트를 실시간으로 공유)</li>
-                            <li>Week-Mission 시스템 (주 단위로 프로젝트를 설계하고 주차별 진행률을 시각화)</li>
-                        </ul>
-                    </div>
+                    {hasFunctions && (
+                        <div className='mt-[64px]'>
+                            <h3 className='font-bold text-[20px] mb-4'>
+                                주요 기능
+                                <span className='text-red-500 text-[16px] ml-1'>*</span>
+                            </h3>
+                            <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
+                                {(projectData.functions?.values ?? []).map((func: string, index: number) => (
+                                    <li key={index}>{func}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
-                    <div className='mt-[64px]'>
-                        <h3 className='font-bold text-[20px] mb-4'>
-                            서비스 사용자
-                            <span className='text-red-500 text-[16px] ml-1'>*</span>
-                        </h3>
-                        <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
-                            <li>대학생 - 공모전, 해커톤, 포트폴리오용 프로젝트를 진행하고 싶은 학생</li>
-                            <li>직장인 - 본업 외 사이드프로젝트나 개인 브랜딩을 위해 팀을 구하는 직장인</li>
-                            <li>프리랜서/크리에이터 - 새로운 협업 경험을 통해 네트워크를 넓히고 싶은 창작자</li>
-                        </ul>
-                    </div>
+                    {hasServiceUsers && (
+                        <div className='mt-[64px]'>
+                            <h3 className='font-bold text-[20px] mb-4'>
+                                서비스 사용자
+                                <span className='text-red-500 text-[16px] ml-1'>*</span>
+                            </h3>
+                            <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
+                                {(projectData.serviceUsers?.values ?? []).map((user: string, index: number) => (
+                                    <li key={index}>{user}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
+                    {/* 프로젝트 세부 기획 파일 - 항상 표시 */}
                     <div className='mt-[64px]'>
                         <h3 className='font-bold text-[20px] mb-4'>
                             프로젝트 세부 기획 파일
                         </h3>
-                        <div>
-                            <img src={clip} alt="Clip" className='inline-block w-[18px] h-[18px] mr-[10px]' />
-                            <span className='text-[16px] text-primary-500-normal font-semibold'>
-                                넥트 프로젝트 기획서
-                            </span>
-                        </div>
-                        <a href="#" className='text-[16px] ml-[30px] text-neutral-600 underline'>https://www.figma.com/slide/</a>
+                        {hasPlanFiles ? (
+                            <div>
+                                {(projectData.planFiles?.files ?? []).map((file: { name: string }, index: number) => (
+                                    <div key={index} className='mb-2'>
+                                        <img src={clip} alt="Clip" className='inline-block w-[18px] h-[18px] mr-[10px]' />
+                                        <span className='text-[16px] text-primary-500-normal font-semibold'>
+                                            {file.name}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className='text-[16px] text-neutral-500'>프로젝트 세부 기획 파일이 없습니다.</p>
+                        )}
                     </div>
                 </div>
             )}
 
+            {/* 더보기 버튼 - 항상 표시 (프로젝트 세부 파일 섹션 포함) */}
             <button 
                 onClick={() => setIsExpanded(!isExpanded)}
                 className='w-full mt-10 h-[48px] bg-neutral-50 border border-neutral-200 rounded-xl flex items-center justify-center gap-2'

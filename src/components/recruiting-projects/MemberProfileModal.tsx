@@ -1,6 +1,7 @@
-import MemberProfileHeader from './MemberProfileHeader';
-import MemberProfileDetail from './MemberProfileDetail';
-import type { Member } from '@/types/member';
+import MemberProfileHeader from './MemberProfileHeader'
+import MemberProfileDetail from './MemberProfileDetail'
+import type { Member } from '@/types/member'
+import type { MemberDetailDto } from '@/types/api/member/detail'
 
 interface MemberProfileModalProps {
     isOpen: boolean;
@@ -24,7 +25,7 @@ const MemberProfileModal = ({ isOpen, onClose, member }: MemberProfileModalProps
                     <div className='mb-10'>
                         <MemberProfileHeader member={member} />
                     </div>
-                    <MemberProfileDetail member={member} />
+                    <MemberProfileDetail memberData={member as unknown as MemberDetailDto} />
                 </div>
             </div>
         </div>

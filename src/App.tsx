@@ -66,11 +66,11 @@ const router = createBrowserRouter([
 				element: <WorkStatusPage />,
 			},
 			{
-				path: '/recruiting-projects',
+				path: '/recruiting-projects/:projectId',
 				element: <RecruitingProjectsPage />,
 			},
 			{
-				path: '/matching-available',
+				path: '/matching-available/:userId',
 				element: <MatchingAvailablePage />
 			},
 			{

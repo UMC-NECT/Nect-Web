@@ -1,41 +1,50 @@
 import ProjectHistoryCard from '@/components/common/ProjectHistoryCard';
+import type { ProjectDetailDto } from '@/types/api/project';
 
 interface ProjectHistoryProps {
+    projectData: ProjectDetailDto;
     getPositionStyle: (position: string) => string;
     variant?: 'default' | 'large';
 }
 
-const ProjectHistory = ({ getPositionStyle, variant = 'default' }: ProjectHistoryProps) => {
-    const projects = [
-        {
-            positions: ['PM', 'Backend'],
-            title: '트리플 UX.UI 개선 및 리브랜딩',
-            description: '사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',
-            period: '2025.10~2025.12',
-            imageBg: 'bg-neutral-400'
-        },
-        {
-            positions: ['Design'],
-            title: '트리플 UX.UI 개선 및 리브랜딩',
-            description: '사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',
-            period: '2025.10~2025.12',
-            imageBg: 'bg-black'
-        }
-    ];
+const ProjectHistory = ({ projectData, getPositionStyle, variant = 'default' }: ProjectHistoryProps) => {
+    const teamMemberProjects = projectData.defaultInfo?.team_member_projects || [];
+
+    // 날짜 포맷팅
+    const formatPeriod = (startDate: string, endDate: string | null) => {
+        const start = new Date(startDate);
+        const end = endDate ? new Date(endDate) : new Date();
+        
+        const formatDate = (date: Date) => {
+            return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+        };
+        
+        return `${formatDate(start)}~${formatDate(end)}`;
+    };
+
+    if (teamMemberProjects.length === 0) {
+        return (
+            <div className='mt-[64px] ml-[10px]'>
+                <h3 className='font-bold text-[20px] mb-6'>팀원들의 프로젝트 히스토리</h3>
+                <p className='text-[16px] text-neutral-500'>프로젝트 히스토리가 없습니다.</p>
+            </div>
+        );
+    }
 
     return (
         <div className='mt-[64px] ml-[10px]'>
             <h3 className='font-bold text-[20px] mb-6'>팀원들의 프로젝트 히스토리</h3>
             
             <div className='grid grid-cols-2 gap-6'>
-                {projects.map((project, index) => (
+                {teamMemberProjects.map((project: { project_id: number; title: string; description: string | null; created_at: string; ended_at: string | null; image_name: string | null }) => (
                     <ProjectHistoryCard
-                        key={index}
-                        positions={project.positions}
+                        key={project.project_id}
+                        positions={[]} // API에서 포지션 정보가 없으므로 빈 배열
                         title={project.title}
-                        description={project.description}
-                        period={project.period}
-                        imageBg={project.imageBg}
+                        description={project.description || '설명이 없습니다.'}
+                        period={formatPeriod(project.created_at, project.ended_at)}
+                        imageBg={project.image_name ? '' : 'bg-neutral-400'}
+                        imageUrl={project.image_name || undefined}
                         getPositionStyle={getPositionStyle}
                         variant={variant}
                     />

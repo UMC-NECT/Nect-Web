@@ -2,8 +2,10 @@ import { useState } from 'react';
 import ProjectHistory from './ProjectHistory';
 import MemberCard from './MemberCard';
 import MemberProfileModal from './MemberProfileModal';
+import type { ProjectDetailDto } from '@/types/api/project';
 
 interface TeamMembersTabProps {
+    projectData: ProjectDetailDto;
     getPositionStyle: (position: string) => string;
 }
 
@@ -24,7 +26,7 @@ interface MemberDetail {
     etcTools: string[];
 }
 
-const TeamMembersTab = ({ getPositionStyle }: TeamMembersTabProps) => {
+const TeamMembersTab = ({ projectData, getPositionStyle }: TeamMembersTabProps) => {
     const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
 
     // 멤버 데이터
@@ -143,7 +145,7 @@ const TeamMembersTab = ({ getPositionStyle }: TeamMembersTabProps) => {
                 </div>
             </div>
 
-            <ProjectHistory getPositionStyle={getPositionStyle} />
+            <ProjectHistory projectData={projectData} getPositionStyle={getPositionStyle} />
 
             {/* 모달 */}
             <MemberProfileModal 

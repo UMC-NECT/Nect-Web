@@ -48,7 +48,7 @@ const NecterListPage = () => {
                         ]}
                     />
                     
-                    <h1 className="mt-7 text-[40px] font-bold">
+                    <h1 className="mt-7 text-[28px] font-bold">
                         지금 가능한 넥터
                     </h1>
                 </div>

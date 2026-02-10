@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useParams } from 'react-router';
+import axios from 'axios';
 import hamburger from '@/assets/icons/common/hamburger-bar.svg';
 import chat from '@/assets/icons/common/message.svg';
 import Breadcrumb from '@/components/common/Breadcrumb';
@@ -9,8 +11,12 @@ import MatchingRequestConfirmModal from '@/components/matching-available/Matchin
 import MatchingSuccessModal from '@/components/recruiting-projects/MatchingSuccessModal';
 import MatchingCancelModal from '@/components/recruiting-projects/MatchingCancelModal';
 import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlockedModal';
+import { useProjectDetail } from '@/hooks/queries/project';
 
 const RecruitingProjectsPage = () => {
+    const { projectId } = useParams<{ projectId: string }>();
+    const { data: projectData, isLoading, error } = useProjectDetail(Number(projectId));
+
     const [activeTab, setActiveTab] = useState<'info' | 'members'>('info');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -54,6 +60,45 @@ const RecruitingProjectsPage = () => {
         setIsCancelModalOpen(false);
     };
 
+    const isBadRequest =
+        axios.isAxiosError(error) &&
+        (error.response?.data as { status?: { statusCode?: string } })?.status?.statusCode === 'C001';
+
+    // 로딩 상태
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-neutral-500">로딩 중...</p>
+            </div>
+        );
+    }
+
+    // 에러 상태
+    if (isBadRequest) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-neutral-500">프로젝트 정보를 찾을 수 없습니다</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-red-500">프로젝트 정보를 불러올 수 없습니다</p>
+            </div>
+        );
+    }
+
+    // 데이터 없음
+    if (!projectData) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-neutral-500">프로젝트 데이터가 없습니다</p>
+            </div>
+        );
+    }
+
     return (
         <div className="relative bg-neutral-50 w-screen -ml-[calc((100vw-100%)/2)] -mr-[calc((100vw-100%)/2)] min-h-screen px-8 py-8 pb-[120px]">
             <div className="max-w-[1200px] mx-auto flex flex-col items-center">
@@ -63,16 +108,16 @@ const RecruitingProjectsPage = () => {
                         <Breadcrumb 
                             items={[
                                 { label: '홈', path: '/' },
-                                { label: '모집 중인 프로젝트', path: '/recruiting-projects' },
-                                { label: '넥트(NECT)' }
+                                { label: '모집 중인 프로젝트', path: '/projectList' },
+                                { label: projectData.defaultInfo.project_title }
                             ]} 
                         />
                     </div>
                     <div className=' mt-8 flex items-center justify-between'>
-                        <h1 className="text-3xl font-bold mt-1">모집 중인 프로젝트</h1>
-                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-md">
+                        <h1 className="text-[28px] font-bold mt-1">모집 중인 프로젝트</h1>
+                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 bg-neutral-100 border border-neutral-200 rounded-xl">
                             <img src={hamburger} alt="Menu" />
-                            <p className='text-[14px] text-neutral-400 bg-neutral-100'>목록으로 가기</p>
+                            <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
                         </button>
                     </div>
                 </div>
@@ -80,7 +125,7 @@ const RecruitingProjectsPage = () => {
                 <div className="mt-9 w-[916px] bg-white rounded-lg border border-neutral-200 shadow-sm">
                     <div className='w-full pl-[46px] pt-[56px] pr-[46px]'>
                         <div className='flex justify-between w-full'>
-                            <h2 className="font-bold text-[28px]">넥트(NECT)</h2>
+                            <h2 className="font-bold text-[28px]">{projectData.defaultInfo.project_title}</h2>
                             <div className='flex gap-[10px] h-[48px] items-center'>
                                 {/* 메시지 버튼 */}
                                 <div className='relative group'>
@@ -145,13 +190,12 @@ const RecruitingProjectsPage = () => {
 
                     {/* 탭 컨텐츠 */}
                     <div className='px-[46px] py-[40px] pb-[56px]'>
-                        {activeTab === 'info' && <ProjectInfoTab getPositionStyle={getPositionStyle} />}
-                        {activeTab === 'members' && <TeamMembersTab getPositionStyle={getPositionStyle} />}
+                        {activeTab === 'info' && <ProjectInfoTab projectData={projectData} getPositionStyle={getPositionStyle} />}
+                        {activeTab === 'members' && <TeamMembersTab projectData={projectData} getPositionStyle={getPositionStyle} />}
                     </div>
                 </div>
 
-                {/* 모달들 */}
-                {/* 1단계: 파트 선택 */}
+                {/* 모달들 생략 (기존과 동일) */}
                 <MatchingRequestModal 
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
@@ -162,7 +206,6 @@ const RecruitingProjectsPage = () => {
                     getPositionStyle={getPositionStyle}
                 />
 
-                {/* 2단계: 매칭 요청 확인 */}
                 <MatchingRequestConfirmModal 
                     isOpen={isConfirmModalOpen}
                     onClose={() => setIsConfirmModalOpen(false)}
@@ -174,7 +217,6 @@ const RecruitingProjectsPage = () => {
                     position="Design"
                 />
 
-                {/* 3단계: 매칭 완료 */}
                 <MatchingSuccessModal 
                     isOpen={isSuccessModalOpen}
                     onClose={() => {
