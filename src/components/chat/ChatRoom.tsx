@@ -14,6 +14,7 @@ import {
 	leaveChatRoom,
 	inviteChatRoomMembers,
 	uploadChatFile,
+	createSharedDocumentFromChat,
 } from '@/api/chat'
 import type { ChatMessageDto } from '@/types/api/chat'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
@@ -41,6 +42,7 @@ type DisplayMessage = {
 	readCount?: number
 	role?: string
 	profileImage?: string
+	fileId?: number // 파일 메시지의 file_id (공유 문서함 등록용)
 	fileAttachment?: {
 		fileName: string
 		fileSize: string
@@ -70,6 +72,22 @@ const ChatRoom = ({
 	const messagesContainerRef = useRef<HTMLDivElement>(null)
 	const { data: profileData } = useGetProfileQuery()
 	const currentUserId = profileData?.body?.userId
+
+	/**
+	 * 동일 id(=message_id 등) 중복을 제거해서 React key 충돌을 방지합니다.
+	 * - 뒤에서 들어온(더 최신/나중에 merge된) 항목을 우선으로 유지합니다. (upsert)
+	 */
+	const dedupeByIdPreferLast = useCallback((items: DisplayMessage[]) => {
+		const seen = new Set<string>()
+		const result: DisplayMessage[] = []
+		for (let i = items.length - 1; i >= 0; i--) {
+			const k = String(items[i].id)
+			if (seen.has(k)) continue
+			seen.add(k)
+			result.push(items[i])
+		}
+		return result.reverse()
+	}, [])
 
 	// 날짜 포맷팅
 	const formatTime = (dateString: string): string => {
@@ -145,18 +163,21 @@ const ChatRoom = ({
 			}
 
 			const isMine = msg.user_id === currentUserId
+			// read_count: 백엔드 값 기준으로 숫자 표시(양수일 때만). 0 또는 null이면 표시하지 않음.
+			const readCount = typeof msg.read_count === 'number' && msg.read_count > 0 ? msg.read_count : undefined
 			const baseMessage: DisplayMessage = {
 				id: msg.message_id,
 				senderName: msg.user_name,
 				time: formatTime(msg.created_at),
 				isMine,
 				profileImage: msg.profile_image || undefined,
-				readCount: msg.read_count || undefined,
+				readCount,
 			}
 
 			if (msg.message_type === 'FILE' || msg.message_type === 'IMAGE') {
 				if (msg.file_info) {
 					const fileName = msg.file_info.file_name || '파일'
+					baseMessage.fileId = msg.file_info.file_id // 공유 문서함 등록용 file_id 저장
 					baseMessage.fileAttachment = {
 						fileName,
 						fileSize: formatFileSize(msg.file_info.file_size),
@@ -191,10 +212,11 @@ const ChatRoom = ({
 
 					if (lastId) {
 						// 이전 메시지 추가 (무한 스크롤)
-						setMessages((prev) => [...newMessages, ...prev])
+						// 페이지네이션 경계 메시지 중복 등을 제거
+						setMessages((prev) => dedupeByIdPreferLast([...newMessages, ...prev]))
 					} else {
 						// 초기 로드
-						setMessages(newMessages)
+						setMessages(dedupeByIdPreferLast(newMessages))
 					}
 
 					if (response.body.messages.length > 0) {
@@ -207,7 +229,7 @@ const ChatRoom = ({
 				setIsLoading(false)
 			}
 		},
-		[roomId, currentUserId, isLoading, hasNext]
+		[roomId, currentUserId, isLoading, hasNext, dedupeByIdPreferLast]
 	)
 
 	// 초기 메시지 로드 및 WebSocket 연결
@@ -227,7 +249,8 @@ const ChatRoom = ({
 			.connect(roomId, currentUserId, {
 				onMessage: (message: ChatMessageDto) => {
 					const newMessage = convertToDisplayMessages([message], currentUserId)[0]
-					setMessages((prev) => [...prev, newMessage])
+					// WebSocket으로 이미 존재하는 message_id가 다시 올 수 있으므로 upsert
+					setMessages((prev) => dedupeByIdPreferLast([...prev, newMessage]))
 					// 스크롤을 맨 아래로
 					setTimeout(() => {
 						messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -309,7 +332,8 @@ const ChatRoom = ({
 	// 멤버 초대
 	const handleInviteMembers = async (memberIds: number[]) => {
 		try {
-			await inviteChatRoomMembers(roomId, { memberIds })
+			// 백엔드 스펙에 맞게 { target_user_ids: [...] } 형태로 전송
+			await inviteChatRoomMembers(roomId, { target_user_ids: memberIds })
 			setIsSelectContactOpen(false)
 			alert('멤버를 초대했습니다.')
 		} catch (error) {
@@ -437,7 +461,23 @@ const ChatRoom = ({
 								readCount={message.readCount}
 								role={message.role}
 								profileImage={message.profileImage}
+								fileId={message.fileId}
 								fileAttachment={message.fileAttachment}
+								onRegisterToSharedDocs={
+									message.fileId && projectId
+										? async () => {
+												try {
+													await createSharedDocumentFromChat(roomId, projectId, {
+														chat_file_id: message.fileId!,
+													})
+													alert('공유 문서함에 등록되었습니다.')
+												} catch (error) {
+													console.error('공유 문서함 등록 실패:', error)
+													alert('공유 문서함 등록에 실패했습니다.')
+												}
+											}
+										: undefined
+								}
 							/>
 						)
 					})}

@@ -10,11 +10,13 @@ interface ChatRoomMessageProps {
 	readCount?: number
 	role?: string
 	profileImage?: string
+	fileId?: number
 	fileAttachment?: {
 		fileName: string
 		fileSize: string
 		fileType: 'PDF' | 'Figma' | 'Word' | 'Excel' | 'PPT' | 'Zip' | 'JPG' | 'PNG' | 'JPEG' | 'MOV' | 'MP4' | 'Etc'
 	}
+	onRegisterToSharedDocs?: () => void
 }
 
 export const ChatRoomMessage = ({
@@ -25,7 +27,9 @@ export const ChatRoomMessage = ({
 	readCount,
 	role,
 	profileImage,
+	fileId,
 	fileAttachment,
+	onRegisterToSharedDocs,
 }: ChatRoomMessageProps) => {
 	// 파일 첨부 메시지
 	if (fileAttachment) {
@@ -40,6 +44,7 @@ export const ChatRoomMessage = ({
 				fileName={fileAttachment.fileName}
 				fileSize={fileAttachment.fileSize}
 				fileType={fileAttachment.fileType}
+				onRegisterToSharedDocs={onRegisterToSharedDocs}
 			/>
 		)
 	}

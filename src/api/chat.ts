@@ -110,7 +110,13 @@ export const inviteChatRoomMembers = async (
 	roomId: number,
 	body: ChatRoomInviteRequestDto
 ): Promise<ChatRoomInviteResponseDto> => {
-	const { data } = await api.post(`/api/v1/chats/rooms/${roomId}/invite`, body)
+	// API 스펙에 맞게 snake_case로 전송 (target_user_ids)
+	const targetUserIds = body.target_user_ids ?? body.memberIds
+	if (!targetUserIds || targetUserIds.length === 0) {
+		throw new Error("초대할 대상 유저가 없습니다. target_user_ids를 확인해주세요.")
+	}
+	const requestBody = { target_user_ids: targetUserIds }
+	const { data } = await api.post(`/api/v1/chats/rooms/${roomId}/invite`, requestBody)
 	return data
 }
 
@@ -190,9 +196,14 @@ export const createSharedDocumentFromChat = async (
 	body: SharedDocumentCreateByChatRequestDto
 ): Promise<SharedDocumentCreateResDto> => {
 	const query = toQueryString({ projectId: projectId.toString() })
+	const chatFileId = body.chat_file_id ?? body.chatFileId
+	if (!chatFileId) {
+		throw new Error("chat_file_id가 없습니다. 공유 문서함 등록에 실패했습니다.")
+	}
+	const requestBody = { chat_file_id: chatFileId }
 	const { data } = await api.post(
 		`/api/v1/chats/rooms/${roomId}/shared-documents${query}`,
-		body
+		requestBody
 	)
 	return data
 }

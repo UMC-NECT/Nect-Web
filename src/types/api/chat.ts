@@ -101,7 +101,16 @@ export type ChatRoomResponseDto = CommonResponse<{
 
 // 2-2. 채팅방에 멤버 초대
 export type ChatRoomInviteRequestDto = {
-	memberIds: number[]
+	/**
+	 * 백엔드 요청 스펙 (snake_case)
+	 * 예: { "target_user_ids": [5, 6] }
+	 */
+	target_user_ids?: number[]
+	/**
+	 * 프론트 내부 호환용 (camelCase)
+	 * - 기존 코드에서 { memberIds }로 호출하던 부분을 깨지 않기 위해 남겨둠
+	 */
+	memberIds?: number[]
 }
 
 export type ChatRoomInviteResponseDto = CommonResponse<{
@@ -176,7 +185,15 @@ export type ChatFileDetailDto = CommonResponse<{
 
 // 3-7. 채팅 파일로 공유 문서 생성
 export type SharedDocumentCreateByChatRequestDto = {
-	chatFileId: number
+	/**
+	 * 백엔드 요청 스펙 (snake_case)
+	 * 예: { "chat_file_id": 100 }
+	 */
+	chat_file_id?: number
+	/**
+	 * 프론트 내부 호환용 (camelCase)
+	 */
+	chatFileId?: number
 }
 
 export type SharedDocumentCreateResDto = CommonResponse<{
