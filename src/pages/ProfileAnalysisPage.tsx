@@ -8,7 +8,7 @@ import RecommendationProject from '@/components/main/RecommendationProject'
 import RecommendationMember from '@/components/main/RecommendationMember'
 import Button from '@/components/common/Button'
 import { useNavigate } from 'react-router'
-import { useGetProfileAnalysisQuery } from '@/hooks/auth/useUsersApi'
+import { useGetProfileAnalysisQuery, useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import type { RadarDataItem } from '@/stores/profileAnalysisStore'
 
@@ -23,12 +23,12 @@ const COLLABO_LABELS: Record<string, string> = {
 
 const ProfileAnalysisPage = () => {
 	const navigate = useNavigate()
-	const { skillCategories, skillsByCategory } = useOnboardingEnums()
+	const { skillCategories, skillsByCategory, roles } = useOnboardingEnums()
 	const { data: analysisRes, isLoading } = useGetProfileAnalysisQuery()
+    const {data: profileData} = useGetProfileQuery()
 	const body = analysisRes?.body
 
 	const type = body?.profileType ?? ''
-	const role = body?.tags?.[0] ?? ''
 	const tags = body?.tags ?? []
 	const radarData: RadarDataItem[] = body?.collaborationStyle
 		? (['planning', 'logic', 'supporter', 'execution', 'empathy', 'leadership'] as const).map(key => ({
@@ -60,6 +60,9 @@ const ProfileAnalysisPage = () => {
 			description: g.tip,
 		})) ?? []
 
+	const roleValue = profileData?.body?.role ?? ''
+	const roleLabel = roles.find(r => r.value === roleValue)?.label ?? roleValue
+
 	return (
 		<div className='flex flex-col justify-center pt-32'>
             {/* 타이틀 섹션 */}
@@ -79,20 +82,20 @@ const ProfileAnalysisPage = () => {
 
                         {/* 메인 타이틀 */}
                         <h2 className='heading-2 font-bold text-neutral-900 text-center'>
-                            {isLoading ? '분석 중...' : `이방토님은 [${type}] 타입이시네요!`}
+                            {isLoading ? '분석 중...' : `${profileData?.body?.name}님은 [${type}] 타입이시네요!`}
                         </h2>
 
                         {/* 태그 섹션 */}
                         <div className='flex items-center gap-4 mt-2'>
                             {/* 직무 태그 */}
                             <span className='title-2 px-4 py-1.5 bg-roletag-purple text-neutral-700 font-bold rounded-md'>
-                                {role}
+                                {roleLabel}
                             </span>
 
                             {/* 해시태그들 */}
                             <div className='flex items-center gap-3 body-2'>
                                 {tags.map((tag) => (
-                                    <span className='title-2 font-medium text-neutral-900' key={tag}># {tag}</span>
+                                    <span className='title-2 font-medium text-neutral-900' key={tag}>{tag}</span>
                                 ))}
                             </div>
                         </div>
