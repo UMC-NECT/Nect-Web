@@ -33,7 +33,7 @@ const Accordion = ({ title, children, className, defaultOpen = false }: IAccordi
 						: 'bg-primary-100-light text-[#191919] hover:bg-primary-300-light'
 				)}
 			>
-				<span>{title}</span>
+				<span className='font-semibold'>{title}</span>
 				<ArrowDownIcon
 					className={cn('w-4 h-4 transition-transform duration-200', isOpen ? 'rotate-180 brightness-0 invert' : '')}
 				/>

@@ -28,6 +28,8 @@ import SharedDocumentsPage from './pages/SharedDocumentsPage'
 import ProjectListPage from './pages/ProjectListPage'
 import NecterListPage from './pages/NecterListPage'
 import AllProjects from './components/mypage/all-projects/AllProjects'
+import ErrorPage from './components/splash/ErrorPage'
+import SplashLayout from './components/layout/SplashLayout'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -119,6 +121,10 @@ const router = createBrowserRouter([
 		],
 	},
 	{
+		path: '/error/:code',
+		element: <ErrorPage />,
+	},
+	{
 		element: <AnalysisLayout />,
 		children: [
 			{
@@ -156,6 +162,15 @@ const router = createBrowserRouter([
 			},
 		],
 	},
+	{
+		element: <SplashLayout />,
+		children: [
+			{
+				path: '/error/:code',
+				element: <ErrorPage />,
+			},
+		],
+	}
 ])
 
 function App() {
