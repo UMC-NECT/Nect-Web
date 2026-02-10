@@ -1,7 +1,7 @@
-import type { IdeaAnalysisData } from '@/types/mypage/ideaAnalysis'
+import type { AnalysisType } from '@/types/api/mypage'
 
 interface Section01BasicInfoProps {
-	analysisData: IdeaAnalysisData
+	analysisData: AnalysisType
 }
 
 const Section01BasicInfo = ({ analysisData }: Section01BasicInfoProps) => {
@@ -22,10 +22,7 @@ const Section01BasicInfo = ({ analysisData }: Section01BasicInfoProps) => {
 					<div className='flex flex-col justify-center bg-neutral-000 rounded-12 px-5.5 py-5 gap-2.5 w-full'>
 						<div className='flex flex-col gap-3 w-full'>
 							<span className='title-3 font-bold text-primary-600-normal'>
-								{analysisData.idea_analysis_result.recommended_names.join(', ')}
-							</span>
-							<span className='body-1 font-medium text-neutral-900'>
-								연결되는 이미지를 강화하는 것이 좋습니다 !
+								{analysisData.recommended_project_names.join(', ')}
 							</span>
 						</div>
 					</div>
@@ -39,9 +36,9 @@ const Section01BasicInfo = ({ analysisData }: Section01BasicInfoProps) => {
 					<div className='flex flex-col justify-center bg-neutral-000 rounded-12 px-5.5 py-5 gap-2.5 w-full'>
 						<div className='flex flex-col gap-3 w-full'>
 							<span className='body-1 font-medium text-neutral-900 w-full'>
-								프로젝트 [{analysisData.idea_analysis_result.project_name}]의 완성을 위해{' '}
+								프로젝트 [{analysisData.recommended_project_names[0]}]의 완성을 위해{' '}
 								<span className='text-primary-600-normal font-semibold'>
-									최소 {analysisData.idea_analysis_result.estimated_duration_weeks}
+									최소 {analysisData.project_duration.display_text}
 								</span>
 								의 기간이 필요해요.
 							</span>

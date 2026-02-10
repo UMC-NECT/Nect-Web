@@ -27,6 +27,7 @@ import BoardPage from './pages/BoardPage'
 import SharedDocumentsPage from './pages/SharedDocumentsPage'
 import ProjectListPage from './pages/ProjectListPage'
 import NecterListPage from './pages/NecterListPage'
+import AllProjects from './components/mypage/all-projects/AllProjects'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -94,6 +95,10 @@ const router = createBrowserRouter([
 						element: <ProfileAnalysis />,
 					},
 					{
+						path: 'projects',
+						element: <AllProjects />,
+					},
+					{
 						path: 'ongoing',
 						element: <OngoingProject />,
 					},
@@ -104,13 +109,13 @@ const router = createBrowserRouter([
 				],
 			},
 			{
-				path: '/projectList',  // 모집 중인 프로젝트 전체
+				path: '/projectList', // 모집 중인 프로젝트 전체
 				element: <ProjectListPage />,
 			},
 			{
-				path: '/necterList',  // 지금 가능한 넥터 전체
+				path: '/necterList', // 지금 가능한 넥터 전체
 				element: <NecterListPage />,
-			}
+			},
 		],
 	},
 	{

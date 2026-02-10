@@ -14,8 +14,8 @@ const Section03ProfileKeyword = ({ hasProfileKeyword, onRefresh }: ISection03Pro
 					프로필 분석 키워드 <span className='text-danger-700'>*</span>
 				</h2>
 
-				<Button color='text' size='sm' onClick={onRefresh}>
-					<RefreshIcon className='w-4 h-4 mr-1' />
+				<Button color='text' size='sm' onClick={onRefresh} className='group'>
+					<RefreshIcon className='w-4 h-4 mr-1 text-neutral-400 group-hover:text-neutral-500' />
 					불러오기
 				</Button>
 			</div>

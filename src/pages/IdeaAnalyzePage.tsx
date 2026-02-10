@@ -185,7 +185,7 @@ const IdeaAnalyzePage = () => {
 								/>
 								<FormInput
 									label='생각하고 있는 프로젝트 최종 목표일이 있나요?'
-									placeholder='ex. 두달 뒤 / 올해 10월까지 / 0000년 00월 00일까지'
+									placeholder='YYYY-MM-DD (ex.2026-04-30)'
 									value={formData.deadline}
 									onChange={value => setFormData({ ...formData, deadline: value })}
 									error={errors.deadline}

@@ -1,4 +1,4 @@
-import type { ProjectHistory, RecruitType } from '@/types/mypage/ongoindProject'
+import type { RecruitType } from '@/types/mypage/ongoindProject'
 import type { RecruitmentInfoType } from '@/utils/schemas/projectSchema'
 
 /**
@@ -31,12 +31,7 @@ export const MOCK_PROJECT_DATA: ProjectData = {
  */
 export type RecruitmentInfo = RecruitmentInfoType
 
-export const MOCK_RECRUITMENT_INFO: RecruitmentInfo[] = [
-	{
-		role: 'PM',
-		description: '',
-	},
-]
+export const MOCK_RECRUITMENT_INFO: RecruitmentInfo[] = []
 
 /**
  * 섹션 04. 프로젝트 목표
@@ -52,25 +47,3 @@ export const MOCK_MAIN_CONTENT = ''
  * 섹션 06. 서비스 사용자
  */
 export const MOCK_SERVICE_USER = ''
-
-/**
- * 섹션 09. 팀원 프로젝트 히스토리
- */
-export const MOCK_PROJECT_HISTORIES: ProjectHistory[] = [
-	{
-		id: 1,
-		title: '트리플 UX.UI 개선 및 리브랜딩',
-		description:
-			'사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',
-		period: '2025.10~2025.12',
-		tags: ['PM', 'Backend'],
-	},
-	{
-		id: 2,
-		title: '트리플 UX.UI 개선 및 리브랜딩',
-		description:
-			'사용 체류 시간을 늘리고 기업 비전에 맞게 전략 및 BI 제안 / 여행의 전반에 활용 될 수 있는 UX Flow 개선 / GUI 제작',
-		period: '2025.10~2025.12',
-		tags: ['Design'],
-	},
-]

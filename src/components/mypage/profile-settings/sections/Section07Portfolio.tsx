@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useFieldArray, type Control, type UseFormSetValue, type UseFormWatch, useFormContext } from 'react-hook-form'
 import Button from '../../../common/Button'
 import ClipIcon from '@/assets/icons/mypage/clip.svg?react'
+import PlusIcon from '@/assets/icons/common/plus.svg?react'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 interface ISection07Portfolio {
@@ -91,8 +92,9 @@ const Section07Portfolio = ({ control, setValue, watch }: ISection07Portfolio) =
 			<div className='flex items-center justify-between mb-1.5'>
 				<h2 className='title-2 font-bold text-neutral-900'>포트폴리오 링크 및 파일</h2>
 
-				<Button color='text' size='sm' onClick={addPortfolio}>
-					+ 항목 추가
+				<Button color='text' size='sm' onClick={addPortfolio} className='group flex gap-1 justify-center items-center'>
+					<PlusIcon className='w-4 h-4 text-neutral-400 group-hover:text-neutral-500' />
+					항목 추가
 				</Button>
 			</div>
 

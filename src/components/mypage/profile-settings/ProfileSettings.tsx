@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
 import { FormProvider } from 'react-hook-form'
+import { useNavigate } from 'react-router'
 
+import { useMypageProfileMutation, useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
 import { useProfileSettingsForm } from '@/hooks/mypage/useProfileSettingsForm'
 import { useCTAModal } from '@/stores/useCTAModal'
@@ -17,23 +19,33 @@ import Section05Skills from './sections/Section05Skills'
 import Section06CareerHistory from './sections/Section06CareerHistory'
 import Section07Portfolio from './sections/Section07Portfolio'
 import Section08ProjectHistory from './sections/Section08ProjectHistory'
-import { useNavigate } from 'react-router'
 
 export const ProfileSettings = () => {
-	const [isOpenRecruit, setIsOpenRecruit] = useState(false) // 공개 매칭 여부
 	const [hasProfileKeyword] = useState(false) // 프로필 분석키워드 리포트 보유여부
 
-	const methods = useProfileSettingsForm()
+	// api - 프로필 조회
+	const { data: profileData } = useMypageProfileQuery()
+	const profile = profileData?.body
+
+	// api - 프로필 수정
+	const { mutateAsync: saveProfile, isPending: isSaving } = useMypageProfileMutation()
+
+	const methods = useProfileSettingsForm(profile)
 	const {
 		handleSubmit,
 		formState: { isDirty },
-		reset,
 		watch,
 		setValue,
 	} = methods
 
 	// 폼 데이터
 	const skills = watch('skills')
+	const userStatus = watch('userStatus')
+
+	// 공개 매칭 여부
+	const [localIsPublicMatching, localSetIsPublicMatching] = useState<boolean | null>(null)
+	const isOpenRecruit = localIsPublicMatching ?? profile?.isPublicMatching ?? false
+	const setIsOpenRecruit = localSetIsPublicMatching
 
 	const navigate = useNavigate()
 
@@ -42,13 +54,65 @@ export const ProfileSettings = () => {
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
 	const handleSave = useCallback(
-		() =>
+		(isPublicMatchingOverride?: boolean) =>
 			new Promise<boolean>(resolve => {
 				handleSubmit(
-					data => {
-						console.log('유효성 검사 통과 및 저장:', data)
-						reset(data)
-						resolve(true)
+					async data => {
+						try {
+							// 폼 데이터를 API request DTO로 변환
+							const requestBody = {
+								profileImageFileName: profile?.profileImageFileName ?? '',
+								bio: data.introduction ?? '',
+								coreCompetencies: data.coreCompetency ?? '',
+								userStatus: data.userStatus ?? '',
+								isPublicMatching: isPublicMatchingOverride ?? isOpenRecruit,
+								careerDuration: data.userCareer ?? '',
+								interestedJob: data.interestJob ?? '',
+								interestedField: data.interestFields?.[0] ?? '',
+								careers: data.careers.map(career => ({
+									projectName: career.projectName ?? '',
+									industryField: career.industry ?? '',
+									startDate: career.startDate ?? '',
+									endDate: career.endDate ?? '',
+									isOngoing: career.isInProgress ?? false,
+									role: career.role ?? '',
+									achievements: career.achievements.map(ach => ({
+										title: ach.title ?? '',
+										content: ach.content ?? '',
+									})),
+								})),
+								portfolios: (data.portfolios ?? []).map(portfolio => {
+									const isBlob = portfolio.link?.startsWith('blob:')
+									const serverFileUrl =
+										portfolio.file?.url && !portfolio.file.url.startsWith('data:') ? portfolio.file.url : null
+									const validLink = portfolio.link && !isBlob ? portfolio.link : null
+									return {
+										title: portfolio.title ?? '',
+										link: validLink && validLink !== serverFileUrl ? validLink : null,
+										fileUrl: serverFileUrl,
+									}
+								}),
+								projectHistories: (data.projectHistory ?? []).map(history => ({
+									projectName: history.title ?? '',
+									projectImage: null,
+									projectDescription: history.description ?? '',
+									startYearMonth: history.date?.split('~')[0] ?? '',
+									endYearMonth: history.date?.split('~')[1] ?? '',
+								})),
+							}
+
+							console.log('저장 요청 데이터:', requestBody)
+							await saveProfile(requestBody)
+							resolve(true)
+						} catch (error) {
+							console.error('프로필 저장 실패:', error)
+							if (error instanceof Error && 'response' in error) {
+								const axiosError = error as { response?: { data?: unknown } }
+								console.error('서버 응답:', axiosError.response?.data)
+							}
+							alert('저장에 실패했습니다. 다시 시도해주세요.')
+							resolve(false)
+						}
 					},
 					errors => {
 						console.log('폼 에러:', errors)
@@ -69,6 +133,10 @@ export const ProfileSettings = () => {
 						if (firstErrorKey) {
 							// 해당 에러 섹션으로 스크롤
 							const errorFieldMap: Record<keyof ProfileFormDataType, string> = {
+								userStatus: 'profile-basic-info',
+								interestJob: 'profile-basic-info',
+								interestOccupation: 'profile-basic-info',
+								userCareer: 'profile-basic-info',
 								introduction: 'section-01',
 								coreCompetency: 'section-02',
 								interestFields: 'section-04',
@@ -110,7 +178,7 @@ export const ProfileSettings = () => {
 					}
 				)()
 			}),
-		[handleSubmit, reset]
+		[handleSubmit, profile, isOpenRecruit, saveProfile]
 	)
 
 	// (버튼 핸들러) 저장 버튼
@@ -136,21 +204,27 @@ export const ProfileSettings = () => {
 	}
 
 	// (모달 핸들러) 공개 매칭 확인
-	const handleOpenMatchingRegister = () => {
+	const handleOpenMatchingRegister = async () => {
 		setIsOpenRecruit(true)
-		open('openMatchingRegisterComplete')
+		const success = await handleSave(true)
+		if (success) {
+			open('openMatchingRegisterComplete')
+		}
 	}
 
 	// (모달 핸들러) 비공개 전환 확인
-	const handlePrivateMatching = () => {
+	const handlePrivateMatching = async () => {
 		setIsOpenRecruit(false)
-		open('privateMatchingComplete')
+		const success = await handleSave(false)
+		if (success) {
+			open('privateMatchingComplete')
+		}
 	}
 
 	// (모달 핸들러) 매칭 현황으로 이동
 	const handleGoToMatching = () => {
 		close()
-		navigate('/')
+		navigate('/mypage/matching')
 	}
 
 	// (모달 핸들러) 프로필 분석으로 이동
@@ -183,11 +257,21 @@ export const ProfileSettings = () => {
 				{/* 전체 컨테이너 */}
 				<div className='px-11.5 py-14 rounded-12 bg-white border border-neutral-200'>
 					{/* 프사 + 기본 정보 */}
-					<ProfileBasicInfo
-						isOpenRecruit={isOpenRecruit}
-						onSave={handleSaveWithModal}
-						onRecruit={handlePublishRecruitment}
-					/>
+					<div id='profile-basic-info'>
+						<ProfileBasicInfo
+							control={methods.control}
+							isOpenRecruit={isOpenRecruit}
+							isSaving={isSaving}
+							onSave={handleSaveWithModal}
+							onRecruit={handlePublishRecruitment}
+							profileImageFileName={profile?.profileImageFileName}
+							userName={profile?.nickname}
+							userRole={profile?.role}
+							userStatus={userStatus}
+							userEmail={profile?.email}
+							onStatusChange={status => setValue('userStatus', status, { shouldDirty: true })}
+						/>
+					</div>
 
 					<div className='flex flex-col gap-16'>
 						{/* 섹션 01. 자기소개 */}
@@ -241,7 +325,7 @@ export const ProfileSettings = () => {
 						message='{공개 매칭} 등록 하겠습니까?'
 						fixedHeight={true}
 						leftButtonMsg='돌아가기'
-						rightButtonMsg='공개 매칭 등록'
+						rightButtonMsg={isSaving ? '공개 매칭 등록중...' : '공개 매칭 등록'}
 						onLeftClick={close}
 						onRightClick={handleOpenMatchingRegister}
 					/>
@@ -268,7 +352,7 @@ export const ProfileSettings = () => {
 						fixedHeight={true}
 						subMessage='이제 공개 매칭에서 프로필이 내려갑니다.'
 						leftButtonMsg='돌아가기'
-						rightButtonMsg='비공개 전환'
+						rightButtonMsg={isSaving ? '비공개 전환중...' : '비공개 전환'}
 						onLeftClick={close}
 						onRightClick={handlePrivateMatching}
 					/>

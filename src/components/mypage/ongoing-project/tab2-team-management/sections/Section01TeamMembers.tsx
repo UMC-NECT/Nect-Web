@@ -17,7 +17,7 @@ const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMember
 
 				<div className='flex items-center gap-6'>
 					{/* 파트 설정 버튼 */}
-					<Button color='text' onClick={handlePartSettings} className='flex gap-1'>
+					<Button color='text' onClick={handlePartSettings} className='flex gap-1 p-0'>
 						<SettingIcon className='w-4 h-4' />
 						파트 설정
 					</Button>

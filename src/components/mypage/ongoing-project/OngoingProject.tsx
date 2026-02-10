@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
 import HamburgerIcon from '@/assets/icons/common/hamburger.svg?react'
@@ -16,12 +16,43 @@ import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import { useCTAModal } from '@/stores/useCTAModal'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
+import {
+	useMypageProjectFieldMutation,
+	useMypageProjectFieldQuery,
+	useMypageProjectsQuery,
+	useMypageProfileQuery,
+	usePostMypageRecruitmentsMutation,
+	usePutMypageRecruitmentsMutation,
+	usePatchProjectPurposesMutation,
+	usePatchProjectsFunctions,
+	usePatchProjectsServiceUsersMutation,
+	useMypageTeamRolesQuery,
+	useProjectPurposesQuery,
+	useProjectFunctionsQuery,
+	useProjectsServiceUsersQuery,
+} from '@/hooks/mypage/useMypageApi'
+import type { RecruitmentLocalItem } from './tab1-project-setting/sections/Section02RecruitmentInfo'
+import { getProjectFieldValue } from '@/utils/projectField'
+
+type ProjectFieldApiItem = {
+	field_name: string
+	is_selected: boolean
+}
+
+const extractProjectFields = (data: unknown): ProjectFieldApiItem[] => {
+	const container = (data as { body?: unknown })?.body ?? data
+	const fields = (container as { fields?: unknown })?.fields
+	if (!Array.isArray(fields)) return []
+	return Array.isArray(fields[0]) ? (fields as ProjectFieldApiItem[][]).flat() : (fields as ProjectFieldApiItem[])
+}
 
 const OngoingProject = () => {
 	// 현재 탭
 	const [activeTab, setActiveTab] = useState<TabType>('프로젝트 설정')
 	// 모집 등록 완료 여부
 	const [isRecruitmentPublished, setIsRecruitmentPublished] = useState(false)
+	// 섹션 01. 프로젝트 분야
+	const [selectedField, setSelectedField] = useState<string>('')
 
 	const navigate = useNavigate()
 
@@ -29,7 +60,160 @@ const OngoingProject = () => {
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
 
 	// 폼 관련
-	const { control, setValue, handleSubmit, isDirty, projectData, getValues, watch, reset } = useOngoingProjectForm()
+	const { control, setValue, handleSubmit, isDirty, watch, reset } = useOngoingProjectForm()
+
+	// 섹션 01. 프로젝트 분야 - projectId 도출
+	const { data: profileData } = useMypageProfileQuery()
+	const { data: projectsData } = useMypageProjectsQuery()
+	const projectId = (() => {
+		const userId = profileData?.body?.userId
+		const projects = projectsData?.body?.projects?.flat()
+		if (!userId || !projects) return ''
+		const leaderProject = projects.find(p => p.leader.user_id === userId)
+		return leaderProject ? String(leaderProject.project_id) : ''
+	})()
+
+	// 섹션 01. 프로젝트 분야 - 조회
+	const { data: projectFieldData } = useMypageProjectFieldQuery(projectId)
+
+	// 섹션 04. 프로젝트 목표 - 조회
+	const { data: purposesData } = useProjectPurposesQuery(projectId)
+
+	// 섹션 05. 주요 내용 - 조회
+	const { data: functionsData } = useProjectFunctionsQuery(projectId)
+
+	// 섹션 06. 서비스 사용자 - 조회
+	const { data: serviceUsersData } = useProjectsServiceUsersQuery(projectId)
+
+	// 프로젝트 분야 초기값 설정
+	useEffect(() => {
+		const fields = extractProjectFields(projectFieldData)
+		if (fields.length > 0) {
+			queueMicrotask(() => {
+				const selected = fields.find(f => f.is_selected)
+				if (selected) {
+					const fieldValue = getProjectFieldValue(selected.field_name)
+					setSelectedField(fieldValue)
+					setValue('selectedFields', [fieldValue], { shouldDirty: false })
+				}
+			})
+		}
+	}, [projectFieldData, setValue])
+
+	// 프로젝트 목표 초기값 설정
+	useEffect(() => {
+		const purposeValues = purposesData?.body?.values
+		if (purposeValues) {
+			queueMicrotask(() => {
+				setValue('projectGoal', purposeValues.join('\n'), { shouldDirty: false })
+			})
+		}
+	}, [purposesData, setValue])
+
+	// 주요 내용 초기값 설정
+	useEffect(() => {
+		const functionValues = functionsData?.body?.values
+		if (functionValues) {
+			queueMicrotask(() => {
+				setValue('mainContent', functionValues.join('\n'), { shouldDirty: false })
+			})
+		}
+	}, [functionsData, setValue])
+
+	// 서비스 사용자 초기값 설정
+	useEffect(() => {
+		const serviceUserValues = serviceUsersData?.body?.values
+		if (serviceUserValues) {
+			queueMicrotask(() => {
+				setValue('serviceUser', serviceUserValues.join('\n'), { shouldDirty: false })
+			})
+		}
+	}, [serviceUsersData, setValue])
+
+	// 섹션 03. 팀 구성 데이터 조회
+	const { data: teamRolesData } = useMypageTeamRolesQuery(projectId)
+
+	// 실제 프로젝트 데이터 추출 및 형식 변환
+	const projectData = (() => {
+		const userId = profileData?.body?.userId
+		const projects = projectsData?.body?.projects?.flat()
+		if (!userId || !projects) {
+			return {
+				name: '',
+				intro: '',
+				startDate: '',
+				endDate: '',
+				recruitmentStatus: '모집 전' as const,
+				selectedFields: [],
+			}
+		}
+		const leaderProject = projects.find(p => p.leader.user_id === userId)
+		if (!leaderProject) {
+			return {
+				name: '',
+				intro: '',
+				startDate: '',
+				endDate: '',
+				recruitmentStatus: '모집 전' as const,
+				selectedFields: [],
+			}
+		}
+		// 날짜 형식 변환: "2025-11-13" -> "2025. 11. 13"
+		const formatDate = (dateStr: string) => {
+			if (!dateStr) return ''
+			const [year, month, day] = dateStr.split('-')
+			return `${year}. ${month}. ${day}`
+		}
+		return {
+			name: leaderProject.project_title,
+			intro: leaderProject.description,
+			startDate: formatDate(leaderProject.planned_started_on),
+			endDate: formatDate(leaderProject.planned_ended_on),
+			recruitmentStatus: watch('recruitmentStatus') ?? '모집 전',
+			selectedFields: watch('selectedFields') || [],
+		}
+	})()
+
+	// 리더 정보 추출
+	const leaderInfo = (() => {
+		const profile = profileData?.body
+		if (!profile) return null
+		return {
+			name: profile.name,
+			nickname: profile.nickname,
+			role: profile.role,
+			bio: profile.bio,
+			profileImageFileName: profile.profileImageFileName,
+		}
+	})()
+
+	// 팀 역할 데이터 변환
+	const teamRolesForDisplay = (() => {
+		if (!teamRolesData?.body?.parts) return []
+		const parts = teamRolesData.body.parts.flat()
+
+		return parts.map(part => ({
+			role: part.role_field,
+			targetCount: part.required_count,
+			members: [], // 실제 멤버 정보는 필요시 추가
+		}))
+	})()
+
+	const { mutate: mutateProjectField } = useMypageProjectFieldMutation()
+	const { mutate: postRecruitment } = usePostMypageRecruitmentsMutation()
+	const { mutate: putRecruitment } = usePutMypageRecruitmentsMutation()
+	const { mutate: patchProjectPurposes } = usePatchProjectPurposesMutation()
+	const { mutate: patchProjectsFunctions } = usePatchProjectsFunctions()
+	const { mutate: patchProjectsServiceUsers } = usePatchProjectsServiceUsersMutation()
+	const recruitmentDataRef = useRef<RecruitmentLocalItem[]>([])
+	const handleRecruitmentDataChange = useCallback(
+		(data: RecruitmentLocalItem[]) => {
+			recruitmentDataRef.current = data
+			// react-hook-form에도 반영 (Section02에서 이미 setValue를 호출하지만 ref도 업데이트)
+			setValue('recruitmentInfo', data, { shouldDirty: false })
+		},
+		[setValue]
+	)
 
 	// 모달
 	const { modalType, open, close } = useCTAModal() // CTA
@@ -62,6 +246,68 @@ const OngoingProject = () => {
 		await handleSubmit(
 			data => {
 				console.log('유효성 검사 통과:', data)
+				// 섹션 01. 프로젝트 분야 수정
+				if (projectId && selectedField) {
+					mutateProjectField({ projectId, field: selectedField })
+				}
+				// 섹션 02. 모집 정보 생성/수정
+				recruitmentDataRef.current.forEach(item => {
+					if (!projectId) return
+
+					const requirements = item.requirements.split('\n').filter(Boolean)
+
+					// roleField가 비어있거나 requirements가 없으면 스킵
+					if (!item.roleField || requirements.length === 0) {
+						return
+					}
+
+					// 역할 필드 매핑: Design -> DESIGNER, Frontend/Backend -> DEVELOPER, PM -> PLANNER
+					const roleFieldMap: Record<string, string> = {
+						Design: 'DESIGNER',
+						Frontend: 'FRONTEND',
+						Backend: 'BACKEND',
+						PM: 'PLANNER',
+					}
+
+					const body = {
+						roleField: roleFieldMap[item.roleField] || item.roleField.toUpperCase(),
+						capacity: item.capacity,
+						requirements,
+					}
+
+					// recruitmentId가 음수면 새로 생성된 항목이므로 POST
+					if (item.recruitmentId < 0) {
+						postRecruitment({ projectId, body })
+					} else {
+						// recruitmentId가 양수면 기존 항목이므로 PUT
+						putRecruitment({
+							projectId,
+							recruitmentId: String(item.recruitmentId),
+							body,
+						})
+					}
+				})
+				// 섹션 04. 프로젝트 목표 수정
+				if (projectId && data.projectGoal) {
+					const contents = data.projectGoal.split('\n').filter(Boolean)
+					if (contents.length > 0) {
+						patchProjectPurposes({ projectId, contents })
+					}
+				}
+				// 섹션 05. 주요 내용 수정
+				if (projectId && data.mainContent) {
+					const contents = data.mainContent.split('\n').filter(Boolean)
+					if (contents.length > 0) {
+						patchProjectsFunctions({ projectId, contents })
+					}
+				}
+				// 섹션 06. 서비스 사용자 수정
+				if (projectId && data.serviceUser) {
+					const contents = data.serviceUser.split('\n').filter(Boolean)
+					if (contents.length > 0) {
+						patchProjectsServiceUsers({ projectId, contents })
+					}
+				}
 				reset(data)
 				isValid = true
 			},
@@ -113,7 +359,18 @@ const OngoingProject = () => {
 			}
 		)()
 		return isValid
-	}, [handleSubmit, reset])
+	}, [
+		handleSubmit,
+		reset,
+		projectId,
+		selectedField,
+		mutateProjectField,
+		postRecruitment,
+		putRecruitment,
+		patchProjectPurposes,
+		patchProjectsFunctions,
+		patchProjectsServiceUsers,
+	])
 
 	// 페이지 이탈 감지 훅
 	const {
@@ -182,12 +439,12 @@ const OngoingProject = () => {
 					<Button
 						color='socialLogin'
 						size='sm'
-						onClick={() => navigate('/')}
-						className='w-33.75 h-11 px-3 py-2.5 hover:bg-neutral-100'
+						onClick={() => navigate('/mypage/projects')}
+						className='w-33.75 h-11 px-3 py-2.5 hover:bg-neutral-100 border-neutral-200'
 					>
 						<div className='flex gap-1.5 justify-center items-center'>
-							<HamburgerIcon className='w-4 h-4' />
-							<span className='body-1 text-neutral-500'>목록으로 가기</span>
+							<HamburgerIcon className='w-4 h-4 text-neutral-400' />
+							<span className='body-1 text-neutral-400'>목록으로 가기</span>
 						</div>
 					</Button>
 				}
@@ -201,11 +458,15 @@ const OngoingProject = () => {
 
 					{/* 버튼 2개 */}
 					<div className='flex items-center gap-2'>
-						<Button color='mypage1' onClick={handleSaveWithModal} className=''>
+						<Button color='mypage1' onClick={handleSaveWithModal} className='w-32.5'>
 							저장
 						</Button>
 
-						<Button color='mypage2' onClick={handlePublishRecruitment} className='hover:bg-primary-500-normal'>
+						<Button
+							color='mypage2'
+							onClick={handlePublishRecruitment}
+							className='hover:bg-primary-500-normal w-32.5 px-2'
+						>
 							{isRecruitmentPublished ? '모집 종료' : '모집 등록'}
 						</Button>
 					</div>
@@ -230,9 +491,14 @@ const OngoingProject = () => {
 					<ProjectManagementView
 						projectData={projectData}
 						control={control}
-						getValues={getValues}
 						setValue={setValue}
 						watch={watch}
+						selectedField={selectedField}
+						onSelectField={value => setSelectedField(prev => (prev === value ? '' : value))}
+						projectId={projectId}
+						onRecruitmentDataChange={handleRecruitmentDataChange}
+						leaderInfo={leaderInfo}
+						teamRoles={teamRolesForDisplay}
 					/>
 				)}
 
@@ -322,7 +588,7 @@ const OngoingProject = () => {
 			{(isBlocked || modalType === 'unsavedChanges') && (
 				<CTAModal
 					message={`저장되지 않았습니다\n저장 후 페이지를 나가시겠습니까?`}
-					leftButtonMsg='돌아가기'
+					leftButtonMsg='나가기'
 					rightButtonMsg='저장 후 나가기'
 					onLeftClick={handleCancelNavigation}
 					onRightClick={handleSaveAndLeave}

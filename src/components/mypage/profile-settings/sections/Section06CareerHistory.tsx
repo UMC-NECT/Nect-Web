@@ -1,13 +1,22 @@
 import { useFieldArray, Controller, type Control, type UseFormSetValue, type UseFormWatch } from 'react-hook-form'
 import Button from '@/components/common/Button'
+import BulletTextArea from '@/components/common/BulletTextArea'
 import GoalIcon from '@/assets/icons/week-mission/goal.svg?react'
 import CheckboxIcon from '@/assets/icons/common/checkbox.svg?react'
+import BarIcon from '@/assets/icons/common/Bar.svg?react'
+import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 
 interface ISection06CareerHistory {
 	control: Control<ProfileFormDataType>
 	setValue: UseFormSetValue<ProfileFormDataType>
 	watch: UseFormWatch<ProfileFormDataType>
+}
+
+const formatDateInput = (value: string): string => {
+	const digits = value.replace(/\D/g, '')
+	if (digits.length <= 4) return digits
+	return `${digits.slice(0, 4)}.${digits.slice(4, 6)}`
 }
 
 const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHistory) => {
@@ -57,32 +66,6 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 		])
 	}
 
-	// 불렛 리스트 핸들러
-	const handleAchievementFocus = (careerIndex: number, achievementIndex: number) => {
-		const content = watch(`careers.${careerIndex}.achievements.${achievementIndex}.content`)
-		if (!content) {
-			setValue(`careers.${careerIndex}.achievements.${achievementIndex}.content`, '• ')
-		}
-	}
-
-	const handleAchievementKeyDown = (
-		e: React.KeyboardEvent<HTMLTextAreaElement>,
-		careerIndex: number,
-		achievementIndex: number
-	) => {
-		if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-			e.preventDefault()
-			const content = watch(`careers.${careerIndex}.achievements.${achievementIndex}.content`)
-			setValue(`careers.${careerIndex}.achievements.${achievementIndex}.content`, content + '\n• ')
-		}
-	}
-
-	// 불렛만 있는지 확인
-	const hasActualContent = (text: string) => {
-		const withoutBullets = text.replace(/•/g, '').replace(/\s/g, '')
-		return withoutBullets.length > 0
-	}
-
 	return (
 		<section className='my-2.5 ml-5'>
 			{/* 타이틀바 */}
@@ -91,8 +74,9 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 					주요 경력/이력 <span className='text-danger-700'>*</span>
 				</h2>
 
-				<Button color='text' size='sm' onClick={addCareer}>
-					+ 경력/이력 추가
+				<Button color='text' size='sm' onClick={addCareer} className='group flex gap-1 justify-center items-center'>
+					<PlusIcon className='w-4 h-4 text-neutral-400 group-hover:text-neutral-500' />
+					경력/이력 추가
 				</Button>
 			</div>
 
@@ -135,10 +119,16 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 													className='w-18.25 bg-transparent resize-none text-neutral-900 focus:outline-none placeholder:text-neutral-300 overflow-hidden whitespace-nowrap text-center'
 													placeholder='YYYY.MM'
 													maxLength={7}
+													onChange={e => field.onChange(formatDateInput(e.target.value))}
 												/>
 											)}
 										/>
-										<span>~</span>
+										<span
+											className='text-neutral-300
+										'
+										>
+											~
+										</span>
 										<Controller
 											name={`careers.${careerIndex}.endDate`}
 											control={control}
@@ -153,13 +143,14 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 														value={isInProgress ? '2026.02' : field.value}
 														maxLength={7}
 														disabled={isInProgress}
+														onChange={e => field.onChange(formatDateInput(e.target.value))}
 													/>
 												)
 											}}
 										/>
 
 										{/* 기간 계산 결과 */}
-										<span className='whitespace-nowrap'>
+										<span className='whitespace-nowrap text-neutral-300'>
 											{getDuration(
 												watch(`careers.${careerIndex}.startDate`),
 												watch(`careers.${careerIndex}.endDate`),
@@ -181,12 +172,12 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 														setValue(`careers.${careerIndex}.endDate`, '2026.02')
 													}
 												}}
-												className={`flex items-center cursor-pointer ml-4 select-none transition-colors whitespace-nowrap ${
+												className={`flex items-center cursor-pointer ml-4 select-none transition-colors whitespace-nowrap text-neutral-300 ${
 													field.value ? 'text-primary-500-normal' : 'hover:text-neutral-600'
 												}`}
 											>
 												<CheckboxIcon
-													className={`w-4 h-4 mr-1.5 transition-colors ${field.value ? 'text-primary-500-normal' : 'text-neutral-400'}`}
+													className={`w-4 h-4 mr-1.5 transition-colors ${field.value ? 'text-primary-500-normal' : 'text-neutral-300'}`}
 												/>
 												<span>진행중</span>
 											</button>
@@ -194,7 +185,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 									/>
 
 									{/* 구분선 */}
-									<span className='mx-3 text-neutral-300 font-semibold'>|</span>
+									<BarIcon className='w-0.5 h-3 text-neutral-300 mx-2.5' />
 
 									{/* 분야 (산업체) */}
 									<div className='flex items-center'>
@@ -213,7 +204,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 									</div>
 
 									{/* 구분선 */}
-									<span className='mx-3 text-neutral-300 font-semibold'>|</span>
+									<BarIcon className='w-0.5 h-3 text-neutral-300 mx-2.5' />
 
 									{/* 역할 (직무) */}
 									<div className='flex items-center'>
@@ -256,24 +247,13 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 										name={`careers.${careerIndex}.achievements.${achievementIndex}.content`}
 										control={control}
 										render={({ field }) => (
-											<textarea
-												{...field}
-												className={`w-full body-1 leading-[180%] tracking-[-0.5px] resize-none focus:outline-none placeholder:text-[16px] placeholder:text-neutral-300 bg-transparent overflow-hidden ${
-													hasActualContent(field.value) ? 'text-neutral-900' : 'text-neutral-300'
-												}`}
+											<BulletTextArea
+												value={field.value || ''}
+												onChange={field.onChange}
+												hasSectionTitle={false}
+												noDecoration
 												placeholder={`업무 경헙을 성과 기반으로 작성해 보세요.\n나의 역할과 기여도, 사용 기술을 포함하는 것을 권장 합니다.`}
-												onFocus={() => handleAchievementFocus(careerIndex, achievementIndex)}
-												onChange={e => {
-													field.onChange(e)
-													e.target.style.height = 'auto'
-													e.target.style.height = `${e.target.scrollHeight}px`
-												}}
-												onKeyDown={e => handleAchievementKeyDown(e, careerIndex, achievementIndex)}
-												onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
-													const target = e.currentTarget
-													target.style.height = 'auto'
-													target.style.height = `${target.scrollHeight}px`
-												}}
+												className='bg-transparent'
 											/>
 										)}
 									/>
@@ -283,7 +263,7 @@ const Section06CareerHistory = ({ control, setValue, watch }: ISection06CareerHi
 							<Button
 								color='text'
 								size='sm'
-								className='text-neutral-400 hover:text-neutral-600 p-0 ml-5'
+								className='text-neutral-400 hover:text-neutral-500 p-0 ml-5'
 								onClick={() => addAchievement(careerIndex)}
 							>
 								+ 주요 성과 추가

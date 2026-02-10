@@ -1,80 +1,112 @@
-import { useState } from 'react'
-import CTAModal from '@/components/common/CTAModal'
 import EmptyProfileAnalysis from './EmptyProfileAnalysis'
-import { useCollaboStore, useGrowGuideStore, useRoleRecommendStore, useSkillStore } from '@/stores/profileAnalysisStore'
-import ProfileRadarChart from '@/components/profile-analysis/ProfileRadarChart'
-import ContentSection from '@/components/profile-analysis/ContentSection'
 import SkillSection from '@/components/profile-analysis/SkillSection'
 import RoleRecommend from '@/components/profile-analysis/RoleRecommend'
 import GrowGuideSection from '@/components/profile-analysis/GrowGuideSection'
-import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
-import { useCTAModal } from '@/stores/useCTAModal'
+import { useProfileAnalysis, useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
+import { formatRoleName } from '@/utils/roleColor'
+import { translateSkillCategory } from '@/utils/skillCategory'
+import type { RadarDataItem } from '@/stores/profileAnalysisStore'
+import MypageContentSection from './MypageContentSection'
+import MypageProfileRadarChart from './MypageProfileRadarChart'
 
 const ProfileAnalysis = () => {
-	const [hasReport, setHasReport] = useState<boolean>(false)
+	// API - AI 프로필 분석
+	const { data: profileAnalysisData, isLoading, isError } = useProfileAnalysis()
+	const { data: profileData } = useMypageProfileQuery()
 
-	// 프로필 분석 있는 경우
-	const { type, role, tags, radarData } = useCollaboStore()
-	const { skills } = useSkillStore()
-	const { roleRecommend } = useRoleRecommendStore()
-	const { growGuide } = useGrowGuideStore()
+	const analysisResult = profileAnalysisData?.body
+	const profile = profileData?.body
 
-	const { modalType, open, close } = useCTAModal()
+	// API 데이터를 컴포넌트 형식에 맞게 변환
+	const radarData: RadarDataItem[] = analysisResult?.collaborationStyle
+		? [
+				{ subject: '계획형', value: analysisResult.collaborationStyle.planning },
+				{ subject: '논리형', value: analysisResult.collaborationStyle.logic },
+				{ subject: '리더형', value: analysisResult.collaborationStyle.leadership },
+				{ subject: '공감형', value: analysisResult.collaborationStyle.empathy },
+				{ subject: '실행형', value: analysisResult.collaborationStyle.execution },
+			]
+		: []
 
-	// (모달 핸들러) 삭제 확인
-	const handleDelete = () => {
-		alert('삭제되었습니다')
-		close()
+	const skills =
+		analysisResult?.skills?.map(skill => ({
+			skillName: translateSkillCategory(skill.category),
+			skillList: skill.skill_names,
+		})) || []
+
+	const roleRecommend = analysisResult?.roleRecommendation
+		? [
+				{
+					role: '리더',
+					title: '다음과 같은 성격의 팀원과 함께하세요!',
+					description: analysisResult.roleRecommendation.leader,
+				},
+				{
+					role: '팀원',
+					title: '현재 모집중인 프로젝트를 추천할게요!',
+					description: analysisResult.roleRecommendation.team_member,
+				},
+			]
+		: []
+
+	const hasReport = !!analysisResult
+
+	if (isLoading) {
+		return (
+			<div className='ml-7 w-full flex items-center justify-center min-h-screen'>
+				<p className='body-1 text-neutral-500'>
+					<span className='text-primary-500-normal font-semibold'>{profile?.name}</span>님의 프로필 분석내역을
+					불러오는중...
+				</p>
+			</div>
+		)
+	}
+
+	if (isError) {
+		return (
+			<div className='ml-7 w-full flex items-center justify-center min-h-screen'>
+				<p className='body-1 text-error-500'>데이터를 불러오는데 실패했습니다.</p>
+			</div>
+		)
 	}
 
 	return (
 		<div className='ml-7 w-full'>
 			{!hasReport ? (
 				// 리포트 없는 경우
-				<EmptyProfileAnalysis setHasReport={() => setHasReport(true)} />
+				<EmptyProfileAnalysis />
 			) : (
 				// 리포트 있는 경우
 				<>
 					<div className='flex flex-col items-center'>
 						{/* 브레드크럼 + 타이틀 */}
-						<MyPageHeader
-							action={
-								<Button
-									color='socialLogin'
-									size='sm'
-									className='text-neutral-400 px-3.25 py-2.5 w-38.5 h-11 hover:bg-neutral-100'
-									onClick={() => alert('프로필 분석 페이지로 이동시킴')}
-								>
-									+ AI 프로필 분석
-								</Button>
-							}
-						/>
+						<MyPageHeader />
 
 						{/* 콘텐츠 섹션 */}
-						<div className='bg-bg-gray w-full rounded-12 mt-16 pt-20 pb-14 px-12 shadow-inner-neutral-1 border border-neutral-200'>
-							<div className='flex flex-col items-center px-60 mb-28'>
-								<div className='flex flex-col items-center gap-4 mb-24'>
+						<div className='bg-bg-gray w-full rounded-12 px-11.5 py-14 shadow-inner-neutral-1 border border-neutral-200'>
+							<div className='flex flex-col items-center '>
+								<div className='flex flex-col items-center gap-4 mb-18'>
 									{/* 상단 타이틀 */}
-									<p className='title-3 font-semibold text-primary-600-normal'>NECT Analysis Report</p>
+									<p className='title-3 font-semibold text-primary-600-normal mb-0.5'>NECT Analysis Report</p>
 
 									{/* 메인 타이틀 */}
 									<h2 className='heading-2 font-bold text-neutral-900 text-center'>
-										이방토님은 [{type}] 타입이시네요!
+										{profile?.nickname}님은 [{analysisResult.profileType}] 타입이시네요!
 									</h2>
 
 									{/* 태그 섹션 */}
-									<div className='flex items-center gap-4 mt-2'>
+									<div className='flex items-center gap-3'>
 										{/* 직무 태그 */}
-										<span className='title-2 px-4 py-1.5 bg-roletag-purple text-neutral-700 font-bold rounded-md'>
-											{role}
+										<span className='title-3 px-2.5 py-1 bg-roletag-purple text-neutral-700 font-semibold rounded-md'>
+											{formatRoleName(profile?.role)}
 										</span>
 
 										{/* 해시태그들 */}
-										<div className='flex items-center gap-3 body-2'>
-											{tags.map(tag => (
-												<span className='title-2 font-medium text-neutral-900' key={tag}>
-													# {tag}
+										<div className='flex items-center gap-2.5 body-2'>
+											{analysisResult.tags.map(tag => (
+												<span className='title-3 font-medium text-neutral-900' key={tag}>
+													{tag}
 												</span>
 											))}
 										</div>
@@ -82,13 +114,16 @@ const ProfileAnalysis = () => {
 								</div>
 
 								{/* 협업 스타일 레이더 차트 */}
-								<ContentSection title='협업 스타일' className='mb-20'>
-									<ProfileRadarChart data={radarData} className='w-112.5 h-93.75 mx-auto' />
-								</ContentSection>
+								<MypageContentSection title='협업 스타일' className='mb-22 gap-4'>
+									<MypageProfileRadarChart
+										data={radarData}
+										className='w-112.5 h-93.75 mx-auto bg-neutral-000 rounded-15'
+									/>
+								</MypageContentSection>
 
 								{/* 보유 스킬 섹션 */}
-								<ContentSection title='보유 스킬' className='mb-27.5'>
-									<div className='flex flex-col gap-6 px-2 mt-6'>
+								<MypageContentSection title='보유 스킬' className='mb-27.5'>
+									<div className='flex flex-col gap-6 px-2'>
 										{skills.map(skill => (
 											<SkillSection
 												key={skill.skillName}
@@ -97,10 +132,10 @@ const ProfileAnalysis = () => {
 											/>
 										))}
 									</div>
-								</ContentSection>
+								</MypageContentSection>
 
 								{/* 역할별 맞춤 추천 섹션 */}
-								<ContentSection title='역할별 맞춤 추천' className='mb-27.5'>
+								<MypageContentSection title='역할별 맞춤 추천' className='mb-27.5'>
 									<div className='flex flex-col gap-6 px-2 mt-6'>
 										{roleRecommend.map((roleRecommend, index) => (
 											<RoleRecommend
@@ -111,49 +146,39 @@ const ProfileAnalysis = () => {
 											/>
 										))}
 									</div>
-								</ContentSection>
+								</MypageContentSection>
 
 								{/* 성장 가이드 */}
-								<ContentSection title='성장 가이드'>
-									<div className='flex flex-col gap-6 px-2 mt-6'>
-										{growGuide.map((growGuide, index) => (
-											<GrowGuideSection
-												key={index}
-												tipText={growGuide.tipText}
-												title={growGuide.title}
-												description={growGuide.description}
-											/>
-										))}
-									</div>
-								</ContentSection>
-							</div>
+								<MypageContentSection title='성장 가이드'>
+									<div className='flex flex-col gap-6'>
+										{analysisResult.growthGuide
+											.sort((a, b) => a.order - b.order)
+											.map(guide => {
+												// order에 따라 tipText 고정
+												const tipText =
+													guide.order === 1
+														? '앞으로 이런 활동을 하면 좋아요 !'
+														: '확장 가능한 스킬 추천'
 
-							{/* 버튼 2개 */}
-							<div className='flex gap-5 min-w-165 justify-center mx-auto mt-28'>
-								<Button color='secondary' size='xl' fullWidth className='w-80' onClick={() => alert('다시하기')}>
-									다시하기
-								</Button>
+												// tip 필드 파싱
+												const title = '포트폴리오 제작을 위한 ‘실무 프로세스 경험'
+												const description = guide.tip
+
+												return (
+													<GrowGuideSection
+														key={guide.order}
+														tipText={tipText}
+														title={title}
+														description={description}
+													/>
+												)
+											})}
+									</div>
+								</MypageContentSection>
 							</div>
 						</div>
-
-						{/* 삭제하기 버튼 */}
-						<Button color='text' className='underline mt-1' onClick={() => open('delete')}>
-							삭제하기
-						</Button>
 					</div>
 				</>
-			)}
-
-			{/* 삭제 모달 */}
-			{modalType === 'delete' && (
-				<CTAModal
-					message='{삭제} 하시겠습니까?'
-					isMessageHighlight={false}
-					leftButtonMsg='돌아가기'
-					rightButtonMsg='삭제'
-					onLeftClick={close}
-					onRightClick={handleDelete}
-				/>
 			)}
 		</div>
 	)

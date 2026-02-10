@@ -1,83 +1,171 @@
-import { useState } from 'react'
-import { Controller, type Control, type FieldArrayWithId } from 'react-hook-form'
+import { useState, useEffect, useRef } from 'react'
 import Button from '@/components/common/Button'
 import BulletTextArea from '@/components/common/BulletTextArea'
-import type { RoleType } from '@/types/mypage/ongoindProject'
-import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import RoleSelectModal from '../RoleSelectModal'
 import RoleTag from '@/components/mypage/RoleTag'
-import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
+import { useMypageProjectRecruitmentsQuery } from '@/hooks/mypage/useMypageApi'
+import type { UseFormSetValue } from 'react-hook-form'
+import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 
-interface ISection02RecruitmentInfo {
-	control: Control<ProjectSettingsType>
-	fields: FieldArrayWithId<ProjectSettingsType, 'recruitmentInfo', 'id'>[]
-	onAddItem: () => void
+export type RecruitmentLocalItem = {
+	recruitmentId: number
+	roleField: string
+	capacity: number
+	requirements: string
 }
 
-const Section02RecruitmentInfo = ({ control, fields, onAddItem }: ISection02RecruitmentInfo) => {
-	const [openModalIndex, setOpenModalIndex] = useState<number | null>(null)
-	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
+type RecruitmentApiItem = {
+	recruitmentId?: number
+	roleField?: string
+	capacity?: number
+	requirements?: string[] | string
+}
 
-	// 역할별 targetCount 가져오기
-	const getTargetCount = (role: RoleType) => {
-		const team = teamMembersByRole.find(t => t.role === role)
-		return team?.targetCount ?? 0
+const isRecruitmentApiItem = (value: unknown): value is RecruitmentApiItem => {
+	if (!value || typeof value !== 'object') return false
+	const candidate = value as Record<string, unknown>
+	return 'roleField' in candidate || 'requirements' in candidate
+}
+
+const flattenRecruitmentArray = (value: unknown): RecruitmentApiItem[] => {
+	if (!Array.isArray(value)) return []
+	return value.reduce<RecruitmentApiItem[]>((acc, current) => {
+		if (Array.isArray(current)) {
+			acc.push(...flattenRecruitmentArray(current))
+		} else if (isRecruitmentApiItem(current)) {
+			acc.push(current)
+		}
+		return acc
+	}, [])
+}
+
+const extractRecruitments = (payload: unknown): RecruitmentApiItem[] => {
+	if (!payload) return []
+	if (Array.isArray(payload)) {
+		return flattenRecruitmentArray(payload)
+	}
+	if (typeof payload === 'object') {
+		const body = (payload as { body?: unknown }).body
+		if (!body) return []
+		return extractRecruitments(body)
+	}
+	return []
+}
+
+interface ISection02RecruitmentInfo {
+	projectId: string
+	onDataChange?: (data: RecruitmentLocalItem[]) => void
+	setValue: UseFormSetValue<ProjectSettingsType>
+}
+
+const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISection02RecruitmentInfo) => {
+	const [openModalIndex, setOpenModalIndex] = useState<number | null>(null)
+	const [localData, setLocalData] = useState<RecruitmentLocalItem[]>([])
+	const tempIdCounter = useRef(-1)
+
+	// API - 기존 모집정보 조회
+	const { data: recruitmentsData } = useMypageProjectRecruitmentsQuery(projectId)
+
+	// API 데이터를 로컬 상태로 동기화
+	useEffect(() => {
+		if (!recruitmentsData) return
+
+		queueMicrotask(() => {
+			const recruitments = extractRecruitments(recruitmentsData)
+			if (recruitments.length === 0) {
+				setLocalData([])
+				return
+			}
+
+			setLocalData(
+				recruitments.map(item => ({
+					recruitmentId: typeof item.recruitmentId === 'number' ? item.recruitmentId : tempIdCounter.current--,
+					roleField: item.roleField ?? '',
+					capacity: item.capacity ?? 1,
+					requirements: Array.isArray(item.requirements) ? item.requirements.join('\n') : (item.requirements ?? ''),
+				}))
+			)
+		})
+	}, [recruitmentsData])
+
+	// 로컬 데이터 변경 시 부모에 알림 + RFH과 동기화
+	useEffect(() => {
+		queueMicrotask(() => {
+			onDataChange?.(localData)
+			// RFH의 recruitmentInfo 필드를 업데이트
+			setValue('recruitmentInfo', localData, { shouldDirty: false, shouldValidate: true })
+		})
+	}, [localData, onDataChange, setValue])
+
+	// 모집 팀원 추가 (로컬 UI만 추가, 저장 시 API 호출)
+	const handleAddItem = () => {
+		setLocalData(prev => [
+			...prev,
+			{
+				recruitmentId: tempIdCounter.current--,
+				roleField: '',
+				capacity: 1,
+				requirements: '',
+			},
+		])
+	}
+
+	// 역할 변경 (로컬만 변경 - 저장 버튼에서 PUT)
+	const handleRoleChange = (index: number, role: string) => {
+		const item = localData[index]
+		if (!item) return
+
+		setLocalData(prev => prev.map((d, i) => (i === index ? { ...d, roleField: role } : d)))
+	}
+
+	// 설명(요구사항) 변경 (로컬만 - 저장 버튼에서 PUT)
+	const handleRequirementsChange = (index: number, value: string) => {
+		setLocalData(prev => prev.map((d, i) => (i === index ? { ...d, requirements: value } : d)))
 	}
 
 	return (
-		<div className='flex flex-col gap-4 pl-5'>
+		<div className='flex flex-col pl-5'>
 			{/* 타이틀 */}
 			<div className='flex items-center justify-between'>
 				<h3 className='title-2 font-bold text-neutral-900'>
 					모집 정보 및 필수 스택 <span className='text-danger-700'>*</span>
 				</h3>
 
-				<Button color='text' size='sm' className='flex gap-1.25' onClick={onAddItem}>
-					+ 모집 팀원 추가
+				<Button color='text' size='sm' className='group flex gap-1.25' onClick={handleAddItem}>
+					<span className='text-neutral-400 group-hover:text-neutral-500 duration-200'>+</span>
+					<span className='text-neutral-500 group-hover:text-neutral-600 duration-200'>모집 팀원 추가</span>
 				</Button>
 			</div>
 
 			{/* 모집 팀원 목록 */}
-			{fields.map((field, index) => (
-				<div key={field.id} className='flex items-start gap-5.5'>
+			{localData.map((item, index) => (
+				<div key={item.recruitmentId} className='flex items-start gap-5.5'>
 					{/* 선택 직무 */}
-					<Controller
-						name={`recruitmentInfo.${index}.role`}
-						control={control}
-						render={({ field: { value, onChange } }) => (
-							<div className='relative shrink-0 mt-5 w-25'>
-								<RoleTag
-									role={value || '직무 선택'}
-									showTotal={value ? true : false}
-									total={value ? getTargetCount(value as RoleType) : 0}
-									onClick={() => setOpenModalIndex(index)}
-									className='cursor-pointer hover:opacity-80 transition-opacity'
-								/>
-								<RoleSelectModal
-									isOpen={openModalIndex === index}
-									onClose={() => setOpenModalIndex(null)}
-									onSelect={role => {
-										onChange(role)
-										setOpenModalIndex(null)
-									}}
-								/>
-							</div>
-						)}
-					/>
+					<div className='relative shrink-0 mt-5 w-25'>
+						<RoleTag
+							role={item.roleField || '직무 선택'}
+							showTotal={!!item.roleField}
+							total={item.roleField ? item.capacity : 0}
+							onClick={() => setOpenModalIndex(index)}
+							className='cursor-pointer hover:opacity-80 transition-opacity'
+						/>
+						<RoleSelectModal
+							isOpen={openModalIndex === index}
+							onClose={() => setOpenModalIndex(null)}
+							onSelect={role => {
+								handleRoleChange(index, role)
+								setOpenModalIndex(null)
+							}}
+						/>
+					</div>
 
 					{/* 역할 필드 */}
-					<Controller
-						name={`recruitmentInfo.${index}.description`}
-						control={control}
-						render={({ field: { value, onChange } }) => (
-							<BulletTextArea
-								value={value || ''}
-								onChange={onChange}
-								hasSectionTitle={false}
-								placeholder='모집 팀원의 필수 스택과 팀에서 맡을 역할을 적어주세요.'
-								minHeight='min-h-24'
-							/>
-						)}
+					<BulletTextArea
+						value={item.requirements}
+						onChange={value => handleRequirementsChange(index, value)}
+						hasSectionTitle={false}
+						placeholder='모집 팀원의 필수 스택과 팀에서 맡을 역할을 적어주세요.'
+						minHeight='min-h-24'
 					/>
 				</div>
 			))}

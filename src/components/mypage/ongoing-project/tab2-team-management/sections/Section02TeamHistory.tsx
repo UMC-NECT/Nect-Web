@@ -1,13 +1,6 @@
+import HistoryCard from '@/components/mypage/HistoryCard'
 import RoleTag from '@/components/mypage/RoleTag'
-
-interface ProjectHistory {
-	id: number
-	title: string
-	description: string
-	period: string
-	imageUrl?: string
-	tags: string[]
-}
+import type { ProjectHistory } from '@/types/mypage/ongoindProject'
 
 interface ISection02TeamHistory {
 	projectHistories: ProjectHistory[]
@@ -28,17 +21,17 @@ const Section02TeamHistory = ({ projectHistories }: ISection02TeamHistory) => {
 							))}
 						</div>
 
-						<div className='border-[3px] border-transparent hover:border-primary-400-normal rounded-16 transition-colors cursor-pointer overflow-hidden'>
-							{/* 썸네일 */}
-							<div className='w-full h-52 bg-neutral-600'></div>
-
-							{/* 프로젝트 정보 */}
-							<div className='flex flex-col gap-1 p-4'>
-								<h4 className='body-1 font-semibold text-neutral-900'>{project.title}</h4>
-								<p className='body-2 text-neutral-600 line-clamp-2'>{project.description}</p>
-								<span className='caption-1 text-neutral-400'>{project.period}</span>
-							</div>
-						</div>
+						<HistoryCard
+							project_id={project.id}
+							project_title={project.title}
+							description={project.description}
+							planned_started_on={project.period.split('~')[0] ?? ''}
+							planned_ended_on={project.period.split('~')[1] ?? ''}
+							image_name=''
+							team_roles={[[]]}
+							leader={{ user_id: 0, name: '', profile_image_url: '' }}
+							team_member_projects={[[]]}
+						/>
 					</div>
 				))}
 			</div>

@@ -24,9 +24,9 @@ const Button = ({ size = 'md', color = 'onboarding', fullWidth = false, classNam
 		secondary:
 			'font-semibold bg-primary-50-light text-primary-600-normal border border-primary-300-light hover:bg-primary-200-light disabled:border-primary-200-light disabled:text-primary-300-normal',
 		mypage1:
-			'w-32.5 h-12 body-1 font-semibold text-neutral-900 border-[1.5px] border-neutral-200 bg-neutral-000 rounded-12 hover:border-neutral-100 hover:bg-neutral-100',
-		mypage2: 'w-32.5 h-12 body-1 font-semibold text-neutral-50 bg-primary-400-normal rounded-12 hover:bg-primary-500-normal',
-		text: 'bg-transparent text-neutral-500 hover:text-neutral-700 duration-200',
+			'font-medium w-32.5 h-12 body-1 text-neutral-900 border-[1.5px] border-neutral-200 bg-neutral-000 rounded-12 hover:border-neutral-100 hover:bg-neutral-100',
+		mypage2: 'font-medium w-32.5 h-12 body-1 text-neutral-50 bg-primary-400-normal rounded-12 hover:bg-primary-500-normal',
+		text: 'bg-transparent text-neutral-500 hover:text-neutral-600 duration-200',
 	}
 
 	const sizes = {
