@@ -64,7 +64,7 @@ const TeamProfileCard = ({
 				{/* 오른쪽: 시간 및 상태 */}
 				<div className="h-16 inline-flex flex-col justify-between items-end">
 					{/* 시간 */}
-					<div className={`text-right justify-center title-1 font-bold ${
+					<div className={`text-right justify-center title-1 font-semibold ${
 						isWorking ? 'text-primary-500-normal' : 'text-neutral-400'
 					}`}>{time}</div>
 

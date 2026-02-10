@@ -151,7 +151,7 @@ const TeamProfileCardMain = ({
 						<div className="w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center">
 							<ResetIcon className="w-6 h-6 text-neutral-300" />
 						</div>
-						<div className={`text-right justify-center heading-1 font-bold ${
+						<div className={`text-right justify-center heading-1 font-semibold ${
 							isWorking ? 'text-primary-500-normal' : 'text-neutral-400'
 						}`}>{displayTime}</div>
 					</div>

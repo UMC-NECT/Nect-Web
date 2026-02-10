@@ -42,7 +42,7 @@ const TeamBoardHeader = ({
 				{/* 프로젝트 제목 및 설명 */}
 				<div className='self-stretch flex flex-col justify-start items-start gap-2'>
 					<div className='self-stretch justify-start text-neutral-900 heading-2 font-bold line-clamp-1'>{title}</div>
-					<div className='self-stretch justify-start text-[#5f5f5f] title-3 font-medium line-clamp-1'>{description}</div>
+					<div className='self-stretch justify-start text-[#5f5f5f] title-3 font-regular line-clamp-1'>{description}</div>
 				</div>
 				{/* 공지사항 및 정기회의 정보 */}
 				<div className='self-stretch flex flex-col justify-start items-center gap-3'>
@@ -51,7 +51,7 @@ const TeamBoardHeader = ({
 							<div className='w-28 px-3 py-1 bg-[#f0e7fb]/70 rounded-md outline-1 -outline-offset-1 outline-primary-200-light flex justify-center items-center gap-1'>
 								<div className="justify-center text-neutral-900 body-1 font-medium">{item.label}</div>
 							</div>
-							<div className={`${item.contentClassName} ${item.textColor} title-3 font-medium line-clamp-1`}>{item.content}</div>
+							<div className={`${item.contentClassName} ${item.textColor} title-3 font-regular line-clamp-1`}>{item.content}</div>
 						</div>
 					))}
 				</div>
