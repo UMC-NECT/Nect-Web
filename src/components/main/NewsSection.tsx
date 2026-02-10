@@ -22,8 +22,8 @@ const NewsSection = () => {
     };
 
     return (
-        <div className="w-308.25 h-184 mx-auto mb-12.5 relative">
-            <h2 className="text-[32px] font-bold text-center mb-16.5">
+        <div className="w-308.25 mx-auto relative">
+            <h2 className="text-[32px] font-bold text-center pb-16.5">
                 넥트에서 협업의 전 과정을<br />
                 A부터 Z까지
             </h2>
@@ -70,7 +70,7 @@ const NewsSection = () => {
                                 </p>
                                 </div>
 
-                                <div className="w-35 h-35 ml-auto mt-3 mb-6 overflow-hidden">
+                                <div className="w-35 h-35 ml-auto mt-3 pb-6 overflow-hidden">
                                     <img 
                                         src={item.image} 
                                         alt={item.title}

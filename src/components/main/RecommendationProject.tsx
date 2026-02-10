@@ -2,15 +2,64 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
 import { useRef } from 'react';
-
-import { recommendationProjects } from '@/constants/RecommendationProjects';
 import { useLocation } from 'react-router';
 import RecommendationProjectCard from '@/components/common/RecommendationProjectCard';
+import { useRecommendationProjects } from '@/hooks/queries/home';
 
 const RecommendationProject = () => {
     const paginationRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
     const isProfileAnalysisPage = location.pathname === '/profile-analysis';
+
+    const { data: projects, isLoading, isError } = useRecommendationProjects(15);
+
+    // 로딩 상태
+    if (isLoading) {
+        return (
+            <div className="w-308.25 h-111.75 mx-auto mb-12.5 relative -ml-11.5">
+                {!isProfileAnalysisPage && (
+                    <div className="w-282 mx-auto mb-4">
+                        <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 프로젝트</h2>
+                    </div>
+                )}
+                <div className="flex items-center justify-center h-80 text-neutral-500">
+                    로딩 중...
+                </div>
+            </div>
+        );
+    }
+
+    // 에러 상태
+    if (isError) {
+        return (
+            <div className="w-308.25 h-111.75 mx-auto mb-12.5 relative -ml-11.5">
+                {!isProfileAnalysisPage && (
+                    <div className="w-282 mx-auto mb-4">
+                        <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 프로젝트</h2>
+                    </div>
+                )}
+                <div className="flex items-center justify-center h-80 text-neutral-500">
+                    프로젝트를 불러오는데 실패했습니다.
+                </div>
+            </div>
+        );
+    }
+
+    // 빈 데이터 상태
+    if (!projects || projects.length === 0) {
+        return (
+            <div className="w-308.25 h-111.75 mx-auto mb-12.5 relative -ml-11.5">
+                {!isProfileAnalysisPage && (
+                    <div className="w-282 mx-auto mb-4">
+                        <h2 className="text-[22px] text-neutral-900 font-semibold">나와 연관된 추천 프로젝트</h2>
+                    </div>
+                )}
+                <div className="flex items-center justify-center h-80 text-neutral-500">
+                    추천 프로젝트가 없습니다.
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-308.25 h-111.75 mx-auto mb-12.5 relative">
@@ -35,11 +84,15 @@ const RecommendationProject = () => {
                     }}
                     onSwiper={(swiper) => {
                         setTimeout(() => {
-                            if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object') {
-                                swiper.params.pagination.el = paginationRef.current;
-                                swiper.pagination?.init();
-                                swiper.pagination?.render();
-                                swiper.pagination?.update();
+                            try {
+                                if (paginationRef.current && swiper.params.pagination && typeof swiper.params.pagination === 'object' && swiper.pagination) {
+                                    swiper.params.pagination.el = paginationRef.current;
+                                    swiper.pagination.init();
+                                    swiper.pagination.render();
+                                    swiper.pagination.update();
+                                }
+                            } catch {
+                                // 페이지네이션 초기화 실패 시 무시
                             }
                         }, 0);
                     }}
@@ -47,11 +100,11 @@ const RecommendationProject = () => {
                         delay: 5000,
                         disableOnInteraction: false,
                     }}
-                    loop={true}
+                    loop={projects.length > 3}
                     className="!pt-3 recommendation-project-swiper"
                 >
-                    {recommendationProjects.map((project) => (
-                        <SwiperSlide key={project.id}>
+                    {projects.map((project) => (
+                        <SwiperSlide key={project.projectId}>
                             <RecommendationProjectCard project={project} />
                         </SwiperSlide>
                     ))}
