@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import CTAModal from '@/components/common/CTAModal'
 import EmptyProfileAnalysis from './EmptyProfileAnalysis'
 import SkillSection from '@/components/profile-analysis/SkillSection'
 import RoleRecommend from '@/components/profile-analysis/RoleRecommend'

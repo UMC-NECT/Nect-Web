@@ -1,14 +1,6 @@
 import HistoryCard from '@/components/mypage/HistoryCard'
 import RoleTag from '@/components/mypage/RoleTag'
-
-interface ProjectHistory {
-	id: number
-	title: string
-	description: string
-	period: string
-	imageUrl?: string
-	tags: string[]
-}
+import type { ProjectHistory } from '@/types/mypage/ongoindProject'
 
 interface ISection02TeamHistory {
 	projectHistories: ProjectHistory[]
@@ -29,7 +21,17 @@ const Section02TeamHistory = ({ projectHistories }: ISection02TeamHistory) => {
 							))}
 						</div>
 
-						<HistoryCard title={project.title} description={project.description} period={project.period} />
+						<HistoryCard
+							project_id={project.id}
+							project_title={project.title}
+							description={project.description}
+							planned_started_on={project.period.split('~')[0] ?? ''}
+							planned_ended_on={project.period.split('~')[1] ?? ''}
+							image_name=''
+							team_roles={[[]]}
+							leader={{ user_id: 0, name: '', profile_image_url: '' }}
+							team_member_projects={[[]]}
+						/>
 					</div>
 				))}
 			</div>

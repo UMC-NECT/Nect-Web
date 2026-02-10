@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import ProfileSamplePath from '@/assets/icons/mypage/profile-sample.svg'
-import type { UserStatusType } from '@/constants/userStatus'
+import type { UserStatusValue } from '@/constants/userStatus'
 
 interface UserProfile {
 	userName: string
@@ -14,7 +14,7 @@ interface UserProfile {
 interface UserStore extends UserProfile {
 	setProfileImage: (image: string) => void
 	setUserProfile: (profile: Partial<UserProfile>) => void
-	setUserStatus: (status: UserStatusType) => void
+	setUserStatus: (status: UserStatusValue) => void
 }
 
 export const useUserStore = create<UserStore>(set => ({
@@ -27,5 +27,5 @@ export const useUserStore = create<UserStore>(set => ({
 
 	setProfileImage: (image: string) => set({ profileImage: image }),
 	setUserProfile: (profile: Partial<UserProfile>) => set(state => ({ ...state, ...profile })),
-	setUserStatus: (status: UserStatusType) => set({ userStatus: status }),
+	setUserStatus: (status: UserStatusValue) => set({ userStatus: status }),
 }))
