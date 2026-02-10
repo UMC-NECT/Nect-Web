@@ -15,6 +15,7 @@ import {
 	inviteChatRoomMembers,
 	uploadChatFile,
 	createSharedDocumentFromChat,
+	deleteChatFile,
 } from '@/api/chat'
 import type { ChatMessageDto } from '@/types/api/chat'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
@@ -329,6 +330,22 @@ const ChatRoom = ({
 		}
 	}
 
+	// 파일 삭제
+	const handleDeleteFileMessage = async (fileId: number, messageId: string | number) => {
+		if (!confirm('파일을 삭제하시겠습니까?')) return
+
+		try {
+			await deleteChatFile(fileId)
+			// 현재 메시지 목록에서 해당 메시지 제거
+			setMessages((prev) => prev.filter((message) => message.id !== messageId))
+			// 검색 결과가 떠 있는 경우에도 동일하게 제거
+			setSearchResults((prev) => prev.filter((message) => message.id !== messageId))
+		} catch (error) {
+			console.error('파일 삭제 실패:', error)
+			alert('파일 삭제에 실패했습니다.')
+		}
+	}
+
 	// 멤버 초대
 	const handleInviteMembers = async (memberIds: number[]) => {
 		try {
@@ -476,6 +493,11 @@ const ChatRoom = ({
 													alert('공유 문서함 등록에 실패했습니다.')
 												}
 											}
+										: undefined
+								}
+								onDeleteFile={
+									message.fileId
+										? () => handleDeleteFileMessage(message.fileId!, message.id)
 										: undefined
 								}
 							/>

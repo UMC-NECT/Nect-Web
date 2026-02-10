@@ -17,6 +17,7 @@ interface ChatRoomMessageProps {
 		fileType: 'PDF' | 'Figma' | 'Word' | 'Excel' | 'PPT' | 'Zip' | 'JPG' | 'PNG' | 'JPEG' | 'MOV' | 'MP4' | 'Etc'
 	}
 	onRegisterToSharedDocs?: () => void
+	onDeleteFile?: () => void
 }
 
 export const ChatRoomMessage = ({
@@ -30,6 +31,7 @@ export const ChatRoomMessage = ({
 	fileId,
 	fileAttachment,
 	onRegisterToSharedDocs,
+	onDeleteFile,
 }: ChatRoomMessageProps) => {
 	// 파일 첨부 메시지
 	if (fileAttachment) {
@@ -45,6 +47,7 @@ export const ChatRoomMessage = ({
 				fileSize={fileAttachment.fileSize}
 				fileType={fileAttachment.fileType}
 				onRegisterToSharedDocs={onRegisterToSharedDocs}
+				onDelete={onDeleteFile}
 			/>
 		)
 	}

@@ -35,7 +35,7 @@ const ChatRoomInfoModal = ({ onClose, onConfirm }: ChatRoomInfoModalProps) => {
 				onSettingsClick={() => {}}
 			/>
 			{/* 메인 컨텐츠 */}
-			<div className='w-[380px] h-full bg-status-bg-gray rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
+			<div className='w-[380px] h-full bg-[#f7f7fa] rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
 				{/* 헤더 */}
 				<div className='bg-white border-b border-[#f0f0f6] h-[50px] px-[22px] py-[11px] flex items-center justify-center shrink-0'>
 					<div className='flex items-center justify-center h-[30px] w-full'>
