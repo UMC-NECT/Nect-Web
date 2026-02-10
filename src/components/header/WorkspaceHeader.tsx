@@ -130,12 +130,21 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                             <button
                                 onMouseEnter={handleWorkspaceMouseEnter}
                                 onClick={() => {
-                                    // 프로젝트가 1개면 클릭 시 바로 이동
-                                    if (projects.length === 1 && projects[0]) {
-                                        handleProjectSelect(projects[0].projectId)
+                                    // 프로젝트가 있으면 첫 번째 프로젝트로 이동
+                                    if (projects.length > 0 && projects[0]) {
+                                        const targetProjectId = selectedProjectId || projects[0].projectId
+                                        setProjectId(targetProjectId)
+                                        navigate(`/team-board/${targetProjectId}`)
+                                    } else if (projectData && projectData.length > 0) {
+                                        // fallback: projectData 사용
+                                        const targetProjectId = projectData[0].projectId
+                                        setProjectId(targetProjectId)
+                                        navigate(`/team-board/${targetProjectId}`)
                                     } else {
-                                        setProjectId(projectData?.[0]?.projectId ?? null)
-                                        navigate('/team-board')
+                                        // 프로젝트가 없으면 메뉴만 표시 (또는 에러 처리)
+                                        if (!shouldShowMenu) {
+                                            console.warn('프로젝트가 없습니다.')
+                                        }
                                     }
                                 }}
                                 className={`text-[18px] font-medium transition-colors ${
