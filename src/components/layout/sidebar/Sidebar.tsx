@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
 import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
 import SideNotificationModal from '@/components/notification/SideNotificationModal'
 import ChatModal from '@/components/chat/ChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useNavigate, useParams } from 'react-router'
+import { useNotificationList } from '@/hooks/notification/useNotificationList'
 
 export const Sidebar = () => {
 	const [activeTopMenu, setActiveTopMenu] = useState<TopMenuId | null>(null)
@@ -16,6 +17,18 @@ export const Sidebar = () => {
 
 	const notificationModalRef = useRef<HTMLDivElement>(null)
 	const chatModalRef = useRef<HTMLDivElement>(null)
+
+	// 알림 목록 조회 (읽지 않은 알림 확인용)
+	const { data: notificationResponse } = useNotificationList({
+		filter: 'WORKSPACE_ONLY',
+		size: 20,
+	})
+
+	// 읽지 않은 알림이 있는지 확인
+	const hasUnreadNotifications = useMemo(() => {
+		const notifications = notificationResponse?.body?.notifications || []
+		return notifications.some(notification => !notification.isRead)
+	}, [notificationResponse])
 
 	useClickOutside(
 		notificationModalRef,
@@ -88,7 +101,7 @@ export const Sidebar = () => {
 										isActive={activeTopMenu === menu.id}
 										alwaysDark={true}
 										shadowType='neutral-1'
-										hasBadge={menu.id === 'notification'}
+										hasBadge={menu.id === 'notification' && hasUnreadNotifications}
 									/>
 								</div>
 							))}
