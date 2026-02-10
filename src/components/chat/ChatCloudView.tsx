@@ -73,9 +73,8 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 	}, [chatRoomsData])
 
 	const renderGrid = (files: CloudRoom['files']) => {
-		// 최대 6개까지만 표시 (2x3 그리드)
+		// 최대 6개까지만 표시
 		const displayFiles = files.slice(0, 6)
-		const emptySlots = 6 - displayFiles.length
 
 		return (
 			<div className="grid grid-cols-3 gap-[2px] w-[340px]">
@@ -96,13 +95,6 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 							}}
 						/>
 					</button>
-				))}
-				{/* 빈 슬롯 채우기 */}
-				{Array.from({ length: emptySlots }).map((_, index) => (
-					<div
-						key={`empty-${index}`}
-						className="w-[112px] h-[112px] bg-neutral-200 rounded-md"
-					/>
 				))}
 			</div>
 		)
