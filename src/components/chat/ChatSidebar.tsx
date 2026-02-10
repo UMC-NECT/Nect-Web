@@ -68,7 +68,6 @@ const ChatSidebar = ({ unreadCount = 0, onMessageClick, onCloudClick, onSettings
 					<div className="w-[30px] h-[30px] rounded-lg" />
 					{/* 설정 아이콘 SVG */}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 p-[1.25px] flex items-center justify-center">
-						<SettingIcon className="w-5 h-5" />
 					</div>
 				</button>
 			</div>
