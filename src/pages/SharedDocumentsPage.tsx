@@ -254,7 +254,7 @@ const SharedDocumentsPage = () => {
 		<div className="flex flex-col w-full mx-auto px-6 py-[64px] gap-[30px]">
 			<ContentHeader
 				title="공유 문서함"
-				description="~~~하는 프로젝트 공유 문서 클라우드"
+				description="프로젝트 자료를 한곳에 모으는 공유 문서 클라우드"
 				buttonText="업로드"
 				onButtonClick={handleUploadClick}
 			/>
