@@ -47,6 +47,7 @@ const SharedDocumentsPage = () => {
 	const [editingFileId, setEditingFileId] = useState<number | null>(null)
 	const [sortOrder, setSortOrder] = useState<SortOption>('latest')
 	const [documentType] = useState<'FILE' | 'LINK' | undefined>(undefined)
+	const [isDragOver, setIsDragOver] = useState(false)
 
 	// SortOption을 API SortOption으로 변환
 	const apiSortOption: APISortOption = useMemo(() => {
@@ -209,6 +210,46 @@ const SharedDocumentsPage = () => {
 		setEditingFileId(null)
 	}
 
+	// 드래그 앤 드롭 핸들러
+	const handleDragOver = (e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(true)
+	}
+
+	const handleDragLeave = (e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(false)
+	}
+
+	const handleDrop = (e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(false)
+
+		const files = e.dataTransfer.files
+		if (files.length > 0) {
+			const file = files[0]
+			// FileItem 편집 모드 활성화하고 파일 업로드
+			setIsUploading(true)
+			// FileItem이 드롭된 파일을 처리할 수 있도록 약간의 지연 후 업로드
+			// FileItem 컴포넌트는 내부적으로 드래그 앤 드롭을 처리하므로,
+			// 여기서는 편집 모드만 활성화하고 FileItem이 파일을 받도록 함
+			// 실제로는 FileItem에 직접 파일을 전달할 수 없으므로,
+			// 드롭된 파일을 즉시 업로드하는 방식으로 처리
+			handleFileAdd(
+				{
+					type: 'file',
+					name: file.name.replace(/\.[^/.]+$/, ''), // 확장자 제거
+					fileName: file.name,
+					url: URL.createObjectURL(file),
+				},
+				file
+			)
+		}
+	}
+
 	return (
 		<div className="flex flex-col w-full mx-auto px-6 py-[64px] gap-[30px]">
 			<ContentHeader
@@ -226,7 +267,12 @@ const SharedDocumentsPage = () => {
 				</div>
 
 				{/* 파일 목록 영역 */}
-				<div className="px-5 py-[18px] flex-1 overflow-y-auto">
+				<div
+					className={`px-5 py-[18px] flex-1 overflow-y-auto ${isDragOver ? 'bg-primary-50' : ''}`}
+					onDragOver={handleDragOver}
+					onDragLeave={handleDragLeave}
+					onDrop={handleDrop}
+				>
 					{isLoading ? (
 						<div className="flex items-center justify-center h-full">로딩 중...</div>
 					) : files.length === 0 && !isUploading ? (
