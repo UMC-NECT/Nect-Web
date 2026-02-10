@@ -143,6 +143,7 @@ interface ChatModalProps {
 		return (
 			<ChatCloudView
 				onBack={() => setView('list')}
+				projectId={projectId}
 			/>
 		)
 	}
