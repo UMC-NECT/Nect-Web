@@ -113,6 +113,7 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 			{/* 사이드바 */}
 			<ChatSidebar
 				unreadCount={0}
+				selectedView="cloud"
 				onMessageClick={onBack}
 				onCloudClick={() => {}}
 				onSettingsClick={() => {}}

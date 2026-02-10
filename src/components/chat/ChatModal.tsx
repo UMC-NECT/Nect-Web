@@ -142,11 +142,15 @@ interface ChatModalProps {
 		)
 	}
 
+	// view가 'cloud'가 아닌 경우이므로 항상 'message'
+	const selectedView: 'message' | 'cloud' = 'message'
+
 	return (
 		<div className='flex items-start h-full'>
 			{/* 사이드바 */}
 			<ChatSidebar
 				unreadCount={messages.filter(m => !m.isRead).length}
+				selectedView={selectedView}
 				onMessageClick={() => setView('list')}
 				onCloudClick={() => setView('cloud')}
 				onSettingsClick={() => {}}
