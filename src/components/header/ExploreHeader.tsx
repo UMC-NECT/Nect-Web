@@ -16,7 +16,7 @@ import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 
 interface ExploreHeaderProps {
-	onNavigate: () => void
+	onNavigate?: () => void
 }
 
 const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
@@ -91,19 +91,19 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
 					{/* 네비게이션 */}
 					<nav className='flex items-center gap-4'>
-						<button className='text-[18px] font-medium text-neutral-900 transition-colors'>
-							프로젝트ㆍ팀원 탐색
+						<button className='title-3 font-medium text-neutral-900 transition-colors tracking-tight'>
+							프로젝트<span className='-mx-1'>ㆍ</span>팀원 탐색
 						</button>
 						<BarIcon />
 						<div className='relative'>
 							<button
 								onClick={() => {
-									onNavigate()
+									onNavigate?.()
 									setProjectId(projectData?.[0]?.projectId ?? null)
 									navigate('/team-board')
 								}}
 								onMouseEnter={() => setShowWorkspaceMenu(true)}
-								className='text-[18px] font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
+								className='title-3 font-medium text-neutral-400 hover:text-neutral-900 transition-colors'
 							>
 								팀 작업실
 							</button>
@@ -237,12 +237,12 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
 					{/* 오른쪽 버튼들 */}
 					<div className='flex items-center gap-3'>
-						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors'>
+						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors' onClick={() => navigate('/idea-analyze')}>
 							AI 프로젝트 등록
 						</button>
 						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2'>
 							<PortfolioIcon className='h-[14px] w-[14px] text-primary-800-dark' />
-							NECT 리포트
+							NECT 가이드
 						</button>
 					</div>
 				</div>

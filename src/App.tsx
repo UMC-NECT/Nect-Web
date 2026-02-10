@@ -121,8 +121,7 @@ const router = createBrowserRouter([
 		],
 	},
 	{
-		path: '/error/:code',
-		element: <ErrorPage />,
+		
 	},
 	{
 		element: <AnalysisLayout />,
