@@ -1,29 +1,40 @@
-import { useParams, useNavigate } from 'react-router'
+import { useParams, useNavigate, useRouteError, isRouteErrorResponse } from 'react-router'
 import Button from '@/components/common/Button'
 import Character from '@/assets/Character.png'
 
 const ERROR_CODES = ['404', '408', '500', '503'] as const
 type ErrorCode = (typeof ERROR_CODES)[number]
 
+const STATUS_TO_CODE: Record<number, ErrorCode> = {
+	404: '404',
+	408: '408',
+	500: '500',
+	503: '503',
+}
+
+/** useRouteError + useParams 에서 에러 코드 추출 */
+const resolveErrorCode = (routeError: unknown, paramCode: string | undefined): ErrorCode => {
+	const fromStatus = (status: number): ErrorCode => STATUS_TO_CODE[status] ?? '404'
+	if (isRouteErrorResponse(routeError)) {
+		return fromStatus(routeError.status)
+	}
+	const err = routeError as { status?: number; statusCode?: number } | null | undefined
+	if (err && typeof err.status === 'number') return fromStatus(err.status)
+	if (err && typeof err.statusCode === 'number') return fromStatus(err.statusCode)
+	if (paramCode != null && ERROR_CODES.includes(paramCode as ErrorCode)) {
+		return paramCode as ErrorCode
+	}
+	return '404'
+}
 
 /** 숫자와 캐릭터 이미지가 겹치도록 음수 마진 사용 (absolute 없음) */
 const ErrorSection = ({ code }: { code: string }) => {
-	const [a, b, c] = code.split('')
+	const [a, , c] = code.split('')
 	return (
-		<div
-			className='flex items-center justify-center w-full gap-0 min-h-[288px] font-[Mitr]!'
-		>
-				<span className='text-[240px] leading-[120%] font-normal text-primary-400-normal font-[Mitr]!'>
-					{a}
-				</span>
-			<img
-				src={Character}
-				alt={b}
-				className='w-[242px] h-[207px] object-contain shrink-0 -mx-5 z-10'
-			/>
-			<span className='text-[240px] leading-[120%] font-normal text-primary-400-normal font-[Mitr]!'>
-				{c}
-			</span>
+		<div className='flex items-center justify-center w-full gap-0 min-h-[288px]' style={{ fontFamily: "'Mitr', sans-serif" }}>
+			<span className='text-[240px] leading-[120%] font-normal text-primary-400-normal'>{a}</span>
+			<img src={Character} alt='' className='w-[242px] h-[207px] object-contain shrink-0 -mx-5 z-10' />
+			<span className='text-[240px] leading-[120%] font-normal text-primary-400-normal'>{c}</span>
 		</div>
 	)
 }
@@ -48,14 +59,12 @@ const ERROR_CONFIG: Record<
 	},
 }
 
-const isValidErrorCode = (code: string | undefined): code is ErrorCode =>
-	code != null && ERROR_CODES.includes(code as ErrorCode)
-
 const ErrorPage = () => {
-	const { code } = useParams<{ code: string }>()
 	const navigate = useNavigate()
+	const routeError = useRouteError()
+	const { code: paramCode } = useParams<{ code: string }>()
 
-	const errorCode: ErrorCode = isValidErrorCode(code) ? code : '404'
+	const errorCode = resolveErrorCode(routeError, paramCode)
 	const config = ERROR_CONFIG[errorCode]
 
 	return (
