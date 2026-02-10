@@ -6,7 +6,7 @@ import { useCTAModal } from '@/stores/useCTAModal'
 import { OnboardingGuard } from './OnboardingGuard'
 import ExploreHeader from '../header/ExploreHeader'
 
-export const Layout = () => {
+export const MainLayout = () => {
 	const { isWorkspace } = useWorkspace()
 
 	const { isOpen: isCTAModalOpen, config: ctaModalConfig } = useCTAModal()

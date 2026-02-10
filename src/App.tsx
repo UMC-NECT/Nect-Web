@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router'
-import { Layout } from './components/layout/Layout'
+import { MainLayout } from './components/layout/MainLayout'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthLayout } from './components/layout/AuthLayout'
@@ -31,6 +31,7 @@ import AllProjects from './components/mypage/all-projects/AllProjects'
 import ErrorPage from './components/splash/ErrorPage'
 import SplashLayout from './components/layout/SplashLayout'
 import WorkspaceLayout from './components/layout/WorkSpaceLayout'
+import MyPageLayout from './components/layout/MyPageLayout'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -43,7 +44,7 @@ const queryClient = new QueryClient({
 
 const router = createBrowserRouter([
 	{
-		element: <Layout />,
+		element: <MainLayout />,
 		children: [
 			{
 				path: '/',
@@ -56,40 +57,6 @@ const router = createBrowserRouter([
 			{
 				path: '/matching-available/:userId',
 				element: <MatchingAvailablePage />
-			},
-			{
-				path: '/mypage',
-				element: <MyPage />,
-				children: [
-					{
-						index: true,
-						element: <Navigate to='/mypage/profile' replace />,
-					},
-					{
-						path: 'profile',
-						element: <ProfileSettings />,
-					},
-					{
-						path: 'idea-analysis',
-						element: <IdeaAnalysis />,
-					},
-					{
-						path: 'profile-analysis',
-						element: <ProfileAnalysis />,
-					},
-					{
-						path: 'projects',
-						element: <AllProjects />,
-					},
-					{
-						path: 'ongoing',
-						element: <OngoingProject />,
-					},
-					{
-						path: 'matching',
-						element: <MatchingStatus />,
-					},
-				],
 			},
 			{
 				path: '/projectList', // 모집 중인 프로젝트 전체
@@ -170,6 +137,45 @@ const router = createBrowserRouter([
 			{
 				path: '/error/:code',
 				element: <ErrorPage />,
+			},
+		],
+	},
+	{
+		element: <MyPageLayout />,
+		children: [
+			{
+				path: '/mypage',
+				element: <MyPage />,
+				children: [
+					{
+						index: true,
+						element: <Navigate to='/mypage/profile' replace />,
+					},
+					{
+						path: 'profile',
+						element: <ProfileSettings />,
+					},
+					{
+						path: 'idea-analysis',
+						element: <IdeaAnalysis />,
+					},
+					{
+						path: 'profile-analysis',
+						element: <ProfileAnalysis />,
+					},
+					{
+						path: 'projects',
+						element: <AllProjects />,
+					},
+					{
+						path: 'ongoing',
+						element: <OngoingProject />,
+					},
+					{
+						path: 'matching',
+						element: <MatchingStatus />,
+					},
+				],
 			},
 		],
 	}
