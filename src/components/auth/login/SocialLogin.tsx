@@ -4,6 +4,14 @@ import Button from '@/components/common/Button'
 import OR from '@/components/common/OR'
 
 const SocialLogin = () => {
+
+	const handleGoogleLogin = () => {
+		window.location.href = 'https://getnect.tech/oauth2/authorization/google'
+	}
+	const handleKakaoLogin = () => {
+		window.location.href = 'https://getnect.tech/oauth2/authorization/kakao'
+	}
+
 	return (
 		<>
 			{/* -- OR --  */}
@@ -11,12 +19,12 @@ const SocialLogin = () => {
 
 			{/* 소셜 로그인 */}
 			<div className='w-105 flex flex-col gap-3'>
-				<Button color='socialLogin' fullWidth>
+				<Button color='socialLogin' fullWidth onClick={handleGoogleLogin}>
 					<GoogleIcon className='w-5.25 h-5.25' />
 					Google 로그인
 				</Button>
 
-				<Button color='socialLogin' fullWidth className='bg-social-kakao border-none'>
+				<Button color='socialLogin' fullWidth className='bg-social-kakao border-none' onClick={handleKakaoLogin}>
 					<KakaoIcon className='w-5.25 h-5.25' />
 					카카오 로그인
 				</Button>
