@@ -72,15 +72,11 @@ const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoPro
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
                 {(() => {
-                    console.log('All fields:', projectData.fields?.fields);
-                    const selectedFields = projectData.fields?.fields?.filter(f => f.is_selected) || [];
-                    console.log('Selected fields:', selectedFields);
-                    console.log('Selected fields length:', selectedFields.length);
-                    
+                    const selectedFields = projectData.fields?.fields?.filter((f: { is_selected: boolean; field_name: string }) => f.is_selected) || []
                     if (selectedFields.length > 0) {
                         return (
                             <div className='flex gap-[10px] flex-wrap'>
-                                {selectedFields.map((field, index) => (
+                                {selectedFields.map((field: { is_selected: boolean; field_name: string }, index: number) => (
                                     <p key={index} className='px-4 h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
                                         {field.field_name}
                                     </p>
@@ -102,7 +98,7 @@ const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoPro
                 
                 {projectData.defaultInfo.team_roles && projectData.defaultInfo.team_roles.length > 0 ? (
                     <div className='space-y-4'>
-                        {projectData.defaultInfo.team_roles.map((role, index) => (
+                        {projectData.defaultInfo.team_roles.map((role: { role_field: string; required_count: number }, index: number) => (
                             <div key={index}>
                                 <div className='mb-2'>
                                     <span className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(role.role_field.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
@@ -132,9 +128,8 @@ const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoPro
                         {(() => {
                             // role을 파트별로 그룹화
                             const groupByPart = (roles: typeof projectData.defaultInfo.team_roles) => {
-                                const partMap: Record<string, { label: string; roles: typeof roles }> = {};
-                                
-                                roles.forEach(role => {
+                                const partMap: Record<string, { label: string; roles: typeof roles }> = {}
+                                roles.forEach((role: { role_field: string; required_count: number }) => {
                                     const field = role.role_field.toLowerCase();
                                     let partKey = '';
                                     let partLabel = '';
@@ -165,14 +160,14 @@ const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoPro
                             const grouped = groupByPart(projectData.defaultInfo.team_roles);
                             
                             return Object.entries(grouped).map(([key, { label, roles }]) => {
-                                const totalCount = roles.reduce((sum, role) => sum + role.required_count, 0);
+                                const totalCount = roles.reduce((sum: number, role: { role_field: string; required_count: number }) => sum + role.required_count, 0)
                                 
                                 return (
                                     <div key={key} className='flex items-center gap-6'>
                                         <p className='w-[90px] text-[16px] font-medium'>{label}</p>
                                         <p className='w-[50px] text-[16px]'>{totalCount}명</p>
                                         <div className='flex gap-2 flex-wrap'>
-                                            {roles.map((role, idx) => (
+                                            {roles.map((role: { role_field: string; required_count: number }, idx: number) => (
                                                 <span 
                                                     key={idx}
                                                     className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(role.role_field.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}

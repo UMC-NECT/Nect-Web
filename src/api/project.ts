@@ -1,6 +1,7 @@
-import { api } from "@/utils/AxiosInstance"
-import type { ResponsePartsDto } from "@/types/api/project"
-import type { ResponseUsersDto } from "@/types/api/project"
+import { api } from '@/utils/AxiosInstance'
+import type { ResponsePartsDto, ResponseUsersDto } from '@/types/api/project'
+
+export { getProjectDetail } from './project/detail'
 
 /** 현재 프로젝트에 설정된 파트 목록을 조회합니다. */
 export const getParts = async (projectId: string): Promise<ResponsePartsDto> => {

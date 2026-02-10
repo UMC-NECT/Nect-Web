@@ -26,7 +26,7 @@ const ProjectGoalsSection = ({ projectData }: ProjectGoalsSectionProps) => {
             <div className='relative'>
                 {hasPurposes ? (
                     <ul className={`space-y-2 list-disc list-outside text-[16px] pl-5 transition-all ${!isExpanded ? 'max-h-[150px] overflow-hidden' : ''}`}>
-                        {projectData.purposes.values.map((purpose, index) => (
+                        {projectData.purposes.values.map((purpose: string, index: number) => (
                             <li key={index}>{purpose}</li>
                         ))}
                     </ul>
@@ -48,7 +48,7 @@ const ProjectGoalsSection = ({ projectData }: ProjectGoalsSectionProps) => {
                                 <span className='text-red-500 text-[16px] ml-1'>*</span>
                             </h3>
                             <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
-                                {projectData.functions.values.map((func, index) => (
+                                {projectData.functions.values.map((func: string, index: number) => (
                                     <li key={index}>{func}</li>
                                 ))}
                             </ul>
@@ -62,7 +62,7 @@ const ProjectGoalsSection = ({ projectData }: ProjectGoalsSectionProps) => {
                                 <span className='text-red-500 text-[16px] ml-1'>*</span>
                             </h3>
                             <ul className='space-y-2 list-disc list-outside text-[16px] pl-5'>
-                                {projectData.serviceUsers.values.map((user, index) => (
+                                {projectData.serviceUsers.values.map((user: string, index: number) => (
                                     <li key={index}>{user}</li>
                                 ))}
                             </ul>
@@ -76,7 +76,7 @@ const ProjectGoalsSection = ({ projectData }: ProjectGoalsSectionProps) => {
                         </h3>
                         {hasPlanFiles ? (
                             <div>
-                                {projectData.planFiles.files.map((file, index) => (
+                                {projectData.planFiles.files.map((file: { name: string }, index: number) => (
                                     <div key={index} className='mb-2'>
                                         <img src={clip} alt="Clip" className='inline-block w-[18px] h-[18px] mr-[10px]' />
                                         <span className='text-[16px] text-primary-500-normal font-semibold'>

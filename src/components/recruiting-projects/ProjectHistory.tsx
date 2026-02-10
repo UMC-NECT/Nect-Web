@@ -36,7 +36,7 @@ const ProjectHistory = ({ projectData, getPositionStyle, variant = 'default' }: 
             <h3 className='font-bold text-[20px] mb-6'>팀원들의 프로젝트 히스토리</h3>
             
             <div className='grid grid-cols-2 gap-6'>
-                {teamMemberProjects.map((project, index) => (
+                {teamMemberProjects.map((project: { project_id: number; title: string; description: string | null; created_at: string; ended_at: string | null; image_name: string | null }) => (
                     <ProjectHistoryCard
                         key={project.project_id}
                         positions={[]} // API에서 포지션 정보가 없으므로 빈 배열

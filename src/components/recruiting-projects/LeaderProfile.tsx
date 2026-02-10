@@ -1,12 +1,10 @@
-import bar from '@/assets/icons/common/Bar.svg';
-import type { ProjectDetailDto } from '@/types/api/project';
+import type { ProjectDetailDto } from '@/types/api/project'
 
 interface LeaderProfileProps {
-    projectData: ProjectDetailDto;
-    getPositionStyle: (position: string) => string;
+	projectData: ProjectDetailDto
 }
 
-const LeaderProfile = ({ projectData, getPositionStyle }: LeaderProfileProps) => {
+const LeaderProfile = ({ projectData }: LeaderProfileProps) => {
     const leader = projectData.defaultInfo?.leader;
 
     if (!leader) {

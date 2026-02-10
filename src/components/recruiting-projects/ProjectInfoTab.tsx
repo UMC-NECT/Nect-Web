@@ -15,7 +15,7 @@ const ProjectInfoTab = ({ projectData, getPositionStyle, variant = 'default' }: 
         <div>
             <ProjectBasicInfo projectData={projectData} getPositionStyle={getPositionStyle} />
             <ProjectGoalsSection projectData={projectData} />
-            <LeaderProfile projectData={projectData} getPositionStyle={getPositionStyle} />
+            <LeaderProfile projectData={projectData} />
             <ProjectHistory projectData={projectData} getPositionStyle={getPositionStyle} variant={variant} />
         </div>
     );
