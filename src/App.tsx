@@ -48,6 +48,7 @@ const queryClient = new QueryClient({
 const router = createBrowserRouter([
 	{
 		element: <MainLayout />,
+		errorElement: <ErrorPage />,
 		children: [
 			{ path: '/', element: <MainPage /> },
 			{ path: '/recruiting-projects/:projectId', element: <RecruitingProjectsPage /> },
@@ -62,6 +63,7 @@ const router = createBrowserRouter([
 				<WorkspaceLayout />
 			</ProtectedRoute>
 		),
+		errorElement: <ErrorPage />,
 		children: [
 			{
 				path: '/week-mission',
@@ -91,6 +93,7 @@ const router = createBrowserRouter([
 				<AnalysisLayout />
 			</ProtectedRoute>
 		),
+		errorElement: <ErrorPage />,
 		children: [
 			{
 				path: '/profile-analyze',
@@ -108,6 +111,7 @@ const router = createBrowserRouter([
 	},
 	{
 		element: <AuthLayout />,
+		errorElement: <ErrorPage />,
 		children: [
 			{
 				path: '/login',
@@ -129,6 +133,7 @@ const router = createBrowserRouter([
 	},
 	{
 		element: <SplashLayout />,
+		errorElement: <ErrorPage />,
 		children: [
 			{
 				path: '/error/:code',
@@ -142,6 +147,7 @@ const router = createBrowserRouter([
 				<MyPageLayout />
 			</ProtectedRoute>
 		),
+		errorElement: <ErrorPage />,
 		children: [
 			{
 				path: '/mypage',

@@ -85,6 +85,13 @@ api.interceptors.response.use(
 			})
 		}
 
+		// 에러 코드별 에러 페이지 리다이렉트 (404, 408, 500, 503)
+		const status = error.response?.status
+		const redirectErrorCodes = [404, 408, 500, 503] as const
+		if (status && redirectErrorCodes.includes(status as (typeof redirectErrorCodes)[number])) {
+			window.location.href = `/error/${status}`
+		}
+
 		return Promise.reject(error)
 	}
 )
