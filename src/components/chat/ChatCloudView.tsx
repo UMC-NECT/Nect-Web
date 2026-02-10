@@ -1,37 +1,107 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ChatSidebar from './ChatSidebar'
 import ChatHeader from './ChatHeader'
 import CloudImageViewer from './CloudImageViewer'
+import { getChatRooms, getChatRoomAlbum } from '@/api/chat'
+import { useQuery } from '@tanstack/react-query'
 
 interface CloudRoom {
-	id: string
+	id: number
 	name: string
-	items: number // 그리드 아이템 개수 (6개면 2x3, 3개면 1x3)
+	files: Array<{
+		file_name: string
+		file_url: string
+		created_at: string
+	}>
 }
 
 interface ChatCloudViewProps {
 	onBack?: () => void
+	projectId?: number
 }
 
-const ChatCloudView = ({ onBack }: ChatCloudViewProps) => {
+const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 	const [selectedImage, setSelectedImage] = useState<string | null>(null)
+	const [cloudRooms, setCloudRooms] = useState<CloudRoom[]>([])
+	const [isLoading, setIsLoading] = useState(false)
 
-	// 예시 데이터
-	const cloudRooms: CloudRoom[] = [
-		{ id: '1', name: '넥트 전체방', items: 6 }, // 2x3 그리드
-		{ id: '2', name: '디자인팀', items: 3 }, // 1x3 그리드
-		{ id: '3', name: '디자인팀', items: 3 }, // 1x3 그리드
-		{ id: '4', name: '디자인팀', items: 3 }, // 1x3 그리드
-	]
+	// 채팅방 목록 조회
+	const { data: chatRoomsData } = useQuery({
+		queryKey: ['chatRooms', projectId],
+		queryFn: () => getChatRooms(projectId),
+		enabled: !!projectId,
+	})
 
-	const renderGrid = (items: number) => {
+	// 각 채팅방의 앨범 데이터 가져오기
+	useEffect(() => {
+		const loadAlbums = async () => {
+			if (!chatRoomsData?.body) return
+
+			setIsLoading(true)
+			try {
+				const rooms = chatRoomsData.body
+				const albumPromises = rooms.map(async (room) => {
+					const roomId = (room as any).room_id || room.roomId
+					if (!roomId) return null
+
+					try {
+						const albumResponse = await getChatRoomAlbum(roomId, { page: 0, size: 6 })
+						if (albumResponse.body && albumResponse.body.files.length > 0) {
+							return {
+								id: roomId,
+								name: albumResponse.body.room_name || (room as any).room_name || room.roomName || '',
+								files: albumResponse.body.files,
+							}
+						}
+					} catch (error) {
+						console.error(`채팅방 ${roomId} 앨범 로드 실패:`, error)
+					}
+					return null
+				})
+
+				const albums = await Promise.all(albumPromises)
+				const validAlbums = albums.filter((album): album is CloudRoom => album !== null)
+				setCloudRooms(validAlbums)
+			} catch (error) {
+				console.error('앨범 로드 실패:', error)
+			} finally {
+				setIsLoading(false)
+			}
+		}
+
+		loadAlbums()
+	}, [chatRoomsData])
+
+	const renderGrid = (files: CloudRoom['files']) => {
+		// 최대 6개까지만 표시 (2x3 그리드)
+		const displayFiles = files.slice(0, 6)
+		const emptySlots = 6 - displayFiles.length
+
 		return (
 			<div className="grid grid-cols-3 gap-[2px] w-[340px]">
-				{Array.from({ length: items }).map((_, index) => (
+				{displayFiles.map((file, index) => (
 					<button
-						key={index}
-						onClick={() => setSelectedImage('https://placehold.co/432x300')}
-						className="w-[112px] h-[112px] bg-neutral-200 rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+						key={`${file.file_url}-${index}`}
+						onClick={() => setSelectedImage(file.file_url)}
+						className="w-[112px] h-[112px] rounded-md cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
+					>
+						<img
+							src={file.file_url}
+							alt={file.file_name}
+							className="w-full h-full object-cover"
+							onError={(e) => {
+								// 이미지 로드 실패 시 플레이스홀더 표시
+								const target = e.target as HTMLImageElement
+								target.src = 'https://placehold.co/112x112'
+							}}
+						/>
+					</button>
+				))}
+				{/* 빈 슬롯 채우기 */}
+				{Array.from({ length: emptySlots }).map((_, index) => (
+					<div
+						key={`empty-${index}`}
+						className="w-[112px] h-[112px] bg-neutral-200 rounded-md"
 					/>
 				))}
 			</div>
@@ -59,23 +129,33 @@ const ChatCloudView = ({ onBack }: ChatCloudViewProps) => {
 				<div className="flex-1 overflow-y-auto overflow-x-hidden notification-scrollbar relative">
 					{/* 컨텐츠 */}
 					<div className="absolute p-5 w-full">
-						<div className="flex flex-col gap-[24px]">
-							{cloudRooms.map((room) => (
-								<div key={room.id} className="flex flex-col gap-[8px]">
-									{/* 섹션 헤더 */}
-									<div className="flex items-center justify-between px-[6px]">
-										<div className="text-neutral-900 body-1 font-semibold leading-normal w-[73px]">
-											{room.name}
+						{isLoading ? (
+							<div className="flex justify-center items-center py-8">
+								<span className="text-neutral-500">앨범을 불러오는 중...</span>
+							</div>
+						) : cloudRooms.length === 0 ? (
+							<div className="flex justify-center items-center py-8">
+								<span className="text-neutral-500">앨범이 없습니다.</span>
+							</div>
+						) : (
+							<div className="flex flex-col gap-[24px]">
+								{cloudRooms.map((room) => (
+									<div key={room.id} className="flex flex-col gap-[8px]">
+										{/* 섹션 헤더 */}
+										<div className="flex items-center justify-between px-[6px]">
+											<div className="text-neutral-900 body-1 font-semibold leading-normal w-[73px]">
+												{room.name}
+											</div>
+											<button className="h-[17px] w-[31px] text-neutral-500 caption-1 font-medium leading-[1.4] tracking-[-0.24px]">
+												더보기
+											</button>
 										</div>
-										<button className="h-[17px] w-[31px] text-neutral-500 caption-1 font-medium leading-[1.4] tracking-[-0.24px]">
-											더보기
-										</button>
+										{/* 그리드 */}
+										{renderGrid(room.files)}
 									</div>
-									{/* 그리드 */}
-									{renderGrid(room.items)}
-								</div>
-							))}
-						</div>
+								))}
+							</div>
+						)}
 					</div>
 				</div>
 			</div>
@@ -87,15 +167,12 @@ const ChatCloudView = ({ onBack }: ChatCloudViewProps) => {
 						imageUrl={selectedImage}
 						onClose={() => setSelectedImage(null)}
 						onDownload={() => {
-							console.log('다운로드:', selectedImage)
 							// TODO: 다운로드 로직 구현
 						}}
 						onForward={() => {
-							console.log('전달:', selectedImage)
 							// TODO: 전달 로직 구현
 						}}
 						onDelete={() => {
-							console.log('삭제:', selectedImage)
 							// TODO: 삭제 로직 구현
 							setSelectedImage(null)
 						}}

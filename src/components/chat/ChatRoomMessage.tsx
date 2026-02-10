@@ -10,11 +10,14 @@ interface ChatRoomMessageProps {
 	readCount?: number
 	role?: string
 	profileImage?: string
+	fileId?: number
 	fileAttachment?: {
 		fileName: string
 		fileSize: string
 		fileType: 'PDF' | 'Figma' | 'Word' | 'Excel' | 'PPT' | 'Zip' | 'JPG' | 'PNG' | 'JPEG' | 'MOV' | 'MP4' | 'Etc'
 	}
+	onRegisterToSharedDocs?: () => void
+	onDeleteFile?: () => void
 }
 
 export const ChatRoomMessage = ({
@@ -25,8 +28,13 @@ export const ChatRoomMessage = ({
 	readCount,
 	role,
 	profileImage,
+	fileId,
 	fileAttachment,
+	onRegisterToSharedDocs,
+	onDeleteFile,
 }: ChatRoomMessageProps) => {
+	// 현재 컴포넌트에서는 fileId를 직접 사용하지 않지만, 상위 컴포넌트에서 전달받아야 하므로 유지합니다.
+	void fileId
 	// 파일 첨부 메시지
 	if (fileAttachment) {
 		return (
@@ -40,6 +48,8 @@ export const ChatRoomMessage = ({
 				fileName={fileAttachment.fileName}
 				fileSize={fileAttachment.fileSize}
 				fileType={fileAttachment.fileType}
+				onRegisterToSharedDocs={onRegisterToSharedDocs}
+				onDelete={onDeleteFile}
 			/>
 		)
 	}
