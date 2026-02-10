@@ -137,8 +137,9 @@ const TeamBoardPage = () => {
 
 		return overview.mission_progress.teams.map((team, index) => {
 			const fieldColor = getFieldColor(team.field.type, index)
-			const score = Math.round(team.completion_rate * 100)
-			const maxScore = 100
+			// completed_count를 score로, total_count를 maxScore로 사용
+			const score = team.completed_count
+			const maxScore = team.total_count
 
 			return {
 				label: getFieldLabel(team.field.type, team.field.custom_name),
@@ -152,11 +153,21 @@ const TeamBoardPage = () => {
 	}, [overview])
 
 	/**
-	 * 전체 완료율 계산 (Total 점수)
+	 * 전체 미션 완료 개수 (Total completed count)
+	 * API 스펙: total.completed_count
 	 */
-	const totalScore = useMemo(() => {
+	const totalCompletedCount = useMemo(() => {
 		if (!overview?.mission_progress?.total) return 0
-		return Math.round(overview.mission_progress.total.completion_rate * 100)
+		return overview.mission_progress.total.completed_count
+	}, [overview])
+
+	/**
+	 * 전체 미션 총 개수 (Total count)
+	 * API 스펙: total.total_count
+	 */
+	const totalCount = useMemo(() => {
+		if (!overview?.mission_progress?.total) return 0
+		return overview.mission_progress.total.total_count
 	}, [overview])
 
 	/**
@@ -492,9 +503,9 @@ const TeamBoardPage = () => {
 					<div className="flex gap-6 h-[448px]">
 						{/* RadarChartCard (392x448) */}
 						<RadarChartCard 
-							title="팀 역할별 역량" 
-							totalScore={totalScore} 
-							maxScore={100} 
+							title="팀 미션 진행 현황" 
+							totalScore={totalCompletedCount} 
+							maxScore={totalCount} 
 							data={radarChartData} 
 						/>
 						{/* ContentListCard 두 개 (세로 배치, 392x216 각각) */}
