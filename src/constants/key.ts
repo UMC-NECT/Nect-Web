@@ -45,10 +45,10 @@ export const QUERY_KEY = {
 =======
 	mypage: {
 		all: ['mypage'] as const,
-		profile: () => [...QUERY_KEY.mypage.all, 'profile'] as const,
-		project: () => [...QUERY_KEY.mypage.all, 'project'] as const,
-		analysis: (page?: string) => [...QUERY_KEY.mypage.all, 'analysis', page] as const,
-		profileAnalysis: () => [...QUERY_KEY.mypage.all, 'profileAnalysis'] as const,
+		profile: () => [...QUERY_KEY.mypage.all, 'profile'] as const, // 내 프로필 설정
+		project: () => [...QUERY_KEY.mypage.all, 'project'] as const, // 진행 중인 프로젝트, 모든 프로젝트
+		analysis: (page?: string) => [...QUERY_KEY.mypage.all, 'analysis', page] as const, // 나의 아이디어 분석
+		profileAnalysis: () => [...QUERY_KEY.mypage.all, 'profileAnalysis'] as const, // 나의 프로필 분석
 	},
 }
 >>>>>>> b10067a (feat: 내프로필설정 정보 불러오기 api 연동)

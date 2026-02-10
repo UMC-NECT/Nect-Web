@@ -1,27 +1,57 @@
-import { useFieldArray, type Control, type UseFormGetValues, type UseFormSetValue, type UseFormWatch } from 'react-hook-form'
+import { type Control, type UseFormSetValue, type UseFormWatch } from 'react-hook-form'
 import { useCallback } from 'react'
 
-import { MOCK_PROJECT_DATA, type ProjectData } from '@/mocks/ongoingProjectData'
+import { type ProjectData } from '@/mocks/ongoingProjectData'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 import ProjectBasicInfo from './ProjectBasicInfo'
 import Section01ProjectField from './sections/Section01ProjectField'
-import Section02RecruitmentInfo from './sections/Section02RecruitmentInfo'
+import Section02RecruitmentInfo, { type RecruitmentLocalItem } from './sections/Section02RecruitmentInfo'
 import Section03TeamComposition from './sections/Section03TeamComposition'
 import Section08LeaderProfile from './sections/Section08LeaderProfile'
 import FormBulletTextArea from '@/components/common/FormBulletTextArea'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import Section07ProjectFiles from './sections/Section07ProjectFiles'
 
+interface LeaderInfo {
+	name: string
+	nickname: string
+	role: string
+	bio: string
+	profileImageFileName: string
+}
+
+interface TeamRole {
+	role: string
+	targetCount: number
+	members: Array<{ id: number; name: string }>
+}
+
 interface IProjectManagementView {
 	projectData: ProjectData
 	control: Control<ProjectSettingsType>
-	getValues: UseFormGetValues<ProjectSettingsType>
 	setValue: UseFormSetValue<ProjectSettingsType>
 	watch: UseFormWatch<ProjectSettingsType>
+	selectedField: string
+	onSelectField: (value: string) => void
+	projectId: string
+	onRecruitmentDataChange?: (data: RecruitmentLocalItem[]) => void
+	leaderInfo: LeaderInfo | null
+	teamRoles: TeamRole[]
 }
 
-const ProjectManagementView = ({ control, getValues, setValue, watch }: IProjectManagementView) => {
+const ProjectManagementView = ({
+	projectData,
+	control,
+	setValue,
+	watch,
+	selectedField,
+	onSelectField,
+	projectId,
+	onRecruitmentDataChange,
+	leaderInfo,
+	teamRoles,
+}: IProjectManagementView) => {
 	const recruitStatus = watch('recruitmentStatus') ?? '모집 전'
 	const openPartSettings = usePartSettingsModal(state => state.open)
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
@@ -30,26 +60,6 @@ const ProjectManagementView = ({ control, getValues, setValue, watch }: IProject
 	const handleOpenPartSettings = useCallback(() => {
 		openPartSettings(teamMembersByRole)
 	}, [openPartSettings, teamMembersByRole])
-
-	// 프로젝트 분야 토글
-	const toggleField = (field: string) => {
-		const currentFields = getValues('selectedFields') || []
-		const newFields = currentFields.includes(field) ? currentFields.filter(f => f !== field) : [...currentFields, field]
-		setValue('selectedFields', newFields, { shouldDirty: true, shouldValidate: true })
-	}
-
-	// 섹션 02. 모집 정보 배열 필드 관리
-	const { fields, append } = useFieldArray({
-		control,
-		name: 'recruitmentInfo',
-	})
-
-	// 목데이터 임시 작업용
-	const projectBasicInfoData = MOCK_PROJECT_DATA
-
-	const handleAddRecruitmentItem = () => {
-		append({ role: 'PM', description: '' })
-	}
 
 	const handleRecruitmentStatusChange = (status: '모집 전' | '모집 중' | '모집 완료') => {
 		setValue('recruitmentStatus', status)
@@ -60,7 +70,7 @@ const ProjectManagementView = ({ control, getValues, setValue, watch }: IProject
 			{/* 썸네일 + 기본 정보  */}
 			<div id='project-basic-info'>
 				<ProjectBasicInfo
-					projectData={projectBasicInfoData}
+					projectData={projectData}
 					recruitStatus={recruitStatus}
 					onStatusChange={handleRecruitmentStatusChange}
 				/>
@@ -68,16 +78,16 @@ const ProjectManagementView = ({ control, getValues, setValue, watch }: IProject
 
 			{/* 섹션 01. 프로젝트 분야 */}
 			<div id='section-01'>
-				<Section01ProjectField selectedFields={getValues('selectedFields') || []} onToggleField={toggleField} />
+				<Section01ProjectField selectedField={selectedField} onSelectField={onSelectField} />
 			</div>
 
 			{/* 섹션 02. 모집 정보 */}
 			<div id='section-02'>
-				<Section02RecruitmentInfo control={control} fields={fields} onAddItem={handleAddRecruitmentItem} />
+				<Section02RecruitmentInfo projectId={projectId} onDataChange={onRecruitmentDataChange} setValue={setValue} />
 			</div>
 
 			{/* 섹션 03. 팀 구성 (읽기전용) */}
-			<Section03TeamComposition teamMembersByRole={teamMembersByRole} onEditClick={handleOpenPartSettings} />
+			<Section03TeamComposition teamRoles={teamRoles} onEditClick={handleOpenPartSettings} />
 
 			{/* 섹션 04. 프로젝트 목표 */}
 			<div id='section-04'>
@@ -112,12 +122,12 @@ const ProjectManagementView = ({ control, getValues, setValue, watch }: IProject
 
 			{/* 섹션 07. 프로젝트 세부 기획 파일 */}
 			<div id='section-07'>
-				<Section07ProjectFiles control={control} setValue={setValue} watch={watch} />
+				<Section07ProjectFiles control={control} setValue={setValue} watch={watch} projectId={projectId} />
 			</div>
 
 			{/* 섹션 08. 리더 프로필 (읽기전용) */}
 			<div id='section-08'>
-				<Section08LeaderProfile />
+				<Section08LeaderProfile leaderInfo={leaderInfo} hasTag={false} />
 			</div>
 		</div>
 	)

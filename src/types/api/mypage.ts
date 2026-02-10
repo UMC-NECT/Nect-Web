@@ -1,5 +1,7 @@
 import type { CommonResponse } from './commonResponse'
 
+type RoleType = 'BACKEND' | 'FRONTEND' | 'DESIGNER' | string
+
 // === 내 프로필 설정 ==========================================================
 
 // (내 프로필 설정) 스킬들
@@ -177,13 +179,109 @@ export type ResponseProfileAnalysisDto = CommonResponse<{
 	]
 }>
 // === 진행 중인 프로젝트 ==========================================================
-// MINO-TODO: 1개 (팀 히스토리 조회)
-// MINO-TODO: 3개 (프젝 조회, 멤버 파트변경, 강퇴)
+// 섹션 01. 프로젝트 분야 - 조회
+export type ResponseGetProfileProjectsDto = {
+	project_id: string | null
+	fields: [
+		{
+			field_name: string
+			is_selected: boolean
+		}[],
+	]
+}
+// 섹션 01. 프로젝트 분야 - 수정
+export type RequestMypageProjectFieldDto = {
+	projectId: string
+	field: string
+}
+
+// 섹션 02. 프로젝트 모집정보
+type ProjectRecruitments = {
+	recruitmentId: number
+	roleField: RoleType
+	customField: null
+	capacity: number
+	requirements: string[]
+}
+// 섹션 02. 프로젝트 모집정보 - 조회
+export type ResponseMypageProjectRecruitments = [ProjectRecruitments[]]
+
+// 섹션 02. 프로젝트 모집정보 - 생성
+export type RequestMypageRecruitmentCreateDto = {
+	roleField: string
+	capacity: number
+	requirements: string[]
+}
+
+export type ResponseMypageRecruitments = {
+	roleField: RoleType
+	capacity: number
+	requirements: string[]
+}
+
+// 섹션 02. 프로젝트 모집정보 - 수정 (리더만 가능)
+export type RequestMypageRecruitmentUpdateDto = {
+	roleField: RoleType
+	capacity: number
+	requirements: string[]
+}
+
+// 섹션 02. 프로젝트 모집정보 - 수정 (리더만 가능)
+export type ResponseMypageRecruitmentUpdateDto = CommonResponse<{
+	recruitmentId: number
+	roleField: RoleType
+	customField: null
+	capacity: number
+	requirements: string[]
+}>
+
+// 섹션 03. 팀역할 타입
+export type TeamRoleType = {
+	id: number
+	role_field: RoleType
+	custom_role_field_name: string
+	label: string
+	required_count: number
+}
+// 섹션 03. 프로젝트 파트/팀원 구성 - 조회
+export type ResponseMypageTeamRoles = CommonResponse<{
+	parts: [TeamRoleType[]]
+}>
+
+// 섹션 04. 프로젝트 목표 - 조회
+export type ResponseProjectPurpose = CommonResponse<{
+	project_id: number
+	values: string[]
+}>
+
+// 섹션 07. 파일 타입
+export type PlanFileTypeEnum = 'FILE' | 'LINK'
+
+type FileType = {
+	plan_file_id: number
+	name: string
+	file_name: string | null
+	plan_file_type: PlanFileTypeEnum
+	file_ext: string | null
+	link?: string | null
+	file_url?: string | null
+}
+
+// 섹션 07. 프로젝트 세부 기획 파일 - 요청 타입
+export type ProjectPlanFileRequest =
+	| { name: string; planFileType: 'FILE'; file: File | Blob }
+	| { name: string; planFileType: 'LINK'; link: string }
+
+// 섹션 07. 프로젝트 세부 기획 파일 - 조회
+export type ResponseProjectPlanFileDto = CommonResponse<{
+	project_id: number
+	files: [FileType[]]
+}>
 
 // === 모든 프로젝트 ==========================================================
 // (모든 프로젝트) 프로젝트 역할 형식
 export type MypageProjectRoleType = {
-	role_field: 'BACKEND' | 'FRONTEND' | 'DESIGNER' | string
+	role_field: RoleType
 	required_count: number
 }
 // (모든 프로젝트) 프로젝트 형식

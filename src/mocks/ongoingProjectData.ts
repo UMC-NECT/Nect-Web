@@ -31,12 +31,7 @@ export const MOCK_PROJECT_DATA: ProjectData = {
  */
 export type RecruitmentInfo = RecruitmentInfoType
 
-export const MOCK_RECRUITMENT_INFO: RecruitmentInfo[] = [
-	{
-		role: 'PM',
-		description: '',
-	},
-]
+export const MOCK_RECRUITMENT_INFO: RecruitmentInfo[] = []
 
 /**
  * 섹션 04. 프로젝트 목표

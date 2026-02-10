@@ -1,14 +1,20 @@
 import Button from '@/components/common/Button'
 import PencilIcon from '@/assets/icons/mypage/edit-pencil.svg?react'
 import RoleTag from '@/components/mypage/RoleTag'
-import type { TeamMembersByRole } from '@/types/mypage/ongoindProject'
+import type { RoleType } from '@/types/mypage/ongoindProject'
+
+interface TeamRole {
+	role: string
+	targetCount: number
+	members: Array<{ id: number; name: string }>
+}
 
 interface ISection03TeamComposition {
-	teamMembersByRole: TeamMembersByRole[]
+	teamRoles: TeamRole[]
 	onEditClick: () => void
 }
 
-const Section03TeamComposition = ({ teamMembersByRole, onEditClick }: ISection03TeamComposition) => {
+const Section03TeamComposition = ({ teamRoles, onEditClick }: ISection03TeamComposition) => {
 	// 카테고리별로 그룹화
 	const categoryMap: Record<string, string> = {
 		PM: '기획',
@@ -17,9 +23,9 @@ const Section03TeamComposition = ({ teamMembersByRole, onEditClick }: ISection03
 		Backend: '백엔드',
 	}
 
-	const categoryGroups: Record<string, TeamMembersByRole[]> = {}
+	const categoryGroups: Record<string, TeamRole[]> = {}
 
-	teamMembersByRole.forEach(team => {
+	teamRoles.forEach(team => {
 		const category = categoryMap[team.role] || '기타'
 		if (!categoryGroups[category]) {
 			categoryGroups[category] = []
@@ -56,7 +62,7 @@ const Section03TeamComposition = ({ teamMembersByRole, onEditClick }: ISection03
 							{/* 태그들 */}
 							<div className='flex items-center gap-2.5'>
 								{teams.map(team => (
-									<RoleTag key={team.role} role={team.role} showTotal={false} />
+									<RoleTag key={team.role} role={team.role as RoleType} showTotal={false} />
 								))}
 							</div>
 						</div>

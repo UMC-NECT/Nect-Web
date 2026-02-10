@@ -1,5 +1,6 @@
 import type { ColorType } from '@/types/mypage/ongoindProject'
 import { cn } from '@/utils/cn'
+import { formatRoleName } from '@/utils/roleColor'
 
 interface IRoleTag extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	role?: string
@@ -14,15 +15,19 @@ const getRoleColor = (role: string): ColorType => {
 	switch (role) {
 		case 'PM':
 		case '기획':
+		case 'PLANNING':
 			return 'purple'
 		case 'Design':
 		case 'UI/UX':
+		case 'PRODUCT':
 			return 'pink'
 		case 'Backend':
 		case '백엔드':
+		case 'BACKEND':
 			return 'blue'
 		case 'Frontend':
 		case '프론트엔드':
+		case 'FRONTEND':
 			return 'green'
 		default:
 			return 'gray'
@@ -30,6 +35,7 @@ const getRoleColor = (role: string): ColorType => {
 }
 
 const RoleTag = ({ role = '역할', showTotal = true, total = 0, className, ...props }: IRoleTag) => {
+	const displayRole = role === role.toUpperCase() ? formatRoleName(role) : role
 	const color = getRoleColor(role)
 
 	const colorStyles = {
@@ -42,7 +48,7 @@ const RoleTag = ({ role = '역할', showTotal = true, total = 0, className, ...p
 
 	return (
 		<span className={cn(base, colorStyles[color], className)} {...props}>
-			{role}
+			{displayRole}
 			&nbsp;{showTotal ? <>({total})</> : ''}
 		</span>
 	)
