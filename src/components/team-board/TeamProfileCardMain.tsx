@@ -148,8 +148,7 @@ const TeamProfileCardMain = ({
 					{/* 타이머 */}
 					<div className="pr-1 inline-flex justify-start items-center gap-1">
 						{/* 새로고침 아이콘 */}
-						<div className="w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center">
-							<ResetIcon className="w-6 h-6 text-neutral-300" />
+						<div className="w-7 h-7 rounded-lg flex justify-center items-center">
 						</div>
 						<div className={`text-right justify-center heading-1 font-semibold ${
 							isWorking ? 'text-primary-500-normal' : 'text-neutral-400'
