@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import type { Mission } from '@/components/week-mission/MissionBoard'
+import type { Mission } from '@/types/mission'
 import { calculateDateSpan, parseDate } from '@/utils/dateUtils'
 import { addDays } from 'date-fns'
 
@@ -12,7 +12,7 @@ interface UseMissionDragResizeProps {
 	gridContainerRef: React.RefObject<HTMLDivElement | null>
 	boardScrollRef: React.RefObject<HTMLDivElement | null>
 	beforeWidth?: number // 가상화 앞쪽 여백
-	onMissionUpdate?: (missionId: number, updates: { createdAt?: string; dueDate?: string; sectionIndex?: number }) => void
+	onMissionUpdate?: (missionId: number, updates: { start_date?: string; dead_line?: string; sectionIndex?: number }) => void
 }
 
 export const useMissionDragResize = ({
@@ -31,7 +31,7 @@ export const useMissionDragResize = ({
 	// 리사이즈 중 임시 위치 (시각적 피드백용)
 	const [resizeTempPosition, setResizeTempPosition] = useState<number | null>(null)
 	// 드래그/리사이즈 시작 시점의 원래 위치 저장
-	const dragStartPositionRef = useRef<{ columnStart: number; sectionIndex: number; createdAt: string; dueDate: string; clickOffset: number } | null>(null)
+	const dragStartPositionRef = useRef<{ columnStart: number; sectionIndex: number; start_date: string; dead_line: string; clickOffset: number } | null>(null)
 	const resizeStartPositionRef = useRef<{ columnStart: number; dueDateColumnIndex: number } | null>(null)
 	// 드래그/리사이즈 직후 클릭 방지용 ref
 	const justDraggedRef = useRef<boolean>(false)
@@ -107,7 +107,7 @@ export const useMissionDragResize = ({
 	// 드래그 핸들러
 	const handleMissionDragStart = useCallback(
 		(missionId: number, e: React.MouseEvent) => {
-			const mission = positionedMissionsRef.current.find(m => m.id === missionId)
+			const mission = positionedMissionsRef.current.find(m => m.process_id === missionId)
 			if (mission && mission.columnStart) {
 				const clickColumnIndex = getGridColumnFromX(e.clientX)
 				const missionStartColumnIndex = mission.columnStart - 1
@@ -116,8 +116,8 @@ export const useMissionDragResize = ({
 				dragStartPositionRef.current = {
 					columnStart: mission.columnStart,
 					sectionIndex: mission.sectionIndex,
-					createdAt: mission.createdAt,
-					dueDate: mission.dueDate,
+					start_date: mission.start_date,
+					dead_line: mission.dead_line,
 					clickOffset,
 				}
 			}
@@ -174,8 +174,8 @@ export const useMissionDragResize = ({
 
 			if (newCreatedAt) {
 				const originalSpan = calculateDateSpan(
-					dragStartPositionRef.current.createdAt,
-					dragStartPositionRef.current.dueDate
+					dragStartPositionRef.current.start_date,
+					dragStartPositionRef.current.dead_line
 				)
 
 				const newCreatedAtDate = parseDate(newCreatedAt)
@@ -185,11 +185,11 @@ export const useMissionDragResize = ({
 					date.getMonth() === newDueDateDate.getMonth() &&
 					date.getDate() === newDueDateDate.getDate()
 				)
-				const newDueDate = newDueDateIndex !== -1 ? getDateStringFromIndex(newDueDateIndex) : null
+				const newDeadLine = newDueDateIndex !== -1 ? getDateStringFromIndex(newDueDateIndex) : null
 
 				onMissionUpdateRef.current(draggingMissionId, {
-					createdAt: newCreatedAt,
-					dueDate: newDueDate || dragStartPositionRef.current.dueDate,
+					start_date: newCreatedAt,
+					dead_line: newDeadLine || dragStartPositionRef.current.dead_line,
 					sectionIndex,
 				})
 			}
@@ -212,10 +212,10 @@ export const useMissionDragResize = ({
 
 	// 리사이즈 핸들러
 	const handleMissionResizeStart = useCallback((missionId: number) => {
-		const mission = positionedMissionsRef.current.find(m => m.id === missionId)
+		const mission = positionedMissionsRef.current.find(m => m.process_id === missionId)
 		if (mission && mission.columnStart) {
 			const startCol = mission.columnStart - 1
-			const colSpan = calculateDateSpan(mission.createdAt, mission.dueDate)
+			const colSpan = calculateDateSpan(mission.start_date, mission.dead_line)
 			const dueDateColumnIndex = startCol + colSpan - 1
 
 			resizeStartPositionRef.current = {
@@ -255,7 +255,7 @@ export const useMissionDragResize = ({
 
 			if (newDueDate) {
 				onMissionUpdateRef.current(resizingMissionId, {
-					dueDate: newDueDate,
+					dead_line: newDueDate,
 				})
 			}
 		}

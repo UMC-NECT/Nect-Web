@@ -24,6 +24,8 @@ interface FileItemProps {
 	onClick?: () => void
 	onDelete?: () => void
 	onDownload?: () => void
+	/** true면 더보기 메뉴(삭제 등) 비활성화 */
+	disableDelete?: boolean
 	className?: string
 }
 
@@ -83,7 +85,7 @@ const getLinkIcon = (url: string) => {
 	return EtcIcon
 }
 
-const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete, onDownload, className }: FileItemProps) => {
+const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete, onDownload, disableDelete = false, className }: FileItemProps) => {
 	const [editName, setEditName] = useState('')
 	const [editUrl, setEditUrl] = useState('')
 	const [droppedFile, setDroppedFile] = useState<File | null>(null)
@@ -176,6 +178,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 				name: editName.trim(),
 				fileName: droppedFile.name,
 				url: blobUrl,
+				rawFile: droppedFile,
 			})
 		} else if (editUrl.trim()) {
 			onSave?.({
@@ -275,6 +278,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 				</p>
 			</div>
 
+			{!disableDelete && (
 			<div className='more-icon relative' ref={menuRef}>
 				<div
 					className='flex items-center justify-center hover:bg-neutral-200 rounded-md p-1 -mr-1 transition-colors'
@@ -314,6 +318,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 					</div>
 				)}
 			</div>
+			)}
 		</div>
 	)
 }

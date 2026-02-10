@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import AvatarGroup from '@/components/common/AvatarGroup'
 import ProgressBar from '@/components/week-mission/ProgressBar'
 import LinkIcon from '@/assets/icons/work-status/link.svg?react'
@@ -5,6 +6,8 @@ import DoIcon from '@/assets/icons/work-status/do.svg?react'
 import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
 import { calculateDateSpan } from '@/utils/dateUtils'
 import LinkChip from './LinkChip'
+import ProfileModal from '@/components/week-mission/ProfileModal'
+import type { Assignees } from '@/types/api/assignees'
 
 interface TodoBlockProps {
 	id: number
@@ -16,6 +19,8 @@ interface TodoBlockProps {
 		total: number // 전체 작업 수 (없으면 done + inProgress로 계산)
 	}
 	dueDate?: string // "2025.11.21" 형식
+	/** API 응답 left_day (있으면 D-day 표시에 사용, 없으면 dueDate로 계산) */
+	leftDay?: number
 	participants?: { id: number; name: string; avatar: string }[] // 사용자 아바타 이미지 URL 배열
 	links?: string | string[]
 	attachments?: number // 첨부파일 개수
@@ -24,11 +29,25 @@ interface TodoBlockProps {
 	onClick?: () => void
 }
 
+/** 날짜 문자열을 yy.mm.dd 형식으로 변환 */
+const formatDueDate = (dateStr: string): string => {
+	const normalized = dateStr.replace(/-/g, '.')
+	const parts = normalized.split('.')
+	if (parts.length >= 3) {
+		const y = parts[0].length >= 4 ? parts[0].slice(-2) : parts[0].padStart(2, '0')
+		const m = parts[1].padStart(2, '0')
+		const d = parts[2].padStart(2, '0')
+		return `${y}.${m}.${d}`
+	}
+	return dateStr
+}
+
 const TodoBlock = ({
 	team,
 	title,
 	todo,
 	dueDate,
+	leftDay,
 	participants = [],
     links,
     attachments,
@@ -36,17 +55,39 @@ const TodoBlock = ({
 	isEdit = false,
 	onClick,
 }: TodoBlockProps) => {
+	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+	const profileDropdownRef = useRef<HTMLDivElement>(null)
+
 	const isMinimum = variant === 'Minimum'
 	const isDefault = variant === 'Default'
+
+	// participants를 ProfileModal용 Assignees 형식으로 변환
+	const assignees: Assignees[] = participants.map(p => ({
+		user_id: p.id,
+		name: p.name,
+		nickname: p.name,
+		profile_image_url: p.avatar ?? '',
+	}))
+
+	useEffect(() => {
+		if (!isProfileModalOpen) return
+		const handleClickOutside = (e: MouseEvent) => {
+			if (profileDropdownRef.current?.contains(e.target as Node)) return
+			setIsProfileModalOpen(false)
+		}
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [isProfileModalOpen])
 
 	// 진행률 계산 (4개 세그먼트 기준)
 	const progressSegments = 4
 	const completedSegments = todo.total > 0 ? Math.round((todo.done / todo.total) * progressSegments) : 0
 
-	// D-day 계산
+	// D-day 계산: API left_day 우선, 없으면 dueDate로 계산
 	let daysRemaining: number | null = null
-	if (dueDate) {
-		// 현재 날짜를 "YYYY.MM.DD" 형식으로 변환
+	if (leftDay !== undefined && leftDay !== null) {
+		daysRemaining = leftDay
+	} else if (dueDate) {
 		const today = new Date()
 		const todayStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`
 		daysRemaining = calculateDateSpan(todayStr, dueDate)
@@ -134,7 +175,7 @@ const TodoBlock = ({
 						</div>
 
 						{/* 진행률 바 + 마감일 + D-day + 아바타 */}
-						<div className='flex flex-col gap-[6px] items-start relative shrink-0 w-full'>
+						<div className='flex flex-col gap-2 items-start relative shrink-0 w-full'>
 							{/* 진행률 바 */}
 							<div className='w-[132px]'>
 								<ProgressBar completed={completedSegments} total={progressSegments} />
@@ -146,8 +187,8 @@ const TodoBlock = ({
 								<div className='flex gap-gutter items-center relative shrink-0'>
 									{dueDate && (
 										<div className='flex gap-[4px] items-center leading-[1.6] relative shrink-0 whitespace-pre'>
-											<p className='caption-2 text-neutral-500 font-medium relative shrink-0'>마감일</p>
-											<p className='caption-2 text-neutral-900 font-medium relative shrink-0'>{dueDate}</p>
+											<p className='body-3 text-neutral-500 font-medium relative shrink-0'>마감일</p>
+											<p className='body-3 text-neutral-600 font-medium relative shrink-0'>{formatDueDate(dueDate)}</p>
 										</div>
 									)}
 								</div>
@@ -161,15 +202,32 @@ const TodoBlock = ({
 										</div>
 									)}
 
-									{/* 아바타 그룹 */}
-									{participants.length > 0 && (
-										<div className='flex items-center justify-end relative shrink-0'>
-											<AvatarGroup avatars={participants.map(participant => participant.avatar)} maxCount={2} size={22.533} />
+									{/* 아바타 그룹 + 드롭다운 */}
+								<div ref={profileDropdownRef} className='relative'>
+									<div
+										className='flex gap-[2px] items-center justify-end hover:bg-neutral-000 rounded-16 p-0.5 transition-all duration-300 cursor-pointer'
+										onClick={e => {
+											e.stopPropagation()
+											setIsProfileModalOpen(prev => !prev)
+										}}
+									>
+										{participants.length > 0 && (
+											<div className='flex items-center justify-end relative shrink-0'>
+												<AvatarGroup avatars={participants.map(p => p.avatar)} maxCount={2} size={22} />
+											</div>
+										)}
+										<div className='w-[14.839px] h-[14.839px] shrink-0 flex items-center justify-center'>
+											<ChevronDownIcon className='w-full h-full text-neutral-600' />
 										</div>
+									</div>
+									{isProfileModalOpen && (
+										<ProfileModal
+											isOpen={isProfileModalOpen}
+											onClose={() => setIsProfileModalOpen(false)}
+											assignees={assignees}
+										/>
 									)}
-
-									{/* 드롭다운 아이콘 */}
-									<ChevronDownIcon className='w-4 h-4 hover:cursor-pointer' style={{ stroke: '#838391' }} />
+								</div>
 								</div>
 							</div>
 						</div>

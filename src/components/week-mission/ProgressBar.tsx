@@ -1,6 +1,8 @@
 interface ProgressBarProps {
-	completed: number // 0-4 사이의 값
-	total?: number // 기본값 4
+	/** 채워질 칸 수 (0~4). 진행률 비율(complete/whole)에 따라 4칸 기준으로 계산됨 */
+	completed: number
+	/** 전체 칸 수, 미션 막대는 항상 4 */
+	total?: number
 }
 
 const ProgressBar = ({ completed, total = 4 }: ProgressBarProps) => {
