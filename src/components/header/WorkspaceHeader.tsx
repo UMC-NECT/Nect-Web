@@ -133,6 +133,9 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                                     // 프로젝트가 1개면 클릭 시 바로 이동
                                     if (projects.length === 1 && projects[0]) {
                                         handleProjectSelect(projects[0].projectId)
+                                    } else {
+                                        setProjectId(projectData?.[0]?.projectId ?? null)
+                                        navigate('/team-board')
                                     }
                                 }}
                                 className={`text-[18px] font-medium transition-colors ${
@@ -140,10 +143,6 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                                         ? 'text-primary-500-normal'
                                         : 'text-neutral-900 hover:text-neutral-900'
                                 }`}
-                                onClick={() => {
-                                    setProjectId(projectData?.[0]?.projectId ?? null)
-                                    navigate('/team-board')
-                                }}
                             >
                                 팀 작업실
                             </button>
