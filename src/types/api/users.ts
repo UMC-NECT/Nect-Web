@@ -108,5 +108,7 @@ export type ResponseProfileAnalysisDto = CommonResponse<{
     growthGuide: {
         order: number
         tip: string
+        title: string
+        content: string
     }[]
 }>

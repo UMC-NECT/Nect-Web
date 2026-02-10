@@ -55,9 +55,9 @@ const ProfileAnalysisPage = () => {
 			: []
 	const growGuide =
 		body?.growthGuide?.map(g => ({
-			tipText: '앞으로 이런 활동을 하면 좋아요 !',
-			title: `Tip ${g.order}`,
-			description: g.tip,
+			tipText: g.tip,
+			title: g.title,
+			description: g.content,
 		})) ?? []
 
 	const roleValue = profileData?.body?.role ?? ''
