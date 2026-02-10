@@ -15,7 +15,7 @@ interface TeamProfile {
 }
 
 interface TeamProfileBoardProps {
-	mainProfile?: Omit<TeamProfile, 'contact'> & { onStartWork?: () => void } // 메인 카드용 (큰 카드)
+	mainProfile?: Omit<TeamProfile, 'contact'> & { isWorking?: boolean; onStartWork?: () => void } // 메인 카드용 (큰 카드)
 	profiles?: TeamProfile[] // 그리드 카드용 (작은 카드들)
 	className?: string
 }
@@ -40,6 +40,7 @@ const TeamProfileBoard = ({ mainProfile, profiles = [], className = '' }: TeamPr
 							time={mainProfile.time}
 							avatarUrl={mainProfile.avatarUrl}
 							status={mainProfile.status}
+							isWorking={mainProfile.isWorking}
 							onStartWork={mainProfile.onStartWork}
 						/>
 					)}

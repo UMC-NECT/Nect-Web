@@ -4,6 +4,7 @@ interface ProjectHistoryCardProps {
     description: string;
     period: string;
     imageBg?: string;
+    imageUrl?: string;
     getPositionStyle: (position: string) => string;
     variant?: 'default' | 'large';
 }
@@ -14,6 +15,7 @@ const ProjectHistoryCard = ({
     description, 
     period, 
     imageBg = 'bg-neutral-400',
+    imageUrl,
     getPositionStyle,
     variant = 'default'
 }: ProjectHistoryCardProps) => {
@@ -45,7 +47,15 @@ const ProjectHistoryCard = ({
             </div>
             
             <div className='border border-neutral-200 rounded-xl overflow-hidden hover:border-primary-400-normal hover:shadow-lg hover:-translate-y-2 transition-all duration-300'>
-                <div className={`w-full ${styles.image} ${imageBg} rounded-xl`}></div>
+                <div className={`w-full ${styles.image} ${imageBg} rounded-xl overflow-hidden`}>
+                    {imageUrl && (
+                        <img 
+                            src={imageUrl} 
+                            alt={title}
+                            className='w-full h-full object-cover'
+                        />
+                    )}
+                </div>
                 
                 <div className='pl-[20px] pr-[20px] pb-[20px]'>
                     <h4 className='font-semibold text-[18px] text-neutral-900 mt-[14px] mb-[6px]'>{title}</h4>

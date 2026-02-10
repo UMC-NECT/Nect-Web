@@ -25,6 +25,19 @@ const RadarChart = ({ data, totalScore, className = '' }: RadarChartProps) => {
 	const levels = 10 // 그리드 레벨 수
 	const centerRadius = 20 // 중앙 원 반지름
 
+	// score / maxScore 비율을 기반으로 레벨 수를 안전하게 계산
+	// - maxScore가 0이거나 undefined인 경우 0 레벨
+	// - NaN / Infinity 방지
+	const getScoreLevel = (score: number, maxScore: number) => {
+		if (!maxScore || maxScore <= 0) return 0
+
+		const ratio = score / maxScore
+		if (!Number.isFinite(ratio) || ratio <= 0) return 0
+
+		const rawLevel = Math.round(ratio * levels)
+		// 0 ~ levels 사이로 클램핑
+		return Math.max(0, Math.min(levels, rawLevel))
+	}
 
 	// CSS 변수를 실제 색상 값으로 변환
 	const getActualColor = (color: string) => {
@@ -122,8 +135,8 @@ const RadarChart = ({ data, totalScore, className = '' }: RadarChartProps) => {
 					const normalizedAngleDiff = angleDiff < 0 ? angleDiff + 360 : angleDiff
 					const largeArc = normalizedAngleDiff > 180 ? 1 : 0
 
-					// 점수에 해당하는 레벨 수 계산
-					const scoreLevel = Math.round((item.score / item.maxScore) * levels)
+					// 점수에 해당하는 레벨 수 계산 (안전하게 처리)
+					const scoreLevel = getScoreLevel(item.score, item.maxScore)
 					const availableRadius = radius - centerRadius
 
 					return (
@@ -174,7 +187,7 @@ const RadarChart = ({ data, totalScore, className = '' }: RadarChartProps) => {
 					
 					// 점수에 해당하는 레벨 수 계산
 					const availableRadius = radius - centerRadius
-					const scoreLevel = Math.round((item.score / item.maxScore) * levels)
+					const scoreLevel = getScoreLevel(item.score, item.maxScore)
 					const deepColor = getDeepColor(item.color)
 					
 					return (
@@ -211,7 +224,7 @@ const RadarChart = ({ data, totalScore, className = '' }: RadarChartProps) => {
 					const point = getPoint(item.angle, radius)
 					// 점수에 해당하는 반지름 계산
 					const availableRadius = radius - centerRadius
-					const scoreLevel = Math.round((item.score / item.maxScore) * levels)
+					const scoreLevel = getScoreLevel(item.score, item.maxScore)
 					const actualRadius = centerRadius + (scoreLevel / levels) * availableRadius
 					const scorePoint = getPoint(item.angle, actualRadius)
 					
@@ -252,9 +265,9 @@ const RadarChart = ({ data, totalScore, className = '' }: RadarChartProps) => {
 					const normalizedAngleDiff = angleDiff < 0 ? angleDiff + 360 : angleDiff
 					const largeArc = normalizedAngleDiff > 180 ? 1 : 0
 					
-					// 점수에 해당하는 반지름 계산
+					// 점수에 해당하는 반지름 계산 (안전하게 처리)
 					const availableRadius = radius - centerRadius
-					const scoreLevel = Math.round((item.score / item.maxScore) * levels)
+					const scoreLevel = getScoreLevel(item.score, item.maxScore)
 					const actualRadius = centerRadius + (scoreLevel / levels) * availableRadius
 					
 					// 중심에서 원의 가장자리까지의 선 (항상 끝까지)

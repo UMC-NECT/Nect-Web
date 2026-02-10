@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LogoIcon from '@/assets/icons/header/Logo.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import SearchIcon from '@/assets/icons/header/Search.svg?react';
 import { Link, useNavigate } from 'react-router';
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers';
 import { useProjectIdStore } from '@/stores/useProjectIdStroe';
+import { getProjectUsers } from '@/api/project-users/projectUsers';
+import type { ProjectUserDto } from '@/types/api/project-users';
 
 interface WorkspaceHeaderProps {
     onNavigate: () => void;
@@ -13,19 +15,57 @@ interface WorkspaceHeaderProps {
 const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
     const [showExploreMenu, setShowExploreMenu] = useState(false);
     const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
+    const [projects, setProjects] = useState<ProjectUserDto[]>([]);
+    const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
     const navigate = useNavigate()
     const projectData = useGetProjectUsers()
     const { setProjectId } = useProjectIdStore()
+    
     const exploreMenuItems = [
         { name: '프로젝트 찾기' },
         { name: '팀원 찾기' },
         { name: '출시 프로젝트' },
     ];
 
-    const workspaceMenuItems = [
-        { projectId: projectData?.[0]?.projectId, name: `${projectData?.[0]?.projectTitle}` },
-        { projectId: projectData?.[1]?.projectId, name: `${projectData?.[1]?.projectTitle}` },
-    ];
+    // 프로젝트 목록 조회
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const response = await getProjectUsers()
+                if (response.body) {
+                    setProjects(response.body)
+                    // 프로젝트가 1개면 자동으로 선택
+                    if (response.body.length === 1) {
+                        setSelectedProjectId(response.body[0].projectId)
+                    }
+                }
+            } catch (error) {
+                console.error('프로젝트 목록 조회 실패:', error)
+            }
+        }
+        fetchProjects()
+    }, [])
+
+    // 프로젝트 선택 핸들러
+    const handleProjectSelect = (projectId: number) => {
+        setSelectedProjectId(projectId)
+        setShowWorkspaceMenu(false)
+        // 프로젝트 선택 시 해당 프로젝트 페이지로 이동
+        navigate(`/team-board/${projectId}`)
+    }
+
+    // 프로젝트 개수에 따른 동작
+    const shouldShowMenu = projects.length >= 2 // 2개 이상일 때 메뉴 표시
+    // 표시할 프로젝트 목록 (최대 2개만)
+    const displayProjects = projects.slice(0, 2)
+
+    // 호버 시 메뉴 표시
+    const handleWorkspaceMouseEnter = () => {
+        if (shouldShowMenu) {
+            setShowWorkspaceMenu(true)
+            setShowExploreMenu(false)
+        }
+    }
 
     return (
         <header className="fixed top-0 left-0 right-0 bg-white z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.02)]">
@@ -88,9 +128,12 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                         {/* 팀 작업실 */}
                         <div className="relative">
                             <button
-                                onMouseEnter={() => {
-                                    setShowWorkspaceMenu(true);
-                                    setShowExploreMenu(false);
+                                onMouseEnter={handleWorkspaceMouseEnter}
+                                onClick={() => {
+                                    // 프로젝트가 1개면 클릭 시 바로 이동
+                                    if (projects.length === 1 && projects[0]) {
+                                        handleProjectSelect(projects[0].projectId)
+                                    }
                                 }}
                                 className={`text-[18px] font-medium transition-colors ${
                                     showWorkspaceMenu
@@ -105,26 +148,26 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                                 팀 작업실
                             </button>
 
-                            {/* 팀 작업실 드롭다운 */}
-                            {showWorkspaceMenu && (
+                            {/* 팀 작업실 드롭다운 - 프로젝트가 2개 이상일 때 표시 (최대 2개만) */}
+                            {shouldShowMenu && showWorkspaceMenu && (
                                 <div
                                     className="absolute top-[46px] left-[-20px] w-[160px] bg-white rounded-12 border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
                                     onMouseEnter={() => setShowWorkspaceMenu(true)}
                                     onMouseLeave={() => setShowWorkspaceMenu(false)}
                                 >
-                                    {workspaceMenuItems.map((item, index) => (
-                                        <div key={item.name}>
+                                    {displayProjects.map((project, index) => (
+                                        <div key={project.projectId}>
                                             <button
-                                                className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center"
-                                                onClick={() => {
-                                                    setProjectId(item.projectId ?? null)
-                                                    navigate('/team-board')
-                                                    setShowWorkspaceMenu(false)
-                                                }}
+                                                onClick={() => handleProjectSelect(project.projectId)}
+                                                className={`w-full h-[54px] px-4 text-left text-[16px] font-medium transition-colors flex items-center ${
+                                                    selectedProjectId === project.projectId
+                                                        ? 'bg-primary-50 text-primary-500-normal'
+                                                        : 'text-neutral-900 hover:bg-neutral-50'
+                                                }`}
                                             >
-                                                {item.name}
+                                                {project.projectTitle}
                                             </button>
-                                            {index < workspaceMenuItems.length - 1 && (
+                                            {index < displayProjects.length - 1 && (
                                                 <div className="border-b border-neutral-200"></div>
                                             )}
                                         </div>

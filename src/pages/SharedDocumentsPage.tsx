@@ -1,93 +1,164 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router'
 import ContentHeader from '@/components/team-board/ContentHeader'
 import SharedDocumentItem from '@/components/team-board/SharedDocumentItem'
 import FileItem from '@/components/mission-modal/FileItem'
 import SortDropdown, { type SortOption } from '@/components/team-board/SortDropdown'
+import { useSharedDocumentList } from '@/hooks/team-board/useSharedDocumentList'
+import { useDeleteSharedDocumentMutation } from '@/hooks/team-board/useDeleteSharedDocument'
+import { useUpdateSharedDocumentNameMutation } from '@/hooks/team-board/useUpdateSharedDocumentName'
+import { useUploadSharedDocumentFileMutation } from '@/hooks/team-board/useUploadSharedDocumentFile'
+import { useCreateSharedDocumentLinkMutation } from '@/hooks/team-board/useCreateSharedDocumentLink'
+import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { FileItem as FileItemData } from '@/stores/mission-modal/missionModalStore'
+import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
 import LinkIcon from '@/assets/icons/team-board/link.svg?react'
 import PlusIcon from '@/assets/icons/common/plus.svg?react'
 
 const SharedDocumentsPage = () => {
-	// 샘플 데이터 (테스트용)
-	const sampleFiles: FileItemData[] = [
-		{
-			id: 1,
-			type: 'file',
-			name: 'PM_프로젝트 기획서',
-			fileName: 'PM_프로젝트 기획서.pdf',
-			url: '#',
-		},
-		{
-			id: 2,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.docx',
-			url: '#',
-		},
-		{
-			id: 3,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.png',
-			url: '#',
-		},
-		{
-			id: 4,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.ppt',
-			url: '#',
-		},
-		{
-			id: 5,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.mp4',
-			url: '#',
-		},
-		{
-			id: 6,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.xlsx',
-			url: '#',
-		},
-		{
-			id: 7,
-			type: 'link',
-			name: '링크 일 경우',
-			url: 'www.figma.com',
-		},
-		{
-			id: 8,
-			type: 'file',
-			name: '파일 정보',
-			fileName: '파일명 한 줄까지 미리보기.zip',
-			url: '#',
-		},
-	]
+	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
+	const navigate = useNavigate()
+	
+	// 프로젝트 목록 조회 및 projectId 설정
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const response = await getProjectUsers()
+				if (response.body) {
+					// URL에 projectId가 없으면 첫 번째 프로젝트로 리다이렉트
+					if (!projectIdParam && response.body.length > 0) {
+						navigate(`/shared-documents/${response.body[0].projectId}`, { replace: true })
+						return
+					}
+				}
+			} catch (error) {
+				console.error('프로젝트 목록 조회 실패:', error)
+			}
+		}
+		fetchProjects()
+	}, [projectIdParam, navigate])
 
-	const [files, setFiles] = useState<FileItemData[]>(sampleFiles)
+	// URL에서 projectId 가져오기
+	const projectId = projectIdParam ? parseInt(projectIdParam, 10) : null
+
+	const [currentPage] = useState(1)
 	const [isUploading, setIsUploading] = useState(false)
 	const [selectedFileId, setSelectedFileId] = useState<number | null>(null)
+	const [editingFileId, setEditingFileId] = useState<number | null>(null)
 	const [sortOrder, setSortOrder] = useState<SortOption>('latest')
+	const [documentType] = useState<'FILE' | 'LINK' | undefined>(undefined)
+
+	// SortOption을 API SortOption으로 변환
+	const apiSortOption: APISortOption = useMemo(() => {
+		switch (sortOrder) {
+			case 'latest':
+				return 'RECENT'
+			case 'oldest':
+				return 'OLDEST'
+			case 'name':
+				return 'NAME'
+			case 'fileType':
+				return 'FORMAT'
+			default:
+				return 'RECENT'
+		}
+	}, [sortOrder])
+
+	// 공유 문서함 목록 API 호출 (페이지는 0부터 시작하므로 currentPage - 1)
+	const { data: documentListResponse, isLoading } = useSharedDocumentList(projectId || 0, {
+		page: currentPage - 1, // API는 0부터 시작
+		size: 20,
+		type: documentType,
+		sort: apiSortOption,
+	})
+	const documentList = documentListResponse?.body
+
+	// 공유 문서 삭제 mutation
+	const deleteDocumentMutation = useDeleteSharedDocumentMutation(projectId || 0)
+	
+	// 공유 문서 이름 변경 mutation
+	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId || 0)
+
+	// 공유 문서 파일 업로드 mutation
+	const uploadFileMutation = useUploadSharedDocumentFileMutation(projectId || 0)
+
+	// 공유 문서 링크 생성 mutation
+	const createLinkMutation = useCreateSharedDocumentLinkMutation(projectId || 0)
 
 	const handleUploadClick = () => {
-		// TODO: 파일 업로드 모달 또는 파일 선택 다이얼로그 열기
+		// FileItem 편집 모드 활성화
 		setIsUploading(true)
 	}
 
-	const handleFileAdd = (fileData: Omit<FileItemData, 'id'>) => {
-		const newFile: FileItemData = {
-			id: Date.now(),
-			...fileData,
+	/**
+	 * API 응답 데이터를 FileItemData 형식으로 변환
+	 */
+	const files = useMemo(() => {
+		if (!documentList?.documents || documentList.documents.length === 0) {
+			return []
 		}
-		setFiles([...files, newFile])
-		setIsUploading(false)
+
+		// 고정된 문서를 먼저, 그 다음 일반 문서 순으로 정렬
+		const sortedDocuments = [...documentList.documents].sort((a, b) => {
+			if (a.is_pinned && !b.is_pinned) return -1
+			if (!a.is_pinned && b.is_pinned) return 1
+			return 0
+		})
+
+		return sortedDocuments.map((doc) => {
+			if (doc.document_type === 'LINK') {
+				return {
+					id: doc.document_id,
+					type: 'link' as const,
+					name: doc.title,
+					url: doc.link_url || undefined,
+				}
+			} else {
+				return {
+					id: doc.document_id,
+					type: 'file' as const,
+					name: doc.title,
+					fileName: doc.file_name || undefined,
+					url: doc.file_url || undefined,
+				}
+			}
+		})
+	}, [documentList])
+
+	const handleFileAdd = async (data: Omit<FileItemData, 'id'>, file?: File) => {
+		if (!projectId) return
+
+		try {
+			if (data.type === 'file' && file) {
+				// 파일 업로드
+				await uploadFileMutation.mutateAsync(file)
+			} else if (data.type === 'link' && data.url) {
+				// 링크 생성 API 호출
+				await createLinkMutation.mutateAsync({
+					title: data.name,
+					link_url: data.url,
+				})
+			}
+			setIsUploading(false)
+		} catch (error) {
+			console.error('문서 추가 실패:', error)
+			// TODO: 에러 처리 (토스트 메시지 등)
+		}
 	}
 
 	const handleFileDelete = (id: number) => {
-		setFiles(files.filter((file) => file.id !== id))
+		deleteDocumentMutation.mutate(id, {
+			onSuccess: () => {
+				// 삭제 성공 시 선택 해제
+				if (selectedFileId === id) {
+					setSelectedFileId(null)
+				}
+			},
+			onError: (error) => {
+				console.error('문서 삭제 실패:', error)
+				// TODO: 에러 처리 (토스트 메시지 등)
+			},
+		})
 	}
 
 	const handleFileDownload = (file: FileItemData) => {
@@ -110,8 +181,32 @@ const SharedDocumentsPage = () => {
 	}
 
 	const handleRename = (id: number) => {
-		// TODO: 이름 바꾸기 기능 구현
-		console.log('이름 바꾸기:', id)
+		setEditingFileId(id)
+	}
+
+	const handleSaveName = (id: number, newName: string) => {
+		updateDocumentNameMutation.mutate(
+			{
+				documentId: id,
+				nameData: {
+					title: newName,
+					name: null,
+				},
+			},
+			{
+				onSuccess: () => {
+					setEditingFileId(null)
+				},
+				onError: (error) => {
+					console.error('문서 이름 변경 실패:', error)
+					// TODO: 에러 처리 (토스트 메시지 등)
+				},
+			},
+		)
+	}
+
+	const handleCancelRename = () => {
+		setEditingFileId(null)
 	}
 
 	return (
@@ -132,7 +227,9 @@ const SharedDocumentsPage = () => {
 
 				{/* 파일 목록 영역 */}
 				<div className="px-5 py-[18px] flex-1 overflow-y-auto">
-					{files.length === 0 && !isUploading ? (
+					{isLoading ? (
+						<div className="flex items-center justify-center h-full">로딩 중...</div>
+					) : files.length === 0 && !isUploading ? (
 						// 빈 상태: 업로드 플레이스홀더
 						<div className="bg-neutral-50 border border-neutral-100 rounded-md flex gap-2.5 h-[46px] items-center pl-2 pr-2.5 py-1.5 w-[284px]">
 							<div className="relative shrink-0 w-7 h-7">
@@ -161,10 +258,13 @@ const SharedDocumentsPage = () => {
 									key={file.id}
 									data={file}
 									isSelected={selectedFileId === file.id}
+									isEditing={editingFileId === file.id}
 									onClick={() => handleFileClick(file)}
 									onDelete={() => handleFileDelete(file.id)}
 									onDownload={file.type === 'file' ? () => handleFileDownload(file) : undefined}
 									onRename={() => handleRename(file.id)}
+									onSave={(name) => handleSaveName(file.id, name)}
+									onCancel={handleCancelRename}
 								/>
 							))}
 

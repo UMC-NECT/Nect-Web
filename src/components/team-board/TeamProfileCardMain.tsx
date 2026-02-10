@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import { WORK_STATUS_CONFIG } from '@/constants/workStatus'
 import ResetIcon from '@/assets/icons/common/reset.svg?react'
 import PlayIcon from '@/assets/icons/common/play.svg?react'
@@ -14,8 +15,28 @@ interface TeamProfileCardMainProps {
 	time: string // "04:58:57" 형식
 	avatarUrl?: string
 	status: WorkStatus
+	isWorking?: boolean // 작업 중 여부
 	onStartWork?: () => void
 	className?: string
+}
+
+/**
+ * 시간 문자열을 초로 변환: "04:58:57" -> 17937
+ */
+const parseTimeToSeconds = (timeStr: string): number => {
+	const parts = timeStr.split(':').map(Number)
+	if (parts.length !== 3) return 0
+	return parts[0] * 3600 + parts[1] * 60 + parts[2]
+}
+
+/**
+ * 초를 시간 문자열로 변환: 17937 -> "04:58:57"
+ */
+const formatSecondsToTime = (seconds: number): string => {
+	const hours = Math.floor(seconds / 3600)
+	const minutes = Math.floor((seconds % 3600) / 60)
+	const secs = seconds % 60
+	return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
 const TeamProfileCardMain = ({
@@ -24,13 +45,65 @@ const TeamProfileCardMain = ({
 	time,
 	avatarUrl = 'https://placehold.co/68x68',
 	status,
+	isWorking: initialIsWorking = false,
 	onStartWork,
 	className = '',
 }: TeamProfileCardMainProps) => {
+	const [isWorking, setIsWorking] = useState(initialIsWorking)
+	const [displayTime, setDisplayTime] = useState(time)
+	const initialSecondsRef = useRef<number>(parseTimeToSeconds(time))
+	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+	// API의 is_working 값이 변경되면 로컬 상태 동기화
+	useEffect(() => {
+		setIsWorking(initialIsWorking)
+	}, [initialIsWorking])
+
+	// time prop이 변경되면 초기 시간 업데이트
+	useEffect(() => {
+		const newSeconds = parseTimeToSeconds(time)
+		initialSecondsRef.current = newSeconds
+		setDisplayTime(time)
+	}, [time])
+
+	// 작업 중일 때 실시간 타이머 증가
+	useEffect(() => {
+		if (isWorking) {
+			// 작업 시작 시 현재 시간을 기준으로 시작
+			const startSeconds = initialSecondsRef.current
+			let currentSeconds = startSeconds
+
+			intervalRef.current = setInterval(() => {
+				currentSeconds += 1
+				setDisplayTime(formatSecondsToTime(currentSeconds))
+			}, 1000)
+		} else {
+			// 작업 정지 시 interval 정리
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current)
+				intervalRef.current = null
+			}
+		}
+
+		return () => {
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current)
+				intervalRef.current = null
+			}
+		}
+	}, [isWorking])
+
 	const statusItems = WORK_STATUS_CONFIG.map((config) => ({
 		...config,
 		value: status[config.key],
 	}))
+
+	const handleButtonClick = () => {
+		setIsWorking(!isWorking)
+		if (onStartWork) {
+			onStartWork()
+		}
+	}
 
 	return (
 		<div
@@ -53,15 +126,21 @@ const TeamProfileCardMain = ({
 							</div>
 						</div>
 
-						{/* 작업 시작 버튼 */}
+						{/* 작업 시작/정지 버튼 */}
 						<div className="w-[116px] inline-flex flex-col justify-start items-start gap-[6px]">
 							<button
-								onClick={onStartWork}
-								className="self-stretch pl-3.5 pr-[18px] py-2.5 bg-primary-500-normal rounded-xl inline-flex justify-start items-center gap-1.5"
+								onClick={handleButtonClick}
+								className={`self-stretch pl-3.5 pr-[18px] py-2.5 rounded-xl inline-flex justify-start items-center gap-1.5 transition-colors ${
+									isWorking
+										? 'bg-neutral-600 text-neutral-000 hover:bg-neutral-700'
+										: 'bg-primary-500-normal text-neutral-50 hover:bg-primary-600-normal'
+								}`}
 							>
 								{/* Play 아이콘 */}
 								<PlayIcon className="w-[18px] h-[18px]" />
-								<div className="text-center justify-center text-neutral-50 body-1 font-semibold">작업 시작</div>
+								<div className="text-center justify-center body-1 font-semibold">
+									{isWorking ? '작업 정지' : '작업 시작'}
+								</div>
 							</button>
 						</div>
 					</div>
@@ -72,7 +151,9 @@ const TeamProfileCardMain = ({
 						<div className="w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center">
 							<ResetIcon className="w-6 h-6 text-neutral-300" />
 						</div>
-						<div className="text-right justify-center text-primary-500-normal heading-1 font-bold">{time}</div>
+						<div className={`text-right justify-center heading-1 font-semibold ${
+							isWorking ? 'text-primary-500-normal' : 'text-neutral-400'
+						}`}>{displayTime}</div>
 					</div>
 				</div>
 

@@ -104,7 +104,7 @@ const Calendar = ({
 										: day.isSelected
 											? 'text-neutral-000'
 											: 'text-neutral-900'
-								const dotColor = day.isToday
+								const dotColor = (day.isToday || day.isSelected) && day.hasTasks
 									? 'bg-neutral-000'
 									: day.hasTasks
 										? 'bg-primary-500-normal'

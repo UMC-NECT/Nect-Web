@@ -1,4 +1,4 @@
-import SettingsIcon from '@/assets/icons/common/settings.svg?react'
+import { useEffect, useState } from 'react'
 import { calculateDDay } from '@/utils/dateUtils'
 
 interface TeamBoardHeaderProps {
@@ -8,6 +8,7 @@ interface TeamBoardHeaderProps {
 	regularMeeting?: string
 	startDate: string
 	endDate: string
+	onUpdateBasicInfo?: (payload: { notice_text: string; regular_meeting_text: string }) => void
 }
 
 const TeamBoardHeader = ({
@@ -17,24 +18,50 @@ const TeamBoardHeader = ({
 	regularMeeting = '매주 금요일 PM 8:30  /  강남 사거리역 스타벅스',
 	startDate,
 	endDate,
+	onUpdateBasicInfo,
 }: TeamBoardHeaderProps) => {
+	const [isEditing, setIsEditing] = useState(false)
+	const [noticeInput, setNoticeInput] = useState(notice)
+	const [regularMeetingInput, setRegularMeetingInput] = useState(regularMeeting)
+
+	// overview에서 값이 바뀌면 인풋도 동기화
+	useEffect(() => {
+		setNoticeInput(notice)
+		setRegularMeetingInput(regularMeeting)
+	}, [notice, regularMeeting])
+
+	const handleSubmit = () => {
+		if (!onUpdateBasicInfo) return
+		onUpdateBasicInfo({
+			notice_text: noticeInput.trim(),
+			regular_meeting_text: regularMeetingInput.trim(),
+		})
+		setIsEditing(false)
+	}
+
+	const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+		if (e.key === 'Enter') {
+			handleSubmit()
+		}
+	}
+
 	const dDay = calculateDDay(endDate)
 
 	// 공지사항 및 정기회의 정보 배열
 	const infoItems = [
 		{
 			label: '공지사항',
-			content: notice,
+			content: notice || '공지사항이 없습니다',
 			textColor: 'text-primary-600-normal',
 			contentClassName: 'justify-center',
 		},
 		{
 			label: '정기회의',
-			content: regularMeeting,
+			content: regularMeeting || '정기회의가 없습니다',
 			textColor: 'text-neutral-900',
 			contentClassName: 'flex-1 justify-center',
 		},
-	].filter(item => item.content) // 내용이 있는 항목만 필터링
+	]
 
 	return (
 		<div className='self-stretch w-[1224px] inline-flex justify-between items-start'>
@@ -43,26 +70,62 @@ const TeamBoardHeader = ({
 				{/* 프로젝트 제목 및 설명 */}
 				<div className='self-stretch flex flex-col justify-start items-start gap-2'>
 					<div className='self-stretch justify-start text-neutral-900 heading-2 font-bold line-clamp-1'>{title}</div>
-					<div className='self-stretch justify-start text-[#5f5f5f] title-3 font-medium line-clamp-2'>{description}</div>
+					<div className='self-stretch justify-start text-[#5f5f5f] title-3 font-regular line-clamp-1'>{description}</div>
 				</div>
 				{/* 공지사항 및 정기회의 정보 */}
 				<div className='self-stretch flex flex-col justify-start items-center gap-3'>
-					{infoItems.map((item, index) => (
-						<div key={index} className='self-stretch inline-flex justify-start items-center gap-4'>
-							<div className='w-28 px-3 py-1 bg-[#f0e7fb]/70 rounded-md outline-1 -outline-offset-1 outline-primary-200-light flex justify-center items-center gap-1'>
-								<div className="justify-center text-neutral-900 body-1 font-medium">{item.label}</div>
+					{isEditing ? (
+						<>
+							{/* 공지사항 인풋 */}
+							<div className='self-stretch inline-flex justify-start items-center gap-4'>
+								<div className='w-28 px-3 py-1 bg-[#f0e7fb]/70 rounded-md outline-1 -outline-offset-1 outline-primary-200-light flex justify-center items-center gap-1'>
+									<div className="justify-center text-neutral-900 body-1 font-medium">공지사항</div>
+								</div>
+								<input
+									className='flex-1 px-3 py-1 rounded-md bg-transparent title-3 font-regular text-primary-600-normal outline-none'
+									value={noticeInput}
+									onChange={(e) => setNoticeInput(e.target.value)}
+									onKeyDown={handleKeyDown}
+									placeholder="공지사항을 입력하세요"
+								/>
 							</div>
-							<div className={`${item.contentClassName} ${item.textColor} title-3 font-medium line-clamp-1`}>{item.content}</div>
-						</div>
-					))}
+							{/* 정기회의 인풋 */}
+							<div className='self-stretch inline-flex justify-start items-center gap-4'>
+								<div className='w-28 px-3 py-1 bg-[#f0e7fb]/70 rounded-md outline-1 -outline-offset-1 outline-primary-200-light flex justify-center items-center gap-1'>
+									<div className="justify-center text-neutral-900 body-1 font-medium">정기회의</div>
+								</div>
+								<input
+									className='flex-1 px-3 py-1 rounded-md bg-transparent title-3 font-regular text-neutral-900 outline-none'
+									value={regularMeetingInput}
+									onChange={(e) => setRegularMeetingInput(e.target.value)}
+									onKeyDown={handleKeyDown}
+									placeholder="정기회의 정보를 입력하세요"
+								/>
+							</div>
+						</>
+					) : (
+						infoItems.map((item, index) => (
+							<button
+								type="button"
+								key={index}
+								onClick={() => onUpdateBasicInfo && setIsEditing(true)}
+								className='self-stretch inline-flex justify-start items-center gap-4 text-left cursor-text'
+							>
+								<div className='w-28 px-3 py-1 bg-[#f0e7fb]/70 rounded-md outline-1 -outline-offset-1 outline-primary-200-light flex justify-center items-center gap-1'>
+									<div className="justify-center text-neutral-900 body-1 font-medium">{item.label}</div>
+								</div>
+								<div className={`${item.contentClassName} ${item.textColor} title-3 font-regular line-clamp-1`}>
+									{item.content}
+								</div>
+							</button>
+						))
+					)}
 				</div>
 			</div>
 			{/* 오른쪽 영역: 설정 아이콘 및 프로젝트 날짜 */}
 			<div className='inline-flex flex-col items-end gap-[108px]'>
-				{/* 설정 아이콘 */}
-				<div className='w-10 h-10 flex justify-center items-center'>
-					<SettingsIcon className='w-6 h-6 text-neutral-700' />
-				</div>
+				{/* 설정 아이콘 (현재 비워둠) */}
+				<div className='w-10 h-10 flex justify-center items-center' />
 				{/* 프로젝트 기간 및 D-day */}
 				<div className='self-stretch pr-3.5 inline-flex justify-end items-center gap-3'>
 					{/* Due 날짜 */}

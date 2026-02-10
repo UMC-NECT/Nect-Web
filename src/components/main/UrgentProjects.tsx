@@ -1,6 +1,6 @@
 import More from '@/assets/icons/common/chevron-right.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { getTagStyle } from '@/utils/tagStyles';
 import { useRecruitingProjects } from '@/hooks/queries/home';
 
@@ -33,7 +33,7 @@ const UrgentProjects = () => {
             <div className="flex justify-between items-center mb-5 w-138 h-7.5">
                 <h2 className="text-[22px] text-neutral-900 font-bold">모집 중인 프로젝트</h2>
                 {!isLoading && !isError && projects && projects.length > 0 && (
-                    <Link 
+                    <Link
                         to="/projectList"
                         className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700"
                     >
@@ -63,14 +63,14 @@ const UrgentProjects = () => {
                     모집 중인 프로젝트가 없습니다.
                 </div>
             )}
-            
+
             {/* 프로젝트 리스트 */}
             {!isLoading && !isError && projects && projects.length > 0 && (
                 <div className="flex flex-col gap-2">
                     {projects.map((project) => (
                         <Link
                             key={project.projectId}
-                            to="/recruiting-projects"
+                            to={`/recruiting-projects/${project.projectId}`}
                             className="w-138 h-31 px-5.5 py-4 bg-white rounded-xl border border-neutral-100 cursor-pointer hover:border-purple-400 transition-colors block"
                         >
                             {/* 상단: 제목 + 날짜 */}
@@ -89,12 +89,12 @@ const UrgentProjects = () => {
                                     D-{project.leftDays}
                                 </span>
                             </div>
-                            
+
                             {/* 하단: 태그 + 인원 */}
                             <div className="flex justify-between items-center">
                                 <div className="flex gap-2 flex-wrap">
                                     {getRoleTags(project.roles).map((tag, index) => (
-                                        <span 
+                                        <span
                                             key={index}
                                             className={`px-2 py-1 gap-0.5 text-sm text-neutral-800 rounded-md h-6 flex justify-center items-center ${getTagStyle(tag)}`}
                                         >

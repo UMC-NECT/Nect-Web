@@ -18,10 +18,13 @@ import MoreIcon from '@/components/mission-modal/MoreIcon.svg?react'
 interface SharedDocumentItemProps {
 	data: FileItemData
 	isSelected?: boolean
+	isEditing?: boolean
 	onClick?: () => void
 	onDownload?: () => void
 	onRename?: () => void
 	onDelete?: () => void
+	onSave?: (name: string) => void
+	onCancel?: () => void
 }
 
 // 파일 확장자에 따른 아이콘 매핑
@@ -83,13 +86,33 @@ const getLinkIcon = (url: string) => {
 const SharedDocumentItem = ({
 	data,
 	isSelected = false,
+	isEditing = false,
 	onClick,
 	onDownload,
 	onRename,
 	onDelete,
+	onSave,
+	onCancel,
 }: SharedDocumentItemProps) => {
 	const [showMenu, setShowMenu] = useState(false)
+	const [editName, setEditName] = useState(data.name)
 	const menuRef = useRef<HTMLDivElement>(null)
+	const inputRef = useRef<HTMLInputElement>(null)
+
+	// 편집 모드일 때 입력 필드에 포커스
+	useEffect(() => {
+		if (isEditing && inputRef.current) {
+			inputRef.current.focus()
+			inputRef.current.select()
+		}
+	}, [isEditing])
+
+	// 편집 모드일 때 이름 초기화
+	useEffect(() => {
+		if (isEditing) {
+			setEditName(data.name)
+		}
+	}, [isEditing, data.name])
 
 	// 메뉴 외부 클릭 감지
 	useEffect(() => {
@@ -132,6 +155,70 @@ const SharedDocumentItem = ({
 	// 상세 정보 텍스트
 	const detailText = data.type === 'file' ? `파일명: ${data.fileName || '알 수 없음'}` : `${data.url || '알 수 없음'}`
 
+	// 키보드 이벤트 핸들러
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter') {
+			if (editName.trim()) {
+				onSave?.(editName.trim())
+			}
+		}
+		if (e.key === 'Escape') {
+			onCancel?.()
+		}
+	}
+
+	// 편집 모드 렌더링
+	if (isEditing) {
+		return (
+			<div className="relative">
+				<div
+					className={`bg-bg-gray border rounded-md flex gap-2.5 h-[46px] items-center pl-2 pr-2.5 py-1.5 w-[284px] transition-colors ${
+						isSelected ? 'border-status-info-cool-gray-light' : 'border-neutral-100'
+					}`}
+				>
+					{/* 아이콘 */}
+					<div className="relative shrink-0 w-7 h-7">
+						{data.type === 'file' && data.fileName ? (
+							<>
+								<div className="absolute bg-neutral-50 inset-0 rounded-[6.222px] shadow-inner-neutral-1" />
+								<div className="absolute inset-0 flex items-center justify-center">{renderIcon()}</div>
+							</>
+						) : data.type === 'link' && data.url?.toLowerCase().includes('figma') ? (
+							renderIcon()
+						) : (
+							<>
+								<div className="absolute bg-neutral-50 inset-0 rounded-[6.222px] shadow-inner-neutral-1" />
+								<div className="absolute inset-0 flex items-center justify-center">{renderIcon()}</div>
+							</>
+						)}
+					</div>
+
+					{/* 편집 입력 필드 */}
+					<div className="flex flex-1 flex-col items-start leading-0 min-w-0">
+						<input
+							ref={inputRef}
+							type="text"
+							value={editName}
+							onChange={(e) => setEditName(e.target.value)}
+							onKeyDown={handleKeyDown}
+							onBlur={() => {
+								if (editName.trim()) {
+									onSave?.(editName.trim())
+								} else {
+									onCancel?.()
+								}
+							}}
+							className="caption-1 font-semibold text-neutral-900 w-full bg-transparent border-none outline-none leading-[1.4]"
+						/>
+						<div className="text-[9px] leading-[1.4] font-regular text-neutral-400 w-full whitespace-nowrap">
+							<span className="overflow-hidden truncate block">{detailText}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
 	return (
 		<div className="relative">
 			<div
@@ -162,8 +249,8 @@ const SharedDocumentItem = ({
 					<div className="caption-1 font-semibold text-neutral-900 w-full whitespace-nowrap">
 						<span className="leading-[1.4] overflow-hidden truncate block">{data.name}</span>
 					</div>
-					<div className="text-[9px] leading-[1.4] font-regular text-neutral-400 w-full">
-						<span className="whitespace-pre-wrap truncate block">{detailText}</span>
+					<div className="text-[9px] leading-[1.4] font-regular text-neutral-400 w-full whitespace-nowrap">
+						<span className="overflow-hidden truncate block">{detailText}</span>
 					</div>
 				</div>
 

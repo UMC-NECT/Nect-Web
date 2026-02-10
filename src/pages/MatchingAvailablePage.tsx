@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams } from 'react-router';
 import hamburger from '@/assets/icons/common/hamburger-bar.svg';
 import chat from '@/assets/icons/common/message.svg';
 import Breadcrumb from '@/components/common/Breadcrumb';
@@ -12,31 +13,11 @@ import MatchingCancelModal from '@/components/recruiting-projects/MatchingCancel
 import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlockedModal';
 import MemberProfileHeader from '@/components/recruiting-projects/MemberProfileHeader';
 import MemberProfileDetail from '@/components/recruiting-projects/MemberProfileDetail';
-import type { Member } from '@/types/member';
+import { useMemberDetail } from '@/hooks/queries/member/useMemberDetail';
 
 const MatchingAvailablePage = () => {
-    const member: Member = {
-        name: '이방토',
-        role: 'Lead',
-        position: 'Design',
-        email: 'ellaella2@hanyang.ac.kr',
-        isRecruiting: true,
-        jobTitle: 'UX/UI Product Designer / UX researcher',
-        field: 'UX/UI 브랜딩/제품',
-        experience: '6개월',
-        introduction: '디자인 프로젝트 경험이 많고 꼼꼼한 UX.UI 디자이너 입니다!\nUX리서치/ 브랜딩/ 패키지/ 그래픽 및 일러스트 모두 가능합니다.',
-        coreCompetencies: [
-            '사용자 경험을 기반으로 한 UX 전략 도출 및 서비스 프로토타입 설계 가능',
-            'UX 리서치 및 데이터 드리븐을 통한 가설 설정, 지표 개선 경험',
-            '기획 / 개발 / 비즈니스 / 마케팅 직군과의 커뮤니케이션 능숙',
-            '다양한 디바이스 환경(웹 접근성, 반응형, 웹 앱 등)에 대한 높은 이해도',
-            '디자인 시스템 구축 및 실 서비스에 활용 경험 보유'
-        ],
-        portfolioKeywords: ['#프트폴리오 집중', '#신중한 설계자'],
-        designTools: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
-        recordTools: ['Notion', 'UX Research'],
-        etcTools: ['Claude', 'consecutive interpretation']
-    };
+    const { userId } = useParams<{ userId: string }>();
+    const { data: memberData, isLoading, error } = useMemberDetail(Number(userId));
 
     const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
     const [isSelectMultipleModalOpen, setIsSelectMultipleModalOpen] = useState(false);
@@ -47,7 +28,7 @@ const MatchingAvailablePage = () => {
     const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
     const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
     
-    const [matchingCount, setMatchingCount] = useState(0); // 신청 횟수
+    const [matchingCount, setMatchingCount] = useState(0);
     const [isMatching, setIsMatching] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -67,16 +48,12 @@ const MatchingAvailablePage = () => {
 
     const handleMatchingButtonClick = () => {
         if (isMatching) {
-            // 신청 중일 때 클릭하면 취소 모달
             setIsCancelModalOpen(true);
         } else if (matchingCount === 0) {
-            // 첫 번째 신청 - 프로젝트 1개
             setIsSelectModalOpen(true);
         } else if (matchingCount === 1) {
-            // 두 번째 신청 - 프로젝트 2개
             setIsSelectMultipleModalOpen(true);
         } else if (matchingCount >= 2) {
-            // 세 번째 신청 - 파트 초과
             setIsLimitModalOpen(true);
         }
     };
@@ -89,8 +66,64 @@ const MatchingAvailablePage = () => {
 
     const handleCancelConfirm = () => {
         setIsMatching(false);
-        // matchingCount는 그대로 유지 (신청 횟수는 줄이지 않음)
         setIsCancelModalOpen(false);
+    };
+
+    // 디버깅용 로그 추가
+    console.log('userId:', userId);
+    console.log('memberData:', memberData);
+    console.log('isLoading:', isLoading);
+    console.log('error:', error);
+
+    // 로딩 상태
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-neutral-500">로딩 중...</p>
+            </div>
+        );
+    }
+
+    // 에러 상태
+    if (error) {
+        console.error('API Error:', error);
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <p className="text-red-500">멤버 정보를 불러올 수 없습니다</p>
+                    <p className="text-sm text-neutral-500 mt-2">에러: {error.message}</p>
+                </div>
+            </div>
+        );
+    }
+
+    // 데이터 없음
+    if (!memberData) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-red-500">멤버 데이터가 없습니다</p>
+            </div>
+        );
+    }
+
+    // API 데이터를 기존 Member 타입으로 변환
+    const member = {
+        name: memberData.name,
+        role: 'Lead',
+        position: memberData.role,
+        email: memberData.email,
+        isRecruiting: memberData.userStatus === 'JOB_SEEKING',
+        jobTitle: memberData.interestedJob || '',
+        field: memberData.interestedField || '',
+        experience: memberData.careerDuration || '',
+        introduction: memberData.bio || '',
+        coreCompetencies: memberData.coreCompetencies?.split('\n') || [],
+        portfolioKeywords: memberData.tags || [],
+        designTools: (memberData.skills || [])
+            .find(s => s.category === 'DESIGN')
+            ?.skills.filter(skill => skill.isSelected).map(skill => skill.skillLabel) || [],
+        recordTools: [],
+        etcTools: [],
     };
 
     // 액션 버튼들
@@ -143,10 +176,10 @@ const MatchingAvailablePage = () => {
                         />
                     </div>
                     <div className='mt-8 flex items-center justify-between'>
-                        <h1 className="text-3xl font-bold mt-1">지금 매칭 가능한 넥터</h1>
-                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 border border-neutral-400 rounded-xl">
+                        <h1 className="text-[28px] font-bold mt-1">지금 매칭 가능한 넥터</h1>
+                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 bg-neutral-100 border border-neutral-200 rounded-xl">
                             <img src={hamburger} alt="Menu" />
-                            <p className='text-[14px] text-neutral-400 bg-neutral-100'>목록으로 가기</p>
+                            <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
                         </button>
                     </div>
                 </div>
@@ -159,7 +192,7 @@ const MatchingAvailablePage = () => {
                         />
                     </div>
                     <div className='mt-[20px] pt-[40px] pb-[40px] px-[56px]'>
-                        <MemberProfileDetail member={member} />
+                        <MemberProfileDetail memberData={memberData} />
                     </div>
                 </div>
 

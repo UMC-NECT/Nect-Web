@@ -2,19 +2,21 @@ import ProjectBasicInfo from './ProjectBasicInfo';
 import ProjectGoalsSection from './ProjectGoalsSection';
 import LeaderProfile from './LeaderProfile';
 import ProjectHistory from './ProjectHistory';
+import type { ProjectDetailDto } from '@/types/api/project';
 
 interface ProjectInfoTabProps {
+    projectData: ProjectDetailDto;
     getPositionStyle: (position: string) => string;
     variant?: 'default' | 'large';
 }
 
-const ProjectInfoTab = ({ getPositionStyle, variant = 'default' }: ProjectInfoTabProps) => {
+const ProjectInfoTab = ({ projectData, getPositionStyle, variant = 'default' }: ProjectInfoTabProps) => {
     return (
         <div>
-            <ProjectBasicInfo getPositionStyle={getPositionStyle} />
-            <ProjectGoalsSection />
-            <LeaderProfile getPositionStyle={getPositionStyle} />
-            <ProjectHistory getPositionStyle={getPositionStyle} variant={variant} />
+            <ProjectBasicInfo projectData={projectData} getPositionStyle={getPositionStyle} />
+            <ProjectGoalsSection projectData={projectData} />
+            <LeaderProfile projectData={projectData} />
+            <ProjectHistory projectData={projectData} getPositionStyle={getPositionStyle} variant={variant} />
         </div>
     );
 };

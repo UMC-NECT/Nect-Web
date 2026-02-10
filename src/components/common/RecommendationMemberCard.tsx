@@ -17,7 +17,7 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
         'JOB_SEEKING': '매칭 가능',
         'EMPLOYED': '재직 중',
     };
-    
+
     // part 변환: "DESIGNER" → "디자인", "DEVELOPER" → "개발" 등
     const partMap: Record<string, string> = {
         'DESIGNER': 'Design',
@@ -25,7 +25,7 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
         'PLANNER': 'PM',
         'OTHER': '기타',
     };
-    
+
     const displayStatus = member.status ? (statusMap[member.status] || member.status) : '매칭 가능';
     const displayPart = member.part ? (partMap[member.part] || member.part) : '기타';
     const displayIntroduction = member.introduction || '자기소개가 없습니다.';
@@ -34,8 +34,8 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
     const sizeStyles = {
         default: {
             card: 'w-90',
-            height: displayIntroduction.length > 40 ? 'h-[316px]' : 'h-[296px]',
-            background: 'h-45',
+            height: displayIntroduction.length > 40 ? 'h-[336px]' : 'h-[326px]',
+            background: 'h-50',
             character: 'w-16 h-16',
         },
         list: {

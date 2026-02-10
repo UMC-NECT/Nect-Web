@@ -47,7 +47,7 @@ const ProjectShowcase = () => {
                                 className="w-[434px] h-[264px] rounded-xl cursor-pointer shrink-0 transition-transform duration-300 hover:-translate-y-4"
                             >
                                 <div
-                                    className="w-[414px] h-[230px] rounded-xl"
+                                    className="w-[414px] h-[230px] rounded-xl border border-neutral-800"
                                     style={{
                                         backgroundImage: `url(${portfolio})`,
                                         backgroundSize: 'cover',
@@ -74,7 +74,7 @@ const ProjectShowcase = () => {
                         {secondRowProjects.map((project, index) => (
                             <div 
                                 key={`second-${index}`}
-                                className="w-[434px] h-[264px] rounded-xl cursor-pointer shrink-0 transition-transform duration-300 hover:-translate-y-4"
+                                className="w-[434px] h-[264px] border border-neutral-800 rounded-xl cursor-pointer shrink-0 transition-transform duration-300 hover:-translate-y-4"
                             >
                                 <div
                                     className="w-[414px] h-[230px] rounded-xl"

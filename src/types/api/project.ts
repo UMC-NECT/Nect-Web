@@ -1,5 +1,33 @@
-import type { Part } from "../part"
-import type { CommonResponse } from "./commonResponse"
+import type { Part } from '../part'
+import type { CommonResponse } from './commonResponse'
+
+/** 프로젝트 상세 API 응답 body 타입 */
+export type ProjectDetailDto = {
+	defaultInfo: {
+		leader?: { profile_image_url?: string; name: string }
+		planned_ended_on: string | null
+		planned_started_on: string | null
+		image_name: string | null
+		project_title: string
+		description: string | null
+		team_roles: { role_field: string; required_count: number }[]
+		team_member_projects: {
+			project_id: number
+			title: string
+			description: string | null
+			created_at: string
+			ended_at: string | null
+			image_name: string | null
+		}[]
+	}
+	fields?: {
+		fields?: { is_selected: boolean; field_name: string }[]
+	}
+	purposes?: { values: string[] }
+	functions?: { values: string[] }
+	serviceUsers?: { values: string[] }
+	planFiles?: { files: { name: string }[] }
+}
 
 export type ResponsePartsDto = CommonResponse<{
     parts: Part[]
