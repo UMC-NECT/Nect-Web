@@ -9,6 +9,7 @@ export const QUERY_KEY = {
 		all: ['users'] as const,
 		email: () => [...QUERY_KEY.users.all, 'email'] as const,
 		profile: () => [...QUERY_KEY.users.all, 'profile'] as const,
+		profileAnalysis: () => [...QUERY_KEY.users.all, 'profileAnalysis'] as const,
 	},
 	analysis: {
 		all: ['analysis'] as const,

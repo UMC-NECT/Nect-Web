@@ -85,3 +85,28 @@ export type ResponseProfileDto = CommonResponse<{
     email: string
     role: string
 }>
+
+export type ResponseProfileAnalysisDto = CommonResponse<{
+    profileType: string
+    tags: string[]
+    collaborationStyle: {
+        planning: number
+        logic: number
+        supporter: number
+        execution: number
+        empathy: number
+        leadership: number
+    }
+    skills: {
+        category: string
+        skill_names: string[]
+    }[]
+    roleRecommendation: {
+        leader: string
+        team_member: string
+    }
+    growthGuide: {
+        order: number
+        tip: string
+    }[]
+}>

@@ -1,5 +1,4 @@
 import Logo from '@/assets/icons/common/logo-big.svg?react'
-import { useCollaboStore, useGrowGuideStore, useRoleRecommendStore, useSkillStore } from '@/stores/profileAnalysisStore'
 import ProfileRadarChart from '@/components/profile-analysis/ProfileRadarChart'
 import ContentSection from '@/components/profile-analysis/ContentSection'
 import SkillSection from '@/components/profile-analysis/SkillSection'
@@ -9,13 +8,57 @@ import RecommendationProject from '@/components/main/RecommendationProject'
 import RecommendationMember from '@/components/main/RecommendationMember'
 import Button from '@/components/common/Button'
 import { useNavigate } from 'react-router'
+import { useGetProfileAnalysisQuery } from '@/hooks/auth/useUsersApi'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import type { RadarDataItem } from '@/stores/profileAnalysisStore'
+
+const COLLABO_LABELS: Record<string, string> = {
+	planning: '계획형',
+	logic: '논리형',
+	supporter: '서포터형',
+	execution: '실행형',
+	empathy: '공감형',
+	leadership: '리더형',
+}
 
 const ProfileAnalysisPage = () => {
-	const { type, role, tags, radarData } = useCollaboStore()
-    const { skills } = useSkillStore()
-    const { roleRecommend } = useRoleRecommendStore()
-    const { growGuide } = useGrowGuideStore()
-    const navigate = useNavigate()
+	const navigate = useNavigate()
+	const { skillCategories, skillsByCategory } = useOnboardingEnums()
+	const { data: analysisRes, isLoading } = useGetProfileAnalysisQuery()
+	const body = analysisRes?.body
+
+	const type = body?.profileType ?? ''
+	const role = body?.tags?.[0] ?? ''
+	const tags = body?.tags ?? []
+	const radarData: RadarDataItem[] = body?.collaborationStyle
+		? (['planning', 'logic', 'supporter', 'execution', 'empathy', 'leadership'] as const).map(key => ({
+				subject: COLLABO_LABELS[key],
+				value: body.collaborationStyle[key],
+		  }))
+		: []
+	const skills =
+		body?.skills?.map(s => {
+			const categoryLabel = skillCategories.find(c => c.value === s.category)?.label ?? s.category
+			const categorySkills = skillsByCategory[s.category] ?? []
+			const skillList = (s.skill_names ?? [])
+				.map(x => x.trim())
+				.filter(Boolean)
+				.map(value => categorySkills.find(sk => sk.value === value)?.label ?? value)
+			return { skillName: categoryLabel, skillList }
+		}) ?? []
+	const roleRecommend =
+		body?.roleRecommendation != null
+			? [
+					{ role: '리더', title: '다음과 같은 성격의 팀원과 함께하세요!', description: body.roleRecommendation.leader ?? '' },
+					{ role: '팀원', title: '현재 모집중인 프로젝트를 추천할게요!', description: body.roleRecommendation.team_member ?? '' },
+			  ]
+			: []
+	const growGuide =
+		body?.growthGuide?.map(g => ({
+			tipText: '앞으로 이런 활동을 하면 좋아요 !',
+			title: `Tip ${g.order}`,
+			description: g.tip,
+		})) ?? []
 
 	return (
 		<div className='flex flex-col justify-center pt-32'>
@@ -36,7 +79,7 @@ const ProfileAnalysisPage = () => {
 
                         {/* 메인 타이틀 */}
                         <h2 className='heading-2 font-bold text-neutral-900 text-center'>
-                            이방토님은 [{type}] 타입이시네요!
+                            {isLoading ? '분석 중...' : `이방토님은 [${type}] 타입이시네요!`}
                         </h2>
 
                         {/* 태그 섹션 */}
@@ -101,7 +144,7 @@ const ProfileAnalysisPage = () => {
 
             <div className='flex gap-5 min-w-[660px] justify-center mx-auto mt-[112px] mb-24'>
                 <Button color='secondary' size='xl' fullWidth onClick={() => navigate('/')}>메인홈으로 이동</Button>
-                <Button color='primary' size='xl' fullWidth>아이디어 분석 후 프로젝트 생성</Button>
+                <Button color='primary' onClick={() => navigate('/idea-analyze')} size='xl' fullWidth>아이디어 분석 후 프로젝트 생성</Button>
             </div>
 		</div>
 	)

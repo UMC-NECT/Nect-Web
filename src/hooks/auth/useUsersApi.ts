@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestSetupDto, RequestSignupDto, ResponseSignupDto } from '@/types/api/users'
-import { postLogin, postLogout, postSignup, postSetup, postAgree, postCheck, getProfile } from '@/api/users'
+import { postLogin, postLogout, postSignup, postSetup, postAgree, postCheck, getProfile, getProfileAnalysis } from '@/api/users'
 import { LOCAL_STORAGE_KEY, QUERY_KEY } from '@/constants/key'
 import { useNavigate } from 'react-router'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
@@ -67,5 +67,12 @@ export const useGetProfileQuery = () => {
 		queryFn: () => getProfile(),
 		staleTime: Infinity,
 		gcTime: 1000 * 60 * 60 * 24,
+	})
+}
+
+export const useGetProfileAnalysisQuery = () => {
+	return useQuery({
+		queryKey: QUERY_KEY.users.profileAnalysis(),
+		queryFn: () => getProfileAnalysis(),
 	})
 }

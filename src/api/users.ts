@@ -1,5 +1,5 @@
 import type { CommonResponse } from "@/types/api/commonResponse"
-import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestRefreshTokenDto, RequestSetupDto, RequestSignupDto, ResponseCheckDto, ResponseEmailDto, ResponseLoginDto, ResponseProfileDto, ResponseRefreshTokenDto, ResponseSignupDto } from "@/types/api/users"
+import type { RequestAgreeDto, RequestCheckDto, RequestLoginDto, RequestRefreshTokenDto, RequestSetupDto, RequestSignupDto, ResponseCheckDto, ResponseEmailDto, ResponseLoginDto, ResponseProfileAnalysisDto, ResponseProfileDto, ResponseRefreshTokenDto, ResponseSignupDto } from "@/types/api/users"
 import { api } from "@/utils/AxiosInstance"
 
 /** 이메일과 비밀번호로 로그인합니다. 성공 시 액세스 토큰과 리프레시 토큰을 발급합니다. autoLoginEnabled가 true면 자동 로그인 활성화, false면 비활성화입니다. */
@@ -55,5 +55,11 @@ export const postRefreshToken = async (body: RequestRefreshTokenDto): Promise<Re
 /** 헤더에 표시할 프로필 정보를 조회합니다. */
 export  const getProfile = async (): Promise<ResponseProfileDto> => {
     const {data} = await api.get('/api/v1/home/profile')
+    return data
+}
+
+/** 사용자의 프로필 정보를 AI로 분석합니다. 타입, 태그, 협업스타일(5개 차원), 스킬, 역할별 추천, 성장가이드를 제공합니다. */
+export const getProfileAnalysis = async (): Promise<ResponseProfileAnalysisDto> => {
+    const {data} = await api.get('/api/v1/users/profile/analysis')
     return data
 }
