@@ -3,7 +3,7 @@ import RecruitmentStatusChip from '@/components/common/RecruitmentStatusChip';
 import type { ProjectCard } from '@/types/api/home';
 import projectBg from '@/assets/icons/main/projectImage.svg';
 import type { FC } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 export interface RecommendationProjectCardProps {
     project: ProjectCard;
