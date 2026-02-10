@@ -124,6 +124,7 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 				<ChatHeader
 					type="list"
 					title="클라우드"
+					showActions={false}
 				/>
 
 				{/* 메인 컨텐츠 영역 */}

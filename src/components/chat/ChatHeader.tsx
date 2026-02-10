@@ -12,6 +12,7 @@ interface ChatHeaderProps {
 	// List type props
 	title?: string
 	onNewMessage?: () => void
+	showActions?: boolean // 오른쪽 버튼 표시 여부
 	// Room type props
 	roomName?: string
 	memberCount?: number
@@ -29,6 +30,7 @@ const ChatHeader = ({
 	type,
 	title = 'Nect 메세지함',
 	onNewMessage,
+	showActions = true, // 기본값은 true
 	roomName,
 	memberCount,
 	role,
@@ -154,22 +156,24 @@ const ChatHeader = ({
 				</div>
 
 				{/* 오른쪽: 검색 + 새 메시지 버튼 */}
-				<div className="flex justify-start items-center gap-1">
-					{/* 검색 버튼 */}
-					<button
-						onClick={onSearchClick}
-						className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
-					>
-						<SearchIcon className="w-7 h-7 text-neutral-700" />
-					</button>
-					{/* 새 메시지 버튼 */}
-					<button
-						onClick={onNewMessage}
-						className="w-7 h-7 relative overflow-hidden flex justify-center items-center"
-					>
-						<NewMessageIcon className="w-7 h-7 text-neutral-700" />
-					</button>
-				</div>
+				{showActions && (
+					<div className="flex justify-start items-center gap-1">
+						{/* 검색 버튼 */}
+						<button
+							onClick={onSearchClick}
+							className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
+						>
+							<SearchIcon className="w-7 h-7 text-neutral-700" />
+						</button>
+						{/* 새 메시지 버튼 */}
+						<button
+							onClick={onNewMessage}
+							className="w-7 h-7 relative overflow-hidden flex justify-center items-center"
+						>
+							<NewMessageIcon className="w-7 h-7 text-neutral-700" />
+						</button>
+					</div>
+				)}
 			</div>
 		</div>
 	)
