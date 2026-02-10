@@ -198,6 +198,23 @@ export const updatePost = async (
 }
 
 /**
+ * 게시글을 삭제합니다 (soft delete).
+ * 작성자만 삭제할 수 있습니다.
+ * @param projectId - 프로젝트 ID
+ * @param postId - 게시글 ID
+ * @returns 삭제 결과
+ */
+export const deletePost = async (
+	projectId: number,
+	postId: number,
+): Promise<CommonResponse> => {
+	const { data } = await api.delete(
+		`/api/v1/projects/${projectId}/boards/posts/${postId}`,
+	)
+	return data
+}
+
+/**
  * 게시글에 첨부된 문서를 해제합니다.
  * @param projectId - 프로젝트 ID
  * @param postId - 게시글 ID

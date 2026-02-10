@@ -10,6 +10,7 @@ import { usePostList } from '@/hooks/team-board/usePostList'
 import { useCreatePostMutation } from '@/hooks/team-board/useCreatePost'
 import { usePostDetail } from '@/hooks/team-board/usePostDetail'
 import { useUpdatePostMutation } from '@/hooks/team-board/useUpdatePost'
+import { useDeletePostMutation } from '@/hooks/team-board/useDeletePost'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { uploadPostFile } from '@/api/team-board/boards'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
@@ -62,6 +63,9 @@ const BoardPage = () => {
 
 	// 게시글 수정 mutation
 	const updatePostMutation = useUpdatePostMutation(projectId || 0, selectedPostId || 0)
+
+	// 게시글 삭제 mutation
+	const deletePostMutation = useDeletePostMutation(projectId || 0)
 
 	// 현재 사용자 프로필 정보
 	const { data: profileData } = useGetProfileQuery()
@@ -159,8 +163,19 @@ const BoardPage = () => {
 	}
 
 	const handleDeletePost = () => {
-		console.log('게시글 삭제')
-		// TODO: API 호출로 게시글 삭제
+		if (!selectedPostId || !projectId) return
+
+		deletePostMutation.mutate(selectedPostId, {
+			onSuccess: () => {
+				// 삭제 성공 시 모달 닫기 및 선택 해제
+				setIsViewModalOpen(false)
+				setSelectedPostId(null)
+			},
+			onError: (error) => {
+				console.error('게시글 삭제 실패:', error)
+				// TODO: 에러 처리 (토스트 메시지 등)
+			},
+		})
 	}
 
 	const handlePageChange = (page: number) => {
