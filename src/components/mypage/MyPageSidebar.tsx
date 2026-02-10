@@ -1,16 +1,16 @@
 import { useNavigate, useLocation } from 'react-router'
 import { useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
+import { useMatchingCountQuery } from '@/hooks/mypage/useMatchingApi'
 import { MYPAGE_MENU } from '@/constants/mypage'
 import { formatRoleName } from '@/utils/roleColor'
 import ProfileImageIcon from '@/assets/icons/mypage/profile-image.svg?react'
 
-interface MyPageSidebarProps {
-	matchingWaitCount?: number
-	receivedRequestCount?: number
-}
-
-export const MyPageSidebar = ({ matchingWaitCount = 0, receivedRequestCount = 0 }: MyPageSidebarProps) => {
+export const MyPageSidebar = () => {
 	const { data: profileData } = useMypageProfileQuery()
+	const { data: countData } = useMatchingCountQuery()
+
+	const matchingWaitCount = countData?.body?.sentCount ?? 0
+	const receivedRequestCount = countData?.body?.receivedCount ?? 0
 	const profile = profileData?.body
 	const navigate = useNavigate()
 	const location = useLocation()
