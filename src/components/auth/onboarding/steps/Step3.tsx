@@ -139,7 +139,7 @@ const Step3 = () => {
 					</div>
 
 					{/* 선택한 항목 개수 && 에러 메시지 */}
-					<div className='flex justify-between'>
+					<div className='flex justify-between mt-[13px]'>
 						<span className='flex justify-center items-center gap-1'>
 							{selectedSkills.length >= 20 && (
 								<CheckIcon className={`w-3 h-3 ${errors.skill ? 'text-status-error' : 'text-status-success'}`} />

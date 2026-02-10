@@ -10,6 +10,13 @@ interface IStep1 {
 	onCheckNickname?: () => void | Promise<unknown>
 }
 
+const formatBirthDisplay = (raw: string) => {
+	const digits = raw.replace(/[^0-9]/g, '').slice(0, 8)
+	if (digits.length <= 4) return digits
+	if (digits.length <= 6) return `${digits.slice(0, 4)}.${digits.slice(4, 6)}`
+	return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6, 8)}`
+}
+
 const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked, onCheckNickname }: IStep1) => {
 	const {
 		register,
@@ -19,6 +26,9 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked, onCheckNicknam
 		formState: { errors },
 	} = useFormContext<OnboardingFormType>()
 	const { jobs } = useOnboardingEnums()
+
+	const birthRaw = watch('birth') || ''
+	const birthDisplay = formatBirthDisplay(birthRaw)
 
 	// 직업 필드 감시 (form에는 API value 저장)
 	const selectedJobValue = watch('job') || ''
@@ -52,26 +62,24 @@ const Step1 = ({ isNicknameChecked = false, setIsNicknameChecked, onCheckNicknam
 							},
 						})}
 					/>
-					{/* 생년월일 (zod) */}
+					{/* 생년월일 (표시: yyyy.mm.dd, 저장: 8자리) */}
 					<Input
 						category='onboarding'
 						type='text'
 						placeholder='생년월일 8자리'
-						maxLength={8}
+						maxLength={10}
+						value={birthDisplay}
 						error={errors.birth?.message}
 						onKeyDown={e => {
 							const allowedKeys = ['Backspace', 'Tab', 'Delete', 'ArrowLeft', 'ArrowRight', 'Enter']
-
 							if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
 								e.preventDefault()
 							}
 						}}
-						{...register('birth', {
-							onChange: e => {
-								const cleanedValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 8)
-								setValue('birth', cleanedValue, { shouldValidate: true })
-							},
-						})}
+						onChange={e => {
+							const cleaned = e.target.value.replace(/[^0-9]/g, '').slice(0, 8)
+							setValue('birth', cleaned, { shouldValidate: true })
+						}}
 					/>
 					<Dropdown
 						options={jobs.map(j => j.label)}

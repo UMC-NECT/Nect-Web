@@ -1,0 +1,1 @@
+export type StatusType = 'PLANNING' | 'IN_PROGRESS' | 'DONE' | 'BACKLOG'

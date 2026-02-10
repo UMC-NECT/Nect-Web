@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { calculateDateSpan } from '@/utils/dateUtils'
-import type { Mission } from '@/components/week-mission/MissionBoard'
+import type { Mission } from '@/types/mission'
 
 interface UseMissionFilterProps {
 	positionedMissions: (Mission & { columnStart?: number | null })[]
@@ -22,7 +22,7 @@ export const useMissionFilter = ({
 			if (!visibleRange || visibleRange.startIndex === undefined) return true
 
 			const startIdx = mission.columnStart - 1
-			const endIdx = startIdx + calculateDateSpan(mission.createdAt, mission.dueDate) - 1
+			const endIdx = startIdx + calculateDateSpan(mission.start_date, mission.dead_line) - 1
 			return (
 				(startIdx >= visibleRange.startIndex && startIdx <= visibleRange.endIndex) ||
 				(endIdx >= visibleRange.startIndex && endIdx <= visibleRange.endIndex) ||

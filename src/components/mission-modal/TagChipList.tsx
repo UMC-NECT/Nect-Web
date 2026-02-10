@@ -1,12 +1,10 @@
-import { useState } from 'react'
+
 import { cn } from '@/utils/cn'
 import { useMissionModalStore, type Mission } from '@/stores/mission-modal/missionModalStore'
-import { useTeamStore, type Person, type Role } from '@/stores/teamStore'
+import { useTeamStore, getRoleDisplayName, type Person, type Role } from '@/stores/teamStore'
 import PersonTagChip from './PersonTagChip'
 import RoleTagChip from './RoleTagChip'
 import MissionTagChip from './MissionTagChip'
-import SettingIcon from '@/assets/icons/common/settings.svg?react'
-import PlusIcon from '@/assets/icons/week-mission/plus.svg?react'
 
 type TagChipListVariant = 'person' | 'role' | 'mission'
 
@@ -68,8 +66,6 @@ const TagChipList = ({
 
 	const displayTitle = title ?? defaultTitles[variant]
 
-	const [isEditMode, setIsEditMode] = useState(false)
-
 	// 커스텀 선택 상태 사용 여부
 	const useCustomPersonSelection = customSelectedPersonIds !== undefined
 	const useCustomRoleSelection = customSelectedRoleIds !== undefined
@@ -85,11 +81,7 @@ const TagChipList = ({
 		if (useCustomRoleSelection) {
 			return customSelectedRoleIds.includes(roleId)
 		}
-		return selectedRoles.some(r => r.id === roleId)
-	}
-
-	const handleSettingClick = () => {
-		setIsEditMode(prev => !prev)
+		return selectedRoles.some(r => r.part_id === roleId)
 	}
 
 	const handlePersonClick = (person: Person) => {
@@ -112,9 +104,9 @@ const TagChipList = ({
 	}
 
 	const handleRoleClick = (role: Role) => {
-		if (disabledRoleIds.includes(role.id)) return
+		if (disabledRoleIds.includes(role.part_id)) return
 
-		const isSelected = isRoleSelected(role.id)
+		const isSelected = isRoleSelected(role.part_id)
 
 		if (onRoleSelect) {
 			onRoleSelect(role, !isSelected)
@@ -122,7 +114,7 @@ const TagChipList = ({
 			// customSelectedRoleIds만 있고 onRoleSelect가 없는 경우는 무시
 		} else {
 			if (showClearButton && isSelected) {
-				removeSelectedRole(role.id)
+				removeSelectedRole(role.part_id)
 			} else {
 				addSelectedRole(role)
 			}
@@ -172,11 +164,10 @@ const TagChipList = ({
 	}
 
 	const getRoleState = (role: Role): 'default' | 'clear' | 'disabled' | 'edit' => {
-		const isSelected = isRoleSelected(role.id)
-		const isDisabled = disabledRoleIds.includes(role.id)
+		const isSelected = isRoleSelected(role.part_id)
+		const isDisabled = disabledRoleIds.includes(role.part_id)
 
 		if (isDisabled) return 'disabled'
-		if (isEditMode) return 'edit'
 		if (showClearButton && isSelected) return 'clear'
 		return 'default'
 	}
@@ -185,14 +176,13 @@ const TagChipList = ({
 		<div className='flex flex-col gap-2 w-full mt-2'>
 			{roles.map(role => (
 				<RoleTagChip
-					key={role.id}
-					roleId={role.id}
-					roleName={role.name}
+					key={role.part_id}
+					roleId={role.part_id}
+					roleName={getRoleDisplayName(role)}
 					state={getRoleState(role)}
 					onClick={() => handleRoleClick(role)}
 				/>
 			))}
-			{isEditMode && <PlusIcon className='mx-auto hover:cursor-pointer stroke-neutral-300' />}
 		</div>
 	)
 
@@ -222,13 +212,12 @@ const TagChipList = ({
 	return (
 		<div
 			className={cn(
-				'flex flex-col w-fit border border-neutral-200 rounded-[6px] px-3.5 pt-2.5 pb-3 shadow-drop-neutral-1 bg-white',
+				'flex flex-col w-fit border border-neutral-200 rounded-6 px-3.5 pt-2.5 pb-3 shadow-drop-neutral-1 bg-white',
 				className
 			)}
 		>
 			<div className='flex items-center  justify-between'>
 				<p className='pl-0.5 caption-1 font-medium text-neutral-500'>{displayTitle}</p>
-				{variant !== 'mission' && <SettingIcon className='hover:cursor-pointer w-4 h-4' onClick={handleSettingClick} />}
 			</div>
 			{renderChips()}
 		</div>

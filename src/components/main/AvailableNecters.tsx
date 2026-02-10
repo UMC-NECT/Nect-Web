@@ -1,5 +1,5 @@
 import More from '@/assets/icons/common/chevron-right.svg?react';
-import projectBg from '@/assets/icons/main/nugu.svg'; 
+import projectBg from '@/assets/icons/main/nugu.svg';
 import profile from '@/assets//icons/main/profile.svg';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { Link } from 'react-router';
@@ -36,7 +36,7 @@ const AvailableNecters = () => {
             <div className="flex justify-between items-center mb-5 w-138 h-7.5">
                 <h2 className="text-[22px] text-neutral-900 font-bold">지금 매칭 가능한 넥터</h2>
                 {hasData && (
-                    <Link 
+                    <Link
                         to="/necterList"
                         className="w-16.5 h-6 flex items-center gap-1 cursor-pointer text-neutral-500 font-semibold text-md hover:text-neutral-700"
                     >
@@ -67,28 +67,28 @@ const AvailableNecters = () => {
             {hasData && (
                 <div className="grid grid-cols-2 gap-2">
                     {displayMembers.map((member) => (
-                        <Link 
+                        <Link
                             key={member.userId}
                             to={`/matching-available/${member.userId}`}
                             className="w-68 h-64 rounded-xl overflow-hidden cursor-pointer bg-white border-neutral-100 border-[1.5px] hover:border-primary-400-normal hover:shadow-lg transition-all duration-200 block"
                         >
                             {/* 상단: 배경 + 이미지 영역 */}
                             <div className="relative h-30">
-                                <img 
-                                    src={projectBg} 
+                                <img
+                                    src={projectBg}
                                     alt="background"
                                     className="absolute inset-0 w-full h-full object-cover"
                                 />
-                                
+
                                 {/* 프로필 이미지 + 매칭 가능 버튼 */}
                                 <div className="absolute top-18.5 left-3 right-3 w-62">
                                     <div className="flex justify-between items-end">
-                                        <img 
-                                            src={member.imageUrl || profile} 
+                                        <img
+                                            src={member.imageUrl || profile}
                                             alt={member.name}
                                             className="w-20 h-20 border-neutral-100 border rounded-full object-cover"
                                         />
-                                        
+
                                         <div className="flex items-center justify-center gap-1 border border-primary-200-light rounded-2xl bg-white w-21.5 h-6.5">
                                             <span className="w-2.5 h-2.5 bg-primary-500-normal rounded-full"></span>
                                             <span className="text-sm text-neutral-700 font-semibold">
@@ -103,13 +103,13 @@ const AvailableNecters = () => {
                                             <BarIcon className="w-0.5 h-3" />
                                             <span className="text-neutral-500 font-medium">{getDisplayPart(member.part)}</span>
                                         </div>
-                                        
+
                                         <p className="text-[13px] font-medium text-neutral-600 line-clamp-2">
                                             {member.introduction || '자기소개가 없습니다.'}
                                         </p>
                                     </div>
                                 </div>
-                                
+
                             </div>
                         </Link>
                     ))}

@@ -6,6 +6,7 @@ import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import MissionModal from '@/components/mission-modal/MissionModal'
 import CTAModal from '@/components/common/CTAModal'
 import { useCTAModal } from '@/stores/useCTAModal'
+import { OnboardingGuard } from './OnboardingGuard'
 
 export const Layout = () => {
 	const { isWorkspace } = useWorkspace()
@@ -28,6 +29,7 @@ export const Layout = () => {
 	}
 
 	return (
+		<OnboardingGuard>
 		<>
 			<Header />
 			{isWorkspace && <Sidebar />}
@@ -58,5 +60,6 @@ export const Layout = () => {
 				/>
 			)}
 		</>
+		</OnboardingGuard>
 	)
 }

@@ -76,7 +76,7 @@ const skill = z.array(z.string()).min(1, '스킬을 최소 1개 선택해주세�
 const interest = z.array(z.string()).min(1, '관심분야를 최소 1개 선택해주세요')
 
 // 온보딩 5
-const goal = z.array(z.string()).min(1, '목표를 최소 1개 선택해주세요')
+const goal = z.array(z.string()).min(1, '목표를 1개 선택해주세요').max(1, '목표는 1개만 선택할 수 있어요')
 
 // 온보딩 6
 const workStyle = z.number().int().min(1).max(5).optional()

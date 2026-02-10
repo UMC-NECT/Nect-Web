@@ -7,6 +7,7 @@ export type { Person, Role }
 export interface Mission {
 	id: number
 	missionNumber: number
+	is_current?: boolean
 }
 
 export interface Task {
@@ -40,6 +41,8 @@ export interface FileItem {
 	name: string
 	url?: string
 	fileName?: string
+	/** 새로 추가한 파일 업로드용 (저장 시 postFile 호출 후 file_id 사용) */
+	rawFile?: File
 }
 
 import type { MissionStatus } from '@/types/missionStatus'
@@ -48,8 +51,12 @@ export type { MissionStatus }
 interface MissionModalStore {
 	// 모달 상태
 	isMissionModalOpen: boolean
-	editingMissionId: number | null // 현재 편집 중인 미션 ID (null이면 새 미션 생성)
+	editingMissionId: number | null // 현재 편집 중인 미션(프로세스) ID = processId (null이면 새 미션 생성)
 	editingSectionIndex: number | null // 현재 편집 중인 미션의 섹션 인덱스 (0이면 리더형 모달)
+	projectId: string | null // 프로세스 상세 조회용 (기존 미션 조회 시 필요)
+	isCreateMode: boolean
+	/** 위크미션 Task 여부 (true면 위크미션 상세/태스크 API 사용) */
+	isTask: boolean
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: Mission[]
@@ -73,9 +80,11 @@ interface MissionModalStore {
 	roleTasks: RoleTask[] // 역할별 태스크 (리더형 모달용)
 
 	// 기존 액션
+	setMissions: (missions: Mission[]) => void
 	setSelectedPersons: (persons: Person[]) => void
 	setSelectedRoles: (roles: Role[]) => void
 	setSelectedMission: (mission: Mission | null) => void
+	setIsCreateMode: (isCreateMode: boolean) => void
 	addSelectedPerson: (person: Person) => void
 	removeSelectedPerson: (personId: number) => void
 	addSelectedRole: (role: Role) => void
@@ -121,7 +130,7 @@ interface MissionModalStore {
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number) => void
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean, initialMissionStatus?: MissionStatus, initialMissionNumber?: number) => void
 	closeMissionModal: () => void
 }
 
@@ -154,6 +163,7 @@ const initialMissionModalState = {
 	mentionedPersons: [] as Person[],
 	files: initialFiles,
 	roleTasks: initialRoleTasks,
+	isTask: false,
 }
 
 export const useMissionModalStore = create<MissionModalStore>(set => ({
@@ -161,6 +171,8 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	isMissionModalOpen: false,
 	editingMissionId: null,
 	editingSectionIndex: null,
+	projectId: null,
+	isCreateMode: false,
 
 	// 기존 데이터 (persons, roles는 teamStore에서 가져옴)
 	missions: initialMissions,
@@ -172,9 +184,11 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	...initialMissionModalState,
 
 	// 기존 액션
+	setMissions: missions => set({ missions }),
 	setSelectedPersons: persons => set({ selectedPersons: persons }),
 	setSelectedRoles: roles => set({ selectedRoles: roles }),
 	setSelectedMission: mission => set({ selectedMission: mission }),
+	setIsCreateMode: isCreateMode => set({ isCreateMode }),
 	addSelectedPerson: person =>
 		set(state => ({
 			selectedPersons: state.selectedPersons.some(p => p.id === person.id)
@@ -187,11 +201,11 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		})),
 	addSelectedRole: role =>
 		set(state => ({
-			selectedRoles: state.selectedRoles.some(r => r.id === role.id) ? state.selectedRoles : [...state.selectedRoles, role],
+			selectedRoles: state.selectedRoles.some(r => r.part_id === role.part_id) ? state.selectedRoles : [...state.selectedRoles, role],
 		})),
 	removeSelectedRole: roleId =>
 		set(state => ({
-			selectedRoles: state.selectedRoles.filter(r => r.id !== roleId),
+			selectedRoles: state.selectedRoles.filter(r => r.part_id !== roleId),
 		})),
 
 	// 미션 모달 액션
@@ -200,11 +214,11 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	setSelectedParts: parts => set({ selectedParts: parts }),
 	addSelectedPart: part =>
 		set(state => ({
-			selectedParts: state.selectedParts.some(p => p.id === part.id) ? state.selectedParts : [...state.selectedParts, part],
+			selectedParts: state.selectedParts.some(p => p.part_id === part.part_id) ? state.selectedParts : [...state.selectedParts, part],
 		})),
 	removeSelectedPart: partId =>
 		set(state => ({
-			selectedParts: state.selectedParts.filter(p => p.id !== partId),
+			selectedParts: state.selectedParts.filter(p => p.part_id !== partId),
 		})),
 	setSelectedAssignees: assignees => set({ selectedAssignees: assignees }),
 	addSelectedAssignee: assignee =>
@@ -312,10 +326,30 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션
-	openMissionModal: (missionId?: number, sectionIndex?: number) => set({ 
-		isMissionModalOpen: true, 
-		editingMissionId: missionId ?? null,
-		editingSectionIndex: sectionIndex ?? null,
-	}),
-	closeMissionModal: () => set({ isMissionModalOpen: false, editingMissionId: null, editingSectionIndex: null, ...initialMissionModalState }),
+	openMissionModal: (missionId?: number, sectionIndex?: number, projectId?: string, isCreateMode?: boolean, isTask?: boolean, initialMissionStatus?: MissionStatus, initialMissionNumber?: number) =>
+		set(state => {
+			const isNewMission = missionId === undefined && sectionIndex === undefined
+			if (isNewMission) {
+				return {
+					isMissionModalOpen: true,
+					editingMissionId: null,
+					editingSectionIndex: null,
+					projectId: null,
+					isCreateMode: isCreateMode ?? false,
+					...initialMissionModalState,
+					...(initialMissionStatus && { missionStatus: initialMissionStatus }),
+				}
+			}
+			return {
+				isMissionModalOpen: true,
+				editingMissionId: missionId ?? null,
+				editingSectionIndex: sectionIndex ?? null,
+				projectId: projectId ?? state.projectId ?? null,
+				isCreateMode: isCreateMode ?? state.isCreateMode ?? false,
+				isTask: isTask ?? false,
+				...(initialMissionNumber != null && { missionNumber: initialMissionNumber }),
+			}
+		}),
+	closeMissionModal: () =>
+		set({ isMissionModalOpen: false, editingMissionId: null, editingSectionIndex: null, projectId: null, isCreateMode: false, ...initialMissionModalState }),
 }))

@@ -6,6 +6,7 @@ import { AuthLayout } from './components/layout/AuthLayout'
 import OnboardingPage from './pages/auth/OnboardingPage'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/auth/LoginPage'
+import AuthCallbackPage from './pages/auth/AuthCallbackPage'
 import WeekMissionPage from './pages/WeekMissionPage'
 import TeamBoardPage from './pages/TeamBoardPage'
 import SignupPage from './pages/auth/SignupPage'
@@ -17,6 +18,7 @@ import { ProfileSettings } from './components/mypage/profile-settings/ProfileSet
 import IdeaAnalysis from './components/mypage/idea-analysis/IdeaAnalysis'
 import OngoingProject from './components/mypage/ongoing-project/OngoingProject'
 import ProfileAnalysis from './components/mypage/profile-analysis/ProfileAnalysis'
+import { MatchingStatus } from './components/mypage/matching-status/MatchingStatus'
 import IdeaAnalyzePage from './pages/IdeaAnalyzePage'
 import AnalyzeReportPage from './pages/AnalyzeReportPage'
 import RecruitingProjectsPage from './pages/RecruitingProjectsPage'
@@ -95,6 +97,10 @@ const router = createBrowserRouter([
 						path: 'ongoing',
 						element: <OngoingProject />,
 					},
+					{
+						path: 'matching',
+						element: <MatchingStatus />,
+					},
 				],
 			},
 			{
@@ -111,7 +117,7 @@ const router = createBrowserRouter([
 		element: <AnalysisLayout />,
 		children: [
 			{
-				path: '/profile-analysis',
+				path: '/profile-analyze',
 				element: <ProfileAnalysisPage />,
 			},
 			{
@@ -130,6 +136,10 @@ const router = createBrowserRouter([
 			{
 				path: '/login',
 				element: <LoginPage />,
+			},
+			{
+				path: '/auth/callback',
+				element: <AuthCallbackPage />,
 			},
 			{
 				path: '/onboarding',

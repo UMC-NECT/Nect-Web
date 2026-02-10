@@ -163,29 +163,29 @@ const WorkContentInput = ({
 	}
 
 	return (
-		<div className={cn('bg-neutral-50 border border-neutral-100 rounded-[6px] px-5 py-2 flex flex-col relative', className)}>
+		<div className={cn('bg-neutral-50 border border-neutral-100 rounded-6 px-5 py-2 flex flex-col relative', className)}>
 			{(isFocused || value) && (
 				<div className='flex items-center justify-between mb-1'>
 					<div className='flex gap-1.5 items-center'>
-						<p className='body-3 font-medium text-neutral-900'>{partName}</p>
-						<div className='w-0.5 h-3 bg-neutral-300 rounded-[6px]' />
-						<p className='body-3 font-medium text-neutral-900'>{authorName}</p>
+						<p className='body-2 font-medium text-neutral-900'>{partName}</p>
+						<div className='w-0.5 h-3 bg-neutral-300 rounded-6' />
+						<p className='body-2 font-medium text-neutral-900'>{authorName}</p>
 					</div>
-					<p className='caption-2 text-neutral-400'>{timestamp || formatTimestamp()}</p>
+					<p className='caption-1 font-normal text-neutral-400'>{timestamp || formatTimestamp()}</p>
 				</div>
 			)}
 
 			{/* 하이라이트된 텍스트 오버레이 */}
 			<div ref={textareaContainerRef} className='relative flex-1'>
 				<div
-					className='absolute inset-0 pointer-events-none body-3 font-medium text-neutral-900 whitespace-pre-wrap wrap-break-word overflow-hidden'
+					className='absolute inset-0 pointer-events-none body-2 font-medium text-neutral-900 whitespace-pre-wrap wrap-break-word overflow-hidden'
 					aria-hidden='true'
 				>
 					{renderHighlightedText()}
 				</div>
 				<textarea
 					ref={textareaRef}
-					className='w-full h-full bg-transparent resize-none outline-none body-3 font-medium text-transparent caret-neutral-900 placeholder:text-neutral-300 relative z-10'
+					className='w-full h-full bg-transparent resize-none outline-none body-2 font-medium text-transparent caret-neutral-900 placeholder:text-neutral-300 relative z-10'
 					placeholder={placeholder}
 					value={value}
 					onChange={handleChange}
