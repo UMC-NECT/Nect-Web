@@ -17,6 +17,7 @@ import type { RequestSetupDto } from '@/types/api/users'
 import { useNavigate } from 'react-router'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
+import AnalysisScreen from '@/components/splash/AnalysisScreen'
 
 type STEPS = 1 | 2 | 3 | 4 | 5 | 6
 
@@ -40,29 +41,29 @@ const toRequestSetupDto = (
 	const birthDate = birthStr.length === 8 ? birthStr : ''
 
 	const fields = (data.fields || []).map(f => {
-		if (f.startsWith('직접입력:')) {
-			const customValue = f.replace('직접입력:', '').trim() || null
-			return { field: 'CUSTOM', customField: customValue }
+		if (f === 'CUSTOM') {
+			return { field: 'CUSTOM', customField: (data.customField || '').trim() || null }
 		}
 		return { field: f, customField: null }
 	})
 
+	const allPredefinedSkillValues = new Set(
+		skillCategories.flatMap(cat => (skillsByCategory[cat.value] ?? []).map((s: { value: string }) => s.value))
+	)
 	const skills = (data.skill || []).map(skillValue => {
-		let skillCategory = 'OTHER'
-		let isPredefined = false
-		for (const cat of skillCategories) {
-			const list = skillsByCategory[cat.value] ?? []
-			if (list.some(s => s.value === skillValue)) {
-				skillCategory = cat.value
-				isPredefined = true
-				break
+		const isPredefined = allPredefinedSkillValues.has(skillValue)
+		if (isPredefined) {
+			let skillCategory = 'OTHER'
+			for (const cat of skillCategories) {
+				const list = skillsByCategory[cat.value] ?? []
+				if (list.some((s: { value: string }) => s.value === skillValue)) {
+					skillCategory = cat.value
+					break
+				}
 			}
+			return { skillCategory, skill: skillValue, customSkillName: null }
 		}
-		return {
-			skillCategory,
-			skill: skillValue,
-			customSkillName: isPredefined ? skillValue : null,
-		}
+		return { skillCategory: 'OTHER', skill: 'CUSTOM', customSkillName: skillValue }
 	})
 
 	return {
@@ -193,7 +194,7 @@ const OnboardingMain = () => {
 					const body = toRequestSetupDto(formData, skillCategories, skillsByCategory)
 					await setupMutation.mutateAsync(body)
 					setOnboardingCompleted('true')
-					navigate('/')
+					navigate('/profile-analyze')
 				} catch {
 					console.error('프로필 설정에 실패했습니다. 다시 시도해주세요.')
 					alert('프로필 설정에 실패했습니다. 다시 시도해주세요.')
@@ -210,36 +211,46 @@ const OnboardingMain = () => {
 	const isBackDisabled = isOnboardingRequired && currentStep === 1
 
 	return (
-		<FormProvider {...methods}>
-			<form
-				onSubmit={e => e.preventDefault()}
-				className='relative min-h-screen w-screen flex pt-24.75 left-1/2 -translate-x-1/2'
-			>
-				{/* 뒤로가기 (필수 온보딩 1단계에서는 비활성화) */}
-				<div
-					className={`hidden md:block absolute left-18 top-[50%] ${isBackDisabled ? 'pointer-events-none opacity-40' : 'cursor-pointer'}`}
-					onClick={handleBack}
-				>
-					<BackButton />
-				</div>
+		<>
+			{currentStep === 6 && isSubmitting ? (
+				<AnalysisScreen name={values.nickname || '넥터'} section='프로필' />
+			) : (
+				<FormProvider {...methods}>
+					<form
+						onSubmit={e => e.preventDefault()}
+						className='relative min-h-screen w-screen flex pt-24.75 left-1/2 -translate-x-1/2'
+					>
+						{/* 뒤로가기 (필수 온보딩 1단계에서는 비활성화) */}
+						<div
+							className={`hidden md:block absolute left-18 top-[50%] ${isBackDisabled ? 'pointer-events-none opacity-40' : 'cursor-pointer'}`}
+							onClick={handleBack}
+						>
+							<BackButton />
+						</div>
 
-				{/* 메인 영역 */}
-				<div className='w-full flex flex-col items-center gap-18'>
-					{/* 프로그레스바 */}
-					<ProgressBar currentStep={currentStep} totalSteps={6} />
+						{/* 메인 영역 */}
+						<div className='w-full flex flex-col items-center gap-18'>
+							{/* 프로그레스바 */}
+							<ProgressBar currentStep={currentStep} totalSteps={6} />
 
-					{/* 컨텐츠 */}
-					{renderStep()}
-				</div>
+							{/* 컨텐츠 */}
+							{renderStep()}
+						</div>
 
-				{/* 다음 버튼 */}
-				<div className='absolute bottom-34 left-1/2 -translate-x-1/2'>
-					<Button size='lg' onClick={handleNext} disabled={isNextDisabled() || isSubmitting}>
-						{currentStep === 6 && isSubmitting ? '저장 중...' : '다음'}
-					</Button>
-				</div>
-			</form>
-		</FormProvider>
+						{/* 다음 버튼 */}
+						<div className='absolute bottom-34 left-1/2 -translate-x-1/2'>
+							<Button size='lg' onClick={handleNext} disabled={isNextDisabled() || isSubmitting}>
+								{currentStep === 6 && isSubmitting
+									? '저장 중...'
+									: currentStep === 6
+										? 'AI 프로필 분석하기'
+										: '다음'}
+							</Button>
+						</div>
+					</form>
+				</FormProvider>
+			)}
+		</>
 	)
 }
 

@@ -116,7 +116,7 @@ const router = createBrowserRouter([
 		element: <AnalysisLayout />,
 		children: [
 			{
-				path: '/profile-analysis',
+				path: '/profile-analyze',
 				element: <ProfileAnalysisPage />,
 			},
 			{

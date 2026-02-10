@@ -26,8 +26,8 @@ const Step2 = () => {
 	const displayRoleValue = selectedRole || (roles[0]?.value ?? '')
 	const currentRoleFields = roleFields[displayRoleValue] ?? []
 
-	// 직접입력 필드가 선택되었는지 확인용
-	const isCustomFieldSelected = selectedFields.some(f => f.startsWith('직접입력:'))
+	// 직접입력 필드가 선택되었는지 확인용 (API는 CUSTOM + customField 사용)
+	const isCustomFieldSelected = selectedFields.includes('CUSTOM')
 
 	// 역할 클릭 핸들러
 	const handleRoleClick = (role: string) => {
@@ -36,10 +36,9 @@ const Step2 = () => {
 		setValue('customField', '', { shouldValidate: true })
 	}
 
-	// 분야 클릭 핸들러
+	// 분야 클릭 핸들러 (CUSTOM은 직접입력 칸으로만 선택)
 	const handleFieldClick = (field: string) => {
 		const newFields = selectedFields.includes(field) ? selectedFields.filter(f => f !== field) : [...selectedFields, field]
-
 		setValue('fields', newFields, { shouldValidate: true })
 	}
 
@@ -59,30 +58,24 @@ const Step2 = () => {
 	}
 
 	const handleCustomFieldBlur = () => {
-		// 클릭으로 인한 비활성화인 경우 blur 무시
 		if (isDeactivatingRef.current) {
 			isDeactivatingRef.current = false
 			return
 		}
-
 		if (customFieldInput.trim()) {
-			const customValue = `직접입력:${customFieldInput.trim()}`
-			const filtered = selectedFields.filter(f => !f.startsWith('직접입력:'))
-			const newFields = [...filtered, customValue]
-			setValue('fields', newFields, { shouldValidate: true })
+			const filtered = selectedFields.filter(f => f !== 'CUSTOM')
+			setValue('fields', [...filtered, 'CUSTOM'], { shouldValidate: true })
 		} else {
-			const newFields = selectedFields.filter(f => !f.startsWith('직접입력:'))
-			setValue('fields', newFields, { shouldValidate: true })
+			setValue('fields', selectedFields.filter(f => f !== 'CUSTOM'), { shouldValidate: true })
 		}
 	}
 
-	// 직접입력 필드 클릭 핸들러
+	// 직접입력 칸 클릭 시 이미 선택된 상태면 해제
 	const handleCustomFieldClick = () => {
 		if (isCustomFieldSelected) {
-			// 이미 선택되어 있다면 텍스트는 유지한채로 비활성화
 			isDeactivatingRef.current = true
-			const newFields = selectedFields.filter(f => !f.startsWith('직접입력:'))
-			setValue('fields', newFields, { shouldValidate: true })
+			setValue('customField', '', { shouldValidate: true })
+			setValue('fields', selectedFields.filter(f => f !== 'CUSTOM'), { shouldValidate: true })
 		}
 	}
 
@@ -127,7 +120,7 @@ const Step2 = () => {
 					</div>
 
 					<div className='w-82.5 grid grid-cols-2 gap-3'>
-						{currentRoleFields.map(field => (
+						{currentRoleFields.filter(f => f.value !== 'CUSTOM').map(field => (
 							<ChipButton
 								className='body-1 w-full'
 								key={field.value}
@@ -137,7 +130,7 @@ const Step2 = () => {
 							/>
 						))}
 
-						{/* 직접입력 필드 */}
+						{/* 직접입력 (항상 표시, 칩 스타일·클릭 시 토글) */}
 						<input
 							type='text'
 							placeholder='직접입력'

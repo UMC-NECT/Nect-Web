@@ -11,13 +11,9 @@ const Step5 = () => {
 
 	const handleSelectGoal = (value: string) => {
 		if (selectedGoals.includes(value)) {
-			setValue(
-				'goal',
-				selectedGoals.filter(f => f !== value),
-				{ shouldValidate: true }
-			)
+			setValue('goal', [], { shouldValidate: true })
 		} else {
-			setValue('goal', [...selectedGoals, value], { shouldValidate: true })
+			setValue('goal', [value], { shouldValidate: true })
 		}
 	}
 
