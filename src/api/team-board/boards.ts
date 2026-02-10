@@ -382,3 +382,42 @@ export const stopWork = async (
 	const { data } = await api.post(`/api/v1/projects/${projectId}/boards/work/stop`)
 	return data
 }
+
+/**
+ * 공유 문서함의 파일을 다운로드합니다.
+ * 302 리다이렉트로 파일 다운로드 URL을 Location 헤더에 담아 리다이렉트합니다.
+ * @param projectId - 프로젝트 ID
+ * @param documentId - 문서 ID
+ * @param fileName - 다운로드할 파일명 (선택사항)
+ */
+export const downloadSharedDocumentFile = async (
+	projectId: number,
+	documentId: number,
+	fileName?: string,
+): Promise<void> => {
+	try {
+		// api 인스턴스를 사용하여 Authorization 헤더가 자동으로 포함되도록 함
+		// responseType을 'blob'으로 설정하여 파일을 다운로드
+		const response = await api.get(
+			`/api/v1/projects/${projectId}/files/${documentId}/download`,
+			{
+				responseType: 'blob',
+				maxRedirects: 5, // 리다이렉트를 최대 5번까지 따라감
+			}
+		)
+		
+		// Blob을 다운로드 링크로 변환
+		const blob = new Blob([response.data])
+		const downloadUrl = window.URL.createObjectURL(blob)
+		const link = document.createElement('a')
+		link.href = downloadUrl
+		link.download = fileName || 'download' // 파일명이 제공되면 사용, 없으면 기본값
+		document.body.appendChild(link)
+		link.click()
+		document.body.removeChild(link)
+		window.URL.revokeObjectURL(downloadUrl)
+	} catch (error) {
+		console.error('파일 다운로드 실패:', error)
+		throw error
+	}
+}

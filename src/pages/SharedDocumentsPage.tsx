@@ -9,6 +9,7 @@ import { useDeleteSharedDocumentMutation } from '@/hooks/team-board/useDeleteSha
 import { useUpdateSharedDocumentNameMutation } from '@/hooks/team-board/useUpdateSharedDocumentName'
 import { useUploadSharedDocumentFileMutation } from '@/hooks/team-board/useUploadSharedDocumentFile'
 import { useCreateSharedDocumentLinkMutation } from '@/hooks/team-board/useCreateSharedDocumentLink'
+import { downloadSharedDocumentFile } from '@/api/team-board/boards'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { FileItem as FileItemData } from '@/stores/mission-modal/missionModalStore'
 import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
@@ -162,14 +163,14 @@ const SharedDocumentsPage = () => {
 		})
 	}
 
-	const handleFileDownload = (file: FileItemData) => {
-		if (file.url && file.fileName) {
-			const link = document.createElement('a')
-			link.href = file.url
-			link.download = file.fileName
-			document.body.appendChild(link)
-			link.click()
-			document.body.removeChild(link)
+	const handleFileDownload = async (file: FileItemData) => {
+		if (!projectId || !file.id) return
+		
+		try {
+			await downloadSharedDocumentFile(projectId, file.id, file.fileName)
+		} catch (error) {
+			console.error('파일 다운로드 실패:', error)
+			// TODO: 에러 처리 (토스트 메시지 등)
 		}
 	}
 
