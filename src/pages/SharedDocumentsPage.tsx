@@ -7,6 +7,8 @@ import SortDropdown, { type SortOption } from '@/components/team-board/SortDropd
 import { useSharedDocumentList } from '@/hooks/team-board/useSharedDocumentList'
 import { useDeleteSharedDocumentMutation } from '@/hooks/team-board/useDeleteSharedDocument'
 import { useUpdateSharedDocumentNameMutation } from '@/hooks/team-board/useUpdateSharedDocumentName'
+import { useUploadSharedDocumentFileMutation } from '@/hooks/team-board/useUploadSharedDocumentFile'
+import { useCreateSharedDocumentLinkMutation } from '@/hooks/team-board/useCreateSharedDocumentLink'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { FileItem as FileItemData } from '@/stores/mission-modal/missionModalStore'
 import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
@@ -77,8 +79,14 @@ const SharedDocumentsPage = () => {
 	// 공유 문서 이름 변경 mutation
 	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId || 0)
 
+	// 공유 문서 파일 업로드 mutation
+	const uploadFileMutation = useUploadSharedDocumentFileMutation(projectId || 0)
+
+	// 공유 문서 링크 생성 mutation
+	const createLinkMutation = useCreateSharedDocumentLinkMutation(projectId || 0)
+
 	const handleUploadClick = () => {
-		// TODO: 파일 업로드 모달 또는 파일 선택 다이얼로그 열기
+		// FileItem 편집 모드 활성화
 		setIsUploading(true)
 	}
 
@@ -117,9 +125,25 @@ const SharedDocumentsPage = () => {
 		})
 	}, [documentList])
 
-	const handleFileAdd = () => {
-		// TODO: API 호출로 파일 추가
-		setIsUploading(false)
+	const handleFileAdd = async (data: Omit<FileItemData, 'id'>, file?: File) => {
+		if (!projectId) return
+
+		try {
+			if (data.type === 'file' && file) {
+				// 파일 업로드
+				await uploadFileMutation.mutateAsync(file)
+			} else if (data.type === 'link' && data.url) {
+				// 링크 생성 API 호출
+				await createLinkMutation.mutateAsync({
+					title: data.name,
+					link_url: data.url,
+				})
+			}
+			setIsUploading(false)
+		} catch (error) {
+			console.error('문서 추가 실패:', error)
+			// TODO: 에러 처리 (토스트 메시지 등)
+		}
 	}
 
 	const handleFileDelete = (id: number) => {

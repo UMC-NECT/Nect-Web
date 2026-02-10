@@ -40,3 +40,43 @@ export interface UpdateSharedDocumentNameRequest {
 }
 
 export type UpdateSharedDocumentNameResponse = CommonResponse
+
+/**
+ * 공유 문서함 파일 업로드 응답
+ */
+export interface SharedDocumentUploadResponse {
+	document_id: number
+	document_type: "FILE"
+	title: string
+	link_url: string | null
+	file_name: string
+	file_ext: string
+	file_size: number
+	download_url: string
+}
+
+export type UploadSharedDocumentFileResponse = CommonResponse<SharedDocumentUploadResponse>
+
+/**
+ * 공유 문서함 링크 생성 요청
+ */
+export interface CreateSharedDocumentLinkRequest {
+	title: string
+	link_url: string
+}
+
+/**
+ * 공유 문서함 링크 생성 응답
+ */
+export interface SharedDocumentLinkResponse {
+	document_id: number
+	document_type: "LINK"
+	title: string
+	link_url: string | null
+	file_name: string | null
+	file_ext: string | null
+	file_size: number | null
+	download_url: string | null
+}
+
+export type CreateSharedDocumentLinkResponse = CommonResponse<SharedDocumentLinkResponse>

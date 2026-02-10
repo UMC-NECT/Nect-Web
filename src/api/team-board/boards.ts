@@ -3,7 +3,7 @@ import type { PostType } from '@/types/api/team-board/overview'
 import type { GetCalendarMonthResponse } from '@/types/api/team-board/calendar'
 import type { CreateScheduleRequest, CreateScheduleResponse, UpdateScheduleRequest, UpdateScheduleResponse } from '@/types/api/team-board/schedule'
 import type { GetPostListResponse, CreatePostRequest, CreatePostResponse, GetPostDetailResponse, UploadPostFileResponse, UpdatePostRequest, UpdatePostResponse } from '@/types/api/team-board/posts'
-import type { GetSharedDocumentListResponse, DocumentType, SortOption, UpdateSharedDocumentNameRequest, UpdateSharedDocumentNameResponse } from '@/types/api/team-board/sharedDocuments'
+import type { GetSharedDocumentListResponse, DocumentType, SortOption, UpdateSharedDocumentNameRequest, UpdateSharedDocumentNameResponse, UploadSharedDocumentFileResponse, CreateSharedDocumentLinkRequest, CreateSharedDocumentLinkResponse } from '@/types/api/team-board/sharedDocuments'
 import type { CommonResponse } from '@/types/api/commonResponse'
 import { api } from '@/utils/AxiosInstance'
 
@@ -273,6 +273,50 @@ export const deleteSharedDocument = async (
 	documentId: number,
 ): Promise<CommonResponse> => {
 	const { data } = await api.delete(`/api/v1/projects/${projectId}/boards/shared-documents/${documentId}`)
+	return data
+}
+
+/**
+ * 공유 문서함에 파일을 업로드합니다.
+ * R2 업로드 + SharedDocument(FILE) 생성
+ * @param projectId - 프로젝트 ID
+ * @param file - 업로드할 파일
+ * @returns 업로드된 문서 정보
+ */
+export const uploadSharedDocumentFile = async (
+	projectId: number,
+	file: File,
+): Promise<UploadSharedDocumentFileResponse> => {
+	const formData = new FormData()
+	formData.append('file', file)
+
+	const { data } = await api.post(
+		`/api/v1/projects/${projectId}/boards/shared-documents/files`,
+		formData,
+		{
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		}
+	)
+	return data
+}
+
+/**
+ * 공유 문서함에 링크를 생성합니다.
+ * SharedDocument(LINK) 생성
+ * @param projectId - 프로젝트 ID
+ * @param linkData - 링크 데이터 (title, link_url)
+ * @returns 생성된 링크 문서 정보
+ */
+export const createSharedDocumentLink = async (
+	projectId: number,
+	linkData: CreateSharedDocumentLinkRequest,
+): Promise<CreateSharedDocumentLinkResponse> => {
+	const { data } = await api.post(
+		`/api/v1/projects/${projectId}/boards/shared-documents/links`,
+		linkData,
+	)
 	return data
 }
 

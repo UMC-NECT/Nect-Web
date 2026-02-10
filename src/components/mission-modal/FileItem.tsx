@@ -19,7 +19,7 @@ import MoreIcon from '@/components/mission-modal/MoreIcon.svg?react'
 interface FileItemProps {
 	data?: FileItemData
 	isEditing?: boolean
-	onSave?: (data: Omit<FileItemData, 'id'>) => void
+	onSave?: (data: Omit<FileItemData, 'id'>, file?: File) => void
 	onCancel?: () => void
 	onClick?: () => void
 	onDelete?: () => void
@@ -173,13 +173,15 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 		if (droppedFile) {
 			// 파일을 Blob URL로 변환하여 저장 (다운로드를 위해)
 			const blobUrl = URL.createObjectURL(droppedFile)
-			onSave?.({
-				type: 'file',
-				name: editName.trim(),
-				fileName: droppedFile.name,
-				url: blobUrl,
-				rawFile: droppedFile,
-			})
+			onSave?.(
+				{
+					type: 'file',
+					name: editName.trim(),
+					fileName: droppedFile.name,
+					url: blobUrl,
+				},
+				droppedFile // 실제 File 객체도 함께 전달
+			)
 		} else if (editUrl.trim()) {
 			onSave?.({
 				type: 'link',
