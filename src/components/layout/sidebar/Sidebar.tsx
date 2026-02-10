@@ -129,12 +129,12 @@ export const Sidebar = () => {
 				</div>
 			</div>
 			{showNotificationModal && (
-				<div ref={notificationModalRef} className='fixed top-[148px] left-16 z-40'>
+				<div ref={notificationModalRef} className='fixed top-[148px] left-[70px] z-40'>
 					<SideNotificationModal />
 				</div>
 			)}
 			{showChatModal && (
-				<div ref={chatModalRef} className='fixed top-[130px] left-16 z-40 h-[calc(100vh-130px-20px)]'>
+				<div ref={chatModalRef} className='fixed top-[130px] left-[70px] z-40 h-[calc(100vh-130px-20px)]'>
 					<ChatModal />
 				</div>
 			)}
