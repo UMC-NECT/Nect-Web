@@ -24,7 +24,7 @@ const TeamBoardPage = () => {
 	const navigate = useNavigate()
 	const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
 	const [editingScheduleId, setEditingScheduleId] = useState<number | null>(null)
-	
+
 	// 프로젝트 목록 조회 및 projectId 설정
 	useEffect(() => {
 		const fetchProjects = async () => {
@@ -67,10 +67,10 @@ const TeamBoardPage = () => {
 
 	// 일정 생성 mutation (projectId가 있을 때만)
 	const createScheduleMutation = useCreateScheduleMutation(projectId || 0)
-	
+
 	// 일정 수정 mutation (projectId가 있을 때만)
 	const updateScheduleMutation = useUpdateScheduleMutation(projectId || 0)
-	
+
 	// 일정 삭제 mutation (projectId가 있을 때만)
 	const deleteScheduleMutation = useDeleteScheduleMutation(projectId || 0)
 
@@ -215,12 +215,12 @@ const TeamBoardPage = () => {
 	const formatScheduleDateString = (startAt: string, endAt: string, isMultiDay: boolean): string => {
 		const startDate = new Date(startAt)
 		const endDate = new Date(endAt)
-		
+
 		const startMonth = startDate.getMonth() + 1
 		const startDay = startDate.getDate()
 		const endMonth = endDate.getMonth() + 1
 		const endDay = endDate.getDate()
-		
+
 		if (isMultiDay) {
 			return `${startMonth}월 ${startDay}일 - ${endMonth}월 ${endDay}일`
 		}
@@ -245,7 +245,7 @@ const TeamBoardPage = () => {
 
 		return overview.upcoming_schedules.items.map((schedule) => {
 			const startDate = new Date(schedule.start_at)
-			
+
 			let time: string | undefined
 			if (!schedule.all_day) {
 				const startTime = formatTimeFromISO(schedule.start_at)
@@ -466,7 +466,7 @@ const TeamBoardPage = () => {
 	}
 
 	return (
-		<div className="flex flex-col w-full max-w-main mx-auto px-10 py-16 gap-7">
+		<div className="flex flex-col w-full max-w-main mx-auto px-[72px] py-16 gap-7">
 			{/* 상단 헤더 영역 (1224x180) */}
 			<div className="w-[1224px] h-[180px]">
 				{isLoading ? (
@@ -500,11 +500,11 @@ const TeamBoardPage = () => {
 					{/* 상단: RadarChartCard + ContentListCard 두 개 (808x448) */}
 					<div className="flex gap-6 h-[448px]">
 						{/* RadarChartCard (392x448) */}
-						<RadarChartCard 
-							title="팀 미션 진행 현황" 
-							totalScore={totalCompletedCount} 
-							maxScore={totalCount} 
-							data={radarChartData} 
+						<RadarChartCard
+							title="팀 미션 진행 현황"
+							totalScore={totalCompletedCount}
+							maxScore={totalCount}
+							data={radarChartData}
 						/>
 						{/* ContentListCard 두 개 (세로 배치, 392x216 각각) */}
 						<div className="flex flex-col gap-4">

@@ -13,7 +13,7 @@ import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import CTAModal from '@/components/common/CTAModal'
 
 interface WorkspaceHeaderProps {
-    onNavigate: () => void;
+    onNavigate?: () => void;
 }
 
 const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
@@ -29,9 +29,8 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
 	const isLoggedIn = getAccessToken()
 
 	const exploreMenuItems = [
-        { name: '프로젝트 찾기' },
-        { name: '팀원 찾기' },
-        { name: '출시 프로젝트' },
+        { name: '프로젝트 찾기', href: '/projectList' },
+        { name: '팀원 찾기', href: '/necterList' },
     ];
 
     // 프로젝트 목록 조회
@@ -90,7 +89,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                         <div className="relative">
                             <button
                                 onClick={() => {
-                                    onNavigate()
+                                    onNavigate?.()
                                     setProjectId(null)
                                     navigate('/')
                                 }}
@@ -118,6 +117,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                                         <div key={item.name}>
                                             <button
                                                 className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center whitespace-nowrap"
+                                                onClick={() => navigate(item.href)}
                                             >
                                                 {item.name}
                                             </button>

@@ -30,6 +30,7 @@ import NecterListPage from './pages/NecterListPage'
 import AllProjects from './components/mypage/all-projects/AllProjects'
 import ErrorPage from './components/splash/ErrorPage'
 import SplashLayout from './components/layout/SplashLayout'
+import WorkspaceLayout from './components/layout/WorkSpaceLayout'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -47,26 +48,6 @@ const router = createBrowserRouter([
 			{
 				path: '/',
 				element: <MainPage />,
-			},
-			{
-				path: '/week-mission',
-				element: <WeekMissionPage />,
-			},
-			{
-				path: '/team-board/:projectId?',
-				element: <TeamBoardPage />,
-			},
-			{
-				path: '/board/:projectId?',
-				element: <BoardPage />,
-			},
-			{
-				path: '/shared-documents/:projectId?',
-				element: <SharedDocumentsPage />,
-			},
-			{
-				path: '/work-status',
-				element: <WorkStatusPage />,
 			},
 			{
 				path: '/recruiting-projects/:projectId',
@@ -121,7 +102,29 @@ const router = createBrowserRouter([
 		],
 	},
 	{
-		
+		element: <WorkspaceLayout />,
+		children: [
+			{
+				path: '/week-mission',
+				element: <WeekMissionPage />,
+			},
+			{
+				path: '/team-board/:projectId?',
+				element: <TeamBoardPage />,
+			},
+			{
+				path: '/board/:projectId?',
+				element: <BoardPage />,
+			},
+			{
+				path: '/shared-documents/:projectId?',
+				element: <SharedDocumentsPage />,
+			},
+			{
+				path: '/work-status',
+				element: <WorkStatusPage />,
+			},
+		],
 	},
 	{
 		element: <AnalysisLayout />,

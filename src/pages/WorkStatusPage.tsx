@@ -327,7 +327,7 @@ const WorkStatusPage = () => {
 	const activeItem = activeId ? workStatusItems.find(item => item.id === activeId) : undefined
 
 	return (
-		<div className='relative flex mt-16 h-[calc(100vh-66px-64px)] w-full ml-[72px] overflow-hidden'>
+		<div className='relative flex pt-16 h-[calc(100vh-66px-64px)] w-full ml-[72px] overflow-hidden'>
 			{/* 메인 콘텐츠 영역 */}
 			<div
 				ref={scrollContainerRef}

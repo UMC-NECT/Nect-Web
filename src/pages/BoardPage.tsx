@@ -19,7 +19,7 @@ import type { PostAttachment } from '@/components/team-board/WritePostModalConte
 const BoardPage = () => {
 	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
 	const navigate = useNavigate()
-	
+
 	// 프로젝트 목록 조회 및 projectId 설정
 	useEffect(() => {
 		const fetchProjects = async () => {
@@ -225,7 +225,7 @@ const BoardPage = () => {
 	const currentItems = boardItems
 
 	return (
-		<div className="flex flex-col w-full mx-auto px-6 py-[64px] gap-[30px]">
+		<div className="flex flex-col w-full mx-auto px-[72px] py-[64px] gap-[30px]">
 			<ContentHeader
 				title="게시판"
 				description="팀 전용 게시판입니다. 공지사항, 회의록, 업무 보고 등을 공유할 수 있습니다."
@@ -245,7 +245,7 @@ const BoardPage = () => {
                     <div className="flex flex-col">
                         {/* 헤더 */}
                         <BoardListHeader />
-                    
+
                         {currentItems.map((item, index) => (
                             <BoardListItem
                                 key={index}
