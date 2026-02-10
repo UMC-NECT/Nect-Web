@@ -15,6 +15,7 @@ import { useUpdateScheduleMutation } from '@/hooks/team-board/useUpdateSchedule'
 import { useDeleteScheduleMutation } from '@/hooks/team-board/useDeleteSchedule'
 import { useStartWorkMutation } from '@/hooks/team-board/useStartWork'
 import { useStopWorkMutation } from '@/hooks/team-board/useStopWork'
+import { useUpdateTeamBoardBasicInfoMutation } from '@/hooks/team-board/useUpdateTeamBoardBasicInfo'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { FieldType } from '@/types/api/team-board/overview'
 
@@ -78,6 +79,9 @@ const TeamBoardPage = () => {
 
 	// 작업 정지 mutation (projectId가 있을 때만)
 	const stopWorkMutation = useStopWorkMutation(projectId || 0)
+
+	// 팀보드 기본 정보 수정 mutation (projectId가 있을 때만)
+	const updateBasicInfoMutation = useUpdateTeamBoardBasicInfoMutation(projectId || 0)
 
 	/**
 	 * 날짜 포맷 변환: "2026-01-01" -> "2026.01.01"
@@ -489,6 +493,13 @@ const TeamBoardPage = () => {
 						regularMeeting={headerData.regularMeeting}
 						startDate={headerData.startDate}
 						endDate={headerData.endDate}
+						onUpdateBasicInfo={
+							projectId && overview?.basic_info?.can_edit
+								? (payload) => {
+										updateBasicInfoMutation.mutate(payload)
+									}
+								: undefined
+						}
 					/>
 				)}
 			</div>

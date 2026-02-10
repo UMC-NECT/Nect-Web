@@ -7,6 +7,12 @@ import type { GetSharedDocumentListResponse, DocumentType, SortOption, UpdateSha
 import type { CommonResponse } from '@/types/api/commonResponse'
 import { api } from '@/utils/AxiosInstance'
 
+// 팀보드 기본 정보 수정 요청 타입
+interface UpdateTeamBoardBasicInfoRequest {
+	notice_text?: string
+	regular_meeting_text?: string
+}
+
 /**
  * 팀보드 화면에 필요한 카드들을 한 번에 조회합니다.
  * @param projectId - 프로젝트 ID
@@ -38,6 +44,22 @@ export const getTeamBoardOverview = async (
 	const url = `/api/v1/projects/${projectId}/boards/overview${queryString ? `?${queryString}` : ''}`
 
 	const { data } = await api.get(url)
+	return data
+}
+
+/**
+ * 팀보드 기본 정보를 수정합니다. (공지, 정기회의 문구 등)
+ * @param projectId - 프로젝트 ID
+ * @param basicInfoData - 수정할 기본 정보 (notice_text, regular_meeting_text)
+ */
+export const updateTeamBoardBasicInfo = async (
+	projectId: number,
+	basicInfoData: UpdateTeamBoardBasicInfoRequest,
+): Promise<CommonResponse> => {
+	const { data } = await api.patch(
+		`/api/v1/projects/${projectId}/boards/basic-info`,
+		basicInfoData,
+	)
 	return data
 }
 
