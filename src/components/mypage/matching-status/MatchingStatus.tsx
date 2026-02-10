@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { MyPageHeader } from '../MyPageHeader'
 import ProjectCard from './ProjectCard'
 import ProfileCard from './ProfileCard'
@@ -8,13 +8,17 @@ import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import { RECEIVED_REQUEST_NOTICES, SENT_REQUEST_NOTICES } from '@/constants/matchingNotice'
 import CTAModal from '@/components/common/CTAModal'
 import SegmentTabButton from '../SegmentTabButton'
+import {
+	useMatchingCountQuery,
+	useMatchingsReceivedQuery,
+	useMatchingsSentQuery,
+	useMatchingAcceptMutation,
+	useMatchingCancelMutation,
+	useMatchingRejectMutation,
+} from '@/hooks/mypage/useMatchingApi'
+import type { UserMatchingDto } from '@/types/api/matching'
 
 type TabType = 'received' | 'sent'
-
-interface MatchingStatusProps {
-	receivedCount?: number
-	sentCount?: number
-}
 
 // 역할 이름을 roleId로 매핑
 const getRoleIdByName = (roleName: string): number => {
@@ -23,133 +27,116 @@ const getRoleIdByName = (roleName: string): number => {
 		Design: 2,
 		Frontend: 3,
 		Backend: 4,
+		DESIGN: 2,
+		FRONTEND: 3,
+		BACKEND: 4,
 	}
 	return roleMap[roleName] || 1
 }
 
-export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingStatusProps) => {
+// expiresAt으로부터 남은 시간을 HH:MM:SS 형식으로 계산
+const getTimerTextFromExpiry = (expiresAt?: string): string => {
+	if (!expiresAt) return '00:00:00'
+	const now = new Date().getTime()
+	const expiry = new Date(expiresAt).getTime()
+	const diff = Math.max(0, Math.floor((expiry - now) / 1000))
+	const hours = Math.floor(diff / 3600)
+	const minutes = Math.floor((diff % 3600) / 60)
+	const seconds = diff % 60
+	return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+// 매칭 상태를 TimerCard status로 변환
+const getTimerCardStatus = (matchingStatus?: string): 'default' | 'auto-rejected' | 'accepted' => {
+	if (matchingStatus === 'ACCEPTED') return 'accepted'
+	if (matchingStatus === 'REJECTED' || matchingStatus === 'EXPIRED') return 'auto-rejected'
+	return 'default'
+}
+
+// userMatchings를 field 기준으로 그룹핑
+const groupUserMatchingsByField = (userMatchings: UserMatchingDto[]) => {
+	const grouped: Record<string, UserMatchingDto[]> = {}
+	for (const user of userMatchings) {
+		const field = user.field || 'ETC'
+		if (!grouped[field]) {
+			grouped[field] = []
+		}
+		grouped[field].push(user)
+	}
+	return Object.entries(grouped).map(([field, members]) => ({
+		field,
+		members,
+	}))
+}
+
+export const MatchingStatus = () => {
 	const [activeTab, setActiveTab] = useState<TabType>('received')
 	const [modalType, setModalType] = useState<'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null>(null)
+	const [selectedMatchingId, setSelectedMatchingId] = useState<string | null>(null)
 
-	// 받은 요청 데이터 (임시)
-	const receivedProjects = [
-		{
-			id: 1,
-			projectName: 'MoneyLog',
-			category: '금융 · 핀테크',
-			description: '하루의 소비를 기록해, 나의 돈 흐름을 이해하는 금융 다이어리',
-			currentMembers: 4,
-			totalMembers: 10,
-			timerText: '09:58:29',
-		},
-	]
+	// API 훅
+	const { data: countData } = useMatchingCountQuery()
+	const { data: receivedData } = useMatchingsReceivedQuery('project', 'pending')
+	const { data: sentData } = useMatchingsSentQuery('project', 'pending')
 
-	const receivedTeamMembers = [
-		{
-			part: 'Design',
-			partColor: 'bg-roletag-pink',
-			members: [
-				{
-					id: 1,
-					nickname: '김넥트',
-					part: 'Design',
-					introduction: 'UX.UI 어쩌고 한줄 소개 ~~~~',
-					timerText: '01:27:00',
-				},
-				{
-					id: 2,
-					nickname: '윤다',
-					part: 'Design',
-					introduction: '인터렉티브 디자인 전공으로 인터렉션에 강합니다 !',
-					timerText: '07:14:00',
-				},
-			],
-		},
-		{
-			part: 'Backend',
-			partColor: 'bg-roletag-blue',
-			members: [
-				{
-					id: 3,
-					nickname: '러핑',
-					part: 'Backend',
-					introduction: '프로필 소개 (첫 문장까지 미리보기됨)',
-					timerText: '04:08:00',
-				},
-				{
-					id: 4,
-					nickname: '리뮤딘',
-					part: 'Backend',
-					introduction: '프로필 소개 (첫 문장까지 미리보기됨)',
-					timerText: '06:32:00',
-				},
-				{
-					id: 5,
-					nickname: '이경',
-					part: 'Backend',
-					introduction: '프로필 소개 (첫 문장까지 미리보기됨)',
-					timerText: '07:54:00',
-				},
-				{
-					id: 6,
-					nickname: '루트',
-					part: 'Backend',
-					introduction: '프로필 소개 (첫 문장까지 미리보기됨)',
-					timerText: '00:00:00',
-					status: 'accepted' as const,
-				},
-			],
-		},
-	]
+	const acceptMutation = useMatchingAcceptMutation()
+	const cancelMutation = useMatchingCancelMutation()
+	const rejectMutation = useMatchingRejectMutation()
 
-	// 보낸 요청 데이터 (임시)
-	const sentProjects = [
-		{
-			id: 1,
-			projectName: 'NECT 웹사이트',
-			category: 'IT · 웹/모바일 서비스',
-			description: '크리에이터를 위한 사이드 프로젝트 매칭 & 협업 플랫폼',
-			currentMembers: 6,
-			totalMembers: 10,
-			timerText: '12:34:56',
-		},
-	]
+	const receivedCount = countData?.body?.receivedCount ?? 0
+	const sentCount = countData?.body?.sentCount ?? 0
 
-	const sentTeamMembers = [
-		{
-			part: 'Frontend',
-			partColor: 'bg-roletag-green',
-			members: [
-				{
-					id: 1,
-					nickname: '김개발',
-					part: 'Frontend',
-					introduction: 'React/Next.js 개발 경험이 있습니다!',
-					timerText: '05:20:00',
-				},
-				{
-					id: 2,
-					nickname: '박프론트',
-					part: 'Frontend',
-					introduction: '프로필 소개 (첫 문장까지 미리보기됨)',
-					timerText: '08:15:30',
-				},
-			],
-		},
-		{
-			part: 'PM',
-			partColor: 'bg-roletag-purple',
-			members: [
-				{
-					id: 3,
-					nickname: '최기획',
-					part: 'PM',
-					introduction: '프로젝트 관리 경험이 풍부합니다',
-					timerText: '03:45:00',
-				},
-			],
-		},
-	]
+	const receivedProjectMatchings = receivedData?.body?.projectMatchings ?? []
+	const receivedUserMatchings = receivedData?.body?.userMatchings ?? []
+	const sentProjectMatchings = sentData?.body?.projectMatchings ?? []
+	const sentUserMatchings = sentData?.body?.userMatchings ?? []
+
+	// userMatchings를 field 기준으로 그룹핑
+	const receivedGrouped = useMemo(() => groupUserMatchingsByField(receivedUserMatchings), [receivedUserMatchings])
+	const sentGrouped = useMemo(() => groupUserMatchingsByField(sentUserMatchings), [sentUserMatchings])
+
+	// 모달 핸들러
+	const handleAcceptClick = (matchingId?: number) => {
+		setSelectedMatchingId(matchingId?.toString() ?? null)
+		setModalType('accept')
+	}
+
+	const handleRejectClick = (matchingId?: number) => {
+		setSelectedMatchingId(matchingId?.toString() ?? null)
+		setModalType('reject')
+	}
+
+	const handleCancelClick = (matchingId?: number) => {
+		setSelectedMatchingId(matchingId?.toString() ?? null)
+		setModalType('cancel')
+	}
+
+	const handleAcceptConfirm = () => {
+		if (!selectedMatchingId) return
+		acceptMutation.mutate(selectedMatchingId, {
+			onSuccess: () => setModalType('acceptSuccess'),
+		})
+	}
+
+	const handleRejectConfirm = () => {
+		if (!selectedMatchingId) return
+		rejectMutation.mutate(
+			{ matchingId: selectedMatchingId, body: { rejectReason: 'OTHER' } },
+			{ onSuccess: () => setModalType('rejectSuccess') }
+		)
+	}
+
+	const handleCancelConfirm = () => {
+		if (!selectedMatchingId) return
+		cancelMutation.mutate(selectedMatchingId, {
+			onSuccess: () => setModalType('cancelSuccess'),
+		})
+	}
+
+	const handleModalClose = () => {
+		setModalType(null)
+		setSelectedMatchingId(null)
+	}
 
 	return (
 		<div className='ml-7'>
@@ -184,22 +171,22 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>프로젝트</p>
 									</div>
 								</div>
-								<div className='flex gap-1 items-center px-5 relative shrink-0 w-full'>
-									{receivedProjects.map(project => (
-										<div key={project.id} className='flex gap-1 items-center'>
+								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
+									{receivedProjectMatchings.map(project => (
+										<div key={project.projectId} className='flex gap-1 items-center'>
 											<ProjectCard
-												projectName={project.projectName}
-												category={project.category}
+												projectName={project.title}
+												category=''
 												description={project.description}
-												currentMembers={project.currentMembers}
-												totalMembers={project.totalMembers}
+												currentMembers={project.currentMembersNum}
+												totalMembers={0}
 											/>
 											<MatchingTimerCard
 												requestType='received'
-												status='default'
-												timerText={project.timerText}
-												onAccept={() => setModalType('accept')}
-												onReject={() => setModalType('reject')}
+												status={getTimerCardStatus(project.matchingStatus)}
+												timerText={getTimerTextFromExpiry(project.expiresAt)}
+												onAccept={() => handleAcceptClick(project.matchingId)}
+												onReject={() => handleRejectClick(project.matchingId)}
 											/>
 										</div>
 									))}
@@ -214,28 +201,28 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
-									{receivedTeamMembers.map((partGroup, partIndex) => (
-										<div key={partIndex} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
+									{receivedGrouped.map(group => (
+										<div key={group.field} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 											<RoleTagChip
-												roleId={getRoleIdByName(partGroup.part)}
-												roleName={partGroup.part}
+												roleId={getRoleIdByName(group.field)}
+												roleName={group.field}
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
-												{partGroup.members.map(member => (
-													<div key={member.id} className='flex gap-1 items-center relative shrink-0 w-full'>
+												{group.members.map(member => (
+													<div key={member.userId} className='flex gap-1 items-center relative shrink-0 w-full'>
 														<ProfileCard
+															imageUrl={member.profileUrl}
 															nickname={member.nickname}
-															part={member.part}
-															introduction={member.introduction}
-															onMessageClick={() => console.log(`${member.nickname}에게 메시지 보내기`)}
+															part={member.field}
+															introduction={member.bio}
 														/>
 														<MatchingTimerCard
 															requestType='received'
-															status={member.status || 'default'}
-															timerText={member.timerText}
-															onAccept={() => setModalType('accept')}
-															onReject={() => setModalType('reject')}
+															status={getTimerCardStatus(member.matchingStatus)}
+															timerText={getTimerTextFromExpiry(member.expiresAt)}
+															onAccept={() => handleAcceptClick(member.matchingId)}
+															onReject={() => handleRejectClick(member.matchingId)}
 														/>
 													</div>
 												))}
@@ -267,21 +254,21 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>프로젝트</p>
 									</div>
 								</div>
-								<div className='flex gap-1 items-center px-5 relative shrink-0 w-full'>
-									{sentProjects.map(project => (
-										<div key={project.id} className='flex gap-1 items-center'>
+								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
+									{sentProjectMatchings.map(project => (
+										<div key={project.projectId} className='flex gap-1 items-center'>
 											<ProjectCard
-												projectName={project.projectName}
-												category={project.category}
+												projectName={project.title}
+												category=''
 												description={project.description}
-												currentMembers={project.currentMembers}
-												totalMembers={project.totalMembers}
+												currentMembers={project.currentMembersNum}
+												totalMembers={0}
 											/>
 											<MatchingTimerCard
 												requestType='sent'
-												status='default'
-												timerText={project.timerText}
-												onCancel={() => setModalType('cancel')}
+												status={getTimerCardStatus(project.matchingStatus)}
+												timerText={getTimerTextFromExpiry(project.expiresAt)}
+												onCancel={() => handleCancelClick(project.matchingId)}
 											/>
 										</div>
 									))}
@@ -296,27 +283,27 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
-									{sentTeamMembers.map((partGroup, partIndex) => (
-										<div key={partIndex} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
+									{sentGrouped.map(group => (
+										<div key={group.field} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 											<RoleTagChip
-												roleId={getRoleIdByName(partGroup.part)}
-												roleName={partGroup.part}
+												roleId={getRoleIdByName(group.field)}
+												roleName={group.field}
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
-												{partGroup.members.map(member => (
-													<div key={member.id} className='flex gap-1 items-center relative shrink-0 w-full'>
+												{group.members.map(member => (
+													<div key={member.userId} className='flex gap-1 items-center relative shrink-0 w-full'>
 														<ProfileCard
+															imageUrl={member.profileUrl}
 															nickname={member.nickname}
-															part={member.part}
-															introduction={member.introduction}
-															onMessageClick={() => console.log(`${member.nickname}에게 메시지 보내기`)}
+															part={member.field}
+															introduction={member.bio}
 														/>
 														<MatchingTimerCard
 															requestType='sent'
-															status='default'
-															timerText={member.timerText}
-															onCancel={() => setModalType('cancel')}
+															status={getTimerCardStatus(member.matchingStatus)}
+															timerText={getTimerTextFromExpiry(member.expiresAt)}
+															onCancel={() => handleCancelClick(member.matchingId)}
 														/>
 													</div>
 												))}
@@ -349,11 +336,8 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					subMessage='거절 후 되돌릴 수 없습니다.'
 					leftButtonMsg='돌아가기'
 					rightButtonMsg='매칭 거절'
-					onLeftClick={() => setModalType(null)}
-					onRightClick={() => {
-						console.log('매칭 거절 확인')
-						setModalType('rejectSuccess')
-					}}
+					onLeftClick={handleModalClose}
+					onRightClick={handleRejectConfirm}
 				/>
 			)}
 
@@ -364,10 +348,7 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					subMessage=''
 					isMessageHighlight={true}
 					buttonMsg='확인'
-					onButtonClick={() => {
-						console.log('매칭 거절 성공 확인')
-						setModalType(null)
-					}}
+					onButtonClick={handleModalClose}
 				/>
 			)}
 
@@ -378,11 +359,8 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					subMessage='수락 후 번복 할 수 없습니다.'
 					leftButtonMsg='돌아가기'
 					rightButtonMsg='매칭 수락'
-					onLeftClick={() => setModalType(null)}
-					onRightClick={() => {
-						console.log('매칭 수락 확인')
-						setModalType('acceptSuccess')
-					}}
+					onLeftClick={handleModalClose}
+					onRightClick={handleAcceptConfirm}
 				/>
 			)}
 
@@ -393,10 +371,7 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					subMessage='넥트가 응원할게요 !'
 					isMessageHighlight={true}
 					buttonMsg='확인'
-					onButtonClick={() => {
-						console.log('매칭 수락 성공 확인')
-						setModalType(null)
-					}}
+					onButtonClick={handleModalClose}
 				/>
 			)}
 
@@ -407,11 +382,8 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					subMessage='취소 후 24시간 동안 해당 프로젝트 매칭 신청이 제한됩니다.'
 					leftButtonMsg='돌아가기'
 					rightButtonMsg='매칭 취소'
-					onLeftClick={() => setModalType(null)}
-					onRightClick={() => {
-						console.log('매칭 취소 확인')
-						setModalType('cancelSuccess')
-					}}
+					onLeftClick={handleModalClose}
+					onRightClick={handleCancelConfirm}
 				/>
 			)}
 
@@ -422,10 +394,7 @@ export const MatchingStatus = ({ receivedCount = 6, sentCount = 5 }: MatchingSta
 					subMessage=''
 					isMessageHighlight={true}
 					buttonMsg='확인'
-					onButtonClick={() => {
-						console.log('매칭 취소 성공 확인')
-						setModalType(null)
-					}}
+					onButtonClick={handleModalClose}
 				/>
 			)}
 		</div>
