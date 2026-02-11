@@ -1097,12 +1097,12 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 			<section className='flex items-center justify-between w-full px-[58px] mt-[34px] mb-[26px]'>
 				<div ref={missionDropdownRef} className=' relative'>
 					<div
-						onClick={() => !isTaskReadOnly && toggleDropdown('mission')}
-						className={isTaskReadOnly ? 'cursor-default' : 'cursor-pointer'}
+						onClick={() => !isTaskReadOnly && !isLeaderVariant && toggleDropdown('mission')}
+						className={isTaskReadOnly || isLeaderVariant ? 'cursor-default' : 'cursor-pointer'}
 					>
 						<MissionTagChip missionNumber={missionNumber} />
 					</div>
-					{openDropdown === 'mission' && (
+					{openDropdown === 'mission' && !isLeaderVariant && (
 						<div className='absolute top-full left-0  z-10'>
 							<TagChipList
 								variant='mission'
@@ -1167,22 +1167,25 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 						/>
 
 						{isLeaderVariant ? (
-							/* 리더형 모달 레이아웃 */
+							/* 리더형 모달(위크미션 TASK): 담당자·진행기간 수정 불가 */
+							(() => {
+								const isAssigneeAndDateReadOnly = isTaskReadOnly || isLeaderVariant
+								return (
 							<div className='flex gap-8'>
 								{/* Left: Form Fields + Files */}
 								<div className='flex flex-col gap-6 w-[342px]'>
 									<div className='flex flex-col gap-2.5 w-full' ref={dropdownRef}>
-										{/* 담당자 */}
+										{/* 담당자 - 리더 모달에서 수정 불가 */}
 										<div className='flex gap-1.5 items-center relative'>
 											<span className='body-2 font-medium text-neutral-500 w-[70px]'>담당자</span>
 											<PartSelector
 												variant='person'
 												selectedPersons={selectedAssignees}
-												onPersonRemove={isTaskReadOnly ? undefined : removeSelectedAssignee}
-												onClick={isTaskReadOnly ? undefined : () => toggleDropdown('assignees')}
-												className={isTaskReadOnly ? 'cursor-default' : ''}
+												onPersonRemove={isAssigneeAndDateReadOnly ? undefined : removeSelectedAssignee}
+												onClick={isAssigneeAndDateReadOnly ? undefined : () => toggleDropdown('assignees')}
+												className={isAssigneeAndDateReadOnly ? 'cursor-default' : ''}
 											/>
-											{!isTaskReadOnly && openDropdown === 'assignees' && (
+											{!isAssigneeAndDateReadOnly && openDropdown === 'assignees' && (
 												<div className='absolute top-full left-[76px] mt-1 z-10'>
 													<TagChipList
 														variant='person'
@@ -1196,15 +1199,15 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 											)}
 										</div>
 
-										{/* 진행 기간 */}
+										{/* 진행 기간 - 리더 모달에서 수정 불가 */}
 										<div className='flex gap-1.5 items-center relative'>
 											<span className='body-2 font-medium text-neutral-500 w-[70px]'>진행 기간</span>
 											<input
 												type='text'
 												value={startDate && deadline ? `${startDate} ~ ${deadline}` : startDate || ''}
-												readOnly={isTaskReadOnly}
+												readOnly={isAssigneeAndDateReadOnly}
 												onChange={e => {
-													if (isTaskReadOnly) return
+													if (isAssigneeAndDateReadOnly) return
 													const value = e.target.value.replace(/[^0-9]/g, '')
 													let formatted = ''
 
@@ -1231,7 +1234,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 													(startDate || deadline) && 'hover:bg-neutral-100',
 													'button-1 font-medium text-neutral-700 placeholder:text-neutral-300',
 													'outline-none border-none',
-													isTaskReadOnly && 'cursor-default'
+													isAssigneeAndDateReadOnly && 'cursor-default'
 												)}
 											/>
 										</div>
@@ -1329,6 +1332,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 									onUpdateTask={rolePanelApiHandlers?.onUpdateTask}
 								/>
 							</div>
+								)
+							})()
 						) : (
 							/* 기본 모달 레이아웃 */
 							<div className='flex flex-col gap-6'>
