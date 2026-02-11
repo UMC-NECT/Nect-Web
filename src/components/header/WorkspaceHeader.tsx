@@ -36,6 +36,7 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
 
 	const handleProjectSelect = (projectId: number) => {
 		setSelectedProjectId(projectId)
+        setProjectId(projectId)
 		setShowWorkspaceMenu(false)
 		navigate(`/team-board/${projectId}`)
 	}
