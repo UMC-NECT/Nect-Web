@@ -39,6 +39,8 @@ export const useMissionDragResize = ({
 	const mouseDownPositionRef = useRef<{ x: number; y: number } | null>(null)
 	// 실제 드래그가 발생했는지 여부
 	const hasDraggedRef = useRef<boolean>(false)
+	// 드래그 종료 시점의 '의도된' 행(클램프 전) - 프로세스 블록을 1번째 줄에 놓았는지 판단용
+	const lastRawSectionIndexRef = useRef<number>(0)
 	const DRAG_THRESHOLD = 5
 
 	// 최신 값을 참조하기 위한 ref
@@ -159,7 +161,13 @@ export const useMissionDragResize = ({
 			}
 			const relativeY = e.clientY - gridRect.top
 			const rowHeight = 130 + 26
-			const sectionIndex = Math.max(0, Math.min(sectionsRef.current.length, Math.floor(relativeY / rowHeight)))
+			const rawSectionIndex = Math.max(0, Math.min(sectionsRef.current.length, Math.floor(relativeY / rowHeight)))
+			lastRawSectionIndexRef.current = rawSectionIndex
+			let sectionIndex = rawSectionIndex
+			// 프로세스 블록(1번째 줄 이하)은 1번째 줄(위크미션 Task, sectionIndex 0)로 시각적 이동 불가
+			if (dragStartPositionRef.current.sectionIndex > 0) {
+				sectionIndex = Math.max(1, sectionIndex)
+			}
 
 			setDragTempPosition({ columnIndex, sectionIndex })
 		},
@@ -170,28 +178,35 @@ export const useMissionDragResize = ({
 		// 실제 드래그가 발생한 경우에만 업데이트
 		if (hasDraggedRef.current && draggingMissionId && dragTempPosition && onMissionUpdateRef.current && dragStartPositionRef.current) {
 			const { columnIndex, sectionIndex } = dragTempPosition
-			const newCreatedAt = getDateStringFromIndex(columnIndex)
+			// 프로세스 블록을 1번째 줄(위크미션 Task)에 드롭한 경우: API 호출 없이 원래 위치 유지 (의도된 행은 lastRawSectionIndexRef에 저장됨)
+			const isProcessBlock = dragStartPositionRef.current.sectionIndex > 0
+			const droppedOnFirstRow = isProcessBlock && lastRawSectionIndexRef.current === 0
+			if (droppedOnFirstRow) {
+				// onMissionUpdate 호출하지 않음 → API 요청 없음
+			} else {
+				const newCreatedAt = getDateStringFromIndex(columnIndex)
 
-			if (newCreatedAt) {
-				const originalSpan = calculateDateSpan(
-					dragStartPositionRef.current.start_date,
-					dragStartPositionRef.current.dead_line
-				)
+				if (newCreatedAt) {
+					const originalSpan = calculateDateSpan(
+						dragStartPositionRef.current.start_date,
+						dragStartPositionRef.current.dead_line
+					)
 
-				const newCreatedAtDate = parseDate(newCreatedAt)
-				const newDueDateDate = addDays(newCreatedAtDate, originalSpan - 1)
-				const newDueDateIndex = dates.findIndex(date =>
-					date.getFullYear() === newDueDateDate.getFullYear() &&
-					date.getMonth() === newDueDateDate.getMonth() &&
-					date.getDate() === newDueDateDate.getDate()
-				)
-				const newDeadLine = newDueDateIndex !== -1 ? getDateStringFromIndex(newDueDateIndex) : null
+					const newCreatedAtDate = parseDate(newCreatedAt)
+					const newDueDateDate = addDays(newCreatedAtDate, originalSpan - 1)
+					const newDueDateIndex = dates.findIndex(date =>
+						date.getFullYear() === newDueDateDate.getFullYear() &&
+						date.getMonth() === newDueDateDate.getMonth() &&
+						date.getDate() === newDueDateDate.getDate()
+					)
+					const newDeadLine = newDueDateIndex !== -1 ? getDateStringFromIndex(newDueDateIndex) : null
 
-				onMissionUpdateRef.current(draggingMissionId, {
-					start_date: newCreatedAt,
-					dead_line: newDeadLine || dragStartPositionRef.current.dead_line,
-					sectionIndex,
-				})
+					onMissionUpdateRef.current(draggingMissionId, {
+						start_date: newCreatedAt,
+						dead_line: newDeadLine || dragStartPositionRef.current.dead_line,
+						sectionIndex,
+					})
+				}
 			}
 		}
 
@@ -206,6 +221,7 @@ export const useMissionDragResize = ({
 		mouseDownPositionRef.current = null
 		hasDraggedRef.current = false
 		dragStartPositionRef.current = null
+		lastRawSectionIndexRef.current = 0
 		setDragTempPosition(null)
 		setDraggingMissionId(null)
 	}, [draggingMissionId, dragTempPosition, getDateStringFromIndex, dates])

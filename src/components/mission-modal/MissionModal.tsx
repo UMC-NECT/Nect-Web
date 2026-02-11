@@ -511,22 +511,38 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		const projectIdNum = Number(projectIdForList)
 		if (Number.isNaN(projectIdNum)) return
 
-		// 편집 모드: 기존 프로세스 수정 → PATCH
+		// 편집 모드: 기존 프로세스 수정 → PATCH (변경된 필드만 전달)
 		if (isEditMode && editingMissionId != null && projectId != null) {
-			const patchBody: RequestProcessPatchDto = {
-				process_title: title.trim() || '',
-				process_content: workContent.trim() || '',
-				process_status: missionStatus.toUpperCase(),
-				start_date: formatDateToApi(startDate),
-				dead_line: formatDateToApi(deadline),
-				role_fields: selectedParts.map(p => p.role_field ?? p.custom_role_field_name ?? '').filter(Boolean),
-				custom_fields: processDetail?.body?.custom_fields ?? [],
-				mission_number: missionNumber,
-				assignee_ids: selectedAssignees.map(a => a.id),
-				mention_user_ids: mentionedPersons.map(p => p.id),
-			}
+			const initial = isTask ? missionDetail?.body : processDetail?.body
+			const initialTitle = initial && 'process_title' in initial ? (initial as { process_title?: string }).process_title ?? '' : (initial && 'title' in initial ? (initial as { title?: string }).title ?? '' : '')
+			const initialContent = initial && 'process_content' in initial ? (initial as { process_content?: string }).process_content ?? '' : (initial && 'content' in initial ? (initial as { content?: string }).content ?? '' : '')
+			const initialStatus = initial && 'process_status' in initial ? (initial as { process_status?: string }).process_status ?? '' : (initial && 'status' in initial ? (initial as { status?: string }).status ?? '' : '')
+			const initialStart = initial && 'start_date' in initial ? (initial as { start_date?: string }).start_date ?? '' : ''
+			const initialDead = initial && 'dead_line' in initial ? (initial as { dead_line?: string }).dead_line ?? '' : ''
+			const initialRoleFields = (initial && 'role_fields' in initial ? (initial as { role_fields?: string[] }).role_fields ?? [] : []) as string[]
+			const initialCustomFields = (initial && 'custom_fields' in initial ? (initial as { custom_fields?: string[] }).custom_fields ?? [] : []) as string[]
+			const initialMissionNumber = initial && 'mission_number' in initial ? (initial as { mission_number?: number }).mission_number ?? 0 : 0
+			const initialAssigneeIds = initial && 'assignees' in initial ? (initial as { assignees?: Array<{ user_id: number }> }).assignees?.map(a => a.user_id) ?? [] : (initial && 'assignee' in initial ? [(initial as { assignee?: { user_id: number } }).assignee?.user_id].filter(Boolean) as number[] : [])
+			const initialMentionIds = (initial && 'mention_user_ids' in initial ? (initial as { mention_user_ids?: number[] }).mention_user_ids ?? [] : []) as number[]
+
+			const currentRoleFields = selectedParts.map(p => p.role_field).filter((x): x is string => x != null && x !== '')
+			const currentCustomFields = selectedParts.map(p => p.custom_role_field_name).filter((x): x is string => x != null && x !== '')
+			const currentStatus = missionStatus === 'completed' ? 'DONE' : missionStatus.toUpperCase()
+			const arrEq = (a: number[] | string[], b: number[] | string[]) => a.length === b.length && a.every((v, i) => v === b[i])
+
+			const patchBody: RequestProcessPatchDto = {}
+			if ((title.trim() || '') !== (initialTitle ?? '')) patchBody.process_title = title.trim() || ''
+			if ((workContent.trim() || '') !== (initialContent ?? '')) patchBody.process_content = workContent.trim() || ''
+			if (!isTask && currentStatus !== (initialStatus ?? '')) patchBody.process_status = currentStatus
+			if (formatDateToApi(startDate) !== (initialStart ?? '')) patchBody.start_date = formatDateToApi(startDate)
+			if (formatDateToApi(deadline) !== (initialDead ?? '')) patchBody.dead_line = formatDateToApi(deadline)
+			if (!arrEq(currentRoleFields, initialRoleFields ?? [])) patchBody.role_fields = currentRoleFields
+			if (!arrEq(currentCustomFields, initialCustomFields ?? [])) patchBody.custom_fields = currentCustomFields
+			if (missionNumber !== (initialMissionNumber ?? 0)) patchBody.mission_number = missionNumber
+			if (!arrEq(selectedAssignees.map(a => a.id), initialAssigneeIds ?? [])) patchBody.assignee_ids = selectedAssignees.map(a => a.id)
+			if (!arrEq(mentionedPersons.map(p => p.id), initialMentionIds ?? [])) patchBody.mention_user_ids = mentionedPersons.map(p => p.id)
+
 			try {
-				// 위크미션 task: 작업 상태는 patchMissionStatus API로 전송
 				if (isTask) {
 					const statusForApi = missionStatus === 'completed' ? 'DONE' : missionStatus.toUpperCase()
 					await patchMissionStatusMutation.mutateAsync({
@@ -535,11 +551,13 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 						body: { status: statusForApi as 'PLANNING' | 'IN_PROGRESS' | 'DONE' | 'BACKLOG' },
 					})
 				}
-				await patchProcessMutation.mutateAsync({
-					projectId,
-					processId: String(editingMissionId),
-					body: patchBody,
-				})
+				if (Object.keys(patchBody).length > 0) {
+					await patchProcessMutation.mutateAsync({
+						projectId,
+						processId: String(editingMissionId),
+						body: patchBody,
+					})
+				}
 				closeMissionModal()
 			} catch {
 				// 에러 토스트 등은 필요 시 추가

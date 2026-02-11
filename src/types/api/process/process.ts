@@ -142,16 +142,16 @@ export type ResponseProcessDetailDto = CommonResponse<{
 }>
 
 export type RequestProcessPatchDto = {
-    process_title: string
-    process_content: string
-    process_status: string
-    start_date: string
-    dead_line: string
-    role_fields: string[]
-    custom_fields: string[]
-    mission_number: number
-    assignee_ids: number[]
-    mention_user_ids: number[]
+    process_title?: string
+    process_content?: string
+    process_status?: string
+    start_date?: string
+    dead_line?: string
+    role_fields?: string[]
+    custom_fields?: string[]
+    mission_number?: number
+    assignee_ids?: number[]
+    mention_user_ids?: number[]
 }
 
 export type ResponseProcessPatchDto = CommonResponse<{
