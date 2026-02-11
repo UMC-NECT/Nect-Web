@@ -165,7 +165,11 @@ export const patchProjectsServiceUsers = async (projectId: string, body: { conte
 const buildPlanFileFormData = (payload: ProjectPlanFileRequest): FormData => {
 	const formData = new FormData()
 	formData.append('name', payload.name)
-	formData.append('planFileType', payload.planFileType)
+
+	// planFileType을 application/json Content-Type으로 전송
+	const planFileTypeBlob = new Blob([JSON.stringify(payload.planFileType)], { type: 'application/json' })
+	formData.append('planFileType', planFileTypeBlob)
+
 	if (payload.planFileType === 'FILE') {
 		const fileName = payload.file instanceof File ? payload.file.name : 'file'
 		formData.append('file', payload.file, fileName)
@@ -223,10 +227,7 @@ export const getMypageProjectUsers = async (projectId: string): Promise<Response
 }
 
 // (팀 구성 편집) 프로젝트 팀 구성 편집 - 인원 수 설정
-export const postMypageTeamRoleEdit = async (
-	projectId: string,
-	body: RequestTeamRoleEditDto
-): Promise<CommonResponse> => {
+export const postMypageTeamRoleEdit = async (projectId: string, body: RequestTeamRoleEditDto): Promise<CommonResponse> => {
 	const { data } = await api.post(`/api/v1/mypage/${projectId}/team-roles`, body)
 
 	return data
