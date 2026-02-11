@@ -7,7 +7,7 @@ import ProjectManagementView from './tab1-project-setting/ProjectManagementView'
 import TeamManagementView from './tab2-team-management/TeamManagementView'
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
 import { useOngoingProjectForm } from '@/hooks/mypage/useOngoingProjectForm'
-import type { TabType } from '@/types/mypage/ongoindProject'
+import type { TabType, ColorType } from '@/types/mypage/ongoindProject'
 
 import CTAModal from '@/components/common/CTAModal'
 import PartSettingsModal from './PartSettingsModal'
@@ -27,12 +27,33 @@ import {
 	usePatchProjectsFunctions,
 	usePatchProjectsServiceUsersMutation,
 	useMypageTeamRolesQuery,
+	useMypageProjectUsersQuery,
 	useProjectPurposesQuery,
 	useProjectFunctionsQuery,
 	useProjectsServiceUsersQuery,
 } from '@/hooks/mypage/useMypageApi'
 import type { RecruitmentLocalItem } from './tab1-project-setting/sections/Section02RecruitmentInfo'
 import { getProjectFieldValue } from '@/utils/projectField'
+
+// role_field를 ColorType으로 변환
+const getRoleColorFromField = (roleField: string): ColorType => {
+	switch (roleField) {
+		case 'PM':
+		case 'PLANNING':
+		case 'SERVICE':
+			return 'purple'
+		case 'DESIGNER':
+		case 'DESIGN':
+		case 'UI_UX':
+			return 'pink'
+		case 'FRONTEND':
+			return 'green'
+		case 'BACKEND':
+			return 'blue'
+		default:
+			return 'gray'
+	}
+}
 
 type ProjectFieldApiItem = {
 	field_name: string
@@ -147,6 +168,53 @@ const OngoingProject = () => {
 	// 섹션 03. 팀 구성 데이터 조회
 	const { data: teamRolesData } = useMypageTeamRolesQuery(projectId)
 
+	// 프로젝트 유저(멤버) 목록 조회
+	const { data: projectUsersData } = useMypageProjectUsersQuery(projectId)
+
+	// 팀원 데이터 + 팀 역할 데이터 → Zustand 스토어에 반영
+	const { setTeamMembersByRole } = useTeamMembersStore()
+
+	useEffect(() => {
+		const users = projectUsersData?.body?.users
+		if (!users) return
+
+		const roles = teamRolesData?.body?.roles ?? []
+
+		// role_field → count 매핑 테이블 생성 (role_fields 안의 항목들)
+		const roleFieldCountMap = new Map<string, number>()
+		for (const role of roles) {
+			for (const rf of role.role_fields) {
+				roleFieldCountMap.set(rf.role_field, rf.count)
+			}
+		}
+
+		// 유저를 part_label 기준으로 그룹화
+		const groupMap = new Map<string, { roleField: string; members: typeof users }>()
+		for (const user of users) {
+			const key = user.part_label
+			if (!groupMap.has(key)) {
+				groupMap.set(key, { roleField: user.role_field, members: [] })
+			}
+			groupMap.get(key)!.members.push(user)
+		}
+
+		// 그룹을 TeamMembersByRole 형태로 변환
+		const teamMembersByRoleFromApi = Array.from(groupMap.entries()).map(([partLabel, group]) => ({
+			role: partLabel,
+			color: getRoleColorFromField(group.roleField),
+			targetCount: roleFieldCountMap.get(group.roleField) ?? group.members.length,
+			members: group.members.map(user => ({
+				id: String(user.user_id),
+				nickname: user.nickname || user.name || '이름없음',
+				part: user.part_label,
+				introduction: user.bio ?? undefined,
+				isLeader: user.member_type === 'LEADER',
+			})),
+		}))
+
+		setTeamMembersByRole(teamMembersByRoleFromApi)
+	}, [projectUsersData, teamRolesData, setTeamMembersByRole])
+
 	// 실제 프로젝트 데이터 추출 및 형식 변환
 	const projectData = (() => {
 		const userId = profileData?.body?.userId
@@ -201,17 +269,12 @@ const OngoingProject = () => {
 		}
 	})()
 
-	// 팀 역할 데이터 변환
-	const teamRolesForDisplay = (() => {
-		if (!teamRolesData?.body?.parts) return []
-		const parts = teamRolesData.body.parts.flat()
-
-		return parts.map(part => ({
-			role: part.role_field,
-			targetCount: part.required_count,
-			members: [], // 실제 멤버 정보는 필요시 추가
-		}))
-	})()
+	// 팀 역할 데이터 변환 (Zustand 스토어 기반 - 모달에서 추가된 역할 포함)
+	const teamRolesForDisplay = teamMembersByRole.map(group => ({
+		role: group.role,
+		targetCount: group.targetCount,
+		members: [] as Array<{ id: number; name: string }>,
+	}))
 
 	const { mutate: mutateProjectField } = useMypageProjectFieldMutation()
 	const { mutate: postRecruitment } = usePostMypageRecruitmentsMutation()

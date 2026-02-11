@@ -21,6 +21,11 @@ const Section03TeamComposition = ({ teamRoles, onEditClick }: ISection03TeamComp
 		Design: '디자인',
 		Frontend: '프론트',
 		Backend: '백엔드',
+		Service: '기획',
+		SERVICE: '기획',
+		UI_UX: '디자인',
+		FRONTEND: '프론트',
+		BACKEND: '백엔드',
 	}
 
 	const categoryGroups: Record<string, TeamRole[]> = {}

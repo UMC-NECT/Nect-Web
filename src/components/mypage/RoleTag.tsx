@@ -16,10 +16,12 @@ const getRoleColor = (role: string): ColorType => {
 		case 'PM':
 		case '기획':
 		case 'PLANNING':
+		case 'SERVICE':
 			return 'purple'
 		case 'Design':
 		case 'UI/UX':
 		case 'PRODUCT':
+		case 'UI_UX':
 			return 'pink'
 		case 'Backend':
 		case '백엔드':

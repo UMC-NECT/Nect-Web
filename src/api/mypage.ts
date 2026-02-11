@@ -17,6 +17,18 @@ import type {
 	ResponseProjectPurpose,
 	ResponseProjectPlanFileDto,
 	ProjectPlanFileRequest,
+	ResponseProjectUsersListDto,
+	RequestTeamRoleEditDto,
+	RequestMemberFieldChangeDto,
+	ResponseMemberFieldChangeDto,
+	ResponseMemberKickDto,
+	RequestMemberTypeChangeDto,
+	ResponseMemberTypeChangeDto,
+	RequestTeamRoleCreateDto,
+	ResponseTeamRoleCreateDto,
+	RequestTeamRoleUpdateDto,
+	ResponseTeamRoleUpdateDto,
+	RequestProjectUsersReorderDto,
 } from '@/types/api/mypage'
 import { api } from '@/utils/AxiosInstance'
 
@@ -103,7 +115,7 @@ export const putMypageRecruitments = async (
 
 // 섹션 03. 프로젝트 파트/팀원 구성 - 조회
 export const getMypageTeamRoles = async (projectId: string): Promise<ResponseMypageTeamRoles> => {
-	const { data } = await api.get(`/api/v1/mypage/projects/${projectId}/team-roles`)
+	const { data } = await api.get(`/api/v1/mypage/${projectId}/team-roles`)
 
 	return data
 }
@@ -203,19 +215,80 @@ export const deleteProjectPlanFile = async (projectId: string, planFileId: strin
 // 섹션 08. 리더 프로필
 
 // === 진행중인 프로젝트 (팀원 관리) ==========================================================
-// 섹션 01. 파트별 팀원 프로필
-// (멤버 관리) 팀원 리스트 - 조회
+// (멤버 조회) 마이페이지 전용 프로젝트 유저 목록 조회
+export const getMypageProjectUsers = async (projectId: string): Promise<ResponseProjectUsersListDto> => {
+	const { data } = await api.get(`/api/v1/mypage/projects/${projectId}/users`)
 
-// 섹션 02. 팀원들의 프로젝트 히스토리
+	return data
+}
+
+// (팀 구성 편집) 프로젝트 팀 구성 편집 - 인원 수 설정
+export const postMypageTeamRoleEdit = async (
+	projectId: string,
+	body: RequestTeamRoleEditDto
+): Promise<CommonResponse> => {
+	const { data } = await api.post(`/api/v1/mypage/${projectId}/team-roles`, body)
+
+	return data
+}
+
 // (멤버 관리) 파트 변경 (ex. 디자인, 프론트, 백엔드 등)
+export const patchMemberField = async (
+	projectUserId: string,
+	body: RequestMemberFieldChangeDto
+): Promise<ResponseMemberFieldChangeDto> => {
+	const { data } = await api.patch(`/api/v1/mypage/${projectUserId}/field`, body)
+
+	return data
+}
 
 // (멤버 관리) 강퇴
+export const patchMemberKick = async (projectUserId: string): Promise<ResponseMemberKickDto> => {
+	const { data } = await api.patch(`/api/v1/mypage/${projectUserId}/kick`)
+
+	return data
+}
 
 // (멤버 관리) 멤버 타입 변경 (리더 | 리드 | 멤버)
+export const patchMemberType = async (
+	projectUserId: string,
+	body: RequestMemberTypeChangeDto
+): Promise<ResponseMemberTypeChangeDto> => {
+	const { data } = await api.patch(`/api/v1/mypage/${projectUserId}/type`, body)
+
+	return data
+}
 
 // (역할 추가) 팀 파트 생성 (리더만 가능)
+export const postTeamRoleCreate = async (
+	projectId: string,
+	body: RequestTeamRoleCreateDto
+): Promise<ResponseTeamRoleCreateDto> => {
+	const { data } = await api.post(`/api/v1/mypage/projects/${projectId}/team-roles`, body)
 
-// 마이페이지 팀 파트 수정 (이건 어따 쓰는거지)
+	return data
+}
+
+// (역할 수정) 마이페이지 팀 파트 수정 (CUSTOM만 가능, 리더만 가능)
+export const patchTeamRoleUpdate = async (
+	projectId: string,
+	userTeamRoleId: string,
+	body: RequestTeamRoleUpdateDto
+): Promise<ResponseTeamRoleUpdateDto> => {
+	const { data } = await api.patch(`/api/v1/mypage/projects/${projectId}/team-roles/${userTeamRoleId}`, body)
+
+	return data
+}
+
+// (유저 순서 재정렬) 프로젝트 멤버들의 정렬 순서 지정
+export const postProjectUsersReorder = async (
+	projectId: string,
+	body: RequestProjectUsersReorderDto
+): Promise<CommonResponse> => {
+	const { data } = await api.post(`/api/v1/mypage/projects/${projectId}/users/reorder`, body)
+
+	return data
+}
 
 // === 모든 프로젝트 ==========================================================
 // (모든 프로젝트) 현재 참여중인 프로젝트 조회

@@ -21,6 +21,14 @@ import {
 	postProjectPlanFile,
 	patchProjectPlanFile,
 	deleteProjectPlanFile,
+	getMypageProjectUsers,
+	postMypageTeamRoleEdit,
+	patchMemberField,
+	patchMemberKick,
+	patchMemberType,
+	postTeamRoleCreate,
+	patchTeamRoleUpdate,
+	postProjectUsersReorder,
 } from '@/api/mypage'
 import { QUERY_KEY } from '@/constants/key'
 import type {
@@ -29,6 +37,12 @@ import type {
 	RequestMypageRecruitmentCreateDto,
 	RequestMypageRecruitmentUpdateDto,
 	ProjectPlanFileRequest,
+	RequestTeamRoleEditDto,
+	RequestMemberFieldChangeDto,
+	RequestMemberTypeChangeDto,
+	RequestTeamRoleCreateDto,
+	RequestTeamRoleUpdateDto,
+	RequestProjectUsersReorderDto,
 } from '@/types/api/mypage'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -299,6 +313,115 @@ export const useDeleteProjectPlanFileMutation = () => {
 			queryClient.invalidateQueries({
 				queryKey: [...QUERY_KEY.mypage.project(), 'plan-file', variables.projectId],
 			})
+		},
+	})
+}
+
+// === 진행중인 프로젝트 (팀원 관리) ==========================================================
+// (멤버 조회) 마이페이지 전용 프로젝트 유저 목록 조회
+export const useMypageProjectUsersQuery = (projectId: string) => {
+	return useQuery({
+		queryKey: [...QUERY_KEY.mypage.project(), 'users', projectId],
+		queryFn: () => getMypageProjectUsers(projectId),
+		enabled: !!projectId,
+		refetchOnMount: 'always',
+		staleTime: 0,
+	})
+}
+
+// (팀 구성 편집) 프로젝트 팀 구성 편집 - 인원 수 설정
+export const usePostTeamRoleEditMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ projectId, body }: { projectId: string; body: RequestTeamRoleEditDto }) =>
+			postMypageTeamRoleEdit(projectId, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+		},
+	})
+}
+
+// (멤버 관리) 파트 변경
+export const usePatchMemberFieldMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ projectUserId, body }: { projectUserId: string; body: RequestMemberFieldChangeDto }) =>
+			patchMemberField(projectUserId, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+		},
+	})
+}
+
+// (멤버 관리) 강퇴
+export const usePatchMemberKickMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (projectUserId: string) => patchMemberKick(projectUserId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+		},
+	})
+}
+
+// (멤버 관리) 멤버 타입 변경 (리더 | 리드 | 멤버)
+export const usePatchMemberTypeMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ projectUserId, body }: { projectUserId: string; body: RequestMemberTypeChangeDto }) =>
+			patchMemberType(projectUserId, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+		},
+	})
+}
+
+// (역할 추가) 팀 파트 생성 (리더만 가능)
+export const usePostTeamRoleCreateMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ projectId, body }: { projectId: string; body: RequestTeamRoleCreateDto }) =>
+			postTeamRoleCreate(projectId, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+		},
+	})
+}
+
+// (역할 수정) 마이페이지 팀 파트 수정 (CUSTOM만 가능, 리더만 가능)
+export const usePatchTeamRoleUpdateMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({
+			projectId,
+			userTeamRoleId,
+			body,
+		}: {
+			projectId: string
+			userTeamRoleId: string
+			body: RequestTeamRoleUpdateDto
+		}) => patchTeamRoleUpdate(projectId, userTeamRoleId, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+		},
+	})
+}
+
+// (유저 순서 재정렬) 프로젝트 멤버들의 정렬 순서 지정
+export const usePostProjectUsersReorderMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ projectId, body }: { projectId: string; body: RequestProjectUsersReorderDto }) =>
+			postProjectUsersReorder(projectId, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
 		},
 	})
 }

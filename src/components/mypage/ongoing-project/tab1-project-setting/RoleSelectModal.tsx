@@ -1,8 +1,6 @@
 import { useRef } from 'react'
 import type { RoleType } from '@/types/mypage/ongoindProject'
 import RoleTag from '../../RoleTag'
-import SettingIcon from '@/assets/icons/common/setting.svg?react'
-import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
@@ -14,16 +12,10 @@ interface IRoleSelectModal {
 
 const RoleSelectModal = ({ isOpen, onClose, onSelect }: IRoleSelectModal) => {
 	const modalRef = useRef<HTMLDivElement>(null)
-	const openPartSettings = usePartSettingsModal(state => state.open)
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
 
 	// 모달 바깥 클릭 시 닫기
 	useClickOutside(modalRef, onClose, isOpen)
-
-	// (버튼 핸들러) 파트 설정
-	const handleSettingsClick = () => {
-		openPartSettings(teamMembersByRole)
-	}
 
 	// (모달 핸들러) 파트 선택 클릭
 	const handlePartClick = (partName: RoleType) => {
@@ -39,10 +31,6 @@ const RoleSelectModal = ({ isOpen, onClose, onSelect }: IRoleSelectModal) => {
 				{/* 헤더 */}
 				<div className='flex justify-start items-center gap-7'>
 					<span className='body-3 text-neutral-500 pl-3.5'>파트 선택</span>
-					<SettingIcon
-						onClick={handleSettingsClick}
-						className='w-4 h-4 text-neutral-700 cursor-pointer hover:opacity-70'
-					/>
 				</div>
 
 				{/* 파트 목록 */}

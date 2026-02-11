@@ -236,16 +236,20 @@ export type ResponseMypageRecruitmentUpdateDto = CommonResponse<{
 }>
 
 // 섹션 03. 팀역할 타입
-export type TeamRoleType = {
-	id: number
-	role_field: RoleType
-	custom_role_field_name: string
-	label: string
-	required_count: number
+export type TeamRoleFieldItem = {
+	role_field: string
+	count: number
 }
+
+export type TeamRoleItem = {
+	role: string
+	count: number
+	role_fields: TeamRoleFieldItem[]
+}
+
 // 섹션 03. 프로젝트 파트/팀원 구성 - 조회
 export type ResponseMypageTeamRoles = CommonResponse<{
-	parts: [TeamRoleType[]]
+	roles: TeamRoleItem[]
 }>
 
 // 섹션 04. 프로젝트 목표 - 조회
@@ -314,5 +318,107 @@ export type MypageProjectType = {
 export type ResponseProjectUsers = CommonResponse<{
 	projects: [MypageProjectType[]]
 }>
+
+// === 팀원 관리 (파트 설정 및 배치 인원) ==========================================================
+// 프로젝트별 유저(멤버) 목록 조회
+export type ProjectUserItem = {
+	user_id: number
+	name: string
+	nickname: string
+	profile_image_url: string | null
+	bio: string | null
+	role_field: string
+	custom_role_field_name: string | null
+	part_label: string
+	member_type: 'LEADER' | 'LEAD' | 'MEMBER'
+}
+
+export type ResponseProjectUsersListDto = CommonResponse<{
+	users: ProjectUserItem[]
+}>
+
+// 팀 구성 편집 (인원 수 설정)
+export type RequestTeamRoleEditDto = {
+	role_field: string
+	count: number
+}
+
+// 멤버 필드(파트) 변경
+export type RequestMemberFieldChangeDto = {
+	field: string
+	customField?: string
+}
+
+export type ResponseMemberFieldChangeDto = CommonResponse<{
+	projectUserId: number
+	field: string
+	customField: string
+}>
+
+// 멤버 강퇴
+export type ResponseMemberKickDto = CommonResponse<{
+	id: number
+	userId: number
+	projectId: number
+	field: string
+	memberType: string
+	memberStatus: string
+}>
+
+// 멤버 타입 변경 (LEADER | LEAD | MEMBER)
+export type MemberTypeEnum = 'LEADER' | 'LEAD' | 'MEMBER'
+
+export type RequestMemberTypeChangeDto = {
+	memberType: MemberTypeEnum
+}
+
+export type ResponseMemberTypeChangeDto = CommonResponse<{
+	id: number
+	userId: number
+	projectId: number
+	field: string
+	memberType: string
+	memberStatus: string
+}>
+
+// 팀 파트 생성 (리더만 가능)
+export type RequestTeamRoleCreateDto = {
+	role_field: string
+	custom_role_field_name?: string
+	required_count: number
+}
+
+export type ResponseTeamRoleCreateDto = CommonResponse<{
+	team_role_id: number
+	role_field: string
+	custom_role_field_name: string
+	part_label: string
+	required_count: number
+}>
+
+// 팀 파트 수정 (CUSTOM만 가능, 리더만 가능)
+export type RequestTeamRoleUpdateDto = {
+	custom_role_field_name?: string
+	required_count?: number
+}
+
+export type ResponseTeamRoleUpdateDto = CommonResponse<{
+	user_team_role_id: number
+	role_field: string
+	custom_role_field_name: string
+	part_label: string
+	required_count: number
+}>
+
+// 프로젝트 유저 순서 재정렬
+export type ReorderUpdateItem = {
+	roleField: string
+	customRoleField: string | null
+	orderedUserIds: number[]
+}
+
+export type RequestProjectUsersReorderDto = {
+	updates: ReorderUpdateItem[]
+}
 
 // === 매칭 현황 ==========================================================
