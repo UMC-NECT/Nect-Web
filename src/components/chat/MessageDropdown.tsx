@@ -30,14 +30,15 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const filteredProjects = useFilteredWorkspaceItems(projectData, { maxCount: 2 })
 	
 	// 선택된 프로젝트 ID (첫 번째 프로젝트를 기본값으로)
-	const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(
-		filteredProjects[0]?.projectId
-	)
+	const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(undefined)
 	
 	// 프로젝트 목록이 변경되면 첫 번째 프로젝트를 기본 선택
 	useEffect(() => {
-		if (filteredProjects.length > 0 && !selectedProjectId) {
-			setSelectedProjectId(filteredProjects[0].projectId)
+		if (filteredProjects.length > 0) {
+			// selectedProjectId가 없거나, 현재 선택된 프로젝트가 목록에 없으면 첫 번째 프로젝트로 설정
+			if (!selectedProjectId || !filteredProjects.find(p => p.projectId === selectedProjectId)) {
+				setSelectedProjectId(filteredProjects[0].projectId)
+			}
 		}
 	}, [filteredProjects, selectedProjectId])
 

@@ -15,6 +15,7 @@ export const Sidebar = () => {
 	const navigate = useNavigate()
 	const location = useLocation()
 	const params = useParams<{ projectId?: string }>()
+	const projectId = params.projectId ? parseInt(params.projectId, 10) : undefined
 
 	// URL과 동기화해 하단 메뉴 활성 표시 (새로고침/직접 URL 시)
 	useEffect(() => {
@@ -139,7 +140,7 @@ export const Sidebar = () => {
 			)}
 			{showChatModal && (
 				<div ref={chatModalRef} className='fixed top-[130px] left-[70px] z-40 h-[calc(100vh-130px-20px)]'>
-					<ChatModal />
+					<ChatModal projectId={projectId} />
 				</div>
 			)}
 		</>
