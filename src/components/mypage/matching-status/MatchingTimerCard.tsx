@@ -1,4 +1,5 @@
 import { cn } from '@/utils/cn'
+import type { MatchingStatus as ApiMatchingStatus } from '@/types/api/matching'
 
 type MatchingStatus = 'default' | 'auto-rejected' | 'accepted'
 type RequestType = 'received' | 'sent'
@@ -8,6 +9,8 @@ interface MatchingTimerCardProps {
 	requestType: RequestType
 	/** 매칭 상태 */
 	status?: MatchingStatus
+	/** 원본 API 매칭 상태 (서버에서 오는 값: pending | accepted | rejected | canceled | expired) */
+	apiStatus?: ApiMatchingStatus
 	/** 타이머 값 (초 단위) */
 	timerSeconds?: number
 	/** 타이머 표시 텍스트 (HH:MM:SS 형식, 예: "09:58:29") */
@@ -35,6 +38,7 @@ const formatTimer = (seconds: number): string => {
 const MatchingTimerCard = ({
 	requestType,
 	status = 'default',
+	apiStatus,
 	timerSeconds,
 	timerText,
 	onAccept,
@@ -47,17 +51,33 @@ const MatchingTimerCard = ({
 	const isReceived = requestType === 'received'
 	const isSent = requestType === 'sent'
 
-	// 타이머 텍스트 결정
-	const displayTimer = timerText || (timerSeconds !== undefined ? formatTimer(timerSeconds) : '00:00:00')
+	// 타이머 텍스트 결정 - timerSeconds가 있으면 사용, 없으면 timerText 사용
+	const displayTimer = timerText || (timerSeconds !== undefined && timerSeconds >= 0 ? formatTimer(timerSeconds) : '00:00:00')
 
-	// 상태에 따른 텍스트와 색상
-	const statusText = isAutoRejected
-		? '자동 거절 되었습니다.'
-		: isAccepted
-			? '매칭 수락 되었습니다.'
-			: '대기 만료까지'
+	// API status에 따른 텍스트 결정
+	const getStatusText = (): string => {
+		if (!apiStatus) {
+			return status === 'default' ? '대기 만료까지' : '자동 거절 되었습니다.'
+		}
+		switch (apiStatus) {
+			case 'PENDING':
+				return '대기 만료까지'
+			case 'ACCEPTED':
+				return '매칭 수락 되었습니다.'
+			case 'REJECTED':
+				return '매칭 거절 되었습니다.'
+			case 'CANCELED':
+				return '매칭 취소 되었습니다.'
+			case 'EXPIRED':
+				return '자동 거절 되었습니다.'
+			default:
+				return '대기 만료까지'
+		}
+	}
+
+	const statusText = getStatusText()
 	const statusTextColor = isAutoRejected
-		? 'text-semantic-700'
+		? 'text-danger-700'
 		: isAccepted
 			? 'text-primary-500-normal'
 			: 'text-neutral-500'

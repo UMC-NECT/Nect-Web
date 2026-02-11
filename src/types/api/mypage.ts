@@ -428,6 +428,8 @@ type UserMatchingType = {
 	field: string
 	customField: string | null
 	profileUrl: string
+	status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELED' | 'EXPIRED'
+	expiresAt?: string
 }
 type ProjectMatchingType = {
 	matchingId: number
@@ -437,6 +439,8 @@ type ProjectMatchingType = {
 	currentMembersNum: number
 	totalMemberNum: number
 	imageUrl: string
+	status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELED' | 'EXPIRED'
+	expiresAt?: string
 }
 
 export type ResponseMatchingDto = CommonResponse<{

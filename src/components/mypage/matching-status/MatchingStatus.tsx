@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { MyPageHeader } from '../MyPageHeader'
 import ProjectCard from './ProjectCard'
@@ -17,8 +17,10 @@ import {
 	useMatchingCancelMutation,
 	useMatchingRejectMutation,
 } from '@/hooks/mypage/useMatchingApi'
+import type { MatchingStatus as ApiMatchingStatus } from '@/types/api/matching'
 
 type TabType = 'received' | 'sent'
+type TimerCardStatus = 'default' | 'auto-rejected' | 'accepted'
 
 // 역할 이름을 roleId로 매핑
 const getRoleIdByName = (roleName: string): number => {
@@ -50,13 +52,49 @@ const groupUserMatchingsByField = <T extends { field: string }>(userMatchings: T
 	}))
 }
 
+// API status를 MatchingTimerCard status로 변환
+const mapStatusToTimerCardStatus = (status?: ApiMatchingStatus): TimerCardStatus => {
+	if (!status) return 'default'
+	switch (status) {
+		case 'PENDING':
+			return 'default'
+		case 'ACCEPTED':
+			return 'accepted'
+		case 'REJECTED':
+		case 'CANCELED':
+		case 'EXPIRED':
+			return 'auto-rejected'
+		default:
+			return 'default'
+	}
+}
+
+// expiresAt으로부터 남은 시간(초) 계산
+const calculateRemainingSeconds = (expiresAt?: string, currentTime?: number): number | undefined => {
+	if (!expiresAt) return undefined
+	const now = currentTime ?? Date.now()
+	const expires = new Date(expiresAt).getTime()
+	const remaining = Math.floor((expires - now) / 1000)
+	return remaining > 0 ? remaining : 0
+}
+
 export const MatchingStatus = () => {
 	const navigate = useNavigate()
 	const [activeTab, setActiveTab] = useState<TabType>('received')
+	const [currentTime, setCurrentTime] = useState(Date.now())
+	const [initialTime] = useState(Date.now()) // 초기 로드 시점의 시간 (PENDING이 아닌 상태용)
 	const [modalType, setModalType] = useState<
 		'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null
 	>(null)
 	const [selectedMatchingId, setSelectedMatchingId] = useState<string | null>(null)
+
+	// 1초마다 현재 시간 업데이트 (타이머 실시간 업데이트용 - PENDING 상태만)
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setCurrentTime(Date.now())
+		}, 1000)
+		return () => clearInterval(interval)
+	}, [])
 
 	// API 훅
 	const { data: countData } = useMatchingCountQuery()
@@ -165,24 +203,33 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
-									{receivedProjectMatchings.map(project => (
-										<div key={project.projectId} className='flex gap-1 items-center'>
-											<ProjectCard
-												projectName={project.title}
-												category=''
-												description={project.description}
-												currentMembers={project.currentMembersNum}
-												totalMembers={0}
-											/>
-											<MatchingTimerCard
-												requestType='received'
-												status='default'
-												timerText='00:00:00'
-												onAccept={() => handleAcceptClick(project.matchingId)}
-												onReject={() => handleRejectClick(project.matchingId)}
-											/>
-										</div>
-									))}
+									{receivedProjectMatchings.map(project => {
+										const timerStatus = mapStatusToTimerCardStatus(project.status)
+										// PENDING 상태일 때만 currentTime을 사용하여 실시간 업데이트
+										const timeToUse = project.status === 'PENDING' ? currentTime : initialTime
+										const remainingSeconds = calculateRemainingSeconds(project.expiresAt, timeToUse)
+										// PENDING 상태일 때만 수락/거절 버튼 표시
+										const isPending = project.status === 'PENDING'
+										return (
+											<div key={project.projectId} className='flex gap-1 items-center'>
+												<ProjectCard
+													projectName={project.title}
+													category=''
+													description={project.description}
+													currentMembers={project.currentMembersNum}
+													totalMembers={0}
+												/>
+												<MatchingTimerCard
+													requestType='received'
+													status={timerStatus}
+													apiStatus={project.status}
+													timerSeconds={remainingSeconds}
+													onAccept={isPending ? () => handleAcceptClick(project.matchingId) : undefined}
+													onReject={isPending ? () => handleRejectClick(project.matchingId) : undefined}
+												/>
+											</div>
+										)
+									})}
 								</div>
 							</div>
 
@@ -207,27 +254,36 @@ export const MatchingStatus = () => {
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
-												{group.members.map(member => (
-													<div
-														key={member.userId}
-														className='flex gap-1 items-center relative shrink-0 w-full'
-													>
-														<ProfileCard
-															imageUrl={member.profileUrl}
-															nickname={member.nickname}
-															part={member.field}
-															introduction={member.bio}
-															onClick={() => handleProfileClick(member.userId)}
-														/>
-														<MatchingTimerCard
-															requestType='received'
-															status='default'
-															timerText='00:00:00'
-															onAccept={() => handleAcceptClick(member.matchingId)}
-															onReject={() => handleRejectClick(member.matchingId)}
-														/>
-													</div>
-												))}
+												{group.members.map(member => {
+													const timerStatus = mapStatusToTimerCardStatus(member.status)
+													// PENDING 상태일 때만 currentTime을 사용하여 실시간 업데이트
+													const timeToUse = member.status === 'PENDING' ? currentTime : initialTime
+													const remainingSeconds = calculateRemainingSeconds(member.expiresAt, timeToUse)
+													// PENDING 상태일 때만 수락/거절 버튼 표시
+													const isPending = member.status === 'PENDING'
+													return (
+														<div
+															key={member.userId}
+															className='flex gap-1 items-center relative shrink-0 w-full'
+														>
+															<ProfileCard
+																imageUrl={member.profileUrl}
+																nickname={member.nickname}
+																part={member.field}
+																introduction={member.bio}
+																onClick={() => handleProfileClick(member.userId)}
+															/>
+															<MatchingTimerCard
+																requestType='received'
+																status={timerStatus}
+																apiStatus={member.status}
+																timerSeconds={remainingSeconds}
+																onAccept={isPending ? () => handleAcceptClick(member.matchingId) : undefined}
+																onReject={isPending ? () => handleRejectClick(member.matchingId) : undefined}
+															/>
+														</div>
+													)
+												})}
 											</div>
 										</div>
 									))}
@@ -261,23 +317,32 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
-									{sentProjectMatchings.map(project => (
-										<div key={project.projectId} className='flex gap-1 items-center'>
-											<ProjectCard
-												projectName={project.title}
-												category=''
-												description={project.description}
-												currentMembers={project.currentMembersNum}
-												totalMembers={0}
-											/>
-											<MatchingTimerCard
-												requestType='sent'
-												status='default'
-												timerText='00:00:00'
-												onCancel={() => handleCancelClick(project.matchingId)}
-											/>
-										</div>
-									))}
+									{sentProjectMatchings.map(project => {
+										const timerStatus = mapStatusToTimerCardStatus(project.status)
+										// PENDING 상태일 때만 currentTime을 사용하여 실시간 업데이트
+										const timeToUse = project.status === 'PENDING' ? currentTime : initialTime
+										const remainingSeconds = calculateRemainingSeconds(project.expiresAt, timeToUse)
+										// PENDING 상태일 때만 취소 버튼 표시
+										const isPending = project.status === 'PENDING'
+										return (
+											<div key={project.projectId} className='flex gap-1 items-center'>
+												<ProjectCard
+													projectName={project.title}
+													category=''
+													description={project.description}
+													currentMembers={project.currentMembersNum}
+													totalMembers={0}
+												/>
+												<MatchingTimerCard
+													requestType='sent'
+													status={timerStatus}
+													apiStatus={project.status}
+													timerSeconds={remainingSeconds}
+													onCancel={isPending ? () => handleCancelClick(project.matchingId) : undefined}
+												/>
+											</div>
+										)
+									})}
 								</div>
 							</div>
 
@@ -302,26 +367,35 @@ export const MatchingStatus = () => {
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
-												{group.members.map(member => (
-													<div
-														key={member.userId}
-														className='flex gap-1 items-center relative shrink-0 w-full'
-													>
-														<ProfileCard
-															imageUrl={member.profileUrl}
-															nickname={member.nickname}
-															part={member.field}
-															introduction={member.bio}
-															onClick={() => handleProfileClick(member.userId)}
-														/>
-														<MatchingTimerCard
-															requestType='sent'
-															status='default'
-															timerText='00:00:00'
-															onCancel={() => handleCancelClick(member.matchingId)}
-														/>
-													</div>
-												))}
+												{group.members.map(member => {
+													const timerStatus = mapStatusToTimerCardStatus(member.status)
+													// PENDING 상태일 때만 currentTime을 사용하여 실시간 업데이트
+													const timeToUse = member.status === 'PENDING' ? currentTime : initialTime
+													const remainingSeconds = calculateRemainingSeconds(member.expiresAt, timeToUse)
+													// PENDING 상태일 때만 취소 버튼 표시
+													const isPending = member.status === 'PENDING'
+													return (
+														<div
+															key={member.userId}
+															className='flex gap-1 items-center relative shrink-0 w-full'
+														>
+															<ProfileCard
+																imageUrl={member.profileUrl}
+																nickname={member.nickname}
+																part={member.field}
+																introduction={member.bio}
+																onClick={() => handleProfileClick(member.userId)}
+															/>
+															<MatchingTimerCard
+																requestType='sent'
+																status={timerStatus}
+																apiStatus={member.status}
+																timerSeconds={remainingSeconds}
+																onCancel={isPending ? () => handleCancelClick(member.matchingId) : undefined}
+															/>
+														</div>
+													)
+												})}
 											</div>
 										</div>
 									))}
