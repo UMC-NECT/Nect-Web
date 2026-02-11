@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { MyPageHeader } from '../MyPageHeader'
 import ProjectCard from './ProjectCard'
 import ProfileCard from './ProfileCard'
@@ -70,8 +71,11 @@ const groupUserMatchingsByField = (userMatchings: UserMatchingDto[]) => {
 }
 
 export const MatchingStatus = () => {
+	const navigate = useNavigate()
 	const [activeTab, setActiveTab] = useState<TabType>('received')
-	const [modalType, setModalType] = useState<'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null>(null)
+	const [modalType, setModalType] = useState<
+		'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null
+	>(null)
 	const [selectedMatchingId, setSelectedMatchingId] = useState<string | null>(null)
 
 	// API 훅
@@ -138,6 +142,10 @@ export const MatchingStatus = () => {
 		setSelectedMatchingId(null)
 	}
 
+	const handleProfileClick = (userId: number) => {
+		navigate(`/matching-available/${userId}?from=matching`)
+	}
+
 	return (
 		<div className='ml-7'>
 			<MyPageHeader />
@@ -168,7 +176,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-3.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>프로젝트</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											프로젝트
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
@@ -197,12 +207,17 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>넥트 팀원</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											넥트 팀원
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
 									{receivedGrouped.map(group => (
-										<div key={group.field} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
+										<div
+											key={group.field}
+											className='flex flex-col gap-3 items-start relative shrink-0 w-full'
+										>
 											<RoleTagChip
 												roleId={getRoleIdByName(group.field)}
 												roleName={group.field}
@@ -210,12 +225,16 @@ export const MatchingStatus = () => {
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 												{group.members.map(member => (
-													<div key={member.userId} className='flex gap-1 items-center relative shrink-0 w-full'>
+													<div
+														key={member.userId}
+														className='flex gap-1 items-center relative shrink-0 w-full'
+													>
 														<ProfileCard
 															imageUrl={member.profileUrl}
 															nickname={member.nickname}
 															part={member.field}
 															introduction={member.bio}
+															onClick={() => handleProfileClick(member.userId)}
 														/>
 														<MatchingTimerCard
 															requestType='received'
@@ -236,7 +255,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-1.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>유의사항</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											유의사항
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col items-start px-5 py-4 relative shrink-0 w-full'>
@@ -251,7 +272,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-3.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>프로젝트</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											프로젝트
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
@@ -279,12 +302,17 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>넥트 팀원</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											넥트 팀원
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
 									{sentGrouped.map(group => (
-										<div key={group.field} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
+										<div
+											key={group.field}
+											className='flex flex-col gap-3 items-start relative shrink-0 w-full'
+										>
 											<RoleTagChip
 												roleId={getRoleIdByName(group.field)}
 												roleName={group.field}
@@ -292,12 +320,16 @@ export const MatchingStatus = () => {
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 												{group.members.map(member => (
-													<div key={member.userId} className='flex gap-1 items-center relative shrink-0 w-full'>
+													<div
+														key={member.userId}
+														className='flex gap-1 items-center relative shrink-0 w-full'
+													>
 														<ProfileCard
 															imageUrl={member.profileUrl}
 															nickname={member.nickname}
 															part={member.field}
 															introduction={member.bio}
+															onClick={() => handleProfileClick(member.userId)}
 														/>
 														<MatchingTimerCard
 															requestType='sent'
@@ -317,7 +349,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-1.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>유의사항</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											유의사항
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col items-start px-5 py-4 relative shrink-0 w-full'>

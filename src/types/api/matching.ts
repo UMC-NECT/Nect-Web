@@ -112,3 +112,70 @@ export type RequestMatchingRejectDto = {
 }
 
 export type ResponseMatchingRejectDto = CommonResponse<MatchingDto>
+
+// === 매칭 유저 상세 조회 ==========================================================
+
+export type UserCareerDto = {
+	userCareerId: number
+	projectName: string
+	industryField: string
+	startDate: string
+	endDate: string
+	isOngoing: boolean
+	role: string
+	achievements: {
+		userAchievementId: number
+		title: string
+		content: string
+	}[]
+}
+
+export type UserPortfolioDto = {
+	userPortfolioId: number
+	title: string
+	link: string
+	fileUrl: string
+}
+
+export type UserProjectHistoryDto = {
+	userProjectHistoryId: number
+	projectName: string
+	projectImage: string
+	projectDescription: string
+	startYearMonth: string
+	endYearMonth: string
+}
+
+export type UserSkillCategoryDto = {
+	category: string
+	categoryLabel: string
+	skills: {
+		skill: string
+		skillLabel: string
+		isSelected: boolean
+	}[]
+}
+
+export type MatchingUserDetailBody = {
+	userId: number
+	name: string
+	nickname: string
+	email: string
+	role: string
+	profileImageUrl: string
+	bio: string
+	coreCompetencies: string
+	userStatus: string
+	isPublicMatching: boolean
+	careerDuration: string
+	interestedJob: string
+	interestedField: string
+	careers: UserCareerDto[]
+	portfolios: UserPortfolioDto[]
+	projectHistories: UserProjectHistoryDto[]
+	skills: UserSkillCategoryDto[]
+	profileType: string
+	tags: string[]
+}
+
+export type ResponseMatchingUserDetailDto = CommonResponse<MatchingUserDetailBody>

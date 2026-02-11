@@ -7,6 +7,7 @@ import {
 	postMatchingCancel,
 	postMatchingReject,
 	postMatchingProjectToUser,
+	getMatchingUserDetail,
 } from '@/api/matching'
 import { QUERY_KEY } from '@/constants/key'
 import type {
@@ -117,5 +118,20 @@ export const useMatchingProjectToUserMutation = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.matching.all })
 		},
+	})
+}
+
+// === 매칭 유저 상세 조회 ==========================================================
+export const useMatchingUserDetailQuery = (
+	userId: string,
+	target: MatchingTarget,
+	status: MatchingStatusParam,
+	options?: { enabled?: boolean }
+) => {
+	return useQuery({
+		queryKey: QUERY_KEY.matching.userDetail(userId),
+		queryFn: () => getMatchingUserDetail(userId, target, status),
+		enabled: options?.enabled !== undefined ? options.enabled : !!userId,
+		staleTime: 1000 * 60 * 5, // 5분
 	})
 }

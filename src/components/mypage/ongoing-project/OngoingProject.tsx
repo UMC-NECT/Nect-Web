@@ -119,8 +119,15 @@ const OngoingProject = () => {
 		const projects = projectsData?.body?.projects?.flat()
 		if (!userId || !projects) return
 
-		// 저장된 userId와 현재 userId가 다르거나, projectId가 없으면 재설정
-		if (storedUserId !== userId || !storedProjectId) {
+		// 저장된 userId와 현재 userId가 다르면 초기화 후 재설정
+		if (storedUserId !== userId) {
+			const leaderProject = projects.find(p => p.leader.user_id === userId)
+			if (leaderProject) {
+				setStoredProjectId(leaderProject.project_id, userId)
+			}
+		}
+		// userId가 같고 projectId가 없을 때만 기본값으로 설정
+		else if (!storedProjectId) {
 			const leaderProject = projects.find(p => p.leader.user_id === userId)
 			if (leaderProject) {
 				setStoredProjectId(leaderProject.project_id, userId)
