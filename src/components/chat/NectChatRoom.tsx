@@ -158,7 +158,7 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 
 		loadMessages()
 
-		// WebSocket 연결 (기존 ChatRoom 방식과 동일)
+		// WebSocket 연결 (DM 전용 토픽 사용: /topic/dm/{minUserId_maxUserId})
 		chatWebSocketClient
 			.connect(targetUserId, currentUserId, {
 				onMessage: (message: any) => {
@@ -173,8 +173,49 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 						created_at: message.created_at || new Date().toISOString(),
 						is_read: false,
 					}
-					const newMessage = convertToDisplayMessages([dmMessage], currentUserId)[0]
-					setMessages((prev) => [...prev, newMessage])
+					
+					// WebSocket으로 받은 메시지는 날짜 구분선 없이 직접 변환
+					const isMine = dmMessage.sender_id === currentUserId
+					const newMessage: DisplayMessage = {
+						id: dmMessage.message_id,
+						senderName: dmMessage.sender_name,
+						content: dmMessage.content || '',
+						time: formatTime(dmMessage.created_at),
+						isMine,
+						profileImage: dmMessage.sender_profile_image || undefined,
+						readCount: dmMessage.is_read ? 1 : 0,
+					}
+					
+					// 이전 메시지와 날짜가 다르면 날짜 구분선 추가
+					setMessages((prev) => {
+						const messageDate = formatDate(dmMessage.created_at)
+						
+						// 마지막 날짜 구분선 찾기
+						let lastDateLine: DisplayMessage | undefined
+						for (let i = prev.length - 1; i >= 0; i--) {
+							if (prev[i].type === 'date') {
+								lastDateLine = prev[i]
+								break
+							}
+						}
+						
+						// 날짜가 변경되었거나 첫 메시지인 경우 날짜 구분선 추가
+						const needsDateLine = !lastDateLine || lastDateLine.date !== messageDate
+						
+						const newMessages: DisplayMessage[] = []
+						if (needsDateLine) {
+							newMessages.push({
+								id: `date-${dmMessage.message_id}`,
+								type: 'date',
+								date: messageDate,
+								time: '',
+							})
+						}
+						newMessages.push(newMessage)
+						
+						return [...prev, ...newMessages]
+					})
+					
 					// 스크롤을 맨 아래로
 					setTimeout(() => {
 						messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -186,7 +227,7 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 				onConnect: () => {
 					// WebSocket 연결 완료
 				},
-			})
+			}, true) // isDM: true - DM 전용 토픽(/topic/dm/{minUserId_maxUserId}) 구독
 			.catch(() => {
 				console.error('DM WebSocket 연결 실패')
 			})

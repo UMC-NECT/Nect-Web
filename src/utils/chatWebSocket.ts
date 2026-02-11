@@ -27,8 +27,12 @@ class ChatWebSocketClient {
 
 	/**
 	 * WebSocket 연결 초기화
+	 * @param roomId - 채팅방 ID 또는 DM의 경우 targetUserId (DM roomId는 내부에서 계산됨)
+	 * @param userId - 현재 사용자 ID
+	 * @param callbacks - 콜백 함수들
+	 * @param isDM - DM 여부 (true면 /topic/dm/{roomId} 구독, roomId는 minUserId_maxUserId 형식)
 	 */
-	async connect(roomId: number, userId: number, callbacks: ChatWebSocketCallbacks = {}) {
+	async connect(roomId: number, userId: number, callbacks: ChatWebSocketCallbacks = {}, isDM: boolean = false) {
 		// WebSocket 연결 시작
 		
 		// 이미 같은 roomId와 userId로 연결되어 있으면 기존 연결 재사용
@@ -191,8 +195,20 @@ class ChatWebSocketClient {
 						}
 
 						try {
-							console.log('채팅방 구독 시도:', `/topic/chatroom/${this.roomId}`)
-							this.subscription = this.client.subscribe(`/topic/chatroom/${this.roomId}`, (message: any) => {
+							// DM인 경우 roomId를 minUserId_maxUserId 형식으로 계산
+							let topic: string
+							if (isDM && this.roomId && this.userId) {
+								const minId = Math.min(this.userId, this.roomId)
+								const maxId = Math.max(this.userId, this.roomId)
+								const dmRoomId = `${minId}_${maxId}`
+								topic = `/topic/dm/${dmRoomId}`
+								console.log('DM 채팅방 구독 시도:', topic, `(roomId: ${dmRoomId}, userId: ${this.userId}, targetUserId: ${this.roomId})`)
+							} else {
+								topic = `/topic/chatroom/${this.roomId}`
+								console.log('채팅방 구독 시도:', topic)
+							}
+
+							this.subscription = this.client.subscribe(topic, (message: any) => {
 								try {
 									const chatMessage: ChatMessageReceiveDto = JSON.parse(message.body)
 									this.callbacks.onMessage?.(chatMessage)
@@ -201,7 +217,7 @@ class ChatWebSocketClient {
 									this.callbacks.onError?.(error as Error)
 								}
 							})
-							console.log('채팅방 구독 성공')
+							console.log('채팅방 구독 성공:', topic)
 							// 구독 성공 후에 onConnect 콜백 호출
 							this.callbacks.onConnect?.()
 						} catch (error) {
