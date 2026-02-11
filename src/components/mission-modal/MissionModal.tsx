@@ -927,11 +927,12 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	}
 
 	type FileSaveData = Omit<import('@/stores/mission-modal/missionModalStore').FileItem, 'id'>
-	const handleFileSave = (fileData: FileSaveData) => {
+	const handleFileSave = (fileData: FileSaveData, file?: File) => {
 		if (isEditMode && projectId != null && editingMissionId != null) {
-			if (fileData.type === 'file' && fileData.rawFile) {
+			const fileToUpload = file ?? (fileData.type === 'file' ? fileData.rawFile : undefined)
+			if (fileData.type === 'file' && fileToUpload) {
 				const formData = new FormData()
-				formData.append('file', fileData.rawFile)
+				formData.append('file', fileToUpload)
 				postUploadAttachmentFileMutation.mutate(
 					{
 						projectId,

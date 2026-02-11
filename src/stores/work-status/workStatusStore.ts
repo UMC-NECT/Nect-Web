@@ -19,6 +19,15 @@ export interface WorkStatusItem {
 	participants?: { id: number; name: string; avatar: string }[]
 	links?: string | string[]
 	attachments?: number
+	/** 파트 조회 API attachment_summary (있으면 첨부 파일/링크 개수·확장자 표시) */
+	attachmentSummary?: {
+		file_count: number
+		link_count: number
+		total_count: number
+		file_extensions: string[]
+	}
+	/** 파트 조회 API attachments_meta (상위 2개 아이콘 + 나머지 +N 표시용) */
+	attachmentsMeta?: Array<{ type: 'FILE' | 'LINK'; file_ext: string | null }>
 	variant?: 'Default' | 'Minimum' | 'Edit'
 	isEdit?: boolean
 }

@@ -92,6 +92,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 	const [showMenu, setShowMenu] = useState(false)
 	const dropZoneRef = useRef<HTMLDivElement>(null)
 	const menuRef = useRef<HTMLDivElement>(null)
+	const titleInputRef = useRef<HTMLInputElement>(null)
 
 	// 메뉴 외부 클릭 감지
 	useEffect(() => {
@@ -155,6 +156,8 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 					const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
 					setEditName(nameWithoutExt)
 				}
+				// 드롭 후 제목 input에 포커스해 엔터로 저장 가능하도록
+				setTimeout(() => titleInputRef.current?.focus(), 0)
 			}
 		},
 		[editName]
@@ -191,9 +194,10 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 		}
 	}
 
-	// Enter 키 핸들러
+	// Enter 키 핸들러 (링크/파일 모두 엔터로 저장)
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter' && editName.trim() && (droppedFile || editUrl.trim())) {
+			e.preventDefault()
 			handleSave()
 		}
 		if (e.key === 'Escape') {
@@ -223,6 +227,7 @@ const FileItem = ({ data, isEditing = false, onSave, onCancel, onClick, onDelete
 				{/* 입력 필드 */}
 				<div className='flex flex-col flex-1 min-w-0 gap-0.5'>
 					<input
+						ref={titleInputRef}
 						type='text'
 						className='caption-1 text-[13px]! font-semibold text-neutral-800 bg-transparent outline-none placeholder:text-neutral-400 w-full'
 						placeholder='제목'

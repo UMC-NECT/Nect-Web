@@ -32,13 +32,28 @@ export type ResponseProcessPostDto = CommonResponse<{
     process_id: number
 }>
 
+export type ProcessPartProcessItem = ProcessWeekProcessItem & {
+	attachment_summary?: {
+		total_count: number
+		file_count: number
+		link_count: number
+		file_extensions: string[]
+	}
+	attachments_meta?: Array<{
+		type: 'FILE' | 'LINK'
+		document_id: number
+		attached_at: string
+		file_ext: string | null
+	}>
+}
+
 export type ResponseProcessPartDto = CommonResponse<{
-    lane_key: string | null
-    groups: {
-        status: string
-        count: number
-        processes: ProcessWeekProcessItem[]
-    }[]
+	lane_key: string | null
+	groups: {
+		status: string
+		count: number
+		processes: ProcessPartProcessItem[]
+	}[]
 }>
 
 /** 주차별 프로세스 조회 - 한 주의 한 건 카드 (API 응답 필드명 그대로) */

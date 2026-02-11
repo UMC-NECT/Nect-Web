@@ -27,7 +27,7 @@ import { getMissionList } from '@/api/process/weekMission'
 import { QUERY_KEY } from '@/constants/key'
 import type { Progress } from '@/types/progress'
 import { useWorkspaceProjectId } from '@/hooks/useWorkspaceProjectId'
-import type { ProcessWeekProcessItem } from '@/types/api/process/process'
+import type { ProcessPartProcessItem } from '@/types/api/process/process'
 import type { Part } from '@/types/part'
 
 // Droppable 컬럼 컴포넌트
@@ -70,7 +70,7 @@ const getTeamProgressLabel = (teamKey: string, parts: Part[]): string => {
 
 /** 파트 API 그룹의 processes + status → WorkStatusItem */
 const mapPartProcessToWorkStatusItem = (
-	p: ProcessWeekProcessItem,
+	p: ProcessPartProcessItem,
 	status: MissionStatus,
 	teamDisplayName: string
 ): WorkStatusItem => ({
@@ -88,7 +88,9 @@ const mapPartProcessToWorkStatusItem = (
 		avatar: a.user_image ?? '',
 	})),
 	links: undefined,
-	attachments: undefined,
+	attachments: p.attachment_summary?.total_count,
+	attachmentSummary: p.attachment_summary,
+	attachmentsMeta: p.attachments_meta?.map(m => ({ type: m.type, file_ext: m.file_ext })),
 	isEdit: p.has_open_feedback ?? false,
 })
 
@@ -114,7 +116,8 @@ const formatHistoryTime = (dateStr: string): string => {
 	const d = new Date(dateStr)
 	if (Number.isNaN(d.getTime())) return ''
 	const today = new Date()
-	const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+	const isToday =
+		d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
 	const period = d.getHours() >= 12 ? '오후' : '오전'
 	const h = d.getHours() % 12 || 12
 	const min = d.getMinutes().toString().padStart(2, '0')
@@ -193,6 +196,8 @@ const SortableTodoBlock = ({ item, status, onItemClick }: SortableTodoBlockProps
 				participants={item.participants}
 				links={item.links}
 				attachments={item.attachments}
+				attachmentSummary={item.attachmentSummary}
+				attachmentsMeta={item.attachmentsMeta}
 				variant={status === 'backlog' ? 'Minimum' : 'Default'}
 				isEdit={item.isEdit}
 				onClick={handleClick}
@@ -346,20 +351,12 @@ const WorkStatusPage = () => {
 				}`}
 				style={{ scrollbarGutter: 'stable' }}
 			>
-
 				{/* 페이지 헤더 */}
-				<StudioTitle
-					title='파트별 작업 현황'
-					description='팀별 작업 상태와 진행 상황을 한눈에 확인하는 관리 영역'
-				/>
+				<StudioTitle title='파트별 작업 현황' description='팀별 작업 상태와 진행 상황을 한눈에 확인하는 관리 영역' />
 
 				{/* 세그먼트 바 - sticky */}
 				<div className='flex items-center w-full shrink-0 py-8 sticky top-0 z-10 bg-neutral-000'>
-					<SegmentsBar
-						segments={segments}
-						defaultValue={selectedSegment}
-						onChange={setSelectedSegment}
-					/>
+					<SegmentsBar segments={segments} defaultValue={selectedSegment} onChange={setSelectedSegment} />
 				</div>
 
 				{/* StatusChip 헤더 - sticky */}
@@ -384,34 +381,39 @@ const WorkStatusPage = () => {
 				</div>
 
 				{/* 4개 컬럼 TodoSection 영역 */}
-				<DndContext
-					sensors={sensors}
-					onDragStart={handleDragStart}
-					onDragEnd={handleDragEnd}
-					modifiers={[]}
-				>
+				<DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} modifiers={[]}>
 					<div className='flex gap-5 items-start relative shrink-0 w-full '>
-					{statuses.map(status => {
-						const items = getFilteredItemsByStatus(status)
-						return (
-							<DroppableColumn key={status} id={status}>
-								<SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
-									<div className='flex flex-col gap-2 items-start relative shrink-0 w-[224px]'>
-										<TodoSection status={status}>
-											{items.map(item => (
-												<SortableTodoBlock
-													key={item.id}
-													item={item}
-													status={status}
-													onItemClick={(itemId, missionNumber) => openMissionModal(itemId, undefined, projectIdStr, false, false, undefined, missionNumber)}
-												/>
-											))}
-										</TodoSection>
-									</div>
-								</SortableContext>
-							</DroppableColumn>
-						)
-					})}
+						{statuses.map(status => {
+							const items = getFilteredItemsByStatus(status)
+							return (
+								<DroppableColumn key={status} id={status}>
+									<SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
+										<div className='flex flex-col gap-2 items-start relative shrink-0 w-[224px]'>
+											<TodoSection status={status}>
+												{items.map(item => (
+													<SortableTodoBlock
+														key={item.id}
+														item={item}
+														status={status}
+														onItemClick={(itemId, missionNumber) =>
+															openMissionModal(
+																itemId,
+																undefined,
+																projectIdStr,
+																false,
+																false,
+																undefined,
+																missionNumber
+															)
+														}
+													/>
+												))}
+											</TodoSection>
+										</div>
+									</SortableContext>
+								</DroppableColumn>
+							)
+						})}
 					</div>
 					{activeItem && (
 						<DragOverlay style={{ cursor: 'grabbing', zIndex: 9999 }}>
@@ -426,6 +428,8 @@ const WorkStatusPage = () => {
 									participants={activeItem.participants}
 									links={activeItem.links}
 									attachments={activeItem.attachments}
+									attachmentSummary={activeItem.attachmentSummary}
+									attachmentsMeta={activeItem.attachmentsMeta}
 									variant={activeItem.status === 'backlog' ? 'Minimum' : 'Default'}
 									isEdit={activeItem.isEdit}
 								/>
@@ -442,11 +446,7 @@ const WorkStatusPage = () => {
 					<h2 className='title-2 text-neutral-900 font-bold relative shrink-0 w-full'>팀 작업 진행률</h2>
 					<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
 						{Object.entries(progressData).map(([team, progress]) => (
-							<WorkProgress
-								key={team}
-								title={getTeamProgressLabel(team, parts)}
-								progress={progress}
-							/>
+							<WorkProgress key={team} title={getTeamProgressLabel(team, parts)} progress={progress} />
 						))}
 
 						{/* 범례 */}
