@@ -420,7 +420,7 @@ export type RequestProjectUsersReorderDto = {
 }
 
 // === 매칭 현황 ==========================================================
-type UserMatchingType = {
+export type UserMatchingType = {
 	matchingId: number
 	userId: number
 	nickname: string
@@ -431,7 +431,7 @@ type UserMatchingType = {
 	status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELED' | 'EXPIRED'
 	expiresAt?: string
 }
-type ProjectMatchingType = {
+export type ProjectMatchingType = {
 	matchingId: number
 	projectId: number
 	title: string
