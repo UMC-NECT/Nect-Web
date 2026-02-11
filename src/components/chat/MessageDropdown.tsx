@@ -1,12 +1,15 @@
 import { useState, useMemo, useEffect } from 'react'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
 import { MessageItem } from './MessageItem'
+import { ChatMessageItem } from './ChatMessageItem'
 import { type ChatMessage } from '@/types/message'
 import NectChatRoom from './NectChatRoom'
+import ChatRoom from './ChatRoom'
 import { useQuery } from '@tanstack/react-query'
 import { getDMRooms, getChatRooms } from '@/api/chat'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
+import type { ChatRoomListDto } from '@/types/api/chat'
 
 interface MessageDropdownProps {
 	defaultTab?: 'matching' | 'team'
@@ -17,6 +20,8 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null)
 	const [showChatRoom, setShowChatRoom] = useState(false)
 	const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null)
+	const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
+	const [selectedRoom, setSelectedRoom] = useState<ChatRoomListDto | null>(null)
 	
 	// 프로젝트 목록 조회
 	const projectData = useGetProjectUsers()
@@ -91,12 +96,37 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 				memberCount: undefined,
 				unreadCount: unreadCount || 0,
 				isGroup: true,
+				roomId: roomId,
+				roomData: room,
 			}
 		})
 	}, [chatRoomsData])
 
-	// 채팅방이 열려있으면 채팅방만 표시
-	if (showChatRoom && selectedMessage) {
+	// 팀 작업실 탭에서 채팅방이 열려있으면 ChatRoom 표시
+	if (activeTab === 'team' && selectedRoomId && selectedRoom) {
+		const roomName = (selectedRoom as any).room_name || selectedRoom.roomName || ''
+		const unreadCount = (selectedRoom as any).unread_count || selectedRoom.unreadCount || 0
+		
+		return (
+			<div className='absolute top-full -right-[74px] mt-2 z-50'>
+				<ChatRoom
+					roomId={selectedRoomId}
+					roomName={roomName}
+					unreadCount={unreadCount}
+					projectId={selectedProjectId}
+					hideSidebar={true}
+					height="h-[656px]"
+					onClose={() => {
+						setSelectedRoomId(null)
+						setSelectedRoom(null)
+					}}
+				/>
+			</div>
+		)
+	}
+
+	// 매칭 요청 탭에서 채팅방이 열려있으면 NectChatRoom 표시
+	if (activeTab === 'matching' && showChatRoom && selectedMessage) {
 		return (
 			<div className='absolute top-full -right-[74px] mt-2 z-50'>
 				<NectChatRoom
@@ -188,18 +218,33 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 							메시지가 없습니다.
 						</div>
 					) : (
-						teamMessages.map(message => (
-							<MessageItem
-								key={message.id}
-								message={message}
-								isSelected={selectedMessageId === message.id}
-								onClick={() => {
-									setSelectedMessageId(message.id)
-									setSelectedMessage(message)
-									setShowChatRoom(true)
-								}}
-							/>
-						))
+						teamMessages.map((message, index) => {
+							if (message.roomId) {
+								const roomData = message.roomData as any
+								const roomId = roomData?.room_id || roomData?.roomId || message.roomId
+								const roomName = roomData?.room_name || roomData?.roomName || message.senderName
+								const unreadCount = roomData?.unread_count || roomData?.unreadCount || message.unreadCount || 0
+								
+								return (
+									<ChatMessageItem
+										key={message.id}
+										message={message}
+										showDivider={index === 0}
+										onClick={() => {
+											setSelectedRoomId(roomId)
+											setSelectedRoom({
+												roomId: roomId,
+												roomName: roomName,
+												lastMessage: message.content,
+												lastMessageTime: message.time,
+												unreadCount: unreadCount,
+											})
+										}}
+									/>
+								)
+							}
+							return null
+						})
 					)
 				)}
 			</div>
