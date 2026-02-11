@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom' // react-router-dom으로 통일 권장, 프로젝트 설정에 따름
+import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import hamburger from '@/assets/icons/common/hamburger-bar.svg'
 import chat from '@/assets/icons/common/message.svg'
@@ -7,7 +7,6 @@ import Breadcrumb from '@/components/common/Breadcrumb'
 
 // Modals
 import SelectProjectModal from '@/components/matching-available/SelectProjectModal'
-import SelectMultipleProjectModal from '@/components/matching-available/SelectMultipleProjectModal'
 import NoMatchingProjectModal from '@/components/matching-available/NoMatchingProjectModal'
 import MatchingRequestConfirmModal from '@/components/matching-available/MatchingRequestConfirmModal'
 import MatchingLimitModal from '@/components/matching-available/MatchingLimitModal'
@@ -27,9 +26,6 @@ import { useProjectRecruitments } from '@/hooks/queries/project'
 
 const MatchingAvailablePage = () => {
 	const { userId } = useParams<{ userId: string }>()
-	const [searchParams] = useSearchParams()
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const isFromMatching = searchParams.get('from') === 'matching'
 
 	// 사용자 상세 정보
 	const {
@@ -126,12 +122,6 @@ const MatchingAvailablePage = () => {
 	const handleProjectSelect = (projectId: string) => {
 		setSelectedProjectId(Number(projectId))
 		setIsSelectModalOpen(false)
-		setIsRequestModalOpen(true)
-	}
-
-	const handleMultipleProjectSelect = (projectId: string) => {
-		setSelectedProjectId(Number(projectId))
-		setIsSelectMultipleModalOpen(false)
 		setIsRequestModalOpen(true)
 	}
 
@@ -309,10 +299,15 @@ const MatchingAvailablePage = () => {
 					}}
 				/>
 
-				<SelectMultipleProjectModal
+				{/* TODO: 다중 프로젝트 선택 모달 구현 예정 */}
+				<SelectProjectModal
 					isOpen={isSelectMultipleModalOpen}
 					onClose={() => setIsSelectMultipleModalOpen(false)}
-					onConfirm={handleMultipleProjectSelect}
+					onConfirm={handleProjectSelect}
+					onNoProject={() => {
+						setIsSelectMultipleModalOpen(false)
+						setIsNoProjectModalOpen(true)
+					}}
 				/>
 
 				<NoMatchingProjectModal isOpen={isNoProjectModalOpen} onClose={() => setIsNoProjectModalOpen(false)} />
