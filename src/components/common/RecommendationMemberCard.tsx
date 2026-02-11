@@ -54,7 +54,7 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
 			{/* 상단: 배경 + 캐릭터 영역 */}
 			<div className={`relative ${styles.background}`}>
 				{member.imageUrl ? (
-					<img src={member.imageUrl} alt={''} className='w-full h-full object-cover bg-neutral-300' />
+					<img src={member.imageUrl} alt={''} className='w-full h-full object-cover object-top bg-neutral-300' />
 				) : (
 					<div className='w-full h-full bg-neutral-300 rounded-12' />
 				)}

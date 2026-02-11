@@ -71,13 +71,13 @@ const AvailableNecters = () => {
 							to={`/matching-available/${member.userId}`}
 							className='w-68 h-64 rounded-xl overflow-hidden cursor-pointer bg-white border-neutral-100 border-[1.5px] hover:border-primary-400-normal hover:shadow-lg transition-all duration-200 block'
 						>
-							{/* 상단: 배경 + 이미지 영역 */}
+							{/* 상단: 배경 + 이미지 영역 (상단 기준, 넘치면 아래 잘림) */}
 							<div className='relative h-30'>
 								{member.imageUrl ? (
 									<img
 										src={member.imageUrl}
 										alt='background'
-										className='absolute inset-0 w-full h-full object-cover'
+										className='absolute inset-0 w-full h-full object-cover object-top'
 									/>
 								) : (
 									<div className='w-full h-full bg-neutral-300 rounded-12' />

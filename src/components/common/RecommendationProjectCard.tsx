@@ -93,7 +93,7 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
 			{/* 이미지 영역 - 카드 너비를 넘지 않도록 w-full 사용 */}
 			<div className={`relative w-full ${styles.image} rounded-xl overflow-hidden`}>
 				{project.imageUrl ? (
-					<img src={project.imageUrl} alt={''} className='w-full h-full object-cover bg-neutral-300 rounded-xl' />
+					<img src={project.imageUrl} alt={''} className='w-full h-full object-cover object-top bg-neutral-300 rounded-xl' />
 				) : (
 					<div className='w-full h-full bg-neutral-300 rounded-xl' />
 				)}
