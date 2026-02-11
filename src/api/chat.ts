@@ -12,6 +12,8 @@ import type {
 	CommonResponse,
 	GroupChatRoomCreateRequestDto,
 	ResponseGetChatRoomsDto,
+	ResponseGetDMRoomsDto,
+	ResponseGetDMMessagesDto,
 	ResponseGetProjectAlbumsDto,
 	ResponseGetProjectMembersDto,
 	ResponseGetProjectUsersDto,
@@ -26,6 +28,36 @@ import { toQueryString } from "@/utils/queryString"
 /** 특정 프로젝트의 모든 채팅방 목록 조회 */
 export const getChatRooms = async (projectId: number): Promise<ResponseGetChatRoomsDto> => {
 	const { data } = await api.get(`/api/v1/chats/projects/${projectId}/rooms`)
+	return data
+}
+
+/** DM 채팅방 목록 조회 */
+export const getDMRooms = async (options?: {
+	cursor?: number | null
+	size?: number
+}): Promise<ResponseGetDMRoomsDto> => {
+	const query = toQueryString({
+		cursor: options?.cursor?.toString(),
+		size: options?.size?.toString(),
+	})
+	const { data } = await api.get(`/api/v1/dms/rooms${query}`)
+	return data
+}
+
+/** DM 메시지 조회 */
+export const getDMMessages = async (
+	userId: number,
+	options?: {
+		cursor?: number | null
+		size?: number
+	}
+): Promise<ResponseGetDMMessagesDto> => {
+	const query = toQueryString({
+		userId: userId.toString(),
+		cursor: options?.cursor?.toString(),
+		size: options?.size?.toString(),
+	})
+	const { data } = await api.get(`/api/v1/dms/messages${query}`)
 	return data
 }
 
@@ -179,12 +211,26 @@ export const getChatFileDetail = async (fileId: number): Promise<ChatFileDetailD
 }
 
 /** 파일 다운로드 (리다이렉트) */
-export const downloadChatFile = async (fileId: number): Promise<void> => {
-	const { data } = await api.get(`/api/v1/chats/files/${fileId}/download`, {
-		responseType: "blob",
-	})
-	// 실제로는 서버에서 리다이렉트하므로, 필요시 처리 로직 추가
-	return data
+export const downloadChatFile = async (fileId: number, fileName?: string): Promise<void> => {
+	try {
+		const response = await api.get(`/api/v1/chats/files/${fileId}/download`, {
+			responseType: 'blob',
+			maxRedirects: 5, // 302 리다이렉트 처리
+		})
+
+		// Blob을 다운로드 링크로 변환
+		const downloadUrl = window.URL.createObjectURL(response.data)
+		const link = document.createElement('a')
+		link.href = downloadUrl
+		link.download = fileName || 'download'
+		document.body.appendChild(link)
+		link.click()
+		document.body.removeChild(link)
+		window.URL.revokeObjectURL(downloadUrl)
+	} catch (error) {
+		console.error('파일 다운로드 실패:', error)
+		throw error
+	}
 }
 
 /** 채팅방의 파일을 공유 문서로 변환 */

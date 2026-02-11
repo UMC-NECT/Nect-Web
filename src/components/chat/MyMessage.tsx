@@ -9,7 +9,7 @@ export const MyMessage = ({ content, time, readCount }: MyMessageProps) => {
 		<div className="flex gap-1.5 items-end justify-end pt-2.5">
 			{/* 시간 표시 */}
 			<div className="flex flex-col h-[30px] items-end justify-end py-0.5">
-				{readCount !== undefined && (
+				{readCount !== undefined && readCount > 0 && (
 					<div className="h-3.5 text-primary-400-normal caption-2 font-medium">
 						{readCount}
 					</div>

@@ -27,8 +27,12 @@ class ChatWebSocketClient {
 
 	/**
 	 * WebSocket 연결 초기화
+	 * @param roomId - 채팅방 ID 또는 DM의 경우 targetUserId (DM roomId는 내부에서 계산됨)
+	 * @param userId - 현재 사용자 ID
+	 * @param callbacks - 콜백 함수들
+	 * @param isDM - DM 여부 (true면 /topic/dm/{roomId} 구독, roomId는 minUserId_maxUserId 형식)
 	 */
-	async connect(roomId: number, userId: number, callbacks: ChatWebSocketCallbacks = {}) {
+	async connect(roomId: number, userId: number, callbacks: ChatWebSocketCallbacks = {}, isDM: boolean = false) {
 		// WebSocket 연결 시작
 		
 		// 이미 같은 roomId와 userId로 연결되어 있으면 기존 연결 재사용
@@ -191,8 +195,20 @@ class ChatWebSocketClient {
 						}
 
 						try {
-							console.log('채팅방 구독 시도:', `/topic/chatroom/${this.roomId}`)
-							this.subscription = this.client.subscribe(`/topic/chatroom/${this.roomId}`, (message: any) => {
+							// DM인 경우 roomId를 minUserId_maxUserId 형식으로 계산
+							let topic: string
+							if (isDM && this.roomId && this.userId) {
+								const minId = Math.min(this.userId, this.roomId)
+								const maxId = Math.max(this.userId, this.roomId)
+								const dmRoomId = `${minId}_${maxId}`
+								topic = `/topic/dm/${dmRoomId}`
+								console.log('DM 채팅방 구독 시도:', topic, `(roomId: ${dmRoomId}, userId: ${this.userId}, targetUserId: ${this.roomId})`)
+							} else {
+								topic = `/topic/chatroom/${this.roomId}`
+								console.log('채팅방 구독 시도:', topic)
+							}
+
+							this.subscription = this.client.subscribe(topic, (message: any) => {
 								try {
 									const chatMessage: ChatMessageReceiveDto = JSON.parse(message.body)
 									this.callbacks.onMessage?.(chatMessage)
@@ -201,7 +217,7 @@ class ChatWebSocketClient {
 									this.callbacks.onError?.(error as Error)
 								}
 							})
-							console.log('채팅방 구독 성공')
+							console.log('채팅방 구독 성공:', topic)
 							// 구독 성공 후에 onConnect 콜백 호출
 							this.callbacks.onConnect?.()
 						} catch (error) {
@@ -224,13 +240,12 @@ class ChatWebSocketClient {
 					console.error("WebSocket 오류:", event.type)
 					if (event.target) {
 						console.error("WebSocket 상태:", event.target.readyState)
-						// URL은 토큰 정보가 포함될 수 있으므로 로그에 출력하지 않음
+						// WebSocket 실패는 SockJS의 정상적인 폴백 과정일 수 있음
+						// xhr-streaming이나 xhr-polling으로 자동 전환됨
+						console.log("SockJS가 자동으로 폴백 메커니즘을 시도합니다 (xhr-streaming → xhr-polling)")
 					}
-					this.callbacks.onError?.(new Error("WebSocket 연결 오류"))
-					// 재연결 시도는 잠시 후에 (너무 빠른 재연결 방지)
-					setTimeout(() => {
-						this.handleReconnect()
-					}, 2000)
+					// WebSocket 실패는 SockJS가 자동으로 폴백하므로 즉시 에러로 처리하지 않음
+					// 실제 연결 실패는 onStompError에서 처리됨
 				},
 			})
 
@@ -260,6 +275,27 @@ class ChatWebSocketClient {
 
 		this.client.publish({
 			destination: `/app/chat-send/${this.roomId}`,
+			body: JSON.stringify(message),
+		})
+	}
+
+	/**
+	 * DM 메시지 전송
+	 * - 실시간 DM 전송 엔드포인트: SEND /app/chat-send/dms/{userId}
+	 * - body: { "content": "안녕하세요" }
+	 */
+	sendDM(targetUserId: number, content: string) {
+		if (!this.client || !this.client.connected || !this.userId) {
+			throw new Error("WebSocket이 연결되지 않았습니다.")
+		}
+
+		const message: ChatMessageSendRequestDto = {
+			userId: this.userId,
+			content,
+		}
+
+		this.client.publish({
+			destination: `/app/chat-send/dms/${targetUserId}`,
 			body: JSON.stringify(message),
 		})
 	}

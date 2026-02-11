@@ -21,6 +21,7 @@ interface ChatModalProps {
 	const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
 	const [selectedRoom, setSelectedRoom] = useState<ChatRoomListDto | null>(null)
 	const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([])
+	const [selectedMembers, setSelectedMembers] = useState<Array<{ id: number; name: string; profileImage?: string }>>([])
 
 	// 채팅방 목록 조회
 	const { data: chatRoomsData, isLoading, refetch } = useQuery({
@@ -38,6 +39,8 @@ interface ChatModalProps {
 		const lastMessage = (room as any).last_message || room.lastMessage
 		const lastMessageTime = (room as any).last_message_time || room.lastMessageTime
 		const unreadCount = (room as any).unread_count || room.unreadCount
+		const memberCount = (room as any).member_count || (room as any).memberCount
+		const profileImages = (room as any).profile_images || (room as any).profileImages || []
 		
 		return {
 			id: roomId,
@@ -50,7 +53,8 @@ interface ChatModalProps {
 					})
 				: '',
 			isRead: unreadCount === 0,
-			memberCount: undefined,
+			memberCount: memberCount,
+			participants: profileImages, // 프로필 이미지 배열
 			unreadCount: unreadCount,
 			isGroup: true,
 			roomId: roomId,
@@ -84,15 +88,43 @@ interface ChatModalProps {
 				projectId={projectId}
 				onClose={() => {
 					setSelectedMemberIds([])
+					setSelectedMembers([])
 					setView('list')
 				}}
-				onConfirm={(selectedContacts) => {
-					// 선택한 멤버 ID 저장
-					const memberIds = selectedContacts.map((c) => c.id)
+			onConfirm={async (selectedContacts) => {
+				// 선택한 멤버 ID 저장
+				const memberIds = selectedContacts.map((c) => c.id)
+				
+				// 멤버가 1명이면 바로 채팅방 생성
+				if (memberIds.length === 1) {
+					try {
+						// 1:1 채팅방은 상대방 이름을 방 이름으로 사용
+						const memberName = selectedContacts[0]?.name || '채팅방'
+						const response = await createGroupChatRoom({
+							projectId,
+							roomName: memberName,
+							memberIds: memberIds,
+						})
+						if (response.body) {
+							refetch()
+							setSelectedMemberIds([])
+							setView('list')
+						}
+					} catch (error) {
+						console.error('채팅방 생성 실패:', error)
+						alert('채팅방 생성에 실패했습니다.')
+					}
+				} else {
+					// 멤버가 2명 이상이면 방 정보 설정으로 이동
 					setSelectedMemberIds(memberIds)
-					// 멤버 선택 완료 후 방 정보 설정으로 이동
+					setSelectedMembers(selectedContacts.map(c => ({
+						id: c.id,
+						name: c.name,
+						profileImage: c.profileImage,
+					})))
 					setView('roomInfo')
-				}}
+				}
+			}}
 			/>
 		)
 	}
@@ -100,8 +132,10 @@ interface ChatModalProps {
 	if (view === 'roomInfo') {
 		return (
 			<ChatRoomInfoModal
+				selectedMembers={selectedMembers}
 				onClose={() => {
 					setSelectedMemberIds([])
+					setSelectedMembers([])
 					setView('list')
 				}}
 				onConfirm={async (roomName, selectedAvatar) => {
@@ -122,6 +156,7 @@ interface ChatModalProps {
 							// 채팅방 생성 성공 시 목록 새로고침
 							refetch()
 							setSelectedMemberIds([])
+							setSelectedMembers([])
 							setView('list')
 						}
 					} catch (error) {
@@ -178,6 +213,7 @@ interface ChatModalProps {
 								key={message.id}
 								message={message}
 								showDivider={index === 0}
+								projectId={projectId}
 								onClick={() => {
 									if (message.roomId) {
 										const roomData = message.roomData as any

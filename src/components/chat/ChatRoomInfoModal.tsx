@@ -3,25 +3,22 @@ import ChatSidebar from './ChatSidebar'
 import ChatActionButtons from './ChatActionButtons'
 
 interface ChatRoomInfoModalProps {
+	selectedMembers?: Array<{ id: number; name: string; profileImage?: string }>
 	onClose: () => void
 	onConfirm: (roomName: string, selectedAvatar: number) => void
 }
 
-const ChatRoomInfoModal = ({ onClose, onConfirm }: ChatRoomInfoModalProps) => {
+const ChatRoomInfoModal = ({ selectedMembers = [], onClose, onConfirm }: ChatRoomInfoModalProps) => {
 	const [roomName, setRoomName] = useState('')
-	const [selectedAvatar, setSelectedAvatar] = useState<number | null>(null)
 
-	const avatars = [
-		{ id: 1, image: 'https://placehold.co/48x48' },
-		{ id: 2, image: 'https://placehold.co/48x48' },
-		{ id: 3, image: 'https://placehold.co/48x48' },
-		{ id: 4, image: 'https://placehold.co/48x48' },
-	]
+	// 선택된 멤버의 프로필 이미지를 사용 (최대 4개)
+	const displayMembers = selectedMembers.slice(0, 4)
+	const memberCount = selectedMembers.length
 
 	const handleConfirm = () => {
 		if (roomName.trim()) {
-			// 아바타가 선택되지 않았으면 기본값 1 사용
-			onConfirm(roomName.trim(), selectedAvatar || 1)
+			// 아바타 선택 기능은 현재 사용하지 않으므로 기본값 1 사용
+			onConfirm(roomName.trim(), 1)
 		}
 	}
 
@@ -49,73 +46,104 @@ const ChatRoomInfoModal = ({ onClose, onConfirm }: ChatRoomInfoModalProps) => {
 				{/* 메인 컨텐츠 영역 */}
 				<div className='flex-1 flex flex-col items-start overflow-y-auto notification-scrollbar'>
 					<div className='flex flex-col gap-[30px] items-center px-[28px] py-[82px] w-full flex-1 justify-center'>
-						{/* 아바타 선택 영역 */}
+						{/* 프로필 이미지 레이아웃 */}
 						<div className='flex items-center justify-center p-[2.273px] w-[100px] h-[100px] relative'>
 							<div className='relative w-[100px] h-[100px]'>
-								{/* 아바타 1 (좌상) */}
-								<div
-									className={`absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden cursor-pointer bg-neutral-300 ${
-										selectedAvatar === 1 ? 'ring-2 ring-primary-400-normal' : ''
-									}`}
-									style={{ left: '0.45px', top: '0.45px' }}
-									onClick={() => setSelectedAvatar(1)}
-								>
-									{avatars[0] && (
-										<img
-											src={avatars[0].image}
-											alt='Avatar 1'
-											className='w-full h-full object-cover'
-										/>
-									)}
-								</div>
-								{/* 아바타 2 (우상) */}
-								<div
-									className={`absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden cursor-pointer bg-neutral-300 ${
-										selectedAvatar === 2 ? 'ring-2 ring-primary-400-normal' : ''
-									}`}
-									style={{ left: '48.89px', top: '0' }}
-									onClick={() => setSelectedAvatar(2)}
-								>
-									{avatars[1] && (
-										<img
-											src={avatars[1].image}
-											alt='Avatar 2'
-											className='w-full h-full object-cover'
-										/>
-									)}
-								</div>
-								{/* 아바타 3 (좌하) */}
-								<div
-									className={`absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden cursor-pointer bg-neutral-300 ${
-										selectedAvatar === 3 ? 'ring-2 ring-primary-400-normal' : ''
-									}`}
-									style={{ left: '0', top: '48.89px' }}
-									onClick={() => setSelectedAvatar(3)}
-								>
-									{avatars[2] && (
-										<img
-											src={avatars[2].image}
-											alt='Avatar 3'
-											className='w-full h-full object-cover'
-										/>
-									)}
-								</div>
-								{/* 아바타 4 (우하) */}
-								<div
-									className={`absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden cursor-pointer bg-neutral-300 ${
-										selectedAvatar === 4 ? 'ring-2 ring-primary-400-normal' : ''
-									}`}
-									style={{ left: '48.89px', top: '48.89px' }}
-									onClick={() => setSelectedAvatar(4)}
-								>
-									{avatars[3] && (
-										<img
-											src={avatars[3].image}
-											alt='Avatar 4'
-											className='w-full h-full object-cover'
-										/>
-									)}
-								</div>
+								{memberCount >= 4 ? (
+									// 4명 이상: 2x2 그리드
+									displayMembers.map((member, index) => {
+										const positions = [
+											{ left: '0.45px', top: '0.45px' }, // 좌상
+											{ left: '48.89px', top: '0' }, // 우상
+											{ left: '0', top: '48.89px' }, // 좌하
+											{ left: '48.89px', top: '48.89px' }, // 우하
+										]
+										const pos = positions[index]
+										return (
+											<div
+												key={member.id}
+												className={`absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden bg-neutral-300`}
+												style={{ left: pos.left, top: pos.top }}
+											>
+												{member.profileImage ? (
+													<img
+														src={member.profileImage}
+														alt={member.name}
+														className='w-full h-full object-cover'
+													/>
+												) : (
+													<div className='w-full h-full bg-neutral-300' />
+												)}
+											</div>
+										)
+									})
+								) : memberCount === 3 ? (
+									// 3명: 삼각형 배치
+									displayMembers.map((member, index) => {
+										const positions = [
+											{ left: '48.89px', top: '19.51px' }, // 오른쪽 아래
+											{ left: '10.8px', top: '0' }, // 중앙 위
+											{ left: '0', top: '19.51px' }, // 왼쪽 아래
+										]
+										const pos = positions[index]
+										return (
+											<div
+												key={member.id}
+												className={`absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden bg-neutral-300`}
+												style={{ left: pos.left, top: pos.top }}
+											>
+												{member.profileImage ? (
+													<img
+														src={member.profileImage}
+														alt={member.name}
+														className='w-full h-full object-cover'
+													/>
+												) : (
+													<div className='w-full h-full bg-neutral-300' />
+												)}
+											</div>
+										)
+									})
+								) : memberCount === 2 ? (
+									// 2명: 대각선 배치
+									displayMembers.map((member, index) => {
+										const positions = [
+											{ left: '0', top: '0', zIndex: 0 }, // 첫 번째: 왼쪽 위
+											{ left: '32px', top: '32px', zIndex: 10 }, // 두 번째: 오른쪽 아래
+										]
+										const pos = positions[index]
+										return (
+											<div
+												key={member.id}
+												className={`absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden bg-neutral-300`}
+												style={{ left: pos.left, top: pos.top, zIndex: pos.zIndex }}
+											>
+												{member.profileImage ? (
+													<img
+														src={member.profileImage}
+														alt={member.name}
+														className='w-full h-full object-cover'
+													/>
+												) : (
+													<div className='w-full h-full bg-neutral-300' />
+												)}
+											</div>
+										)
+									})
+								) : memberCount === 1 ? (
+									// 1명: 단일 이미지
+									<div className='absolute w-[50px] h-[50px] rounded-full border-2 border-white overflow-hidden bg-neutral-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
+										{displayMembers[0]?.profileImage ? (
+											<img
+												src={displayMembers[0].profileImage}
+												alt={displayMembers[0].name}
+												className='w-full h-full object-cover'
+											/>
+										) : (
+											<div className='w-full h-full bg-neutral-300' />
+										)}
+									</div>
+								) : null}
 							</div>
 						</div>
 
@@ -126,7 +154,7 @@ const ChatRoomInfoModal = ({ onClose, onConfirm }: ChatRoomInfoModalProps) => {
 									type='text'
 									value={roomName}
 									onChange={(e) => setRoomName(e.target.value)}
-									placeholder='닉네임, 닉네임, 닉네임, 닉네임'
+									placeholder={selectedMembers.length > 0 ? selectedMembers.map(m => m.name).join(', ') : '방 이름을 입력하세요'}
 									maxLength={30}
 									className='flex-1 text-neutral-900 button-1 font-medium leading-[1.4] text-center outline-none placeholder:text-neutral-300'
 								/>

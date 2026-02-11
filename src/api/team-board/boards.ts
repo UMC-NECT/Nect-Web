@@ -384,6 +384,42 @@ export const stopWork = async (
 }
 
 /**
+ * 팀원 프로필 보드 조회
+ * @param projectId - 프로젝트 ID
+ * @returns 팀원 프로필 보드 정보
+ */
+export interface TeamBoardMember {
+	user_id: number
+	name: string
+	nickname: string | null
+	profile_image_url: string | null
+	field: {
+		type: string
+		custom_name: string | null
+	}
+	member_type: string
+	counts: {
+		planning: number
+		in_progress: number
+		done: number
+	}
+	is_working: boolean
+	today_work_seconds: number
+	working_started_at: string | null
+}
+
+export interface GetTeamBoardMembersResponse extends CommonResponse<{
+	members: TeamBoardMember[]
+}> {}
+
+export const getTeamBoardMembers = async (
+	projectId: number,
+): Promise<GetTeamBoardMembersResponse> => {
+	const { data } = await api.get(`/api/v1/projects/${projectId}/boards/members`)
+	return data
+}
+
+/**
  * 공유 문서함의 파일을 다운로드합니다.
  * 302 리다이렉트로 파일 다운로드 URL을 Location 헤더에 담아 리다이렉트합니다.
  * @param projectId - 프로젝트 ID

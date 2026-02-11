@@ -30,6 +30,8 @@ interface ChatRoomProps {
 	unreadCount?: number
 	projectId?: number
 	onClose: () => void
+	hideSidebar?: boolean // 사이드바 숨김 여부
+	height?: string // 커스텀 높이
 }
 
 type DisplayMessage = {
@@ -59,6 +61,8 @@ const ChatRoom = ({
 	unreadCount = 0,
 	projectId,
 	onClose,
+	hideSidebar = false,
+	height,
 }: ChatRoomProps) => {
 	const [isSearchMode, setIsSearchMode] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -399,18 +403,25 @@ const ChatRoom = ({
 
 	const displayMessages = searchQuery ? searchResults : messages
 
+	const containerHeight = height || 'h-full'
+	const containerClass = hideSidebar 
+		? `w-[380px] ${containerHeight} bg-white rounded-2xl border border-neutral-200 z-50 overflow-hidden relative flex flex-col`
+		: `w-[380px] ${containerHeight} bg-white rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col`
+
 	return (
-		<div className='flex items-start h-full'>
+		<div className={`flex items-start ${containerHeight}`}>
 			{/* 사이드바 */}
-			<ChatSidebar
-				unreadCount={unreadCount}
-				selectedView="message"
-				onMessageClick={onClose}
-				onCloudClick={() => {}}
-				onSettingsClick={() => {}}
-			/>
+			{!hideSidebar && (
+				<ChatSidebar
+					unreadCount={unreadCount}
+					selectedView="message"
+					onMessageClick={onClose}
+					onCloudClick={() => {}}
+					onSettingsClick={() => {}}
+				/>
+			)}
 			{/* 메인 채팅 영역 */}
-			<div className='w-[380px] h-full bg-white rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
+			<div className={containerClass}>
 				{/* 헤더 */}
 				<ChatHeader
 					type={isSearchMode ? 'search' : 'room'}
@@ -420,7 +431,12 @@ const ChatRoom = ({
 					onBack={onClose}
 					onSearchClick={() => setIsSearchMode(true)}
 					onMenu={() => setIsMenuOpen(true)}
-					onClose={() => setIsSearchMode(false)}
+					onClose={() => {
+						// 검색 닫기(X 아이콘)를 눌렀을 때 원래 목록으로 복원
+						setIsSearchMode(false)
+						setSearchQuery('')
+						setSearchResults([])
+					}}
 					onSearch={handleSearch}
 				/>
 
