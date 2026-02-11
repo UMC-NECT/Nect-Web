@@ -12,6 +12,7 @@ import type {
 	MatchingTarget,
 	MatchingStatusParam,
 } from '@/types/api/matching'
+import type { ResponseMatchingDto } from '@/types/api/mypage'
 import { api } from '@/utils/AxiosInstance'
 
 // === 매칭 요청 개수 조회 ==========================================================
@@ -97,5 +98,20 @@ export const getMatchingUserDetail = async (
 	const { data } = await api.get(`/api/v1/matchings/users/${userId}`, {
 		params: { target, status },
 	})
+	return data
+}
+
+// === 매칭 현황 ==========================================================
+// 받은 매칭 전체 조회
+export const getMatchingsReceivedDto = async (): Promise<ResponseMatchingDto> => {
+	const { data } = await api.get('/api/v1/matchings/received/total')
+
+	return data
+}
+
+// 보낸 매칭 전체 조회
+export const getMatchingsSentDto = async (): Promise<ResponseMatchingDto> => {
+	const { data } = await api.get('/api/v1/matchings/sent/total')
+
 	return data
 }

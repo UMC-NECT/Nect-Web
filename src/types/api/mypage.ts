@@ -420,3 +420,27 @@ export type RequestProjectUsersReorderDto = {
 }
 
 // === 매칭 현황 ==========================================================
+type UserMatchingType = {
+	matchingId: number
+	userId: number
+	nickname: string
+	bio: string
+	field: string
+	customField: string | null
+	profileUrl: string
+}
+type ProjectMatchingType = {
+	matchingId: number
+	projectId: number
+	title: string
+	description: string
+	currentMembersNum: number
+	totalMemberNum: number
+	imageUrl: string
+}
+
+export type ResponseMatchingDto = CommonResponse<{
+	counterParty: null
+	userMatchings: UserMatchingType[]
+	projectMatchings: ProjectMatchingType[]
+}>

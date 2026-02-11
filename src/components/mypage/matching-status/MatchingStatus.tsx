@@ -11,13 +11,12 @@ import CTAModal from '@/components/common/CTAModal'
 import SegmentTabButton from '../SegmentTabButton'
 import {
 	useMatchingCountQuery,
-	useMatchingsReceivedQuery,
-	useMatchingsSentQuery,
+	useMatchingsReceivedTotalQuery,
+	useMatchingsSentTotalQuery,
 	useMatchingAcceptMutation,
 	useMatchingCancelMutation,
 	useMatchingRejectMutation,
 } from '@/hooks/mypage/useMatchingApi'
-import type { UserMatchingDto } from '@/types/api/matching'
 
 type TabType = 'received' | 'sent'
 
@@ -35,28 +34,9 @@ const getRoleIdByName = (roleName: string): number => {
 	return roleMap[roleName] || 1
 }
 
-// expiresAt으로부터 남은 시간을 HH:MM:SS 형식으로 계산
-const getTimerTextFromExpiry = (expiresAt?: string): string => {
-	if (!expiresAt) return '00:00:00'
-	const now = new Date().getTime()
-	const expiry = new Date(expiresAt).getTime()
-	const diff = Math.max(0, Math.floor((expiry - now) / 1000))
-	const hours = Math.floor(diff / 3600)
-	const minutes = Math.floor((diff % 3600) / 60)
-	const seconds = diff % 60
-	return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-}
-
-// 매칭 상태를 TimerCard status로 변환
-const getTimerCardStatus = (matchingStatus?: string): 'default' | 'auto-rejected' | 'accepted' => {
-	if (matchingStatus === 'ACCEPTED') return 'accepted'
-	if (matchingStatus === 'REJECTED' || matchingStatus === 'EXPIRED') return 'auto-rejected'
-	return 'default'
-}
-
 // userMatchings를 field 기준으로 그룹핑
-const groupUserMatchingsByField = (userMatchings: UserMatchingDto[]) => {
-	const grouped: Record<string, UserMatchingDto[]> = {}
+const groupUserMatchingsByField = <T extends { field: string }>(userMatchings: T[]) => {
+	const grouped: Record<string, T[]> = {}
 	for (const user of userMatchings) {
 		const field = user.field || 'ETC'
 		if (!grouped[field]) {
@@ -80,8 +60,8 @@ export const MatchingStatus = () => {
 
 	// API 훅
 	const { data: countData } = useMatchingCountQuery()
-	const { data: receivedData } = useMatchingsReceivedQuery('project', 'pending')
-	const { data: sentData } = useMatchingsSentQuery('project', 'pending')
+	const { data: receivedData } = useMatchingsReceivedTotalQuery()
+	const { data: sentData } = useMatchingsSentTotalQuery()
 
 	const acceptMutation = useMatchingAcceptMutation()
 	const cancelMutation = useMatchingCancelMutation()
@@ -90,10 +70,13 @@ export const MatchingStatus = () => {
 	const receivedCount = countData?.body?.receivedCount ?? 0
 	const sentCount = countData?.body?.sentCount ?? 0
 
-	const receivedProjectMatchings = receivedData?.body?.projectMatchings ?? []
-	const receivedUserMatchings = receivedData?.body?.userMatchings ?? []
-	const sentProjectMatchings = sentData?.body?.projectMatchings ?? []
-	const sentUserMatchings = sentData?.body?.userMatchings ?? []
+	const receivedProjectMatchings = useMemo(
+		() => receivedData?.body?.projectMatchings ?? [],
+		[receivedData?.body?.projectMatchings]
+	)
+	const receivedUserMatchings = useMemo(() => receivedData?.body?.userMatchings ?? [], [receivedData?.body?.userMatchings])
+	const sentProjectMatchings = useMemo(() => sentData?.body?.projectMatchings ?? [], [sentData?.body?.projectMatchings])
+	const sentUserMatchings = useMemo(() => sentData?.body?.userMatchings ?? [], [sentData?.body?.userMatchings])
 
 	// userMatchings를 field 기준으로 그룹핑
 	const receivedGrouped = useMemo(() => groupUserMatchingsByField(receivedUserMatchings), [receivedUserMatchings])
@@ -193,8 +176,8 @@ export const MatchingStatus = () => {
 											/>
 											<MatchingTimerCard
 												requestType='received'
-												status={getTimerCardStatus(project.matchingStatus)}
-												timerText={getTimerTextFromExpiry(project.expiresAt)}
+												status='default'
+												timerText='00:00:00'
 												onAccept={() => handleAcceptClick(project.matchingId)}
 												onReject={() => handleRejectClick(project.matchingId)}
 											/>
@@ -238,8 +221,8 @@ export const MatchingStatus = () => {
 														/>
 														<MatchingTimerCard
 															requestType='received'
-															status={getTimerCardStatus(member.matchingStatus)}
-															timerText={getTimerTextFromExpiry(member.expiresAt)}
+															status='default'
+															timerText='00:00:00'
 															onAccept={() => handleAcceptClick(member.matchingId)}
 															onReject={() => handleRejectClick(member.matchingId)}
 														/>
@@ -289,8 +272,8 @@ export const MatchingStatus = () => {
 											/>
 											<MatchingTimerCard
 												requestType='sent'
-												status={getTimerCardStatus(project.matchingStatus)}
-												timerText={getTimerTextFromExpiry(project.expiresAt)}
+												status='default'
+												timerText='00:00:00'
 												onCancel={() => handleCancelClick(project.matchingId)}
 											/>
 										</div>
@@ -333,8 +316,8 @@ export const MatchingStatus = () => {
 														/>
 														<MatchingTimerCard
 															requestType='sent'
-															status={getTimerCardStatus(member.matchingStatus)}
-															timerText={getTimerTextFromExpiry(member.expiresAt)}
+															status='default'
+															timerText='00:00:00'
 															onCancel={() => handleCancelClick(member.matchingId)}
 														/>
 													</div>

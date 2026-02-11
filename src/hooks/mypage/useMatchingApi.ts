@@ -8,6 +8,8 @@ import {
 	postMatchingReject,
 	postMatchingProjectToUser,
 	getMatchingUserDetail,
+	getMatchingsReceivedDto,
+	getMatchingsSentDto,
 } from '@/api/matching'
 import { QUERY_KEY } from '@/constants/key'
 import type {
@@ -133,5 +135,25 @@ export const useMatchingUserDetailQuery = (
 		queryFn: () => getMatchingUserDetail(userId, target, status),
 		enabled: options?.enabled !== undefined ? options.enabled : !!userId,
 		staleTime: 1000 * 60 * 5, // 5분
+	})
+}
+
+// === 받은 매칭 전체 조회 ==========================================================
+export const useMatchingsReceivedTotalQuery = () => {
+	return useQuery({
+		queryKey: QUERY_KEY.matching.receivedTotal(),
+		queryFn: getMatchingsReceivedDto,
+		refetchOnMount: 'always',
+		staleTime: 0,
+	})
+}
+
+// === 보낸 매칭 전체 조회 ==========================================================
+export const useMatchingsSentTotalQuery = () => {
+	return useQuery({
+		queryKey: QUERY_KEY.matching.sentTotal(),
+		queryFn: getMatchingsSentDto,
+		refetchOnMount: 'always',
+		staleTime: 0,
 	})
 }

@@ -60,5 +60,7 @@ export const QUERY_KEY = {
 		received: (target: string, status: string) => [...QUERY_KEY.matching.all, 'received', target, status] as const,
 		sent: (target: string, status: string) => [...QUERY_KEY.matching.all, 'sent', target, status] as const,
 		userDetail: (userId: string) => [...QUERY_KEY.matching.all, 'userDetail', userId] as const,
+		receivedTotal: () => [...QUERY_KEY.matching.all, 'receivedTotal'] as const,
+		sentTotal: () => [...QUERY_KEY.matching.all, 'sentTotal'] as const,
 	},
 }

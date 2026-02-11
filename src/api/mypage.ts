@@ -312,5 +312,3 @@ export const getMypageProjects = async (): Promise<ResponseProjectUsers> => {
 
 	return data
 }
-
-// === 매칭 현황 ==========================================================
