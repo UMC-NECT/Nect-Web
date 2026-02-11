@@ -12,6 +12,8 @@ export const useWeekDates = (scrollRef?: React.RefObject<HTMLDivElement | null>)
 	const scrollContainerRef = scrollRef || internalScrollRef
 	const isProgrammaticScrollRef = useRef(false)
 	const scrollTimeoutRef = useRef<number | null>(null)
+	/** handleScroll에서 setWeekOffset 호출로 인한 effect 스크롤은 스킵 (주차 경계로 덮어쓰기 방지) */
+	const fromUserScrollRef = useRef(false)
 
 	// 오늘 날짜를 기준으로 중간 주차 인덱스 계산 (초기 위치)
 	const getInitialWeekIndex = () => {
@@ -51,9 +53,13 @@ export const useWeekDates = (scrollRef?: React.RefObject<HTMLDivElement | null>)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
-	// WeekSelector에서 주차 변경 시 스크롤 위치 업데이트
+	// WeekSelector에서 주차 변경 시에만 스크롤 위치 업데이트 (사용자가 직접 스크롤한 뒤 setWeekOffset된 경우는 스킵)
 	useEffect(() => {
 		if (scrollContainerRef.current && weekOffset !== undefined) {
+			if (fromUserScrollRef.current) {
+				fromUserScrollRef.current = false
+				return
+			}
 			isProgrammaticScrollRef.current = true
 			const targetWeekIndex = initialWeekIndex + weekOffset
 			const scrollPosition = targetWeekIndex * 7 * ITEM_WIDTH
@@ -63,7 +69,6 @@ export const useWeekDates = (scrollRef?: React.RefObject<HTMLDivElement | null>)
 			})
 			setCurrentWeekIndex(targetWeekIndex)
 
-			// 스크롤 완료 후 플래그 리셋
 			const timeoutId = setTimeout(() => {
 				isProgrammaticScrollRef.current = false
 			}, 500)
@@ -83,11 +88,11 @@ export const useWeekDates = (scrollRef?: React.RefObject<HTMLDivElement | null>)
 
 			setCurrentWeekIndex(newWeekIndex)
 
-			// 스크롤이 끝난 후에만 weekOffset 업데이트 (debounce)
 			if (scrollTimeoutRef.current !== null) {
 				clearTimeout(scrollTimeoutRef.current)
 			}
 			scrollTimeoutRef.current = window.setTimeout(() => {
+				fromUserScrollRef.current = true
 				setWeekOffset(newWeekOffset)
 			}, 150)
 		}
