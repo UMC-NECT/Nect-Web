@@ -1,3 +1,19 @@
+/** 역할별 상세 (role_fields: 세부 분야별 인원 수) */
+export interface ProjectCardRoleField {
+    role_field: string;
+    count: number;
+}
+
+export interface ProjectCardRoleItem {
+    role: string;
+    count: number;
+    role_fields: ProjectCardRoleField[];
+}
+
+export interface ProjectCardRoles {
+    roles: ProjectCardRoleItem[];
+}
+
 export interface ProjectCard {
     projectId: number;
     imageUrl: string | null;
@@ -10,7 +26,8 @@ export interface ProjectCard {
     curMemberCount: number;
     isScrapped: boolean;
     status: string;
-    roles: Record<string, number>;
+    /** 추천 프로젝트: roles.roles[].role_fields, 구 API: Record<role, count> */
+    roles?: ProjectCardRoles | Record<string, number>;
 }
 
 export interface ResponseProjectsDto {

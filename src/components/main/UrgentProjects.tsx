@@ -1,20 +1,33 @@
 import More from '@/assets/icons/common/chevron-right.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { Link } from 'react-router';
-import { getTagStyle } from '@/utils/tagStyles';
 import { useRecruitingProjects } from '@/hooks/queries/home';
+import { useFieldsQuery } from '@/hooks/useFieldsQuery';
+import RoleTagChip from '@/components/mission-modal/RoleTagChip';
+import type { ProjectCard, ProjectCardRoles, ProjectCardRoleItem } from '@/types/api/home/projects';
 
 const UrgentProjects = () => {
     const { data: projects, isLoading, isError } = useRecruitingProjects(4);
+    const { fieldLabelMap } = useFieldsQuery();
 
-    // roles 객체를 태그 배열로 변환
-    const getRoleTags = (roles: Record<string, number>) => {
-        const tags = Object.entries(roles).map(([role, count]) => `${role} (${count})`);
-        // 최대 4개까지만 표시, 나머지는 '...'
-        if (tags.length > 4) {
-            return [...tags.slice(0, 4), '...'];
-        }
-        return tags;
+    const getRoleFieldLabel = (value: string) =>
+        fieldLabelMap[value] ?? fieldLabelMap[value?.toUpperCase() ?? ''] ?? value ?? '';
+
+    // roles.roles[].role_fields[] 기준으로 라벨+count 태그 배열 (최대 4개)
+    const getRoleTags = (project: ProjectCard): { label: string; count: number }[] => {
+        const rolesData = project.roles && 'roles' in project.roles ? (project.roles as ProjectCardRoles) : null;
+        if (!rolesData?.roles?.length) return [];
+        const map = new Map<string, number>();
+        (rolesData.roles as ProjectCardRoleItem[]).forEach((role: ProjectCardRoleItem) => {
+            (role.role_fields ?? []).forEach((rf) => {
+                const label = getRoleFieldLabel(rf.role_field);
+                if (!label) return;
+                map.set(label, (map.get(label) ?? 0) + rf.count);
+            });
+        });
+        return Array.from(map.entries())
+            .map(([label, count]) => ({ label, count }))
+            .slice(0, 4);
     };
 
     // authorPart 한글 변환
@@ -77,15 +90,15 @@ const UrgentProjects = () => {
                             <div className="flex justify-between items-start mb-3 h-13.25">
                                 <div className="flex flex-col gap-1.5">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-[16px] text-neutral-900 font-semibold">{project.projectName}</h3>
+                                        <h3 className="body-1 text-neutral-900 font-semibold">{project.projectName}</h3>
                                         <BarIcon className="w-0.5 h-3" />
-                                        <span className="text-[14px] text-neutral-500 font-semibold">
+                                        <span className="button-1 text-neutral-500 font-semibold">
                                             {project.authorName} · {getDisplayPart(project.authorPart)}
                                         </span>
                                     </div>
-                                    <p className="text-sm font-medium text-neutral-600">{project.introduction}</p>
+                                    <p className="body-2 font-medium text-neutral-600">{project.introduction}</p>
                                 </div>
-                                <span className="text-xl font-bold text-primary-500-normal whitespace-nowrap ml-4">
+                                <span className="title-2 font-bold text-primary-500-normal whitespace-nowrap ml-4">
                                     D-{project.leftDays}
                                 </span>
                             </div>
@@ -93,16 +106,17 @@ const UrgentProjects = () => {
                             {/* 하단: 태그 + 인원 */}
                             <div className="flex justify-between items-center">
                                 <div className="flex gap-2 flex-wrap">
-                                    {getRoleTags(project.roles).map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className={`px-2 py-1 gap-0.5 text-sm text-neutral-800 rounded-md h-6 flex justify-center items-center ${getTagStyle(tag)}`}
-                                        >
-                                            {tag}
-                                        </span>
+                                    {getRoleTags(project).map((tag, index) => (
+                                        <RoleTagChip
+                                            key={`${tag.label}-${index}`}
+                                            roleId={index + 1}
+                                            roleName={tag.label}
+                                            state="default"
+                                            count={tag.count}
+                                        />
                                     ))}
                                 </div>
-                                <span className="text-[16px] text-neutral-500 whitespace-nowrap w-14.75 h-6">
+                                <span className="body-1 font-medium text-neutral-500 whitespace-nowrap w-14.75 h-6">
                                     팀원 <span className="text-neutral-700">{project.curMemberCount}/{project.maxMemberCount}</span>
                                 </span>
                             </div>
