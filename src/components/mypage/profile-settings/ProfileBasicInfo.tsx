@@ -8,6 +8,7 @@ import { getUserStatusLabel } from '@/constants/userStatus'
 import { formatRoleName } from '@/utils/roleColor'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 import { Controller, type Control } from 'react-hook-form'
+import { postProfileImageUpload } from '@/api/users'
 
 interface ProfileBasicInfoProps {
 	control: Control<ProfileFormDataType>
@@ -22,6 +23,7 @@ interface ProfileBasicInfoProps {
 	userStatus?: string
 	userEmail?: string
 	onProfileImageChange?: (imageUrl: string) => void
+	onProfileImageFileNameChange?: (fileName: string) => void
 	onStatusChange?: (status: string) => void
 }
 
@@ -37,10 +39,12 @@ const ProfileBasicInfo = ({
 	userStatus,
 	userEmail,
 	onProfileImageChange,
+	onProfileImageFileNameChange,
 	onStatusChange,
 }: ProfileBasicInfoProps) => {
 	const [isRecruitButtonHovered, setIsRecruitButtonHovered] = useState(false) // 버튼 호버하면 텍스트 변경되게 하려고
 	const [localProfileImage, setLocalProfileImage] = useState<string | null>(null)
+	const [isUploadingImage, setIsUploadingImage] = useState(false)
 	const profileImage = localProfileImage ?? profileImageFileName
 
 	// 유저 상태변경 모달 (재학/구직/재직)
@@ -51,16 +55,38 @@ const ProfileBasicInfo = ({
 	const handleAvatarClick = () => {
 		fileInputRef.current?.click()
 	}
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (file) {
+			// 로컬 미리보기 표시
 			const reader = new FileReader()
 			reader.onloadend = () => {
 				const imageUrl = reader.result as string
 				setLocalProfileImage(imageUrl)
-				onProfileImageChange?.(imageUrl)
 			}
 			reader.readAsDataURL(file)
+
+			// API로 업로드
+			try {
+				setIsUploadingImage(true)
+				const response = await postProfileImageUpload(file)
+
+				if (response.body) {
+					// 업로드 성공 시 서버의 URL로 교체
+					setLocalProfileImage(response.body.fileUrl)
+					onProfileImageChange?.(response.body.fileUrl)
+
+					// fileName을 부모 컴포넌트로 전달
+					onProfileImageFileNameChange?.(response.body.fileName)
+				}
+			} catch (error) {
+				console.error('프로필 이미지 업로드 실패:', error)
+				alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.')
+				// 실패 시 로컬 이미지도 제거
+				setLocalProfileImage(null)
+			} finally {
+				setIsUploadingImage(false)
+			}
 		}
 	}
 
@@ -77,8 +103,13 @@ const ProfileBasicInfo = ({
 								<img
 									src={profileImage}
 									alt='Profile Preview'
-									className='w-25 h-25 rounded-full object-cover border border-neutral-100'
+									className={`w-25 h-25 rounded-full object-cover border border-neutral-100 ${isUploadingImage ? 'opacity-50' : ''}`}
 								/>
+								{isUploadingImage && (
+									<div className='absolute inset-0 flex items-center justify-center'>
+										<div className='w-6 h-6 border-2 border-primary-500-normal border-t-transparent rounded-full animate-spin'></div>
+									</div>
+								)}
 								<div className='absolute bottom-1.75 right-0 rounded-full bg-primary-500-normal flex items-center justify-center'>
 									<ProfilePencilIcon />
 								</div>
