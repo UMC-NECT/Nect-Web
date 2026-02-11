@@ -92,52 +92,49 @@ const mapPartProcessToWorkStatusItem = (
 	isEdit: p.has_open_feedback ?? false,
 })
 
-/** API 히스토리 아이템을 HistoryItem props로 변환 */
+/** API 히스토리 아이템을 HistoryItem props로 변환 (role_field는 parts와 매칭해 라벨 표시) */
 type HistoryIconVariant = 'add' | 'share' | 'app'
-const mapHistoryItem = (item: {
+type HistoryApiItem = {
 	history_id: number
-	actor_user_id: number
-	target_type: string
-	created_at: string
 	action: string
-	meta_json: string
-}): { id: number; team: string; user: string; action: string; time: string; iconVariant: HistoryIconVariant; app?: string } => {
-	let meta: Record<string, unknown> = {}
-	try {
-		if (item.meta_json) meta = JSON.parse(item.meta_json) as Record<string, unknown>
-	} catch {
-		// ignore
+	target_type: string
+	target_id: number
+	actor: {
+		user_id: number
+		name: string
+		nickname: string
+		role_field: string | null
+		custom_field_name: string | null
 	}
-	const team = (meta.team as string) ?? (meta.part_name as string) ?? '—'
-	const user = (meta.actor_name as string) ?? (meta.user_name as string) ?? '사용자'
-	const app = (meta.app as string) ?? (meta.app_type as string)
-	const timeStr = item.created_at
-	const d = new Date(timeStr)
-	const time =
-		Number.isNaN(d.getTime())
-			? ''
-			: (() => {
-					const today = new Date()
-					const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
-					const period = d.getHours() >= 12 ? '오후' : '오전'
-					const h = d.getHours() % 12 || 12
-					const min = d.getMinutes().toString().padStart(2, '0')
-					return isToday ? `오늘 ${period} ${h}:${min}` : `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ${period} ${h}:${min}`
-				})()
+	main_message: string
+	content_message: string | null
+	created_at: string
+}
+const formatHistoryTime = (dateStr: string): string => {
+	const d = new Date(dateStr)
+	if (Number.isNaN(d.getTime())) return ''
+	const today = new Date()
+	const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+	const period = d.getHours() >= 12 ? '오후' : '오전'
+	const h = d.getHours() % 12 || 12
+	const min = d.getMinutes().toString().padStart(2, '0')
+	return isToday ? `오늘 ${period} ${h}:${min}` : `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ${period} ${h}:${min}`
+}
+const mapHistoryItem = (
+	item: HistoryApiItem,
+	parts: Part[]
+): { id: number; team: string; user: string; action: string; time: string; iconVariant: HistoryIconVariant; app?: string } => {
+	const team = getTeamProgressLabel(item.actor?.role_field ?? '', parts) || '—'
+	const user = item.actor?.nickname ?? item.actor?.name ?? '사용자'
 	const iconVariant: HistoryIconVariant =
-		item.target_type === 'LINK' || item.action?.toLowerCase().includes('공유')
-			? 'share'
-			: app
-				? 'app'
-				: 'add'
+		item.target_type === 'LINK' || item.action?.toLowerCase().includes('공유') ? 'share' : 'add'
 	return {
 		id: item.history_id,
-		team: String(team),
-		user: String(user),
-		action: item.action ?? '',
-		time,
+		team,
+		user,
+		action: item.main_message ?? '',
+		time: formatHistoryTime(item.created_at),
 		iconVariant,
-		...(app ? { app: String(app) } : {}),
 	}
 }
 
@@ -219,10 +216,6 @@ const WorkStatusPage = () => {
 	const { projectIdStr } = useWorkspaceProjectId({ redirectIfMissing: true })
 	const { data: progressSummaryData } = useProgressSummaryQuery(projectIdStr)
 	const { data: historyData } = useProcessHistoryQuery(projectIdStr)
-	const historyItems = useMemo(
-		() => (historyData?.body?.items ?? []).map(mapHistoryItem),
-		[historyData?.body?.items]
-	)
 
 	// 파트(분야)별 작업 현황 API: 팀 탭은 fieldId 없음, 역할 선택 시 해당 role_field 전달
 	const fieldId = useMemo(() => {
@@ -234,6 +227,11 @@ const WorkStatusPage = () => {
 	const { data: partsData } = usePartsQuery(projectIdStr)
 	const setWorkStatusItems = useWorkStatusStore(s => s.setWorkStatusItems)
 	const parts = useMemo(() => partsData?.body?.parts ?? [], [partsData?.body?.parts])
+
+	const historyItems = useMemo(
+		() => (historyData?.body?.items ?? []).map(item => mapHistoryItem(item, parts)),
+		[historyData?.body?.items, parts]
+	)
 
 	// 미션 모달 드롭다운용 리스트 미리 로드 (위크미션 페이지와 동일)
 	useEffect(() => {

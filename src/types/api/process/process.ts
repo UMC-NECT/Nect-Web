@@ -228,12 +228,19 @@ export type ResponseProgressSummaryDto = CommonResponse<{
 export type ResponseHistoryDto = CommonResponse<{
     next_cursor: number | null
     items: {
-        actor_user_id: number
-        target_type: string
-        created_at: string
-        action: string
-        target_id: number
         history_id: number
-        meta_json: string
+        action: string
+        target_type: string
+        target_id: number
+        actor: {
+            user_id: number
+            name: string
+            nickname: string
+            role_field: string | null
+            custom_field_name: string | null
+        }
+        main_message: string
+        content_message: string | null
+        created_at: string
     }[]
 }>
