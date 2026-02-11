@@ -106,11 +106,11 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
 
 			{/* 정보 영역 */}
 			<div className={`flex flex-col flex-1 mx-5 ${styles.infoMargin} ${styles.infoArea} mt-3.5 min-h-0`}>
-				<div className='flex justify-between items-center mb-1.5'>
-					<div className='flex items-center gap-1.5 flex-1 h-6.5'>
-						<h3 className='title-3 font-semibold text-neutral-900 truncate'>{project.projectName}</h3>
+				<div className='flex max-w-full justify-between items-center mb-1.5'>
+					<div className='flex items-center min-w-0 gap-1.5 flex-1 h-6.5'>
+						<h3 className='title-3 font-semibold text-neutral-900 truncate whitespace-nowrap line-clamp-1'>{project.projectName}</h3>
 					</div>
-					<span className='text-lg font-semibold text-primary-500-normal whitespace-nowrap'>D-{project.leftDays}</span>
+					<span className='text-lg font-semibold text-primary-500-normal pl-3 whitespace-nowrap'>D-{project.leftDays}</span>
 				</div>
 
 				<p className='body-2 text-neutral-600 font-medium line-clamp-2 h-[42px]'>
