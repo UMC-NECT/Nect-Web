@@ -1,6 +1,7 @@
 import AuthForm from '@/components/auth/login/AuthForm'
 import AuthHeader from '@/components/auth/login/AuthHeader'
 import SocialLogin from '@/components/auth/login/SocialLogin'
+import Footer from '@/components/layout/Footer'
 
 const LoginPage = () => {
 	return (
@@ -13,6 +14,8 @@ const LoginPage = () => {
 
 			{/* 하단 - 소셜 로그인 */}
 			<SocialLogin />
+
+			<Footer type='Mini' margin='144' />
 		</div>
 	)
 }

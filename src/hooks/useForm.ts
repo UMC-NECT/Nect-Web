@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
-import { agreeSchema, loginSchema, onboardingSchema, signupForm1Schema, signupForm2Schema } from '../utils/validate'
-import type { AgreeFormType, LoginFormType, OnboardingFormType, SignupForm1Type, SignupForm2Type } from '../utils/validate'
+import { agreeSchema, loginSchema, onboardingSchema, signupForm1Schema, signupForm2Schema, socialAgreeSchema } from '../utils/validate'
+import type { AgreeFormType, LoginFormType, OnboardingFormType, SignupForm1Type, SignupForm2Type, SocialAgreeFormType } from '../utils/validate'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 // 회원가입 (이메일로 가입 - 폼1)
@@ -153,4 +153,37 @@ export const useOnboardingForm = () => {
 	})
 
 	return methods
+}
+
+export const useSocialAgreeForm = () => {
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isValid, isDirty, touchedFields },
+		reset,
+		setError,
+		clearErrors,
+		watch,
+		getValues,
+		setValue,
+	} = useForm<SocialAgreeFormType>({
+		resolver: zodResolver(socialAgreeSchema),
+		mode: 'onChange',
+		reValidateMode: 'onChange',
+	})
+
+	return {
+		register,
+		handleSubmit,
+		errors,
+		isValid,
+		isDirty,
+		touchedFields,
+		reset,
+		setError,
+		clearErrors,
+		watch,
+		getValues,
+		setValue,
+	}
 }

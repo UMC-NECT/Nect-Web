@@ -187,9 +187,20 @@ const IdeaAnalyzePage = () => {
 									label='생각하고 있는 프로젝트 최종 목표일이 있나요?'
 									placeholder='YYYY-MM-DD (ex.2026-04-30)'
 									value={formData.deadline}
-									onChange={value => setFormData({ ...formData, deadline: value })}
+									onChange={value => {
+										const digitsOnly = value.replace(/\D/g, '').slice(0, 8)
+										let formatted = digitsOnly
+
+										if (digitsOnly.length > 4 && digitsOnly.length <= 6) {
+											formatted = `${digitsOnly.slice(0, 4)}-${digitsOnly.slice(4)}`
+										} else if (digitsOnly.length > 6) {
+											formatted = `${digitsOnly.slice(0, 4)}-${digitsOnly.slice(4, 6)}-${digitsOnly.slice(6)}`
+										}
+
+										setFormData({ ...formData, deadline: formatted })
+									}}
 									error={errors.deadline}
-									maxLength={1000}
+									maxLength={10}
 								/>
 							</NumberedSection>
 
@@ -211,7 +222,7 @@ const IdeaAnalyzePage = () => {
 					</div>
 
 					{/* 홈으로 이동 */}
-					<div className='flex justify-center mb-80'>
+					<div className='flex justify-center'>
 						<button
 							onClick={() => navigate('/')}
 							className='title-3 font-medium text-neutral-500 underline underline-offset-4 m-[44px] cursor-pointer'

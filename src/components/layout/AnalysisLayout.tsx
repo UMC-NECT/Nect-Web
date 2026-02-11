@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router'
 import AnalysisHeader from '../header/AnalysisHeader'
+import Footer from './Footer'
 
 const AnalysisLayout = () => {
 	return (
@@ -8,6 +9,7 @@ const AnalysisLayout = () => {
 			<div className='w-full'>
 				<Outlet />
 			</div>
+			<Footer type='Default' margin='196' />
 		</>
 	)
 }

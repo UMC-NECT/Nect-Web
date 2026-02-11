@@ -3,6 +3,7 @@ import WorkspaceHeader from "../header/WorkspaceHeader"
 import { Sidebar } from "./sidebar/Sidebar"
 import { useMissionModalStore } from "@/stores/mission-modal/missionModalStore"
 import MissionModal from "@/components/mission-modal/MissionModal"
+import Footer from "./Footer"
 
 const WorkspaceLayout = () => {
 	const { isMissionModalOpen, closeMissionModal, editingSectionIndex } = useMissionModalStore()
@@ -16,6 +17,7 @@ const WorkspaceLayout = () => {
 			<div className='w-full max-w-main mx-auto px-[72px] mt-16'>
 				<Outlet />
 			</div>
+			<Footer type='Default' margin='144' />
 
 				{/* Mission Modal */}
 				{isMissionModalOpen && (

@@ -33,7 +33,8 @@ const AuthCallbackPage = () => {
 		// 온보딩 완료 여부에 따라 분기 (백엔드에서 넘겨준다고 가정)
 		if (onboardingCompleted === 'false') {
 			setOnboardingCompleted('false')
-			navigate('/onboarding', { replace: true })
+			localStorage.setItem('isSocial', 'true')
+			navigate('/social-agree', { replace: true })
 		} else {
 			// 기본값: 온보딩 완료 처리 후 메인으로 이동
 			setOnboardingCompleted('true')

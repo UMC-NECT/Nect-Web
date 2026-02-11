@@ -17,29 +17,29 @@ const ProjectListPage = () => {
     // 탭에 따라 필터링
     const filteredProjects = projects?.filter(project => {
         if (selectedTab === '전체') return true;
-        
+
         // authorPart가 null이면 '기타'로 처리
         if (!project.authorPart) {
             return selectedTab === '기타';
         }
-        
+
         const projectPart = PART_MAP[project.authorPart] || '기타';
         return projectPart === selectedTab;
     }) || [];
 
     useEffect(() => {
         document.body.style.backgroundColor = '#FAFAFA';
-        
+
         return () => {
             document.body.style.backgroundColor = '';
         };
     }, []);
 
     return (
-        <div className="py-16">
-            <div className="my-9 w-[912px] h-[86px] mx-auto">
+        <div className="pt-16">
+            <div className="mt-9 w-[912px] mx-auto">
                 <div className='ml-7'>
-                    <Breadcrumb 
+                    <Breadcrumb
                         items={[
                             { label: '홈', path: '/' },
                             { label: '프로젝트 찾기', path: '/projectList' },
@@ -47,7 +47,7 @@ const ProjectListPage = () => {
                             { label: selectedCategory }
                         ]}
                     />
-                    
+
                     <h1 className="mt-7 text-[40px] font-bold">
                         모집 중인 프로젝트
                     </h1>
@@ -55,7 +55,7 @@ const ProjectListPage = () => {
 
                 <ContentBox className="mt-[42px] w-[972px] mx-auto">
                     {/* 탭 영역 */}
-                    <TabGroup 
+                    <TabGroup
                         tabs={[...TABS]}
                         activeTab={selectedTab}
                         onTabChange={setSelectedTab}
@@ -63,7 +63,7 @@ const ProjectListPage = () => {
 
                     {/* 드롭다운 영역 */}
                     <div className="mt-[44px] mx-5">
-                        <CategoryDropdown 
+                        <CategoryDropdown
                             categories={[...CATEGORIES]}
                             selectedCategory={selectedCategory}
                             onCategoryChange={setSelectedCategory}
@@ -93,10 +93,10 @@ const ProjectListPage = () => {
                     {!isLoading && !error && filteredProjects.length > 0 && (
                         <div className="mt-6 mx-5 grid grid-cols-2 gap-x-[12px] gap-y-[14px]">
                             {filteredProjects.map(project => (
-                                <RecommendationProjectCard 
+                                <RecommendationProjectCard
                                     key={project.projectId}
                                     project={project}
-                                    variant="list" 
+                                    variant="list"
                                 />
                             ))}
                         </div>

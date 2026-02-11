@@ -296,11 +296,16 @@ button:disabled {
 	}
 
 	.animate-scroll-left {
-		animation: scroll-left 40s linear infinite;
+		animation: scroll-left 120s linear infinite;
 	}
 
 	.animate-scroll-right {
-		animation: scroll-right 40s linear infinite;
+		animation: scroll-right 120s linear infinite;
+	}
+
+	.animate-scroll-left.paused,
+	.animate-scroll-right.paused {
+		animation-play-state: paused;
 	}
 
 	/* WorkStatusScrollbar - 큰거 (6px) */

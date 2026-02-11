@@ -17,6 +17,9 @@ export const QUERY_KEY = {
 		list: (page?: string) => [...QUERY_KEY.analysis.all, 'list', page ?? '0'] as const,
 	},
 	onboardingEnums: ['onboardingEnums'] as const,
+	enums: {
+		fields: () => ['enums', 'fields'] as const,
+	},
 	ACCESS_TOKEN: 'accessToken',
 	REFRESH_TOKEN: 'refreshToken',
 	process: {

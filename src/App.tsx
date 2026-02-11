@@ -33,6 +33,7 @@ import SplashLayout from './components/layout/SplashLayout'
 import WorkspaceLayout from './components/layout/WorkSpaceLayout'
 import MyPageLayout from './components/layout/MyPageLayout'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
+import SocialAgreePage from './pages/auth/SocialAgreePage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -128,6 +129,10 @@ const router = createBrowserRouter([
 			{
 				path: '/signup',
 				element: <SignupPage />,
+			},
+			{
+				path: '/social-agree',
+				element: <SocialAgreePage />,
 			},
 		],
 	},
