@@ -43,10 +43,17 @@ export const projectHistorySchema = z.object({
 	date: z.string(),
 })
 
+// 유저 상태 허용 값
+const USER_STATUS_VALUES = ['ENROLLED', 'JOB_SEEKING', 'EMPLOYED'] as const
+
 // 내 프로필 설정 전체 스키마
 export const profileFormSchema = z.object({
-	// 유저 상태 (재학/구직/재직)
-	userStatus: z.string().optional(),
+	// 유저 상태 (재학/구직/재직) - 필수
+	userStatus: z
+		.string()
+		.refine(val => USER_STATUS_VALUES.includes(val as (typeof USER_STATUS_VALUES)[number]), {
+			message: '유저 상태를 선택해주세요',
+		}),
 
 	// 관심 직무
 	interestJob: z.string().optional(),

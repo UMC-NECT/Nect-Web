@@ -1,9 +1,10 @@
 import type { CommonResponse } from './commonResponse'
 
-/** API enum 응답 공통 형태 (value: API 코드, label: 화면 표시값) */
+/** API enum 응답 공통 형태 (value: API 코드, label: 화면 표시값, labelEn: 영어 표시값) */
 export type EnumItem = {
 	value: string
 	label: string
+    labelEn: string | null
 }
 
 export type ResponseSkillCategoryDto = CommonResponse<EnumItem[]>

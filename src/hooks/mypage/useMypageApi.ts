@@ -67,6 +67,7 @@ export const useMypageProfileMutation = () => {
 		mutationFn: (body: RequestMypageProfileSaveDto) => patchMypageProfileSave(body),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.profile() })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.users.profile() })
 		},
 	})
 }

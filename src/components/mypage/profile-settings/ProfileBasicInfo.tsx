@@ -1,11 +1,12 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import ProfileImageEditIcon from '@/assets/icons/mypage/profile-image-edit.svg?react'
 import ProfilePencilIcon from '@/assets/icons/mypage/profile-pencil.svg?react'
 import Button from '../../common/Button'
 import UserStatusModal from '@/components/common/UserStatusModal'
 import { useUserStatusStore } from '@/stores/useUserStatusStore'
 import { getUserStatusLabel } from '@/constants/userStatus'
-import { formatRoleName } from '@/utils/roleColor'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { getRoleLabel } from '@/utils/enumUtils'
 import type { ProfileFormDataType } from '@/utils/schemas/profileSchema'
 import { Controller, type Control } from 'react-hook-form'
 import { postProfileImageUpload } from '@/api/users'
@@ -49,6 +50,11 @@ const ProfileBasicInfo = ({
 
 	// 유저 상태변경 모달 (재학/구직/재직)
 	const { isOpen, open } = useUserStatusStore()
+	const { roles, roleFields } = useOnboardingEnums()
+	const roleLabel = useMemo(
+		() => getRoleLabel(userRole ?? '', roles, roleFields),
+		[userRole, roles, roleFields]
+	)
 
 	// 프사 변경 관련
 	const fileInputRef = useRef<HTMLInputElement>(null)
@@ -124,7 +130,7 @@ const ProfileBasicInfo = ({
 						<div className='flex items-center gap-2.5 mb-1'>
 							<span className='title-2 font-bold'>{userName}</span>
 							<span className='text-neutral-300 font-semibold'>|</span>
-							<span className='title-2 text-neutral-400'>{formatRoleName(userRole)}</span>
+							<span className='title-2 text-neutral-400'>{roleLabel}</span>
 						</div>
 						<p className='body-2 text-neutral-500 mb-2'>{userEmail}</p>
 

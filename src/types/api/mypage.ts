@@ -56,7 +56,7 @@ export type ResponseMypageProfileDto = CommonResponse<{
 	nickname: string
 	email: string
 	role: string
-	profileImageFileName: string
+	profileImageUrl: string
 	bio: string
 	coreCompetencies: string
 	userStatus: string
@@ -74,7 +74,7 @@ export type ResponseMypageProfileDto = CommonResponse<{
 
 // (내 프로필 설정) 프로필 수정
 export type RequestMypageProfileSaveDto = {
-	profileImageFileName: string
+	profileImageUrl: string
 	bio: string
 	coreCompetencies: string
 	userStatus: string
