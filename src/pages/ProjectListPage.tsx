@@ -42,8 +42,8 @@ const ProjectListPage = () => {
                     <Breadcrumb 
                         items={[
                             { label: '홈', path: '/' },
-                            { label: '프로젝트 찾기', path: '/projects' },
-                            { label: '모집 중인 프로젝트', path: '/projects' },
+                            { label: '프로젝트 찾기', path: '/projectList' },
+                            { label: '모집 중인 프로젝트', path: '/projectList' },
                             { label: selectedCategory }
                         ]}
                     />

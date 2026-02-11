@@ -34,7 +34,7 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
     const sizeStyles = {
         default: {
             card: 'w-90',
-            height: displayIntroduction.length > 40 ? 'h-[336px]' : 'h-[326px]',
+            height: 'h-[336px]',
             background: 'h-50',
             character: 'w-16 h-16',
         },
@@ -82,7 +82,7 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
                     <span className="text-neutral-500 font-medium">{displayPart}</span>
                 </div>
 
-                <p className="text-[13px] text-neutral-600 line-clamp-2 mb-3">
+                <p className="text-[13px] h-[42px] text-neutral-600 line-clamp-2 mb-3">
                     {displayIntroduction}
                 </p>
 
