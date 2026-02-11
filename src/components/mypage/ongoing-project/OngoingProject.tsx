@@ -12,7 +12,6 @@ import type { TabType, ColorType, RecruitType } from '@/types/mypage/ongoindProj
 import CTAModal from '@/components/common/CTAModal'
 import PartSettingsModal from './PartSettingsModal'
 import { useNavigate } from 'react-router'
-import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import { useCTAModal } from '@/stores/useCTAModal'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
@@ -107,24 +106,27 @@ const OngoingProject = () => {
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
 
 	// 폼 관련
-	const { control, setValue, handleSubmit, isDirty, watch, reset, getValues } = useOngoingProjectForm()
+	const { control, setValue, isDirty, watch, reset, getValues } = useOngoingProjectForm()
 
 	// 프로젝트 ID (Zustand persist 스토어에서 관리)
-	const { projectId: storedProjectId, setProjectId: setStoredProjectId } = useProjectIdStore()
+	const { projectId: storedProjectId, userId: storedUserId, setProjectId: setStoredProjectId } = useProjectIdStore()
 	const { data: profileData } = useMypageProfileQuery()
 	const { data: projectsData } = useMypageProjectsQuery()
 
-	// 스토어에 projectId가 없으면 API에서 도출하여 저장
+	// 현재 로그인한 userId와 저장된 userId가 다르면 projectId 초기화 후 재설정
 	useEffect(() => {
-		if (storedProjectId) return
 		const userId = profileData?.body?.userId
 		const projects = projectsData?.body?.projects?.flat()
 		if (!userId || !projects) return
-		const leaderProject = projects.find(p => p.leader.user_id === userId)
-		if (leaderProject) {
-			setStoredProjectId(leaderProject.project_id)
+
+		// 저장된 userId와 현재 userId가 다르거나, projectId가 없으면 재설정
+		if (storedUserId !== userId || !storedProjectId) {
+			const leaderProject = projects.find(p => p.leader.user_id === userId)
+			if (leaderProject) {
+				setStoredProjectId(leaderProject.project_id, userId)
+			}
 		}
-	}, [storedProjectId, profileData, projectsData, setStoredProjectId])
+	}, [storedProjectId, storedUserId, profileData, projectsData, setStoredProjectId])
 
 	const projectId = storedProjectId ? String(storedProjectId) : ''
 
