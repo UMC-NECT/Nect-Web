@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useParams } from 'react-router'
 import { cn } from '@/utils/cn'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -31,7 +32,6 @@ import {
 	useDeleteTaskItemMutation,
 	usePatchMissionStatusMutation,
 } from '@/hooks/process/useWeekMissionApi'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { usePostProcessMutation, usePostFileMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
 import {
 	usePostTaskItemsMutation,
@@ -167,8 +167,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	} = useMissionModalStore()
 	const isTaskReadOnly = !!isTask && !isProjectLeader
 
-	const { projectId: pageProjectId } = useProjectIdStore()
-	const projectIdForList = projectId ?? pageProjectId?.toString() ?? ''
+	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
+	const projectIdForList = projectId ?? projectIdParam ?? ''
 
 	const isEditMode = editingMissionId != null && projectId != null
 	const { data: processDetail } = useProcessDetailQuery(projectId ?? '', String(editingMissionId ?? ''), {

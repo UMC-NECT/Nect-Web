@@ -26,7 +26,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { getMissionList } from '@/api/process/weekMission'
 import { QUERY_KEY } from '@/constants/key'
 import type { Progress } from '@/types/progress'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import { useWorkspaceProjectId } from '@/hooks/useWorkspaceProjectId'
 import type { ProcessWeekProcessItem } from '@/types/api/process/process'
 import type { Part } from '@/types/part'
 
@@ -203,8 +203,7 @@ const WorkStatusPage = () => {
 	const { getFilteredItemsByStatus } = useWorkStatusFilter(selectedSegment)
 	const { isScrolling, scrollContainerRef } = useWorkStatusScroll()
 	const { statusCounts } = useWorkStatusData()
-	const projectId = useProjectIdStore(state => state.projectId)
-	const projectIdStr = projectId?.toString() ?? ''
+	const { projectIdStr } = useWorkspaceProjectId({ redirectIfMissing: true })
 	const { data: progressSummaryData } = useProgressSummaryQuery(projectIdStr)
 	const { data: historyData } = useProcessHistoryQuery(projectIdStr)
 	const historyItems = useMemo(

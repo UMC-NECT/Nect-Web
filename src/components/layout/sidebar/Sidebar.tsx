@@ -1,10 +1,10 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { SidebarMenuItem } from './SidebarMenuItem'
 import { type TopMenuId, type BottomMenuId, TOP_MENU_ITEMS, BOTTOM_MENU_ITEMS } from '@/constants/sidebar'
 import SideNotificationModal from '@/components/notification/SideNotificationModal'
 import ChatModal from '@/components/chat/ChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useLocation } from 'react-router'
 import { useNotificationList } from '@/hooks/notification/useNotificationList'
 
 export const Sidebar = () => {
@@ -13,7 +13,16 @@ export const Sidebar = () => {
 	const [showNotificationModal, setShowNotificationModal] = useState(false)
 	const [showChatModal, setShowChatModal] = useState(false)
 	const navigate = useNavigate()
+	const location = useLocation()
 	const params = useParams<{ projectId?: string }>()
+
+	// URL과 동기화해 하단 메뉴 활성 표시 (새로고침/직접 URL 시)
+	useEffect(() => {
+		const pathBase = location.pathname.split('/').filter(Boolean)[0]
+		if (pathBase && BOTTOM_MENU_ITEMS.some(m => m.id === pathBase)) {
+			setActiveBottomMenu(pathBase as BottomMenuId)
+		}
+	}, [location.pathname])
 
 	const notificationModalRef = useRef<HTMLDivElement>(null)
 	const chatModalRef = useRef<HTMLDivElement>(null)
@@ -66,13 +75,8 @@ export const Sidebar = () => {
 
 	const handleBottomMenuClick = (menuId: BottomMenuId) => {
 		setActiveBottomMenu(menuId)
-		// projectId가 있으면 포함하여 네비게이션 (team-board만 projectId 필요)
 		const projectId = params.projectId
-		if (projectId && menuId === 'team-board') {
-			navigate(`/${menuId}/${projectId}`)
-		} else {
-			navigate(`/${menuId}`)
-		}
+		navigate(projectId ? `/${menuId}/${projectId}` : `/${menuId}`)
 	}
 
 	return (

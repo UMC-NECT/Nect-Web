@@ -6,7 +6,7 @@ import { useWeekStore } from '@/stores/weekStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import { useWorkspaceProjectId } from '@/hooks/useWorkspaceProjectId'
 import { useProcessWeekQuery } from '@/hooks/process/useProcessApi'
 import { useWeekMissionQuery } from '@/hooks/process/useWeekMissionApi'
 import type { WeekMissionItem } from '@/types/api/process/weekMission'
@@ -116,10 +116,9 @@ const WeekMissionPage = () => {
 	const { missions, updateMission, setMissions, removeMission } = useMissionStore()
 	const { openMissionModal } = useMissionModalStore()
 	const { roles, setRoles, setPersons } = useTeamStore()
-	const { projectId } = useProjectIdStore()
+	const { projectIdStr } = useWorkspaceProjectId({ redirectIfMissing: true })
 	const { weekInfo } = useWeekStore()
 	const queryClient = useQueryClient()
-	const projectIdStr = projectId?.toString() ?? ''
 
 	// weekStore 기준일(선택한 주의 월요일)에서 2주 전을 start_date로 사용, weeks 6으로 요청
 	const baseDate = weekInfo?.dates?.[0] ? new Date(weekInfo.dates[0]) : new Date()
