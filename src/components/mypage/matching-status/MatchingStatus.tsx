@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { MyPageHeader } from '../MyPageHeader'
-import ProjectCard from './ProjectCard'
-import ProfileCard from './ProfileCard'
-import MatchingTimerCard from './MatchingTimerCard'
+import { MatchingListItem } from './MatchingListItem'
 import MatchingNotice from './MatchingNotice'
 import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import { RECEIVED_REQUEST_NOTICES, SENT_REQUEST_NOTICES } from '@/constants/matchingNotice'
@@ -17,6 +15,7 @@ import {
 	useMatchingCancelMutation,
 	useMatchingRejectMutation,
 } from '@/hooks/mypage/useMatchingApi'
+import { useMatchingTimer } from '@/hooks/mypage/useMatchingTimer'
 
 type TabType = 'received' | 'sent'
 
@@ -50,9 +49,11 @@ const groupUserMatchingsByField = <T extends { field: string }>(userMatchings: T
 	}))
 }
 
+
 export const MatchingStatus = () => {
 	const navigate = useNavigate()
 	const [activeTab, setActiveTab] = useState<TabType>('received')
+	const { currentTime, initialTime } = useMatchingTimer()
 	const [modalType, setModalType] = useState<
 		'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null
 	>(null)
@@ -166,22 +167,16 @@ export const MatchingStatus = () => {
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
 									{receivedProjectMatchings.map(project => (
-										<div key={project.projectId} className='flex gap-1 items-center'>
-											<ProjectCard
-												projectName={project.title}
-												category=''
-												description={project.description}
-												currentMembers={project.currentMembersNum}
-												totalMembers={0}
-											/>
-											<MatchingTimerCard
-												requestType='received'
-												status='default'
-												timerText='00:00:00'
-												onAccept={() => handleAcceptClick(project.matchingId)}
-												onReject={() => handleRejectClick(project.matchingId)}
-											/>
-										</div>
+										<MatchingListItem
+											key={project.projectId}
+											item={project}
+											itemType='project'
+											requestType='received'
+											currentTime={currentTime}
+											initialTime={initialTime}
+											onAccept={handleAcceptClick}
+											onReject={handleRejectClick}
+										/>
 									))}
 								</div>
 							</div>
@@ -208,25 +203,17 @@ export const MatchingStatus = () => {
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 												{group.members.map(member => (
-													<div
+													<MatchingListItem
 														key={member.userId}
-														className='flex gap-1 items-center relative shrink-0 w-full'
-													>
-														<ProfileCard
-															imageUrl={member.profileUrl}
-															nickname={member.nickname}
-															part={member.field}
-															introduction={member.bio}
-															onClick={() => handleProfileClick(member.userId)}
-														/>
-														<MatchingTimerCard
-															requestType='received'
-															status='default'
-															timerText='00:00:00'
-															onAccept={() => handleAcceptClick(member.matchingId)}
-															onReject={() => handleRejectClick(member.matchingId)}
-														/>
-													</div>
+														item={member}
+														itemType='user'
+														requestType='received'
+														currentTime={currentTime}
+														initialTime={initialTime}
+														onAccept={handleAcceptClick}
+														onReject={handleRejectClick}
+														onProfileClick={handleProfileClick}
+													/>
 												))}
 											</div>
 										</div>
@@ -262,21 +249,15 @@ export const MatchingStatus = () => {
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
 									{sentProjectMatchings.map(project => (
-										<div key={project.projectId} className='flex gap-1 items-center'>
-											<ProjectCard
-												projectName={project.title}
-												category=''
-												description={project.description}
-												currentMembers={project.currentMembersNum}
-												totalMembers={0}
-											/>
-											<MatchingTimerCard
-												requestType='sent'
-												status='default'
-												timerText='00:00:00'
-												onCancel={() => handleCancelClick(project.matchingId)}
-											/>
-										</div>
+										<MatchingListItem
+											key={project.projectId}
+											item={project}
+											itemType='project'
+											requestType='sent'
+											currentTime={currentTime}
+											initialTime={initialTime}
+											onCancel={handleCancelClick}
+										/>
 									))}
 								</div>
 							</div>
@@ -303,24 +284,16 @@ export const MatchingStatus = () => {
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 												{group.members.map(member => (
-													<div
+													<MatchingListItem
 														key={member.userId}
-														className='flex gap-1 items-center relative shrink-0 w-full'
-													>
-														<ProfileCard
-															imageUrl={member.profileUrl}
-															nickname={member.nickname}
-															part={member.field}
-															introduction={member.bio}
-															onClick={() => handleProfileClick(member.userId)}
-														/>
-														<MatchingTimerCard
-															requestType='sent'
-															status='default'
-															timerText='00:00:00'
-															onCancel={() => handleCancelClick(member.matchingId)}
-														/>
-													</div>
+														item={member}
+														itemType='user'
+														requestType='sent'
+														currentTime={currentTime}
+														initialTime={initialTime}
+														onCancel={handleCancelClick}
+														onProfileClick={handleProfileClick}
+													/>
 												))}
 											</div>
 										</div>

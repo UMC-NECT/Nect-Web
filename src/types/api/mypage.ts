@@ -420,7 +420,7 @@ export type RequestProjectUsersReorderDto = {
 }
 
 // === 매칭 현황 ==========================================================
-type UserMatchingType = {
+export type UserMatchingType = {
 	matchingId: number
 	userId: number
 	nickname: string
@@ -428,8 +428,10 @@ type UserMatchingType = {
 	field: string
 	customField: string | null
 	profileUrl: string
+	status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELED' | 'EXPIRED'
+	expiresAt?: string
 }
-type ProjectMatchingType = {
+export type ProjectMatchingType = {
 	matchingId: number
 	projectId: number
 	title: string
@@ -437,6 +439,8 @@ type ProjectMatchingType = {
 	currentMembersNum: number
 	totalMemberNum: number
 	imageUrl: string
+	status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELED' | 'EXPIRED'
+	expiresAt?: string
 }
 
 export type ResponseMatchingDto = CommonResponse<{
