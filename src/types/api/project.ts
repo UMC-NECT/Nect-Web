@@ -10,7 +10,15 @@ export type ProjectDetailDto = {
 		image_name: string | null
 		project_title: string
 		description: string | null
-		team_roles: { role_field: string; required_count: number }[]
+		team_roles:
+			| {
+					roles: {
+						role: string
+						count: number
+						role_fields: { role_field: string; count: number }[]
+					}[]
+			  }
+			| { role_field: string; required_count: number }[]
 		team_member_projects: {
 			project_id: number
 			title: string

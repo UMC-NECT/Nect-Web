@@ -1,4 +1,5 @@
 import type { ProjectDetailDto } from '@/types/api/project';
+import type { TeamRole, TeamRoleField } from '@/types/api/project/detail';
 import type { RecruitmentDto } from '@/types/api/project/recruitment';
 import { useProjectRecruitments } from '@/hooks/queries/project';
 
@@ -29,6 +30,69 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
     };
 
     const daysLeft = calculateDaysLeft(projectData.defaultInfo.planned_ended_on);
+
+    const isTeamRole = (role: unknown): role is TeamRole => {
+        if (!role || typeof role !== 'object') return false;
+        return 'role' in role && 'count' in role && 'role_fields' in role;
+    };
+
+    const isTeamRoleArray = (value: unknown): value is TeamRole[] => {
+        return Array.isArray(value) && value.every(isTeamRole);
+    };
+
+    const rawTeamRoles = projectData.defaultInfo.team_roles;
+    const teamRoleList: TeamRole[] = Array.isArray(rawTeamRoles)
+        ? (isTeamRoleArray(rawTeamRoles) ? rawTeamRoles : [])
+        : rawTeamRoles?.roles || [];
+
+    const roleLabelMap: Record<string, string> = {
+        PLANNER: '기획자',
+        DESIGNER: '디자이너',
+        DEVELOPER: '개발자',
+        MARKETER: '마케터',
+        OTHER: '기타',
+    };
+
+    const roleOrder = ['PLANNER', 'DESIGNER', 'DEVELOPER', 'MARKETER', 'OTHER'];
+    const roleOrderMap = roleOrder.reduce<Record<string, number>>((acc, role, index) => {
+        acc[role] = index;
+        return acc;
+    }, {});
+
+    const roleFieldLabelMap: Record<string, { label: string; styleKey: string }> = {
+        PM: { label: 'PM', styleKey: 'pm' },
+        SERVICE: { label: 'PM', styleKey: 'pm' },
+        UI_UX: { label: 'Design', styleKey: 'design' },
+        DESIGN: { label: 'Design', styleKey: 'design' },
+        FRONTEND: { label: 'Frontend', styleKey: 'frontend' },
+        BACKEND: { label: 'Backend', styleKey: 'backend' },
+        SERVER: { label: 'Server', styleKey: 'server' },
+        DATA: { label: 'Data', styleKey: 'data' },
+        MARKETER: { label: 'Marketer', styleKey: 'pm' },
+        MARKETING: { label: 'Marketer', styleKey: 'pm' },
+        DEVELOP: { label: 'Develop', styleKey: 'develop' },
+    };
+
+    const formatRoleFieldLabel = (value: string) => {
+        const mapped = roleFieldLabelMap[value];
+        if (mapped) return mapped.label;
+        return value
+            .toLowerCase()
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+    };
+
+    const getRoleFieldStyleKey = (value: string) => {
+        return roleFieldLabelMap[value]?.styleKey ?? value.toLowerCase();
+    };
+
+    const teamRoleRows = [...teamRoleList]
+        .filter((role) => role.count > 0)
+        .sort((a, b) => {
+        const aOrder = roleOrderMap[a.role] ?? Number.MAX_SAFE_INTEGER;
+        const bOrder = roleOrderMap[b.role] ?? Number.MAX_SAFE_INTEGER;
+        return aOrder - bOrder;
+        });
 
     return (
         <>
@@ -106,7 +170,7 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                                         {recruitment.customField || recruitment.roleField}
                                     </span>
                                     <span className='ml-2 text-[16px] text-neutral-600'>
-                                        {recruitment.capacity}명 모집
+                                        {recruitment.description || '설명이 없습니다.'}
                                     </span>
                                 </div>
                                 {recruitment.requirements && recruitment.requirements.length > 0 && (
@@ -133,63 +197,28 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
 
-                {projectData.defaultInfo.team_roles && projectData.defaultInfo.team_roles.length > 0 ? (
+                {teamRoleRows.length > 0 ? (
                     <div className='space-y-6'>
-                        {(() => {
-                            // role을 파트별로 그룹화
-                            const groupByPart = (roles: typeof projectData.defaultInfo.team_roles) => {
-                                const partMap: Record<string, { label: string; roles: typeof roles }> = {}
-                                roles.forEach((role: { role_field: string; required_count: number }) => {
-                                    const field = role.role_field.toLowerCase();
-                                    let partKey = '';
-                                    let partLabel = '';
-                                    
-                                    if (field.includes('pm') || field.includes('기획')) {
-                                        partKey = 'planning';
-                                        partLabel = '기획';
-                                    } else if (field.includes('design') || field.includes('디자인')) {
-                                        partKey = 'design';
-                                        partLabel = '디자인';
-                                    } else if (field.includes('frontend') || field.includes('backend') || field.includes('개발')) {
-                                        partKey = 'development';
-                                        partLabel = '개발';
-                                    } else {
-                                        partKey = 'other';
-                                        partLabel = '기타';
-                                    }
-                                    
-                                    if (!partMap[partKey]) {
-                                        partMap[partKey] = { label: partLabel, roles: [] };
-                                    }
-                                    partMap[partKey].roles.push(role);
-                                });
-                                
-                                return partMap;
-                            };
-                            
-                            const grouped = groupByPart(projectData.defaultInfo.team_roles);
-                            
-                            return Object.entries(grouped).map(([key, { label, roles }]) => {
-                                const totalCount = roles.reduce((sum: number, role: { role_field: string; required_count: number }) => sum + role.required_count, 0)
-                                
-                                return (
-                                    <div key={key} className='flex items-center gap-6'>
-                                        <p className='w-[90px] text-[16px] font-medium'>{label}</p>
-                                        <p className='w-[50px] text-[16px]'>{totalCount}명</p>
-                                        <div className='flex gap-2 flex-wrap'>
-                                            {roles.map((role: { role_field: string; required_count: number }, idx: number) => (
-                                                <span 
-                                                    key={idx}
-                                                    className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(role.role_field.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}
-                                                >
-                                                    {role.role_field} ({role.required_count})
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            });
-                        })()}
+                        {teamRoleRows.map((role) => (
+                            <div key={role.role} className='flex items-center gap-6'>
+                                <p className='w-[90px] text-[16px] font-medium'>
+                                    {roleLabelMap[role.role] || role.role}
+                                </p>
+                                <p className='w-[50px] text-[16px]'>{role.count}명</p>
+                                <div className='flex gap-2 flex-wrap'>
+                                    {(role.role_fields || [])
+                                        .filter((field: TeamRoleField) => field.count > 0)
+                                        .map((field: TeamRoleField) => (
+                                            <span
+                                                key={`${role.role}-${field.role_field}`}
+                                                className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(getRoleFieldStyleKey(field.role_field))} text-neutral-700 rounded-[6px] text-[14px] font-medium`}
+                                            >
+                                                {formatRoleFieldLabel(field.role_field)}
+                                            </span>
+                                        ))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <p className='text-[16px] text-neutral-500'>팀원 구성 정보가 없습니다.</p>
