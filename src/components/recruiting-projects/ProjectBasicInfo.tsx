@@ -1,11 +1,17 @@
 import type { ProjectDetailDto } from '@/types/api/project';
+import type { RecruitmentDto } from '@/types/api/project/recruitment';
+import { useProjectRecruitments } from '@/hooks/queries/project';
 
 interface ProjectBasicInfoProps {
     projectData: ProjectDetailDto;
+    projectId: number;
     getPositionStyle: (position: string) => string;
 }
 
-const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoProps) => {
+const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectBasicInfoProps) => {
+    // 모집 정보 API 호출
+    const { data: recruitments } = useProjectRecruitments(projectId);
+
     // 날짜 포맷팅 함수
     const formatDate = (dateString: string | null) => {
         if (!dateString) return '-';
@@ -71,22 +77,17 @@ const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoPro
                     프로젝트 분야
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
-                {(() => {
-                    const selectedFields = projectData.fields?.fields?.filter((f: { is_selected: boolean; field_name: string }) => f.is_selected) || []
-                    if (selectedFields.length > 0) {
-                        return (
-                            <div className='flex gap-[10px] flex-wrap'>
-                                {selectedFields.map((field: { is_selected: boolean; field_name: string }, index: number) => (
-                                    <p key={index} className='px-4 h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
-                                        {field.field_name}
-                                    </p>
-                                ))}
-                            </div>
-                        );
-                    } else {
-                        return <p className='text-[16px] text-neutral-500'>프로젝트 분야 정보가 없습니다.</p>;
-                    }
-                })()}
+                {projectData.fields?.fields && projectData.fields.fields.length > 0 ? (
+                    <div className='flex gap-[10px] flex-wrap'>
+                        {projectData.fields.fields.map((field: { is_selected: boolean; field_name: string }, index: number) => (
+                            <p key={index} className='px-4 h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
+                                {field.field_name}
+                            </p>
+                        ))}
+                    </div>
+                ) : (
+                    <p className='text-[16px] text-neutral-500'>프로젝트 분야 정보가 없습니다.</p>
+                )}
             </div>
 
             {/* 모집 정보 및 필수 스택 */}
@@ -96,18 +97,27 @@ const ProjectBasicInfo = ({ projectData, getPositionStyle }: ProjectBasicInfoPro
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
                 
-                {projectData.defaultInfo.team_roles && projectData.defaultInfo.team_roles.length > 0 ? (
-                    <div className='space-y-4'>
-                        {projectData.defaultInfo.team_roles.map((role: { role_field: string; required_count: number }, index: number) => (
-                            <div key={index}>
-                                <div className='mb-2'>
-                                    <span className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(role.role_field.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                        {role.role_field} ({role.required_count})
+                {recruitments && recruitments.length > 0 ? (
+                    <div className='space-y-6'>
+                        {recruitments.map((recruitment: RecruitmentDto) => (
+                            <div key={recruitment.recruitmentId}>
+                                <div className='mb-3'>
+                                    <span className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(recruitment.roleField.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
+                                        {recruitment.customField || recruitment.roleField}
+                                    </span>
+                                    <span className='ml-2 text-[16px] text-neutral-600'>
+                                        {recruitment.capacity}명 모집
                                     </span>
                                 </div>
-                                <div className='text-[16px] text-neutral-600 ml-2'>
-                                    모집 인원 {role.required_count}명
-                                </div>
+                                {recruitment.requirements && recruitment.requirements.length > 0 && (
+                                    <ul className='ml-6 space-y-1'>
+                                        {recruitment.requirements.map((req: string, idx: number) => (
+                                            <li key={idx} className='text-[16px] text-neutral-600 list-disc'>
+                                                {req}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
                         ))}
                     </div>

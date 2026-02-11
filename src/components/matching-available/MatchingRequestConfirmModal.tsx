@@ -6,7 +6,7 @@ interface MatchingRequestConfirmModalProps {
     position: string;
 }
 
-const MatchingRequestConfirmModal = ({ isOpen, onClose, onConfirm, memberName, position }: MatchingRequestConfirmModalProps) => {
+const MatchingRequestConfirmModal = ({ isOpen, onClose, onConfirm, position }: MatchingRequestConfirmModalProps) => {
     if (!isOpen) return null;
 
     return (
@@ -19,20 +19,25 @@ const MatchingRequestConfirmModal = ({ isOpen, onClose, onConfirm, memberName, p
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 제목 */}
-                <div className='text-center mb-6'>
-                    <h2 className='text-[20px] font-bold mb-3'>
-                        <span className='text-primary-500-normal'>{memberName}</span>님에게 {position} 파트 <br />
-                        매칭 요청을 진행할까요?
+                <div className='text-center'>
+                    <h2 className='text-[20px] font-bold mb-[18px]'>
+                        <span className='text-primary-500-normal'>{position}</span> 매칭을 요청 할까요?
                     </h2>
                 </div>
                 
                 {/* 설명 */}
-                <p className='text-[16px] text-neutral-600 text-center mb-[105px]'>
-                    24시간 동안의 매칭 요청은 파트 당 3명까지 가능합니다.
+                <p className='text-[16px] text-neutral-600 text-center mb-3'>
+                    유의사항을 확인해주세요.
+                </p>
+
+                {/* 유의사항 */}
+                <p className="bg-neutral-100 text-neutral-600 text-[14px] rounded-[6px] w-[506px] h-[82px] gap-[10px] p-5">
+                    프로젝트 매칭 신청은 <span className="text-neutral-900">24시간 동안 1일 1회</span>로 제한됩니다. <br />
+                    매칭 결과는 24시간 내에 나오며, 매칭 대기 중엔 다른 프로젝트에 신청할 수 없습니다.
                 </p>
 
                 {/* 버튼 */}
-                <div className='flex gap-4 justify-center'>
+                <div className='flex gap-4 justify-center mt-12'>
                     <button
                         onClick={onClose}
                         className='w-[160px] h-[48px] border-[1.5px] border-neutral-200 rounded-xl text-[18px] font-semibold text-neutral-900 hover:bg-neutral-50 transition-colors'

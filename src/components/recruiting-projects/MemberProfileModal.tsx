@@ -1,12 +1,11 @@
 import MemberProfileHeader from './MemberProfileHeader'
 import MemberProfileDetail from './MemberProfileDetail'
-import type { Member } from '@/types/member'
 import type { MemberDetailDto } from '@/types/api/member/detail'
 
 interface MemberProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
-    member: Member;
+    member: MemberDetailDto;
 }
 
 const MemberProfileModal = ({ isOpen, onClose, member }: MemberProfileModalProps) => {
@@ -25,7 +24,7 @@ const MemberProfileModal = ({ isOpen, onClose, member }: MemberProfileModalProps
                     <div className='mb-10'>
                         <MemberProfileHeader member={member} />
                     </div>
-                    <MemberProfileDetail memberData={member as unknown as MemberDetailDto} />
+                    <MemberProfileDetail memberData={member} />
                 </div>
             </div>
         </div>

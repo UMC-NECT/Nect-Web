@@ -21,12 +21,12 @@ export interface TeamMemberProject {
 export interface DefaultInfo {
     project_id: number;
     project_title: string;
-    description: string;
-    planned_started_on: string;
-    planned_ended_on: string;
+    description: string | null;
+    planned_started_on: string | null;
+    planned_ended_on: string | null;
     image_name: string | null;
     team_roles: TeamRole[];
-    leader: Leader;
+    leader?: Leader;
     team_member_projects: TeamMemberProject[];
 }
 

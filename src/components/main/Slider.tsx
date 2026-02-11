@@ -1,7 +1,6 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
-import ChevronRight from '@/assets/icons/common/chevron-right.svg?react';
 
 // 이미지 import
 import slide1 from '../../assets/icons/main/slide1.png';
@@ -54,12 +53,6 @@ const Slider = () => {
                                     alt={slide.alt}
                                     className="w-full h-full object-cover"
                                 />
-                                
-                                {/* 모집 정보 보러가기 버튼 */}
-                                <div className="w-[159px] h-11 absolute bottom-[14px] right-6 flex items-center gap-1 text-neutral-50 hover:text-neutral-300 hover:stroke-neutral-300 transition-all">
-                                    <span className="text-body1 font-semibold mr-1">모집 정보 보러가기</span>
-                                    <ChevronRight className="w-4 h-4 stroke-neutral-50" />
-                                </div>
                             </div>
                         </SwiperSlide>
                     ))}

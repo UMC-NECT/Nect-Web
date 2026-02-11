@@ -33,7 +33,7 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
         default: {
             card: 'w-90',
             image: 'w-90 h-50',
-            height: (project.introduction?.length || 0) > 40 ? 'h-85' : 'h-80',
+            height: 'h-[340px]',
             infoArea: '',
             infoMargin: 'mt-3.5',
             chipPosition: 'bottom-[7px]'
@@ -81,7 +81,7 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
                     <span className="text-lg font-semibold text-primary-500-normal whitespace-nowrap">D-{project.leftDays}</span>
                 </div>
 
-                <p className="text-sm text-neutral-600 font-medium mb-3 line-clamp-2">
+                <p className="text-sm h-[42px] text-neutral-600 font-medium mb-3 line-clamp-2">
                     {project.introduction || '프로젝트 설명이 없습니다.'}
                 </p>
 

@@ -7,14 +7,31 @@ import { useRecruitingProjects } from '@/hooks/queries/home';
 const UrgentProjects = () => {
     const { data: projects, isLoading, isError } = useRecruitingProjects(4);
 
-    // roles 객체를 태그 배열로 변환
-    const getRoleTags = (roles: Record<string, number>) => {
-        const tags = Object.entries(roles).map(([role, count]) => `${role} (${count})`);
-        // 최대 4개까지만 표시, 나머지는 '...'
-        if (tags.length > 4) {
-            return [...tags.slice(0, 4), '...'];
+    // roles 배열을 태그 배열로 변환
+    const getRoleTags = (roles: Array<{role: string; count: number; role_fields: Array<{role_field: string; count: number}>}> | Record<string, number>) => {
+        // 배열인지 객체인지 확인
+        if (Array.isArray(roles)) {
+            const tags = roles
+                .filter(r => r.count > 0)
+                .flatMap(r => {
+                    if (r.role_fields && r.role_fields.length > 0) {
+                        return r.role_fields.map(f => `${f.role_field} (${f.count})`);
+                    }
+                    return [`${r.role} (${r.count})`];
+                });
+            // 최대 4개까지만 표시, 나머지는 '...'
+            if (tags.length > 4) {
+                return [...tags.slice(0, 4), '...'];
+            }
+            return tags;
+        } else {
+            // 객체 형태 처리 (기존 방식)
+            const tags = Object.entries(roles).map(([role, count]) => `${role} (${count})`);
+            if (tags.length > 4) {
+                return [...tags.slice(0, 4), '...'];
+            }
+            return tags;
         }
-        return tags;
     };
 
     // authorPart 한글 변환

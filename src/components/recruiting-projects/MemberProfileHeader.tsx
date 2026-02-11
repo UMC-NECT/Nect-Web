@@ -1,15 +1,8 @@
 import bar from '@/assets/icons/common/Bar.svg';
-
-interface Member {
-    name: string;
-    position: string;
-    email: string;
-    profileImage?: string;
-    isRecruiting?: boolean;
-}
+import type { MemberDetailDto } from '@/types/api/member/detail';
 
 interface MemberProfileHeaderProps {
-    member: Member;
+    member: MemberDetailDto;
     actionButtons?: React.ReactNode;
 }
 
@@ -22,14 +15,9 @@ const MemberProfileHeader = ({ member, actionButtons }: MemberProfileHeaderProps
                 <div className='flex items-center gap-3 mb-1'>
                     <h2 className='text-[20px] font-bold'>{member.name}</h2>
                     <img src={bar} alt="Bar" className='w-[2px] h-[16px] bg-neutral-300' />
-                    <span className='text-[20px] text-neutral-400'>{member.position}</span>
+                    <span className='text-[20px] text-neutral-400'>{member.role}</span>
                 </div>
                 <p className='text-[14px] text-neutral-500 mb-2 h-[21px]'>{member.email}</p>
-                {member.isRecruiting && (
-                    <span className='inline-flex items-center justify-center w-[64px] h-[28px] border border-primary-200-light bg-primary-100-light text-primary-500-normal text-[14px] font-semibold rounded-[100px]'>
-                        재학 중
-                    </span>
-                )}
             </div>
 
             {actionButtons && (
