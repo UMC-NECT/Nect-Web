@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { MyPageHeader } from '../MyPageHeader'
 import ProjectCard from './ProjectCard'
 import ProfileCard from './ProfileCard'
@@ -10,13 +11,12 @@ import CTAModal from '@/components/common/CTAModal'
 import SegmentTabButton from '../SegmentTabButton'
 import {
 	useMatchingCountQuery,
-	useMatchingsReceivedQuery,
-	useMatchingsSentQuery,
+	useMatchingsReceivedTotalQuery,
+	useMatchingsSentTotalQuery,
 	useMatchingAcceptMutation,
 	useMatchingCancelMutation,
 	useMatchingRejectMutation,
 } from '@/hooks/mypage/useMatchingApi'
-import type { UserMatchingDto } from '@/types/api/matching'
 
 type TabType = 'received' | 'sent'
 
@@ -34,28 +34,9 @@ const getRoleIdByName = (roleName: string): number => {
 	return roleMap[roleName] || 1
 }
 
-// expiresAt으로부터 남은 시간을 HH:MM:SS 형식으로 계산
-const getTimerTextFromExpiry = (expiresAt?: string): string => {
-	if (!expiresAt) return '00:00:00'
-	const now = new Date().getTime()
-	const expiry = new Date(expiresAt).getTime()
-	const diff = Math.max(0, Math.floor((expiry - now) / 1000))
-	const hours = Math.floor(diff / 3600)
-	const minutes = Math.floor((diff % 3600) / 60)
-	const seconds = diff % 60
-	return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-}
-
-// 매칭 상태를 TimerCard status로 변환
-const getTimerCardStatus = (matchingStatus?: string): 'default' | 'auto-rejected' | 'accepted' => {
-	if (matchingStatus === 'ACCEPTED') return 'accepted'
-	if (matchingStatus === 'REJECTED' || matchingStatus === 'EXPIRED') return 'auto-rejected'
-	return 'default'
-}
-
 // userMatchings를 field 기준으로 그룹핑
-const groupUserMatchingsByField = (userMatchings: UserMatchingDto[]) => {
-	const grouped: Record<string, UserMatchingDto[]> = {}
+const groupUserMatchingsByField = <T extends { field: string }>(userMatchings: T[]) => {
+	const grouped: Record<string, T[]> = {}
 	for (const user of userMatchings) {
 		const field = user.field || 'ETC'
 		if (!grouped[field]) {
@@ -70,14 +51,17 @@ const groupUserMatchingsByField = (userMatchings: UserMatchingDto[]) => {
 }
 
 export const MatchingStatus = () => {
+	const navigate = useNavigate()
 	const [activeTab, setActiveTab] = useState<TabType>('received')
-	const [modalType, setModalType] = useState<'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null>(null)
+	const [modalType, setModalType] = useState<
+		'reject' | 'rejectSuccess' | 'accept' | 'acceptSuccess' | 'cancel' | 'cancelSuccess' | null
+	>(null)
 	const [selectedMatchingId, setSelectedMatchingId] = useState<string | null>(null)
 
 	// API 훅
 	const { data: countData } = useMatchingCountQuery()
-	const { data: receivedData } = useMatchingsReceivedQuery('project', 'pending')
-	const { data: sentData } = useMatchingsSentQuery('project', 'pending')
+	const { data: receivedData } = useMatchingsReceivedTotalQuery()
+	const { data: sentData } = useMatchingsSentTotalQuery()
 
 	const acceptMutation = useMatchingAcceptMutation()
 	const cancelMutation = useMatchingCancelMutation()
@@ -86,10 +70,13 @@ export const MatchingStatus = () => {
 	const receivedCount = countData?.body?.receivedCount ?? 0
 	const sentCount = countData?.body?.sentCount ?? 0
 
-	const receivedProjectMatchings = receivedData?.body?.projectMatchings ?? []
-	const receivedUserMatchings = receivedData?.body?.userMatchings ?? []
-	const sentProjectMatchings = sentData?.body?.projectMatchings ?? []
-	const sentUserMatchings = sentData?.body?.userMatchings ?? []
+	const receivedProjectMatchings = useMemo(
+		() => receivedData?.body?.projectMatchings ?? [],
+		[receivedData?.body?.projectMatchings]
+	)
+	const receivedUserMatchings = useMemo(() => receivedData?.body?.userMatchings ?? [], [receivedData?.body?.userMatchings])
+	const sentProjectMatchings = useMemo(() => sentData?.body?.projectMatchings ?? [], [sentData?.body?.projectMatchings])
+	const sentUserMatchings = useMemo(() => sentData?.body?.userMatchings ?? [], [sentData?.body?.userMatchings])
 
 	// userMatchings를 field 기준으로 그룹핑
 	const receivedGrouped = useMemo(() => groupUserMatchingsByField(receivedUserMatchings), [receivedUserMatchings])
@@ -138,6 +125,10 @@ export const MatchingStatus = () => {
 		setSelectedMatchingId(null)
 	}
 
+	const handleProfileClick = (userId: number) => {
+		navigate(`/matching-available/${userId}?from=matching`)
+	}
+
 	return (
 		<div className='ml-7'>
 			<MyPageHeader />
@@ -168,7 +159,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-3.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>프로젝트</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											프로젝트
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
@@ -183,8 +176,8 @@ export const MatchingStatus = () => {
 											/>
 											<MatchingTimerCard
 												requestType='received'
-												status={getTimerCardStatus(project.matchingStatus)}
-												timerText={getTimerTextFromExpiry(project.expiresAt)}
+												status='default'
+												timerText='00:00:00'
 												onAccept={() => handleAcceptClick(project.matchingId)}
 												onReject={() => handleRejectClick(project.matchingId)}
 											/>
@@ -197,12 +190,17 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>넥트 팀원</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											넥트 팀원
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
 									{receivedGrouped.map(group => (
-										<div key={group.field} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
+										<div
+											key={group.field}
+											className='flex flex-col gap-3 items-start relative shrink-0 w-full'
+										>
 											<RoleTagChip
 												roleId={getRoleIdByName(group.field)}
 												roleName={group.field}
@@ -210,17 +208,21 @@ export const MatchingStatus = () => {
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 												{group.members.map(member => (
-													<div key={member.userId} className='flex gap-1 items-center relative shrink-0 w-full'>
+													<div
+														key={member.userId}
+														className='flex gap-1 items-center relative shrink-0 w-full'
+													>
 														<ProfileCard
 															imageUrl={member.profileUrl}
 															nickname={member.nickname}
 															part={member.field}
 															introduction={member.bio}
+															onClick={() => handleProfileClick(member.userId)}
 														/>
 														<MatchingTimerCard
 															requestType='received'
-															status={getTimerCardStatus(member.matchingStatus)}
-															timerText={getTimerTextFromExpiry(member.expiresAt)}
+															status='default'
+															timerText='00:00:00'
 															onAccept={() => handleAcceptClick(member.matchingId)}
 															onReject={() => handleRejectClick(member.matchingId)}
 														/>
@@ -236,7 +238,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-1.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>유의사항</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											유의사항
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col items-start px-5 py-4 relative shrink-0 w-full'>
@@ -251,7 +255,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-3.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>프로젝트</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											프로젝트
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
@@ -266,8 +272,8 @@ export const MatchingStatus = () => {
 											/>
 											<MatchingTimerCard
 												requestType='sent'
-												status={getTimerCardStatus(project.matchingStatus)}
-												timerText={getTimerTextFromExpiry(project.expiresAt)}
+												status='default'
+												timerText='00:00:00'
 												onCancel={() => handleCancelClick(project.matchingId)}
 											/>
 										</div>
@@ -279,12 +285,17 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>넥트 팀원</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											넥트 팀원
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
 									{sentGrouped.map(group => (
-										<div key={group.field} className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
+										<div
+											key={group.field}
+											className='flex flex-col gap-3 items-start relative shrink-0 w-full'
+										>
 											<RoleTagChip
 												roleId={getRoleIdByName(group.field)}
 												roleName={group.field}
@@ -292,17 +303,21 @@ export const MatchingStatus = () => {
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
 												{group.members.map(member => (
-													<div key={member.userId} className='flex gap-1 items-center relative shrink-0 w-full'>
+													<div
+														key={member.userId}
+														className='flex gap-1 items-center relative shrink-0 w-full'
+													>
 														<ProfileCard
 															imageUrl={member.profileUrl}
 															nickname={member.nickname}
 															part={member.field}
 															introduction={member.bio}
+															onClick={() => handleProfileClick(member.userId)}
 														/>
 														<MatchingTimerCard
 															requestType='sent'
-															status={getTimerCardStatus(member.matchingStatus)}
-															timerText={getTimerTextFromExpiry(member.expiresAt)}
+															status='default'
+															timerText='00:00:00'
 															onCancel={() => handleCancelClick(member.matchingId)}
 														/>
 													</div>
@@ -317,7 +332,9 @@ export const MatchingStatus = () => {
 							<div className='flex flex-col gap-1.5 items-start py-2.5 relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
-										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>유의사항</p>
+										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
+											유의사항
+										</p>
 									</div>
 								</div>
 								<div className='flex flex-col items-start px-5 py-4 relative shrink-0 w-full'>

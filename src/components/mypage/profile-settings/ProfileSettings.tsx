@@ -42,6 +42,14 @@ export const ProfileSettings = () => {
 	const skills = watch('skills')
 	const userStatus = watch('userStatus')
 
+	// 업로드된 프로필 이미지 fileName 상태
+	const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
+
+	// fileName 변경 핸들러
+	const handleFileNameChange = useCallback((fileName: string) => {
+		setUploadedFileName(fileName)
+	}, [])
+
 	// 공개 매칭 여부
 	const [localIsPublicMatching, localSetIsPublicMatching] = useState<boolean | null>(null)
 	const isOpenRecruit = localIsPublicMatching ?? profile?.isPublicMatching ?? false
@@ -61,7 +69,7 @@ export const ProfileSettings = () => {
 						try {
 							// 폼 데이터를 API request DTO로 변환
 							const requestBody = {
-								profileImageFileName: profile?.profileImageFileName ?? '',
+								profileImageFileName: uploadedFileName ?? profile?.profileImageFileName ?? '',
 								bio: data.introduction ?? '',
 								coreCompetencies: data.coreCompetency ?? '',
 								userStatus: data.userStatus ?? '',
@@ -101,7 +109,6 @@ export const ProfileSettings = () => {
 								})),
 							}
 
-							console.log('저장 요청 데이터:', requestBody)
 							await saveProfile(requestBody)
 							resolve(true)
 						} catch (error) {
@@ -178,7 +185,7 @@ export const ProfileSettings = () => {
 					}
 				)()
 			}),
-		[handleSubmit, profile, isOpenRecruit, saveProfile]
+		[handleSubmit, profile, isOpenRecruit, saveProfile, uploadedFileName]
 	)
 
 	// (버튼 핸들러) 저장 버튼
@@ -269,6 +276,7 @@ export const ProfileSettings = () => {
 							userRole={profile?.role}
 							userStatus={userStatus}
 							userEmail={profile?.email}
+							onProfileImageFileNameChange={handleFileNameChange}
 							onStatusChange={status => setValue('userStatus', status, { shouldDirty: true })}
 						/>
 					</div>

@@ -7,12 +7,11 @@ import ProjectManagementView from './tab1-project-setting/ProjectManagementView'
 import TeamManagementView from './tab2-team-management/TeamManagementView'
 import { useNavigationBlocker } from '@/hooks/mypage/useNavigationBlocker'
 import { useOngoingProjectForm } from '@/hooks/mypage/useOngoingProjectForm'
-import type { TabType } from '@/types/mypage/ongoindProject'
+import type { TabType, ColorType, RecruitType } from '@/types/mypage/ongoindProject'
 
 import CTAModal from '@/components/common/CTAModal'
 import PartSettingsModal from './PartSettingsModal'
 import { useNavigate } from 'react-router'
-import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
 import { useCTAModal } from '@/stores/useCTAModal'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
@@ -26,13 +25,37 @@ import {
 	usePatchProjectPurposesMutation,
 	usePatchProjectsFunctions,
 	usePatchProjectsServiceUsersMutation,
+	usePatchProjectRecruitmentStatusMutation,
 	useMypageTeamRolesQuery,
+	useMypageProjectUsersQuery,
 	useProjectPurposesQuery,
 	useProjectFunctionsQuery,
 	useProjectsServiceUsersQuery,
+	useDeleteProjectMutation,
 } from '@/hooks/mypage/useMypageApi'
 import type { RecruitmentLocalItem } from './tab1-project-setting/sections/Section02RecruitmentInfo'
 import { getProjectFieldValue } from '@/utils/projectField'
+import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+
+// role_field를 ColorType으로 변환
+const getRoleColorFromField = (roleField: string): ColorType => {
+	switch (roleField) {
+		case 'PM':
+		case 'PLANNING':
+		case 'SERVICE':
+			return 'purple'
+		case 'DESIGNER':
+		case 'DESIGN':
+		case 'UI_UX':
+			return 'pink'
+		case 'FRONTEND':
+			return 'green'
+		case 'BACKEND':
+			return 'blue'
+		default:
+			return 'gray'
+	}
+}
 
 type ProjectFieldApiItem = {
 	field_name: string
@@ -44,6 +67,30 @@ const extractProjectFields = (data: unknown): ProjectFieldApiItem[] => {
 	const fields = (container as { fields?: unknown })?.fields
 	if (!Array.isArray(fields)) return []
 	return Array.isArray(fields[0]) ? (fields as ProjectFieldApiItem[][]).flat() : (fields as ProjectFieldApiItem[])
+}
+
+// API recruitment_status → 한글 모집 상태 변환
+const mapRecruitmentStatus = (apiStatus: string): RecruitType => {
+	switch (apiStatus) {
+		case 'OPEN':
+			return '모집 중'
+		case 'CLOSED':
+			return '모집 완료'
+		default:
+			return '모집 전'
+	}
+}
+
+// 한글 모집 상태 → API recruitment_status 변환
+const toApiRecruitmentStatus = (status: RecruitType): string => {
+	switch (status) {
+		case '모집 중':
+			return 'OPEN'
+		case '모집 완료':
+			return 'CLOSED'
+		default:
+			return 'UPCOMING'
+	}
 }
 
 const OngoingProject = () => {
@@ -60,18 +107,47 @@ const OngoingProject = () => {
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
 
 	// 폼 관련
-	const { control, setValue, handleSubmit, isDirty, watch, reset } = useOngoingProjectForm()
+	const { control, setValue, isDirty, watch, reset, getValues } = useOngoingProjectForm()
 
-	// 섹션 01. 프로젝트 분야 - projectId 도출
+	// 프로젝트 ID (Zustand persist 스토어에서 관리)
+	const { projectId: storedProjectId, userId: storedUserId, setProjectId: setStoredProjectId } = useProjectIdStore()
 	const { data: profileData } = useMypageProfileQuery()
 	const { data: projectsData } = useMypageProjectsQuery()
-	const projectId = (() => {
+
+	// 현재 로그인한 userId와 저장된 userId가 다르면 projectId 초기화 후 재설정
+	useEffect(() => {
 		const userId = profileData?.body?.userId
 		const projects = projectsData?.body?.projects?.flat()
-		if (!userId || !projects) return ''
-		const leaderProject = projects.find(p => p.leader.user_id === userId)
-		return leaderProject ? String(leaderProject.project_id) : ''
-	})()
+		if (!userId || !projects) return
+
+		// 저장된 userId와 현재 userId가 다르면 초기화 후 재설정
+		if (storedUserId !== userId) {
+			const leaderProject = projects.find(p => p.leader.user_id === userId)
+			if (leaderProject) {
+				setStoredProjectId(leaderProject.project_id, userId)
+			}
+		}
+		// userId가 같고 projectId가 없을 때 기본값으로 설정
+		else if (!storedProjectId) {
+			const leaderProject = projects.find(p => p.leader.user_id === userId)
+			if (leaderProject) {
+				setStoredProjectId(leaderProject.project_id, userId)
+			}
+		}
+		// userId가 같고 projectId가 있지만 삭제되었거나 유효하지 않은 경우
+		else if (storedProjectId) {
+			const isProjectValid = projects.some(p => p.project_id === storedProjectId)
+			if (!isProjectValid) {
+				// 현재 저장된 프로젝트가 목록에 없으면 리더인 첫 번째 프로젝트로 재설정
+				const leaderProject = projects.find(p => p.leader.user_id === userId)
+				if (leaderProject) {
+					setStoredProjectId(leaderProject.project_id, userId)
+				}
+			}
+		}
+	}, [storedProjectId, storedUserId, profileData, projectsData, setStoredProjectId])
+
+	const projectId = storedProjectId ? String(storedProjectId) : ''
 
 	// 섹션 01. 프로젝트 분야 - 조회
 	const { data: projectFieldData } = useMypageProjectFieldQuery(projectId)
@@ -130,24 +206,141 @@ const OngoingProject = () => {
 		}
 	}, [serviceUsersData, setValue])
 
+	// 초기 API 데이터 로드 후 폼 baseline 동기화 (isDirty 오탐 방지)
+	const isFormBaselineSetRef = useRef(false)
+	useEffect(() => {
+		if (isFormBaselineSetRef.current) return
+		if (projectFieldData && purposesData && functionsData && serviceUsersData) {
+			// queueMicrotask 기반 setValue 완료 후 실행되도록 setTimeout 사용
+			const timer = setTimeout(() => {
+				isFormBaselineSetRef.current = true
+				reset(getValues())
+			}, 0)
+			return () => clearTimeout(timer)
+		}
+	}, [projectFieldData, purposesData, functionsData, serviceUsersData, reset, getValues])
+
 	// 섹션 03. 팀 구성 데이터 조회
 	const { data: teamRolesData } = useMypageTeamRolesQuery(projectId)
 
-	// 실제 프로젝트 데이터 추출 및 형식 변환
-	const projectData = (() => {
-		const userId = profileData?.body?.userId
-		const projects = projectsData?.body?.projects?.flat()
-		if (!userId || !projects) {
-			return {
-				name: '',
-				intro: '',
-				startDate: '',
-				endDate: '',
-				recruitmentStatus: '모집 전' as const,
-				selectedFields: [],
+	// 프로젝트 유저(멤버) 목록 조회
+	const { data: projectUsersData } = useMypageProjectUsersQuery(projectId)
+
+	// 팀원 데이터 + 팀 역할 데이터 → Zustand 스토어에 반영
+	const { setTeamMembersByRole, setMemberApiDataMap } = useTeamMembersStore()
+
+	useEffect(() => {
+		const users = projectUsersData?.body?.users ?? []
+		const roles = teamRolesData?.body?.roles ?? []
+
+		console.log('=== 팀 데이터 로딩 시작 ===')
+		console.log('users:', users)
+		console.log('roles:', roles)
+
+		// 1. users를 part_label 기준으로 그룹화
+		const groupMap = new Map<
+			string,
+			{ roleField: string; customRoleFieldName: string | null; targetCount: number; members: typeof users }
+		>()
+
+		// role_fields에서 count 정보 추출
+		const roleFieldCountMap = new Map<string, number>()
+		for (const role of roles) {
+			for (const rf of role.role_fields) {
+				roleFieldCountMap.set(rf.role_field, rf.count)
 			}
 		}
-		const leaderProject = projects.find(p => p.leader.user_id === userId)
+
+		// users를 part_label로 그룹화
+		for (const user of users) {
+			const key = user.part_label
+			if (!groupMap.has(key)) {
+				groupMap.set(key, {
+					roleField: user.role_field,
+					customRoleFieldName: user.custom_role_field_name,
+					targetCount: roleFieldCountMap.get(user.role_field) ?? 0,
+					members: [],
+				})
+			}
+			groupMap.get(key)!.members.push(user)
+		}
+
+		// 2. teamRoles에만 있고 users에는 없는 빈 파트 추가 (새로 생성된 파트)
+		// role_fields를 순회하면서 아직 groupMap에 없는 항목 찾기
+		for (const role of roles) {
+			for (const rf of role.role_fields) {
+				// CUSTOM 파트인 경우, part_label을 알 수 없으므로 users에서 찾아야 함
+				// 하지만 users가 없으면 role_field를 part_label로 사용
+				const hasUsersForThisRole = users.some(u => u.role_field === rf.role_field)
+
+				if (!hasUsersForThisRole) {
+					// 멤버가 없는 새 파트 (방금 생성된 파트일 가능성)
+					// CUSTOM role_field는 part_label을 알 수 없으므로 일단 건너뜀
+					// (실제로는 백엔드에서 custom_role_field_name을 반환해야 함)
+					if (rf.role_field !== 'CUSTOM') {
+						const partLabel = rf.role_field
+						if (!groupMap.has(partLabel)) {
+							groupMap.set(partLabel, {
+								roleField: rf.role_field,
+								customRoleFieldName: null,
+								targetCount: rf.count,
+								members: [],
+							})
+						}
+					}
+				}
+			}
+		}
+
+		// 3. memberApiDataMap 생성
+		const memberApiDataMap = new Map()
+		for (const user of users) {
+			memberApiDataMap.set(String(user.user_id), {
+				userId: user.user_id,
+				roleField: user.role_field,
+				customRoleFieldName: user.custom_role_field_name,
+				partLabel: user.part_label,
+			})
+		}
+
+		// 4. TeamMembersByRole 형태로 변환
+		const teamMembersByRoleFromApi = Array.from(groupMap.entries()).map(([partLabel, group]) => ({
+			role: partLabel,
+			color: getRoleColorFromField(group.roleField),
+			targetCount: group.targetCount || group.members.length,
+			members: group.members.map(user => ({
+				id: String(user.user_id),
+				nickname: user.nickname || user.name || '이름없음',
+				part: user.part_label,
+				introduction: user.bio ?? undefined,
+				isLeader: user.member_type === 'LEADER',
+			})),
+		}))
+
+		console.log('변환된 팀 데이터:', teamMembersByRoleFromApi)
+
+		setTeamMembersByRole(teamMembersByRoleFromApi)
+		setMemberApiDataMap(memberApiDataMap)
+	}, [projectUsersData, teamRolesData, setTeamMembersByRole, setMemberApiDataMap])
+
+	// 실제 프로젝트 데이터 추출 및 형식 변환
+	const leaderProject = (() => {
+		const projects = projectsData?.body?.projects?.flat()
+		if (!projects || !storedProjectId) return undefined
+		return projects.find(p => p.project_id === storedProjectId)
+	})()
+
+	// 모집 여부 초기값 설정 (API recruitment_status 기반)
+	useEffect(() => {
+		if (!leaderProject?.recruitment_status) return
+		const mappedStatus = mapRecruitmentStatus(leaderProject.recruitment_status)
+		queueMicrotask(() => {
+			setValue('recruitmentStatus', mappedStatus, { shouldDirty: false })
+			setIsRecruitmentPublished(mappedStatus === '모집 중')
+		})
+	}, [leaderProject?.recruitment_status, setValue])
+
+	const projectData = (() => {
 		if (!leaderProject) {
 			return {
 				name: '',
@@ -187,17 +380,17 @@ const OngoingProject = () => {
 		}
 	})()
 
-	// 팀 역할 데이터 변환
-	const teamRolesForDisplay = (() => {
-		if (!teamRolesData?.body?.parts) return []
-		const parts = teamRolesData.body.parts.flat()
+	// 팀 역할 데이터 변환 (projects API의 team_roles 기반)
+	const leaderProjectTeamRoles = leaderProject?.team_roles?.roles ?? []
 
-		return parts.map(part => ({
-			role: part.role_field,
-			targetCount: part.required_count,
-			members: [], // 실제 멤버 정보는 필요시 추가
+	// Section03 프로젝트 파트/팀원 구성 - role_fields를 개별 항목으로 펼침
+	const teamRolesForDisplay = leaderProjectTeamRoles.flatMap(role =>
+		role.role_fields.map(rf => ({
+			role: rf.role_field,
+			targetCount: rf.count,
+			members: [] as Array<{ id: number; name: string }>,
 		}))
-	})()
+	)
 
 	const { mutate: mutateProjectField } = useMypageProjectFieldMutation()
 	const { mutate: postRecruitment } = usePostMypageRecruitmentsMutation()
@@ -205,6 +398,8 @@ const OngoingProject = () => {
 	const { mutate: patchProjectPurposes } = usePatchProjectPurposesMutation()
 	const { mutate: patchProjectsFunctions } = usePatchProjectsFunctions()
 	const { mutate: patchProjectsServiceUsers } = usePatchProjectsServiceUsersMutation()
+	const { mutate: patchRecruitmentStatus } = usePatchProjectRecruitmentStatusMutation()
+	const { mutate: deleteProjectMutation } = useDeleteProjectMutation()
 	const recruitmentDataRef = useRef<RecruitmentLocalItem[]>([])
 	const handleRecruitmentDataChange = useCallback(
 		(data: RecruitmentLocalItem[]) => {
@@ -240,130 +435,85 @@ const OngoingProject = () => {
 		}
 	}, [isPartSettingsOpen])
 
-	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
-	const handleSave = useCallback(async (): Promise<boolean> => {
-		let isValid = false
-		await handleSubmit(
-			data => {
-				console.log('유효성 검사 통과:', data)
-				// 섹션 01. 프로젝트 분야 수정
-				if (projectId && selectedField) {
-					mutateProjectField({ projectId, field: selectedField })
-				}
-				// 섹션 02. 모집 정보 생성/수정
-				recruitmentDataRef.current.forEach(item => {
-					if (!projectId) return
+	// 저장 (Zod 유효성 검사 없이 현재 값 기반으로 API 호출)
+	const handleSave = useCallback((): boolean => {
+		const data = getValues()
 
-					const requirements = item.requirements.split('\n').filter(Boolean)
+		if (!projectId) return false
 
-					// roleField가 비어있거나 requirements가 없으면 스킵
-					if (!item.roleField || requirements.length === 0) {
-						return
-					}
+		// 모집 상태 변경
+		if (data.recruitmentStatus) {
+			patchRecruitmentStatus({
+				projectId,
+				status: toApiRecruitmentStatus(data.recruitmentStatus),
+			})
+		}
 
-					// 역할 필드 매핑: Design -> DESIGNER, Frontend/Backend -> DEVELOPER, PM -> PLANNER
-					const roleFieldMap: Record<string, string> = {
-						Design: 'DESIGNER',
-						Frontend: 'FRONTEND',
-						Backend: 'BACKEND',
-						PM: 'PLANNER',
-					}
+		// 섹션 01. 프로젝트 분야 수정
+		if (selectedField) {
+			mutateProjectField({ projectId, field: selectedField })
+		}
 
-					const body = {
-						roleField: roleFieldMap[item.roleField] || item.roleField.toUpperCase(),
-						capacity: item.capacity,
-						requirements,
-					}
+		// 섹션 02. 모집 정보 생성/수정 (비어있는 항목은 스킵)
+		recruitmentDataRef.current.forEach(item => {
+			const requirements = item.requirements.split('\n').filter(Boolean)
 
-					// recruitmentId가 음수면 새로 생성된 항목이므로 POST
-					if (item.recruitmentId < 0) {
-						postRecruitment({ projectId, body })
-					} else {
-						// recruitmentId가 양수면 기존 항목이므로 PUT
-						putRecruitment({
-							projectId,
-							recruitmentId: String(item.recruitmentId),
-							body,
-						})
-					}
-				})
-				// 섹션 04. 프로젝트 목표 수정
-				if (projectId && data.projectGoal) {
-					const contents = data.projectGoal.split('\n').filter(Boolean)
-					if (contents.length > 0) {
-						patchProjectPurposes({ projectId, contents })
-					}
-				}
-				// 섹션 05. 주요 내용 수정
-				if (projectId && data.mainContent) {
-					const contents = data.mainContent.split('\n').filter(Boolean)
-					if (contents.length > 0) {
-						patchProjectsFunctions({ projectId, contents })
-					}
-				}
-				// 섹션 06. 서비스 사용자 수정
-				if (projectId && data.serviceUser) {
-					const contents = data.serviceUser.split('\n').filter(Boolean)
-					if (contents.length > 0) {
-						patchProjectsServiceUsers({ projectId, contents })
-					}
-				}
-				reset(data)
-				isValid = true
-			},
-			errors => {
-				// 첫 번째 에러 필드 찾기
-				const firstErrorKey = Object.keys(errors)[0] as keyof ProjectSettingsType
-
-				if (firstErrorKey) {
-					// 해당 섹션으로 스크롤
-					const errorFieldMap: Record<keyof ProjectSettingsType, string> = {
-						recruitmentStatus: 'project-basic-info',
-						selectedFields: 'section-01',
-						recruitmentInfo: 'section-02',
-						projectGoal: 'section-04',
-						mainContent: 'section-05',
-						serviceUser: 'section-06',
-						portfolioFiles: 'section-07',
-					}
-
-					const sectionId = errorFieldMap[firstErrorKey]
-					if (sectionId) {
-						const element = document.getElementById(sectionId)
-						if (element) {
-							element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-						}
-					}
-				}
-
-				// 에러 메시지 재귀적으로 추출 (섹션 02가 배열이라서 에러메시지가 제대로 안잡힘..)
-				const extractMessages = (obj: unknown): string[] => {
-					const messages: string[] = []
-					if (!obj || typeof obj !== 'object') return messages
-
-					const errorObj = obj as Record<string, unknown>
-					if (typeof errorObj.message === 'string') {
-						messages.push(errorObj.message)
-					}
-					Object.values(errorObj).forEach(value => {
-						if (value && typeof value === 'object') {
-							messages.push(...extractMessages(value))
-						}
-					})
-					return messages
-				}
-
-				const errorMessages = extractMessages(errors)
-				alert(errorMessages[0] || '필수 항목을 입력해주세요')
-				isValid = false
+			// roleField가 비어있거나 requirements가 없으면 스킵
+			if (!item.roleField || requirements.length === 0) {
+				return
 			}
-		)()
-		return isValid
+
+			const body = {
+				roleField: item.roleField.toUpperCase(),
+				capacity: item.capacity,
+				requirements,
+			}
+
+			// recruitmentId가 음수면 새로 생성된 항목이므로 POST
+			if (item.recruitmentId < 0) {
+				postRecruitment({ projectId, body })
+			} else {
+				// recruitmentId가 양수면 기존 항목이므로 PUT
+				putRecruitment({
+					projectId,
+					recruitmentId: String(item.recruitmentId),
+					body,
+				})
+			}
+		})
+
+		// 섹션 04. 프로젝트 목표 수정
+		if (data.projectGoal) {
+			const contents = data.projectGoal.split('\n').filter(Boolean)
+			if (contents.length > 0) {
+				patchProjectPurposes({ projectId, contents })
+			}
+		}
+
+		// 섹션 05. 주요 내용 수정
+		if (data.mainContent) {
+			const contents = data.mainContent.split('\n').filter(Boolean)
+			if (contents.length > 0) {
+				patchProjectsFunctions({ projectId, contents })
+			}
+		}
+
+		// 섹션 06. 서비스 사용자 수정
+		if (data.serviceUser) {
+			const contents = data.serviceUser.split('\n').filter(Boolean)
+			if (contents.length > 0) {
+				patchProjectsServiceUsers({ projectId, contents })
+			}
+		}
+
+		reset(data)
+		return true
 	}, [
-		handleSubmit,
+		getValues,
 		reset,
 		projectId,
 		selectedField,
+		patchRecruitmentStatus,
 		mutateProjectField,
 		postRecruitment,
 		putRecruitment,
@@ -373,18 +523,14 @@ const OngoingProject = () => {
 	])
 
 	// 페이지 이탈 감지 훅
-	const {
-		isBlocked,
-		handleSaveAndLeave,
-		handleCloseModal: handleCancelNavigation,
-	} = useNavigationBlocker({
+	const { isBlocked, handleLeaveWithoutSaving, handleSaveAndLeave } = useNavigationBlocker({
 		isDirty,
 		onSave: handleSave,
 	})
 
 	// (버튼 핸들러) 저장 버튼
-	const handleSaveWithModal = useCallback(async () => {
-		const success = await handleSave()
+	const handleSaveWithModal = useCallback(() => {
+		const success = handleSave()
 		if (success) {
 			open('save')
 		}
@@ -406,24 +552,65 @@ const OngoingProject = () => {
 
 	// (모달 핸들러) 모집 종료 확인
 	const handleRecruitmentEnd = () => {
-		open('recruitmentEndComplete')
+		if (!projectId) return
+
+		patchRecruitmentStatus(
+			{ projectId, status: 'CLOSED' },
+			{
+				onSuccess: () => {
+					setIsRecruitmentPublished(false)
+					setValue('recruitmentStatus', '모집 완료', { shouldDirty: false })
+					open('recruitmentEndComplete')
+				},
+				onError: error => {
+					console.error('모집 종료 실패:', error)
+				},
+			}
+		)
 	}
 
 	// (모달 핸들러) 모집 등록 확인
 	const handleRecruitmentRegister = () => {
-		setIsRecruitmentPublished(true)
-		open('recruitmentRegisterComplete')
+		if (!projectId) return
+
+		patchRecruitmentStatus(
+			{ projectId, status: 'OPEN' },
+			{
+				onSuccess: () => {
+					setIsRecruitmentPublished(true)
+					setValue('recruitmentStatus', '모집 중', { shouldDirty: false })
+					open('recruitmentRegisterComplete')
+				},
+				onError: error => {
+					console.error('모집 등록 실패:', error)
+				},
+			}
+		)
 	}
 
 	// (모달 핸들러) 매칭 현황으로 이동
 	const handleGoToMatching = () => {
 		close()
-		navigate('/matching')
+		navigate('/mypage/matching')
 	}
 
 	// (모달 핸들러) 삭제 확인
 	const handleDeleteConfirm = () => {
-		open('deleteComplete')
+		if (!projectId) return
+
+		deleteProjectMutation(projectId, {
+			onSuccess: () => {
+				open('deleteComplete')
+				setTimeout(() => {
+					close()
+					navigate('/mypage/projects')
+				}, 1500)
+			},
+			onError: error => {
+				console.error('프로젝트 삭제 실패:', error)
+				close()
+			},
+		})
 	}
 
 	// (탭바 핸들러)
@@ -494,7 +681,13 @@ const OngoingProject = () => {
 						setValue={setValue}
 						watch={watch}
 						selectedField={selectedField}
-						onSelectField={value => setSelectedField(prev => (prev === value ? '' : value))}
+						onSelectField={value =>
+							setSelectedField(prev => {
+								const newValue = prev === value ? '' : value
+								setValue('selectedFields', newValue ? [newValue] : [], { shouldDirty: true })
+								return newValue
+							})
+						}
 						projectId={projectId}
 						onRecruitmentDataChange={handleRecruitmentDataChange}
 						leaderInfo={leaderInfo}
@@ -590,7 +783,7 @@ const OngoingProject = () => {
 					message={`저장되지 않았습니다\n저장 후 페이지를 나가시겠습니까?`}
 					leftButtonMsg='나가기'
 					rightButtonMsg='저장 후 나가기'
-					onLeftClick={handleCancelNavigation}
+					onLeftClick={handleLeaveWithoutSaving}
 					onRightClick={handleSaveAndLeave}
 				/>
 			)}

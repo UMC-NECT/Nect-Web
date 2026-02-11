@@ -56,12 +56,14 @@ interface ISection02RecruitmentInfo {
 	projectId: string
 	onDataChange?: (data: RecruitmentLocalItem[]) => void
 	setValue: UseFormSetValue<ProjectSettingsType>
+	availableRoles?: string[]
 }
 
-const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISection02RecruitmentInfo) => {
+const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, availableRoles }: ISection02RecruitmentInfo) => {
 	const [openModalIndex, setOpenModalIndex] = useState<number | null>(null)
 	const [localData, setLocalData] = useState<RecruitmentLocalItem[]>([])
 	const tempIdCounter = useRef(-1)
+	const isInitialLoadRef = useRef(true)
 
 	// API - 기존 모집정보 조회
 	const { data: recruitmentsData } = useMypageProjectRecruitmentsQuery(projectId)
@@ -73,7 +75,16 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISectio
 		queueMicrotask(() => {
 			const recruitments = extractRecruitments(recruitmentsData)
 			if (recruitments.length === 0) {
-				setLocalData([])
+				// 기본 빈 입력 필드 1개 제공
+				setLocalData([{
+					recruitmentId: tempIdCounter.current--,
+					roleField: '',
+					capacity: 1,
+					requirements: '',
+				}])
+				queueMicrotask(() => {
+					isInitialLoadRef.current = false
+				})
 				return
 			}
 
@@ -85,6 +96,10 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISectio
 					requirements: Array.isArray(item.requirements) ? item.requirements.join('\n') : (item.requirements ?? ''),
 				}))
 			)
+			// 초기 API 로드 완료 후 다음 변경부터는 유저 변경으로 간주
+			queueMicrotask(() => {
+				isInitialLoadRef.current = false
+			})
 		})
 	}, [recruitmentsData])
 
@@ -92,8 +107,11 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISectio
 	useEffect(() => {
 		queueMicrotask(() => {
 			onDataChange?.(localData)
-			// RFH의 recruitmentInfo 필드를 업데이트
-			setValue('recruitmentInfo', localData, { shouldDirty: false, shouldValidate: true })
+			// 초기 로드 시에는 shouldDirty: false, 유저 변경 시에는 shouldDirty: true
+			setValue('recruitmentInfo', localData, {
+				shouldDirty: !isInitialLoadRef.current,
+				shouldValidate: true,
+			})
 		})
 	}, [localData, onDataChange, setValue])
 
@@ -156,6 +174,7 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISectio
 								handleRoleChange(index, role)
 								setOpenModalIndex(null)
 							}}
+							availableRoles={availableRoles}
 						/>
 					</div>
 

@@ -28,7 +28,8 @@ const Section02TeamHistory = ({ projectHistories }: ISection02TeamHistory) => {
 							planned_started_on={project.period.split('~')[0] ?? ''}
 							planned_ended_on={project.period.split('~')[1] ?? ''}
 							image_name=''
-							team_roles={[[]]}
+							recruitment_status=''
+							team_roles={{ roles: [] }}
 							leader={{ user_id: 0, name: '', profile_image_url: '' }}
 							team_member_projects={[[]]}
 						/>

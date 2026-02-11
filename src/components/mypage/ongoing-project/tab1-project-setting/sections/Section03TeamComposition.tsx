@@ -18,9 +18,17 @@ const Section03TeamComposition = ({ teamRoles, onEditClick }: ISection03TeamComp
 	// 카테고리별로 그룹화
 	const categoryMap: Record<string, string> = {
 		PM: '기획',
+		PLANNING: '기획',
 		Design: '디자인',
+		DESIGNER: '디자인',
+		UI_UX: '디자인',
 		Frontend: '프론트',
+		FRONTEND: '프론트',
 		Backend: '백엔드',
+		BACKEND: '백엔드',
+		AI_MACHINE_LEARNING: 'AI/ML',
+		Service: '기획',
+		SERVICE: '기획',
 	}
 
 	const categoryGroups: Record<string, TeamRole[]> = {}
@@ -33,7 +41,7 @@ const Section03TeamComposition = ({ teamRoles, onEditClick }: ISection03TeamComp
 		categoryGroups[category].push(team)
 	})
 
-	const categoryOrder = ['기획', '디자인', '프론트', '백엔드', '기타']
+	const categoryOrder = ['기획', '디자인', '프론트', '백엔드', 'AI/ML', '기타']
 	const sortedCategories = categoryOrder.filter(category => categoryGroups[category])
 	return (
 		<div className='flex flex-col gap-4 pl-5'>

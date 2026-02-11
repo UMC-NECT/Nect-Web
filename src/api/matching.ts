@@ -12,6 +12,7 @@ import type {
 	MatchingTarget,
 	MatchingStatusParam,
 } from '@/types/api/matching'
+import type { ResponseMatchingDto } from '@/types/api/mypage'
 import { api } from '@/utils/AxiosInstance'
 
 // === 매칭 요청 개수 조회 ==========================================================
@@ -35,10 +36,7 @@ export const getMatchingsReceived = async (
 
 // === 보낸 매칭 요청 조회 ==========================================================
 // 보낸(발신) 매칭 요청을 조회. target에 해당되는 매칭 요청만 조회됩니다.
-export const getMatchingsSent = async (
-	target: MatchingTarget,
-	status: MatchingStatusParam
-): Promise<ResponseMatchingListDto> => {
+export const getMatchingsSent = async (target: MatchingTarget, status: MatchingStatusParam): Promise<ResponseMatchingListDto> => {
 	const { data } = await api.get('/api/v1/matchings/sent', {
 		params: { target, status },
 	})
@@ -87,5 +85,33 @@ export const postMatchingProjectToUser = async (
 	body: RequestProjectToUserMatchingDto
 ): Promise<ResponseProjectToUserMatchingDto> => {
 	const { data } = await api.post(`/api/v1/matchings/projects/${projectId}/users/${targetUserId}`, body)
+	return data
+}
+
+// === 매칭 유저 상세 조회 ==========================================================
+// 특정 유저의 매칭 목록을 조회
+export const getMatchingUserDetail = async (
+	userId: string,
+	target: MatchingTarget,
+	status: MatchingStatusParam
+): Promise<ResponseMatchingListDto> => {
+	const { data } = await api.get(`/api/v1/matchings/users/${userId}`, {
+		params: { target, status },
+	})
+	return data
+}
+
+// === 매칭 현황 ==========================================================
+// 받은 매칭 전체 조회
+export const getMatchingsReceivedDto = async (): Promise<ResponseMatchingDto> => {
+	const { data } = await api.get('/api/v1/matchings/received/total')
+
+	return data
+}
+
+// 보낸 매칭 전체 조회
+export const getMatchingsSentDto = async (): Promise<ResponseMatchingDto> => {
+	const { data } = await api.get('/api/v1/matchings/sent/total')
+
 	return data
 }

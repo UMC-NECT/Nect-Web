@@ -55,14 +55,15 @@ const ProjectManagementView = ({
 	const recruitStatus = watch('recruitmentStatus') ?? '모집 전'
 	const openPartSettings = usePartSettingsModal(state => state.open)
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
+	const memberApiDataMap = useTeamMembersStore(state => state.memberApiDataMap)
 
 	// 파트 설정 모달 열기 핸들러
 	const handleOpenPartSettings = useCallback(() => {
-		openPartSettings(teamMembersByRole)
-	}, [openPartSettings, teamMembersByRole])
+		openPartSettings(projectId, teamMembersByRole, memberApiDataMap)
+	}, [openPartSettings, projectId, teamMembersByRole, memberApiDataMap])
 
 	const handleRecruitmentStatusChange = (status: '모집 전' | '모집 중' | '모집 완료') => {
-		setValue('recruitmentStatus', status)
+		setValue('recruitmentStatus', status, { shouldDirty: true })
 	}
 
 	return (
@@ -83,7 +84,12 @@ const ProjectManagementView = ({
 
 			{/* 섹션 02. 모집 정보 */}
 			<div id='section-02'>
-				<Section02RecruitmentInfo projectId={projectId} onDataChange={onRecruitmentDataChange} setValue={setValue} />
+				<Section02RecruitmentInfo
+						projectId={projectId}
+						onDataChange={onRecruitmentDataChange}
+						setValue={setValue}
+						availableRoles={teamRoles.map(r => r.role)}
+					/>
 			</div>
 
 			{/* 섹션 03. 팀 구성 (읽기전용) */}

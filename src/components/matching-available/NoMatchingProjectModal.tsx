@@ -12,7 +12,7 @@ const NoMatchingProjectModal = ({ isOpen, onClose }: NoMatchingProjectModalProps
             onClick={onClose}
         >
             <div 
-                className='w-[480px] h-[310px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col items-center justify-center border border-neutral-200'
+                className='w-[600px] h-[376px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col items-center justify-center border border-neutral-200'
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className='text-[20px] font-semibold text-center mb-6'>
