@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
 import { MessageItem } from './MessageItem'
 import { type ChatMessage } from '@/types/message'
 import NectChatRoom from './NectChatRoom'
 import { useQuery } from '@tanstack/react-query'
-import { getDMRooms } from '@/api/chat'
+import { getDMRooms, getChatRooms } from '@/api/chat'
+import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
+import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
 
 interface MessageDropdownProps {
 	defaultTab?: 'matching' | 'team'
@@ -12,16 +14,40 @@ interface MessageDropdownProps {
 
 const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const [activeTab, setActiveTab] = useState<'matching' | 'team'>(defaultTab)
-	const [selectedFilter, setSelectedFilter] = useState<'nect' | 'triple'>('nect')
 	const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null)
 	const [showChatRoom, setShowChatRoom] = useState(false)
 	const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null)
+	
+	// 프로젝트 목록 조회
+	const projectData = useGetProjectUsers()
+	
+	// 필터링된 프로젝트 목록 (최대 2개)
+	const filteredProjects = useFilteredWorkspaceItems(projectData, { maxCount: 2 })
+	
+	// 선택된 프로젝트 ID (첫 번째 프로젝트를 기본값으로)
+	const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(
+		filteredProjects[0]?.projectId
+	)
+	
+	// 프로젝트 목록이 변경되면 첫 번째 프로젝트를 기본 선택
+	useEffect(() => {
+		if (filteredProjects.length > 0 && !selectedProjectId) {
+			setSelectedProjectId(filteredProjects[0].projectId)
+		}
+	}, [filteredProjects, selectedProjectId])
 
 	// DM 채팅방 목록 조회 (매칭 요청 탭)
 	const { data: dmRoomsData, isLoading: isLoadingDM } = useQuery({
 		queryKey: ['dmRooms'],
 		queryFn: () => getDMRooms({ size: 20 }),
 		enabled: activeTab === 'matching',
+	})
+
+	// 채팅방 목록 조회 (팀 작업실 탭)
+	const { data: chatRoomsData, isLoading: isLoadingTeam } = useQuery({
+		queryKey: ['chatRooms', selectedProjectId],
+		queryFn: () => getChatRooms(selectedProjectId!),
+		enabled: activeTab === 'team' && !!selectedProjectId,
 	})
 
 	// DM 채팅방 데이터를 ChatMessage 형식으로 변환
@@ -40,70 +66,34 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 		}))
 	}, [dmRoomsData])
 
-	const teamMessages: ChatMessage[] = [
-		{
-			id: 1,
-			senderName: '이방토',
-			content: '넵 확인했습니다!',
-			time: '00:00',
-			isRead: false,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Design',
-			unreadCount: 8,
-			isGroup: false,
-		},
-		{
-			id: 2,
-			senderName: 'Nect 전체',
-			content: '컴퍼넌트 수정사항 체크해주세요 ~',
-			time: '00:00',
-			isRead: false,
-			participants: ['https://placehold.co/20x20', 'https://placehold.co/20x20'],
-			memberCount: 14,
-			unreadCount: 8,
-			isGroup: true,
-		},
-		{
-			id: 3,
-			senderName: '숀',
-			content: '수정해서 피그마에 올려두었습니당',
-			time: '00:00',
-			isRead: true,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Frontend',
-			isGroup: false,
-		},
-		{
-			id: 4,
-			senderName: '세인트',
-			content: '마지막으로 보낸 메세지',
-			time: '1월 27일',
-			isRead: true,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Part',
-			isGroup: false,
-		},
-		{
-			id: 5,
-			senderName: '웬디',
-			content: '마지막으로 보낸 메세지',
-			time: '1월 27일',
-			isRead: true,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Part',
-			isGroup: false,
-		},
-		{
-			id: 6,
-			senderName: '웬디',
-			content: '마지막으로 보낸 메세지',
-			time: '1월 27일',
-			isRead: true,
-			profileImage: 'https://placehold.co/44x44',
-			role: 'Part',
-			isGroup: false,
-		},
-	]
+	// 채팅방 목록을 ChatMessage 형식으로 변환 (팀 작업실 탭)
+	const teamMessages: ChatMessage[] = useMemo(() => {
+		if (!chatRoomsData?.body) return []
+		
+		return chatRoomsData.body.map((room) => {
+			const roomId = (room as any).room_id || room.roomId
+			const roomName = (room as any).room_name || room.roomName
+			const lastMessage = (room as any).last_message || room.lastMessage
+			const lastMessageTime = (room as any).last_message_time || room.lastMessageTime
+			const unreadCount = (room as any).unread_count || room.unreadCount
+			
+			return {
+				id: roomId,
+				senderName: roomName || '',
+				content: lastMessage || '',
+				time: lastMessageTime
+					? new Date(lastMessageTime).toLocaleTimeString('ko-KR', {
+							hour: '2-digit',
+							minute: '2-digit',
+						})
+					: '',
+				isRead: unreadCount === 0,
+				memberCount: undefined,
+				unreadCount: unreadCount || 0,
+				isGroup: true,
+			}
+		})
+	}, [chatRoomsData])
 
 	// 채팅방이 열려있으면 채팅방만 표시
 	if (showChatRoom && selectedMessage) {
@@ -143,29 +133,22 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 					/>
 				</div>
 
-				{/* 필터 버튼 - 팀 작업실 탭에서만 표시 */}
-				{activeTab === 'team' && (
+				{/* 필터 버튼 - 팀 작업실 탭에서만 표시, 프로젝트가 있을 때만 표시 */}
+				{activeTab === 'team' && filteredProjects.length > 0 && (
 					<div className='flex gap-1 items-center relative shrink-0 w-[340px]'>
-						<button
-							onClick={() => setSelectedFilter('nect')}
-							className={`px-[14px] py-1 body-1 font-medium rounded-100 transition-colors ${
-								selectedFilter === 'nect'
-									? 'bg-primary-150-light border-[1.5px] border-primary-200-light text-primary-500-normal'
-									: 'bg-neutral-000 border border-neutral-200 text-neutral-900'
-							}`}
-						>
-							넥트
-						</button>
-						<button
-							onClick={() => setSelectedFilter('triple')}
-							className={`px-[14px] py-1 body-1 font-medium rounded-100 transition-colors ${
-								selectedFilter === 'triple'
-									? 'bg-primary-150-light border-[1.5px] border-primary-200-light text-primary-500-normal'
-									: 'bg-neutral-000 border border-neutral-200 text-neutral-900'
-							}`}
-						>
-							트리플
-						</button>
+						{filteredProjects.map((project) => (
+							<button
+								key={project.projectId}
+								onClick={() => setSelectedProjectId(project.projectId)}
+								className={`px-[14px] py-1 body-1 font-medium rounded-100 transition-colors ${
+									selectedProjectId === project.projectId
+										? 'bg-primary-150-light border-[1.5px] border-primary-200-light text-primary-500-normal'
+										: 'bg-neutral-000 border border-neutral-200 text-neutral-900'
+								}`}
+							>
+								{project.name}
+							</button>
+						))}
 					</div>
 				)}
 			</div>
@@ -196,18 +179,28 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 						))
 					)
 				) : (
-					teamMessages.map(message => (
-						<MessageItem
-							key={message.id}
-							message={message}
-							isSelected={selectedMessageId === message.id}
-							onClick={() => {
-								setSelectedMessageId(message.id)
-								setSelectedMessage(message)
-								setShowChatRoom(true)
-							}}
-						/>
-					))
+					isLoadingTeam ? (
+						<div className='flex items-center justify-center w-full py-8 text-neutral-500'>
+							메시지를 불러오는 중...
+						</div>
+					) : teamMessages.length === 0 ? (
+						<div className='flex items-center justify-center w-full py-8 text-neutral-500'>
+							메시지가 없습니다.
+						</div>
+					) : (
+						teamMessages.map(message => (
+							<MessageItem
+								key={message.id}
+								message={message}
+								isSelected={selectedMessageId === message.id}
+								onClick={() => {
+									setSelectedMessageId(message.id)
+									setSelectedMessage(message)
+									setShowChatRoom(true)
+								}}
+							/>
+						))
+					)
 				)}
 			</div>
 
