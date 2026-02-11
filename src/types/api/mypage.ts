@@ -283,11 +283,6 @@ export type ResponseProjectPlanFileDto = CommonResponse<{
 }>
 
 // === 모든 프로젝트 ==========================================================
-// (모든 프로젝트) 프로젝트 역할 형식
-export type MypageProjectRoleType = {
-	role_field: RoleType
-	required_count: number
-}
 // (모든 프로젝트) 프로젝트 형식
 export type MypageProjectType = {
 	project_id: number
@@ -296,7 +291,10 @@ export type MypageProjectType = {
 	planned_started_on: string
 	planned_ended_on: string
 	image_name: string
-	team_roles: [MypageProjectRoleType[]]
+	recruitment_status: string
+	team_roles: {
+		roles: TeamRoleItem[]
+	}
 	leader: {
 		user_id: number
 		name: string

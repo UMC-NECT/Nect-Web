@@ -29,6 +29,7 @@ import {
 	postTeamRoleCreate,
 	patchTeamRoleUpdate,
 	postProjectUsersReorder,
+	patchProjectRecruitmentStatus,
 } from '@/api/mypage'
 import { QUERY_KEY } from '@/constants/key'
 import type {
@@ -104,6 +105,19 @@ export const useProfileAnalysis = () => {
 }
 
 // === 진행중인 프로젝트 (프로젝트 설정) ==========================================================
+// 프로젝트 모집 상태 변경
+export const usePatchProjectRecruitmentStatusMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ projectId, status }: { projectId: string; status: string }) =>
+			patchProjectRecruitmentStatus(projectId, status),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+		},
+	})
+}
+
 // 섹션 01. 프로젝트 분야 - 조회
 export const useMypageProjectFieldQuery = (projectId: string) => {
 	return useQuery({

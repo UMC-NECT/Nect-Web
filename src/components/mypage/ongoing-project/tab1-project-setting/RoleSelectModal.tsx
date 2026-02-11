@@ -8,11 +8,17 @@ interface IRoleSelectModal {
 	isOpen: boolean
 	onClose: () => void
 	onSelect: (part: RoleType) => void
+	availableRoles?: string[]
 }
 
-const RoleSelectModal = ({ isOpen, onClose, onSelect }: IRoleSelectModal) => {
+const RoleSelectModal = ({ isOpen, onClose, onSelect, availableRoles }: IRoleSelectModal) => {
 	const modalRef = useRef<HTMLDivElement>(null)
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
+
+	// availableRoles가 있으면 우선 사용, 없으면 Zustand 스토어 폴백
+	const roles = availableRoles && availableRoles.length > 0
+		? availableRoles
+		: teamMembersByRole.map(item => item.role)
 
 	// 모달 바깥 클릭 시 닫기
 	useClickOutside(modalRef, onClose, isOpen)
@@ -35,12 +41,12 @@ const RoleSelectModal = ({ isOpen, onClose, onSelect }: IRoleSelectModal) => {
 
 				{/* 파트 목록 */}
 				<div className='flex flex-col gap-2.5 pl-3.5 pr-2 pt-2'>
-					{teamMembersByRole.map(item => (
+					{roles.map(role => (
 						<RoleTag
-							key={item.role}
-							role={item.role as RoleType}
+							key={role}
+							role={role as RoleType}
 							showTotal={false}
-							onClick={() => handlePartClick(item.role as RoleType)}
+							onClick={() => handlePartClick(role as RoleType)}
 							className='cursor-pointer hover:opacity-80 transition-opacity'
 						/>
 					))}

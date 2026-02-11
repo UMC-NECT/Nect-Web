@@ -1,12 +1,15 @@
 import { create } from 'zustand'
 import type { TeamMembersByRole, TeamMember, ProjectHistory } from '@/types/mypage/ongoindProject'
+import type { TeamMemberApiData } from './usePartSettingsModal'
 
 interface TeamMembersState {
 	teamMembersByRole: TeamMembersByRole[]
 	teamMembersHistory: ProjectHistory[]
+	memberApiDataMap: Map<string, TeamMemberApiData>
 
 	// 팀원 관련
 	setTeamMembersByRole: (data: TeamMembersByRole[]) => void
+	setMemberApiDataMap: (data: Map<string, TeamMemberApiData>) => void
 	addMember: (role: string, member: TeamMember) => void
 	removeMember: (role: string, memberId: string) => void
 	updateMember: (role: string, memberId: string, updates: Partial<TeamMember>) => void
@@ -27,9 +30,12 @@ export const useTeamMembersStore = create<TeamMembersState>(set => ({
 	teamMembersByRole: [],
 	// 초기 팀원 히스토리 데이터 (API에서 로드)
 	teamMembersHistory: [],
+	// API 호출에 필요한 원본 데이터
+	memberApiDataMap: new Map(),
 
 	// 초기 세팅
 	setTeamMembersByRole: data => set({ teamMembersByRole: data }),
+	setMemberApiDataMap: data => set({ memberApiDataMap: data }),
 
 	// (팀원) 추가
 	addMember: (role, member) =>

@@ -290,6 +290,13 @@ export const postProjectUsersReorder = async (
 	return data
 }
 
+// 프로젝트 모집 상태 변경
+export const patchProjectRecruitmentStatus = async (projectId: string, status: string): Promise<CommonResponse> => {
+	const { data } = await api.patch(`/api/v1/mypage/projects/${projectId}`, null, { params: { status } })
+
+	return data
+}
+
 // === 모든 프로젝트 ==========================================================
 // (모든 프로젝트) 현재 참여중인 프로젝트 조회
 export const getMypageProjects = async (): Promise<ResponseProjectUsers> => {

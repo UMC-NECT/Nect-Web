@@ -20,8 +20,8 @@ export const useOngoingProjectForm = () => {
 		mode: 'onChange',
 		shouldFocusError: true,
 		defaultValues: {
-			// 모집 여부 (모집전/모집중/모집완료)
-			recruitmentStatus: MOCK_PROJECT_DATA.recruitmentStatus,
+			// 모집 여부 (API에서 초기화됨)
+			recruitmentStatus: '모집 전',
 			// 섹션 01. 프로젝트 분야
 			selectedFields: MOCK_PROJECT_DATA.selectedFields,
 			// 섹션 02. 모집 정보 및 필수 스택

@@ -56,9 +56,10 @@ interface ISection02RecruitmentInfo {
 	projectId: string
 	onDataChange?: (data: RecruitmentLocalItem[]) => void
 	setValue: UseFormSetValue<ProjectSettingsType>
+	availableRoles?: string[]
 }
 
-const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISection02RecruitmentInfo) => {
+const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, availableRoles }: ISection02RecruitmentInfo) => {
 	const [openModalIndex, setOpenModalIndex] = useState<number | null>(null)
 	const [localData, setLocalData] = useState<RecruitmentLocalItem[]>([])
 	const tempIdCounter = useRef(-1)
@@ -74,7 +75,16 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISectio
 		queueMicrotask(() => {
 			const recruitments = extractRecruitments(recruitmentsData)
 			if (recruitments.length === 0) {
-				setLocalData([])
+				// 기본 빈 입력 필드 1개 제공
+				setLocalData([{
+					recruitmentId: tempIdCounter.current--,
+					roleField: '',
+					capacity: 1,
+					requirements: '',
+				}])
+				queueMicrotask(() => {
+					isInitialLoadRef.current = false
+				})
 				return
 			}
 
@@ -164,6 +174,7 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue }: ISectio
 								handleRoleChange(index, role)
 								setOpenModalIndex(null)
 							}}
+							availableRoles={availableRoles}
 						/>
 					</div>
 
