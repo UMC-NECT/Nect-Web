@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
-import { MessageItem } from './MessageItem'
 import { ChatMessageItem } from './ChatMessageItem'
 import { type ChatMessage } from '@/types/message'
 import NectChatRoom from './NectChatRoom'
@@ -17,7 +16,6 @@ interface MessageDropdownProps {
 
 const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const [activeTab, setActiveTab] = useState<'matching' | 'team'>(defaultTab)
-	const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null)
 	const [showChatRoom, setShowChatRoom] = useState(false)
 	const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null)
 	const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
@@ -27,7 +25,7 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const projectData = useGetProjectUsers()
 	
 	// 필터링된 프로젝트 목록 (최대 2개)
-	const filteredProjects = useFilteredWorkspaceItems(projectData, { maxCount: 3 })
+	const filteredProjects = useFilteredWorkspaceItems(projectData, { maxCount: 2 })
 	
 	// 선택된 프로젝트 ID (첫 번째 프로젝트를 기본값으로)
 	const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(undefined)
@@ -200,13 +198,13 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 							메시지가 없습니다.
 						</div>
 					) : (
-						dmMessages.map(message => (
-							<MessageItem
+						dmMessages.map((message, index) => (
+							<ChatMessageItem
 								key={message.id}
 								message={message}
-								isSelected={selectedMessageId === message.id}
+								showDivider={index === 0}
+								projectId={selectedProjectId}
 								onClick={() => {
-									setSelectedMessageId(message.id)
 									setSelectedMessage(message)
 									setShowChatRoom(true)
 								}}
