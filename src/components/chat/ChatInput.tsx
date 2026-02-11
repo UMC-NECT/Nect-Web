@@ -5,9 +5,10 @@ interface ChatInputProps {
 	onSend?: (message: string) => void
 	onAttach?: () => void
 	placeholder?: string
+	showAttach?: boolean // 파일 첨부 아이콘 표시 여부
 }
 
-const ChatInput = ({ onSend, onAttach, placeholder = '메세지를 입력하세요' }: ChatInputProps) => {
+const ChatInput = ({ onSend, onAttach, placeholder = '메세지를 입력하세요', showAttach = true }: ChatInputProps) => {
 	const [message, setMessage] = useState('')
 	const isActive = message.trim().length > 0
 
@@ -42,14 +43,16 @@ const ChatInput = ({ onSend, onAttach, placeholder = '메세지를 입력하세�
 				/>
 
 				{/* 하단 버튼 영역 */}
-				<div className="flex items-center justify-between">
+				<div className={`flex items-center ${showAttach ? 'justify-between' : 'justify-end'}`}>
 					{/* 문서 첨부 버튼 */}
-					<button
-						onClick={onAttach}
-						className="w-4 h-4 flex items-center justify-center group"
-					>
-						<AttachmentIcon className="w-4 h-4 text-neutral-300 group-hover:text-neutral-700 transition-colors" />
-					</button>
+					{showAttach && (
+						<button
+							onClick={onAttach}
+							className="w-4 h-4 flex items-center justify-center group"
+						>
+							<AttachmentIcon className="w-4 h-4 text-neutral-300 group-hover:text-neutral-700 transition-colors" />
+						</button>
+					)}
 
 					{/* 보내기 버튼 */}
 					<button

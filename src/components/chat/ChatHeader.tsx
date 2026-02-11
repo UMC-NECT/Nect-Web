@@ -19,6 +19,8 @@ interface ChatHeaderProps {
 	role?: string
 	onBack?: () => void
 	onMenu?: () => void
+	showSearch?: boolean // 검색 버튼 표시 여부 (room type)
+	showMenu?: boolean // 메뉴 버튼 표시 여부 (room type)
 	// Search type props
 	onClose?: () => void
 	onSearch?: (query: string) => void
@@ -36,6 +38,8 @@ const ChatHeader = ({
 	role,
 	onBack,
 	onMenu,
+	showSearch = true, // 기본값은 true
+	showMenu = true, // 기본값은 true
 	onClose,
 	onSearch,
 	onSearchClick,
@@ -125,22 +129,28 @@ const ChatHeader = ({
 					</div>
 
 					{/* 오른쪽: 검색 + 메뉴 버튼 */}
-					<div className="flex justify-start items-center gap-1">
-						{/* 검색 버튼 */}
-						<button
-							onClick={onSearchClick}
-							className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
-						>
-							<SearchIcon className="w-7 h-7 text-neutral-700" />
-						</button>
-						{/* 메뉴 버튼 */}
-						<button
-							onClick={onMenu}
-							className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
-						>
-							<MenuIcon className="w-7 h-7 text-neutral-700" />
-						</button>
-					</div>
+					{(showSearch || showMenu) && (
+						<div className="flex justify-start items-center gap-1">
+							{/* 검색 버튼 */}
+							{showSearch && (
+								<button
+									onClick={onSearchClick}
+									className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
+								>
+									<SearchIcon className="w-7 h-7 text-neutral-700" />
+								</button>
+							)}
+							{/* 메뉴 버튼 */}
+							{showMenu && (
+								<button
+									onClick={onMenu}
+									className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
+								>
+									<MenuIcon className="w-7 h-7 text-neutral-700" />
+								</button>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 		)

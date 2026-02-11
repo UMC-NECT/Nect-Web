@@ -284,8 +284,8 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 					roomName={roomName}
 					memberCount={memberCount}
 					onBack={onClose}
-					onSearchClick={() => setIsSearchMode(true)}
-					onMenu={() => setIsMenuOpen(true)}
+					showSearch={false} // DM 채팅방에서는 검색 버튼 숨김
+					showMenu={false} // DM 채팅방에서는 메뉴 버튼 숨김
 					onClose={() => setIsSearchMode(false)}
 					onSearch={(query) => {
 						console.log('검색:', query)
@@ -375,9 +375,7 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 								alert('메시지 전송에 실패했습니다.')
 							}
 						}}
-						onAttach={() => {
-							console.log('파일 첨부')
-						}}
+						showAttach={false} // DM 채팅방에서는 파일 첨부 아이콘 숨김
 					/>
 				</div>
 			</div>
