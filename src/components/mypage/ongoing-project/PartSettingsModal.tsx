@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { DndContext, closestCenter, useDraggable, useDroppable } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { TeamMembersByRole, TeamMember } from '@/types/mypage/ongoindProject'
@@ -8,6 +8,13 @@ import HamburgerIcon from '@/assets/icons/common/hamburger.svg?react'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
+import {
+	usePatchMemberFieldMutation,
+	usePostProjectUsersReorderMutation,
+	usePostTeamRoleCreateMutation,
+} from '@/hooks/mypage/useMypageApi'
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEY } from '@/constants/key'
 
 // 드래그 가능한 멤버 카드 컴포넌트
 const DraggableMemberCard = ({ member, index, role }: { member: TeamMember; index: number; role: string }) => {
@@ -200,13 +207,29 @@ const DroppablePartSection = ({
 }
 
 const PartSettingsModal = () => {
-	const { isOpen, teamMembersByRole, close } = usePartSettingsModal()
+	const { isOpen, projectId, teamMembersByRole, originalTeamMembersByRole, memberApiDataMap, close } = usePartSettingsModal()
 	const { setTeamMembersByRole } = useTeamMembersStore()
-	const [parts, setParts] = useState<TeamMembersByRole[]>(teamMembersByRole)
 	const modalRef = useRef<HTMLDivElement>(null)
+
+	// API mutation hooks
+	const patchMemberFieldMutation = usePatchMemberFieldMutation()
+	const postProjectUsersReorderMutation = usePostProjectUsersReorderMutation()
+	const postTeamRoleCreateMutation = usePostTeamRoleCreateMutation()
+	const queryClient = useQueryClient()
+
+	// 모달이 열릴 때 초기화되는 parts 상태
+	const [parts, setParts] = useState<TeamMembersByRole[]>([])
 
 	// 모달 바깥 클릭 시 닫기
 	useClickOutside(modalRef, close, isOpen)
+
+	// 모달이 열릴 때 parts 초기화
+	useEffect(() => {
+		if (isOpen && teamMembersByRole.length > 0) {
+			setParts(JSON.parse(JSON.stringify(teamMembersByRole)))
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen]) // teamMembersByRole을 의존성에서 제거하여 무한 루프 방지
 
 	// 모달이 열리지 않은 경우 렌더링하지 않음
 	if (!isOpen) return null
@@ -223,9 +246,160 @@ const PartSettingsModal = () => {
 	}
 
 	// (버튼 핸들러) 저장
-	const handleSave = () => {
-		setTeamMembersByRole(parts)
-		close()
+	const handleSave = async () => {
+		console.log('=== 파트 설정 저장 시작 ===')
+		console.log('projectId:', projectId)
+		console.log('parts:', parts)
+		console.log('originalTeamMembersByRole:', originalTeamMembersByRole)
+		console.log('memberApiDataMap:', memberApiDataMap)
+
+		try {
+			// 0. 새 파트 생성 API 호출
+			const originalRoles = new Set(originalTeamMembersByRole.map(r => r.role))
+			const newParts = parts.filter(p => !originalRoles.has(p.role))
+
+			console.log('새로 추가된 파트:', newParts)
+
+			for (const newPart of newParts) {
+				const requestBody = {
+					role_field: 'CUSTOM',
+					custom_role_field_name: newPart.role,
+					required_count: Math.max(newPart.targetCount || 1, 1), // 최소 1명
+				}
+				console.log('새 파트 생성 API 호출 - URL:', `/api/v1/mypage/projects/${projectId}/team-roles`)
+				console.log('새 파트 생성 API 호출 - Body:', requestBody)
+				try {
+					const response = await postTeamRoleCreateMutation.mutateAsync({
+						projectId,
+						body: requestBody,
+					})
+					console.log('새 파트 생성 성공 - Response:', response)
+				} catch (err) {
+					console.error('새 파트 생성 API 오류 - 전체 에러:', err)
+					if (err && typeof err === 'object' && 'response' in err) {
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						const axiosError = err as any
+						console.error('응답 상태:', axiosError.response?.status)
+						console.error('응답 데이터:', axiosError.response?.data)
+					}
+					throw err
+				}
+			}
+
+			// 1. 멤버 파트 변경사항 감지 및 API 호출
+			const memberFieldChanges: Array<{
+				userId: string
+				oldPart: string
+				newPart: string
+				newRoleField: string
+				customField: string
+			}> = []
+
+			// 원본 데이터에서 userId -> part 매핑 생성
+			const originalMemberPartMap = new Map<string, string>()
+			for (const role of originalTeamMembersByRole) {
+				for (const member of role.members) {
+					originalMemberPartMap.set(member.id, role.role)
+				}
+			}
+
+			// 변경된 데이터에서 변경사항 확인
+			for (const role of parts) {
+				for (const member of role.members) {
+					const originalPart = originalMemberPartMap.get(member.id)
+					if (originalPart && originalPart !== role.role) {
+						const apiData = memberApiDataMap.get(member.id)
+						if (!apiData) {
+							console.warn('API 데이터를 찾을 수 없음:', member.id)
+							continue
+						}
+
+						// 새로운 파트의 첫 번째 멤버의 roleField 찾기
+						const firstMemberOfNewPart = role.members[0]
+						const firstMemberApiData = memberApiDataMap.get(firstMemberOfNewPart.id)
+						const newRoleField = firstMemberApiData?.roleField || 'CUSTOM'
+
+						memberFieldChanges.push({
+							userId: member.id,
+							oldPart: originalPart,
+							newPart: role.role,
+							newRoleField,
+							customField: role.role !== newRoleField ? role.role : '',
+						})
+					}
+				}
+			}
+
+			console.log('멤버 파트 변경사항:', memberFieldChanges)
+
+			// 멤버 파트 변경 API 호출
+			for (const change of memberFieldChanges) {
+				console.log('파트 변경 API 호출:', change)
+				try {
+					await patchMemberFieldMutation.mutateAsync({
+						projectUserId: change.userId,
+						body: {
+							field: change.newRoleField,
+							...(change.customField && { customField: change.customField }),
+						},
+					})
+					console.log('파트 변경 성공:', change.userId)
+				} catch (err) {
+					console.error('파트 변경 API 오류:', err)
+					throw err
+				}
+			}
+
+			// 2. 멤버 순서 변경 API 호출 (모든 파트에 대해)
+			const reorderUpdates = []
+			for (const role of parts) {
+				if (role.members.length === 0) continue
+
+				const orderedUserIds = role.members.map(m => parseInt(m.id, 10))
+				const firstMemberApiData = memberApiDataMap.get(role.members[0].id)
+
+				if (firstMemberApiData) {
+					reorderUpdates.push({
+						roleField: firstMemberApiData.roleField,
+						customRoleField: firstMemberApiData.customRoleFieldName,
+						orderedUserIds,
+					})
+				}
+			}
+
+			console.log('순서 변경 데이터:', reorderUpdates)
+
+			if (reorderUpdates.length > 0) {
+				try {
+					await postProjectUsersReorderMutation.mutateAsync({
+						projectId,
+						body: { updates: reorderUpdates },
+					})
+					console.log('순서 변경 성공')
+				} catch (err) {
+					console.error('순서 변경 API 오류:', err)
+					throw err
+				}
+			}
+
+			// 3. Zustand 스토어 업데이트
+			setTeamMembersByRole(parts)
+
+			// 4. 쿼리 무효화하여 최신 데이터 다시 가져오기
+			await queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
+
+			console.log('=== 파트 설정 저장 완료 ===')
+
+			// 5. 모달 닫기
+			close()
+		} catch (error) {
+			console.error('파트 설정 저장 중 오류 발생:', error)
+			if (error instanceof Error) {
+				alert(`저장 중 오류가 발생했습니다: ${error.message}`)
+			} else {
+				alert('저장 중 오류가 발생했습니다.')
+			}
+		}
 	}
 
 	// (팀원 드래그 핸들러) 파트 변경

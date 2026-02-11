@@ -12,7 +12,7 @@ import {
 } from '@/mocks/ongoingProjectData'
 import type { PortfolioFileType } from '@/utils/schemas/projectSchema'
 
-const INITIAL_PORTFOLIOS: PortfolioFileType[] = [{ id: 1, title: '테스트제목', link: '테스트링크', isCompleted: false }]
+const INITIAL_PORTFOLIOS: PortfolioFileType[] = [{ id: -1, title: '', link: '', fileUrl: '', isCompleted: false }]
 
 export const useOngoingProjectForm = () => {
 	const methods = useForm<ProjectSettingsType>({
@@ -20,8 +20,8 @@ export const useOngoingProjectForm = () => {
 		mode: 'onChange',
 		shouldFocusError: true,
 		defaultValues: {
-			// 모집 여부 (모집전/모집중/모집완료)
-			recruitmentStatus: MOCK_PROJECT_DATA.recruitmentStatus,
+			// 모집 여부 (API에서 초기화됨)
+			recruitmentStatus: '모집 전',
 			// 섹션 01. 프로젝트 분야
 			selectedFields: MOCK_PROJECT_DATA.selectedFields,
 			// 섹션 02. 모집 정보 및 필수 스택

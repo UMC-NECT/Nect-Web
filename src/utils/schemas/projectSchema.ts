@@ -14,6 +14,7 @@ const portfolioFileSchema = z.object({
 	id: z.number(),
 	title: z.string().optional(),
 	link: z.string().optional(),
+	fileUrl: z.string().optional(),
 	file: z.any().optional(),
 	planFileType: z.enum(['FILE', 'LINK']).optional(),
 	fileName: z.string().optional(),
