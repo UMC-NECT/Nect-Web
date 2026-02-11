@@ -1,4 +1,5 @@
 import type { ProjectDetailDto } from '@/types/api/project';
+import type { TeamRole, TeamRoleField } from '@/types/api/project/detail';
 import type { RecruitmentDto } from '@/types/api/project/recruitment';
 import { useProjectRecruitments } from '@/hooks/queries/project';
 
@@ -30,9 +31,19 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
 
     const daysLeft = calculateDaysLeft(projectData.defaultInfo.planned_ended_on);
 
-    const teamRoleList = Array.isArray(projectData.defaultInfo.team_roles)
-        ? projectData.defaultInfo.team_roles
-        : projectData.defaultInfo.team_roles?.roles || [];
+    const isTeamRole = (role: unknown): role is TeamRole => {
+        if (!role || typeof role !== 'object') return false;
+        return 'role' in role && 'count' in role && 'role_fields' in role;
+    };
+
+    const isTeamRoleArray = (value: unknown): value is TeamRole[] => {
+        return Array.isArray(value) && value.every(isTeamRole);
+    };
+
+    const rawTeamRoles = projectData.defaultInfo.team_roles;
+    const teamRoleList: TeamRole[] = Array.isArray(rawTeamRoles)
+        ? (isTeamRoleArray(rawTeamRoles) ? rawTeamRoles : [])
+        : rawTeamRoles?.roles || [];
 
     const roleLabelMap: Record<string, string> = {
         PLANNER: '기획자',
@@ -196,8 +207,8 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                                 <p className='w-[50px] text-[16px]'>{role.count}명</p>
                                 <div className='flex gap-2 flex-wrap'>
                                     {(role.role_fields || [])
-                                        .filter((field) => field.count > 0)
-                                        .map((field) => (
+                                        .filter((field: TeamRoleField) => field.count > 0)
+                                        .map((field: TeamRoleField) => (
                                             <span
                                                 key={`${role.role}-${field.role_field}`}
                                                 className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(getRoleFieldStyleKey(field.role_field))} text-neutral-700 rounded-[6px] text-[14px] font-medium`}

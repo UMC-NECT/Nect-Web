@@ -19,7 +19,7 @@ const NoMatchingProjectModal = ({ isOpen, onClose }: NoMatchingProjectModalProps
                     매칭 요청 할 프로젝트가 없습니다
                 </h2>
                 <p className='text-[16px] text-neutral-600 text-center mb-10'>
-                    팀원 매칭 신청은 프로젝트가 모집 중인 경우에만 가능합니다
+                    팀원 매칭 신청은 프로젝트가 <br/>모집 중인 경우에만 가능합니다
                 </p>
                 <button
                     onClick={onClose}
