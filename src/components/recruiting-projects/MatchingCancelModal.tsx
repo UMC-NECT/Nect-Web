@@ -4,7 +4,7 @@ interface MatchingCancelModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
-    matchingId: string;
+    matchingId?: string; // optional로 변경
 }
 
 const MatchingCancelModal = ({ isOpen, onClose, onConfirm }: MatchingCancelModalProps) => {
@@ -44,8 +44,6 @@ const MatchingCancelModal = ({ isOpen, onClose, onConfirm }: MatchingCancelModal
         try {
             await cancelMutation.mutateAsync(String(matchingId));
             
-            // React Query가 성공으로 처리했다면 실제로 성공한 것
-            alert('✅ 매칭이 성공적으로 취소되었습니다!');
             onConfirm();
             onClose();
             
@@ -57,7 +55,6 @@ const MatchingCancelModal = ({ isOpen, onClose, onConfirm }: MatchingCancelModal
                 };
                 
                 if (axiosError.response?.status === 400) {
-                    // 400 에러지만 취소가 처리되었을 가능성
                     alert(
                         '✅ 매칭 취소가 처리되었습니다!\n\n' +
                         '(서버 응답 코드 이슈가 있지만 실제 취소는 완료됨)'

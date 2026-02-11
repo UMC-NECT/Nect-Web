@@ -233,7 +233,6 @@ const RecruitingProjectsPage = () => {
                     </div>
                 </div>
 
-                {/* 모달들 생략 (기존과 동일) */}
                 <MatchingRequestModal 
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
@@ -285,6 +284,7 @@ const RecruitingProjectsPage = () => {
                     isOpen={isCancelModalOpen}
                     onClose={() => setIsCancelModalOpen(false)}
                     onConfirm={handleCancelConfirm}
+                    matchingId="" // 빌드 에러 수정을 위해 추가
                 />
 
                 <MatchingBlockedModal 

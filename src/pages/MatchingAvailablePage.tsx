@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import hamburger from '@/assets/icons/common/hamburger-bar.svg';
@@ -16,15 +16,18 @@ import MemberProfileHeader from '@/components/recruiting-projects/MemberProfileH
 import MemberProfileDetail from '@/components/recruiting-projects/MemberProfileDetail';
 import { useMemberDetail } from '@/hooks/queries/member/useMemberDetail';
 import { useMatchingsSentQuery } from '@/hooks/mypage/useMatchingApi';
+import { useProjectRecruitments } from '@/hooks/queries/project';
 
 const MatchingAvailablePage = () => {
     const { userId } = useParams<{ userId: string }>();
     const { data: memberData, isLoading, error } = useMemberDetail(Number(userId));
     
-    // 보낸 매칭 목록 조회 (PENDING 상태)
     const { data: sentMatchingsData } = useMatchingsSentQuery('project', 'pending');
     
-    const [currentMatchingId, setCurrentMatchingId] = useState<string>('');
+    const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+    const [selectedField, setSelectedField] = useState<string>('');
+
+    const { data: recruitments } = useProjectRecruitments(selectedProjectId || 0);
 
     const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
     const [isSelectMultipleModalOpen, setIsSelectMultipleModalOpen] = useState(false);
@@ -36,35 +39,16 @@ const MatchingAvailablePage = () => {
     const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
     
     const [matchingCount, setMatchingCount] = useState(0);
-    const [isMatching, setIsMatching] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
 
-    // 실제 매칭 ID 찾기
-    useEffect(() => {
-        console.log('📊 sentMatchingsData 확인:', sentMatchingsData);
-        
-        if (sentMatchingsData?.body?.projectMatchings) {
-            console.log('📝 매칭 목록:', sentMatchingsData.body.projectMatchings);
-            
-            const activeMatching = sentMatchingsData.body.projectMatchings.find(
-                matching => matching.matchingStatus === 'PENDING'
-            );
-            
-            console.log('🔍 찾은 활성 매칭:', activeMatching);
-            
-            if (activeMatching?.matchingId) {
-                const matchingIdString = String(activeMatching.matchingId);
-                console.log('🎯 매칭 ID 설정:', matchingIdString);
-                
-                
-                console.log('✅ 매칭 상태 업데이트 완료');
-            } else {
-                console.log('❌ 활성 매칭을 찾을 수 없음');
-            }
-        } else {
-            console.log('📭 매칭 데이터가 없음');
-        }
+    const currentMatchingId = useMemo(() => {
+        const activeMatching = sentMatchingsData?.body?.projectMatchings?.find(
+            matching => matching.matchingStatus === 'PENDING'
+        );
+        return activeMatching?.matchingId ? String(activeMatching.matchingId) : '';
     }, [sentMatchingsData]);
+
+    const isMatching = useMemo(() => !!currentMatchingId, [currentMatchingId]);
 
     const getPositionStyle = (position: string) => {
         const positionName = position.toLowerCase();
@@ -81,9 +65,6 @@ const MatchingAvailablePage = () => {
     };
 
     const handleMatchingButtonClick = () => {
-        console.log('🎯 매칭 버튼 클릭됨!');
-        
-        // 현재 활성 매칭 ID를 실시간으로 계산
         let realTimeMatchingId = currentMatchingId;
         
         if (sentMatchingsData?.body?.projectMatchings) {
@@ -96,16 +77,12 @@ const MatchingAvailablePage = () => {
             }
         }
         
-        console.log('사용할 매칭 ID:', realTimeMatchingId);
-        
         if (isMatching || realTimeMatchingId) {
             if (!realTimeMatchingId) {
                 alert('취소할 매칭을 찾을 수 없습니다.');
                 return;
             }
             
-            // 실시간으로 계산한 ID로 상태 업데이트
-            setCurrentMatchingId(realTimeMatchingId);
             setIsCancelModalOpen(true);
             
         } else if (matchingCount === 0) {
@@ -117,26 +94,35 @@ const MatchingAvailablePage = () => {
         }
     };
 
+    const handleProjectSelect = (projectId: string) => {
+        setSelectedProjectId(Number(projectId));
+        setIsSelectModalOpen(false);
+        setIsRequestModalOpen(true);
+    };
+
+    const handleMultipleProjectSelect = (projectId: string) => {
+        setSelectedProjectId(Number(projectId));
+        setIsSelectMultipleModalOpen(false);
+        setIsRequestModalOpen(true);
+    };
+
+    const handleFieldSelect = (field: string) => {
+        setSelectedField(field);
+        setIsRequestModalOpen(false);
+        setIsConfirmModalOpen(true);
+    };
+
     const handleMatchingSuccess = () => {
         setMatchingCount(matchingCount + 1);
-        setIsMatching(true);
         setIsSuccessModalOpen(false);
+        setSelectedProjectId(null);
+        setSelectedField('');
     };
 
     const handleCancelConfirm = () => {
-        setIsMatching(false);
         setMatchingCount(Math.max(0, matchingCount - 1));
-        setCurrentMatchingId('');
-        console.log('매칭이 성공적으로 취소되었습니다.');
     };
 
-    // 디버깅용 로그 추가
-    console.log('userId:', userId);
-    console.log('memberData:', memberData);
-    console.log('isLoading:', isLoading);
-    console.log('error:', error);
-
-    // 로딩 상태
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -145,9 +131,7 @@ const MatchingAvailablePage = () => {
         );
     }
 
-    // 에러 상태
     if (error) {
-        console.error('API Error:', error);
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
@@ -158,7 +142,6 @@ const MatchingAvailablePage = () => {
         );
     }
 
-    // 데이터 없음
     if (!memberData) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -167,10 +150,8 @@ const MatchingAvailablePage = () => {
         );
     }
 
-    // 액션 버튼들
     const actionButtons = (
         <>
-            {/* 메시지 버튼 */}
             <div className='relative group'>
                 <img 
                     src={chat} 
@@ -185,7 +166,6 @@ const MatchingAvailablePage = () => {
                 </div>
             </div>
             
-            {/* 매칭 신청 버튼 */}
             <button 
                 onClick={handleMatchingButtonClick}
                 onMouseEnter={() => setIsHovered(true)}
@@ -240,47 +220,26 @@ const MatchingAvailablePage = () => {
                     </div>
                 </div>
 
-                {/* 디버그 정보 */}
-                <div className='mt-4 p-4 bg-gray-100 rounded text-sm'>
-                    <p>현재 매칭 상태: {isMatching ? '매칭 중' : '매칭 아님'}</p>
-                    <p>현재 매칭 ID: {currentMatchingId || '없음'}</p>
-                    <p>보낸 매칭 수: {sentMatchingsData?.body?.projectMatchings?.length || 0}</p>
-                </div>
-
-                {/* 모달들 */}
-                {/* 첫 번째 신청: 프로젝트 1개 */}
                 <SelectProjectModal 
                     isOpen={isSelectModalOpen}
                     onClose={() => setIsSelectModalOpen(false)}
-                    onConfirm={() => {
-                        setIsSelectModalOpen(false);
-                        setIsRequestModalOpen(true);
-                    }}
+                    onConfirm={handleProjectSelect}
                 />
 
-                {/* 두 번째 신청: 프로젝트 2개 */}
                 <SelectMultipleProjectModal 
                     isOpen={isSelectMultipleModalOpen}
                     onClose={() => setIsSelectMultipleModalOpen(false)}
-                    onConfirm={() => {
-                        setIsSelectMultipleModalOpen(false);
-                        setIsRequestModalOpen(true);
-                    }}
+                    onConfirm={handleMultipleProjectSelect}
                 />
 
-                {/* 파트 선택 */}
                 <MatchingRequestModal 
                     isOpen={isRequestModalOpen}
                     onClose={() => setIsRequestModalOpen(false)}
-                    onMatchingComplete={() => {
-                        setIsRequestModalOpen(false);
-                        setIsConfirmModalOpen(true);
-                    }}
+                    onMatchingComplete={handleFieldSelect}
                     getPositionStyle={getPositionStyle}
-                    recruitments={[]}
+                    recruitments={recruitments || []}
                 />
 
-                {/* 매칭 요청 확인 */}
                 <MatchingRequestConfirmModal 
                     isOpen={isConfirmModalOpen}
                     onClose={() => setIsConfirmModalOpen(false)}
@@ -289,16 +248,14 @@ const MatchingAvailablePage = () => {
                         setIsSuccessModalOpen(true);
                     }}
                     memberName={memberData.name}
-                    position={memberData.role}
+                    position={selectedField}
                 />
 
-                {/* 매칭 완료 */}
                 <MatchingSuccessModal 
                     isOpen={isSuccessModalOpen}
                     onClose={handleMatchingSuccess}
                 />
 
-                {/* 취소 확인 */}
                 <MatchingCancelModal 
                     isOpen={isCancelModalOpen}
                     onClose={() => setIsCancelModalOpen(false)}
@@ -306,13 +263,11 @@ const MatchingAvailablePage = () => {
                     matchingId={currentMatchingId}
                 />
 
-                {/* 차단 모달 */}
                 <MatchingBlockedModal 
                     isOpen={isBlockedModalOpen}
                     onClose={() => setIsBlockedModalOpen(false)}
                 />
 
-                {/* 파트 초과 모달 */}
                 <MatchingLimitModal 
                     isOpen={isLimitModalOpen}
                     onClose={() => setIsLimitModalOpen(false)}
