@@ -1018,6 +1018,16 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 	}
 
+	// 프로세스 상세 작성자/담당파트/시간 (last_edited_by 우선, 없으면 writer) - WorkContentInput 표시용
+	const contentAuthor = processDetail?.body?.last_edited_by ?? processDetail?.body?.writer
+	const workContentPartName = contentAuthor
+		? (contentAuthor.role_field?.trim() ? contentAuthor.role_field : (contentAuthor.custom_role_field_name ?? ''))
+		: undefined
+	const workContentAuthorName = contentAuthor?.nickname
+	const workContentTimestamp = processDetail?.body
+		? formatTimestampDisplay(processDetail.body.updated_at ?? processDetail.body.created_at)
+		: undefined
+
 	// 리더형 모달 + 편집 모드: RoleTaskPanel 업무 추가/수정/토글 API 연동
 	const rolePanelApiHandlers =
 		isLeaderVariant && isEditMode && projectId != null && editingMissionId != null
@@ -1512,6 +1522,9 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 									<WorkContentInput
 										value={workContent}
 										onChange={setWorkContent}
+										partName={workContentPartName}
+										authorName={workContentAuthorName}
+										timestamp={workContentTimestamp}
 										className='w-[566px] h-[182px]'
 									/>
 								</div>
