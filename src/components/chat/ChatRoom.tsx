@@ -431,7 +431,12 @@ const ChatRoom = ({
 					onBack={onClose}
 					onSearchClick={() => setIsSearchMode(true)}
 					onMenu={() => setIsMenuOpen(true)}
-					onClose={() => setIsSearchMode(false)}
+					onClose={() => {
+						// 검색 닫기(X 아이콘)를 눌렀을 때 원래 목록으로 복원
+						setIsSearchMode(false)
+						setSearchQuery('')
+						setSearchResults([])
+					}}
 					onSearch={handleSearch}
 				/>
 

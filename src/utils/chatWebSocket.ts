@@ -265,6 +265,27 @@ class ChatWebSocketClient {
 	}
 
 	/**
+	 * DM 메시지 전송
+	 * - 실시간 DM 전송 엔드포인트: SEND /app/chat-send/dms/{userId}
+	 * - body: { "content": "안녕하세요" }
+	 */
+	sendDM(targetUserId: number, content: string) {
+		if (!this.client || !this.client.connected || !this.userId) {
+			throw new Error("WebSocket이 연결되지 않았습니다.")
+		}
+
+		const message: ChatMessageSendRequestDto = {
+			userId: this.userId,
+			content,
+		}
+
+		this.client.publish({
+			destination: `/app/chat-send/dms/${targetUserId}`,
+			body: JSON.stringify(message),
+		})
+	}
+
+	/**
 	 * 연결 해제
 	 */
 	disconnect() {

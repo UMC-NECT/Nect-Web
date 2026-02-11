@@ -37,6 +37,23 @@ export type ResponseGetDMRoomsDto = CommonResponse<{
 	nextCursor: number | null
 }>
 
+// 1-1-2. DM 메시지 조회
+export type DMMessageDto = {
+	message_id: number
+	sender_id: number
+	sender_name: string
+	sender_profile_image: string | null
+	content: string | null
+	is_pinned: boolean
+	created_at: string
+	is_read: boolean
+}
+
+export type ResponseGetDMMessagesDto = CommonResponse<{
+	messages: DMMessageDto[]
+	next_cursor: number | null
+}>
+
 // 1-2. 채팅방 메시지 조회
 export type ChatMessageDto = {
 	message_id: number

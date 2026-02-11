@@ -77,7 +77,11 @@ const ChatHeader = ({
 						</button>
 						{/* 닫기 버튼 */}
 						<button
-							onClick={onClose}
+							onClick={() => {
+								// X 아이콘 클릭 시 입력한 검색어도 함께 초기화
+								setSearchQuery('')
+								onClose?.()
+							}}
 							className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
 						>
 							<CloseIcon className="w-7 h-7 text-neutral-700" />

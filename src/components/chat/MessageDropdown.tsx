@@ -126,13 +126,14 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 		)
 	}
 
-	// 매칭 요청 탭에서 채팅방이 열려있으면 NectChatRoom 표시
+	// 매칭 요청 탭에서 채팅방이 열려있으면 NectChatRoom 표시 (DM WebSocket 전송 사용)
 	if (activeTab === 'matching' && showChatRoom && selectedMessage) {
 		return (
 			<div className='absolute top-full -right-[74px] mt-2 z-50'>
 				<NectChatRoom
 					roomName={selectedMessage.senderName}
 					memberCount={selectedMessage.memberCount}
+					targetUserId={selectedMessage.id}
 					onClose={() => {
 						setShowChatRoom(false)
 						setSelectedMessage(null)

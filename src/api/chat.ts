@@ -13,6 +13,7 @@ import type {
 	GroupChatRoomCreateRequestDto,
 	ResponseGetChatRoomsDto,
 	ResponseGetDMRoomsDto,
+	ResponseGetDMMessagesDto,
 	ResponseGetProjectAlbumsDto,
 	ResponseGetProjectMembersDto,
 	ResponseGetProjectUsersDto,
@@ -40,6 +41,23 @@ export const getDMRooms = async (options?: {
 		size: options?.size?.toString(),
 	})
 	const { data } = await api.get(`/api/v1/dms/rooms${query}`)
+	return data
+}
+
+/** DM 메시지 조회 */
+export const getDMMessages = async (
+	userId: number,
+	options?: {
+		cursor?: number | null
+		size?: number
+	}
+): Promise<ResponseGetDMMessagesDto> => {
+	const query = toQueryString({
+		userId: userId.toString(),
+		cursor: options?.cursor?.toString(),
+		size: options?.size?.toString(),
+	})
+	const { data } = await api.get(`/api/v1/dms/messages${query}`)
 	return data
 }
 
