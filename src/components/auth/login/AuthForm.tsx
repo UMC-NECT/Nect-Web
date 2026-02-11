@@ -7,7 +7,7 @@ import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 
 import { useState } from 'react'
 import { useLoginForm } from '@/hooks/useForm'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useLocation } from 'react-router'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { useLoginMutation } from '@/hooks/auth/useUsersApi'
@@ -16,6 +16,8 @@ const AuthForm = () => {
 	const [showPassword, setShowPassword] = useState<boolean>(false)
 	const [loginError, setLoginError] = useState<string>('')
 	const navigate = useNavigate()
+	const location = useLocation()
+	const from = (location.state as { from?: string } | null)?.from
 	const { setItem: setAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const { setItem: setRefreshToken } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
 	const { setItem: setOnboardingCompleted } = useLocalStorage(LOCAL_STORAGE_KEY.ONBOARDING_COMPLETED)
@@ -50,7 +52,7 @@ const AuthForm = () => {
 				setAccessToken(tokenData.accessToken)
 				setRefreshToken(tokenData.refreshToken)
 				setOnboardingCompleted(tokenData.isOnboardingCompleted === true ? 'true' : 'false')
-				navigate(tokenData.isOnboardingCompleted === false ? '/onboarding' : '/')
+				navigate(tokenData.isOnboardingCompleted === false ? '/onboarding' : from ?? '/')
 			} else {
 				setLoginError('로그인에 실패했습니다. 다시 시도해주세요.')
 			}

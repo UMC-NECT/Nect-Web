@@ -24,7 +24,7 @@ const AnalysisScreen = ({ name, section }: AnalysisScreenProps) => {
         <div className='absolute top-0 left-0 bg-neutral-000 z-100 h-screen w-screen'>
             <style>{floatStyles}</style>
             <section className='flex flex-col items-center justify-center h-full'>
-                <img className='animate-float w-[324px] h-[277px]' src={Character} alt="Character" />
+                <img className='animate-float w-[200px] h-[170px]' src={Character} alt="Character" />
                 <p className='heading-2 font-semibold text-neutral-800'><span className='text-primary-500-normal'>{name}</span>님의 {section}를 분석 중입니다..</p>
             </section>
         </div>

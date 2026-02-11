@@ -19,7 +19,7 @@ import PlusIcon from '@/assets/icons/common/plus.svg?react'
 const SharedDocumentsPage = () => {
 	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
 	const navigate = useNavigate()
-	
+
 	// 프로젝트 목록 조회 및 projectId 설정
 	useEffect(() => {
 		const fetchProjects = async () => {
@@ -77,7 +77,7 @@ const SharedDocumentsPage = () => {
 
 	// 공유 문서 삭제 mutation
 	const deleteDocumentMutation = useDeleteSharedDocumentMutation(projectId || 0)
-	
+
 	// 공유 문서 이름 변경 mutation
 	const updateDocumentNameMutation = useUpdateSharedDocumentNameMutation(projectId || 0)
 
@@ -165,7 +165,7 @@ const SharedDocumentsPage = () => {
 
 	const handleFileDownload = async (file: FileItemData) => {
 		if (!projectId || !file.id) return
-		
+
 		try {
 			await downloadSharedDocumentFile(projectId, file.id, file.fileName)
 		} catch (error) {
@@ -251,7 +251,7 @@ const SharedDocumentsPage = () => {
 	}
 
 	return (
-		<div className="flex flex-col w-full mx-auto px-6 py-[64px] gap-[30px]">
+		<div className="flex flex-col w-full mx-auto px-[72px] py-[64px] gap-[30px]">
 			<ContentHeader
 				title="공유 문서함"
 				description="프로젝트 자료를 한곳에 모으는 공유 문서 클라우드"

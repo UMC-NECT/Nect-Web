@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router'
-import { Layout } from './components/layout/Layout'
+import { MainLayout } from './components/layout/MainLayout'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthLayout } from './components/layout/AuthLayout'
@@ -28,6 +28,11 @@ import SharedDocumentsPage from './pages/SharedDocumentsPage'
 import ProjectListPage from './pages/ProjectListPage'
 import NecterListPage from './pages/NecterListPage'
 import AllProjects from './components/mypage/all-projects/AllProjects'
+import ErrorPage from './components/splash/ErrorPage'
+import SplashLayout from './components/layout/SplashLayout'
+import WorkspaceLayout from './components/layout/WorkSpaceLayout'
+import MyPageLayout from './components/layout/MyPageLayout'
+import { ProtectedRoute } from './components/layout/ProtectedRoute'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -38,14 +43,28 @@ const queryClient = new QueryClient({
 	},
 })
 
+// 공개 라우트(토큰 없이 접근): MainLayout, AuthLayout, SplashLayout
+// 보호 라우트(로그인 필요): WorkspaceLayout, AnalysisLayout, MyPageLayout
 const router = createBrowserRouter([
 	{
-		element: <Layout />,
+		element: <MainLayout />,
+		errorElement: <ErrorPage />,
 		children: [
-			{
-				path: '/',
-				element: <MainPage />,
-			},
+			{ path: '/', element: <MainPage /> },
+			{ path: '/recruiting-projects/:projectId', element: <RecruitingProjectsPage /> },
+			{ path: '/matching-available/:userId', element: <MatchingAvailablePage /> },
+			{ path: '/projectList', element: <ProjectListPage /> },
+			{ path: '/necterList', element: <NecterListPage /> },
+		],
+	},
+	{
+		element: (
+			<ProtectedRoute>
+				<WorkspaceLayout />
+			</ProtectedRoute>
+		),
+		errorElement: <ErrorPage />,
+		children: [
 			{
 				path: '/week-mission',
 				element: <WeekMissionPage />,
@@ -66,14 +85,70 @@ const router = createBrowserRouter([
 				path: '/work-status',
 				element: <WorkStatusPage />,
 			},
+		],
+	},
+	{
+		element: (
+			<ProtectedRoute>
+				<AnalysisLayout />
+			</ProtectedRoute>
+		),
+		errorElement: <ErrorPage />,
+		children: [
 			{
-				path: '/recruiting-projects/:projectId',
-				element: <RecruitingProjectsPage />,
+				path: '/profile-analyze',
+				element: <ProfileAnalysisPage />,
 			},
 			{
-				path: '/matching-available/:userId',
-				element: <MatchingAvailablePage />
+				path: '/idea-analyze',
+				element: <IdeaAnalyzePage />,
 			},
+			{
+				path: '/analyze-report',
+				element: <AnalyzeReportPage />,
+			},
+		],
+	},
+	{
+		element: <AuthLayout />,
+		errorElement: <ErrorPage />,
+		children: [
+			{
+				path: '/login',
+				element: <LoginPage />,
+			},
+			{
+				path: '/auth/callback',
+				element: <AuthCallbackPage />,
+			},
+			{
+				path: '/onboarding',
+				element: <OnboardingPage />,
+			},
+			{
+				path: '/signup',
+				element: <SignupPage />,
+			},
+		],
+	},
+	{
+		element: <SplashLayout />,
+		errorElement: <ErrorPage />,
+		children: [
+			{
+				path: '/error/:code',
+				element: <ErrorPage />,
+			},
+		],
+	},
+	{
+		element: (
+			<ProtectedRoute>
+				<MyPageLayout />
+			</ProtectedRoute>
+		),
+		errorElement: <ErrorPage />,
+		children: [
 			{
 				path: '/mypage',
 				element: <MyPage />,
@@ -108,54 +183,8 @@ const router = createBrowserRouter([
 					},
 				],
 			},
-			{
-				path: '/projectList', // 모집 중인 프로젝트 전체
-				element: <ProjectListPage />,
-			},
-			{
-				path: '/necterList', // 지금 가능한 넥터 전체
-				element: <NecterListPage />,
-			},
 		],
-	},
-	{
-		element: <AnalysisLayout />,
-		children: [
-			{
-				path: '/profile-analyze',
-				element: <ProfileAnalysisPage />,
-			},
-			{
-				path: '/idea-analyze',
-				element: <IdeaAnalyzePage />,
-			},
-			{
-				path: '/analyze-report',
-				element: <AnalyzeReportPage />,
-			},
-		],
-	},
-	{
-		element: <AuthLayout />,
-		children: [
-			{
-				path: '/login',
-				element: <LoginPage />,
-			},
-			{
-				path: '/auth/callback',
-				element: <AuthCallbackPage />,
-			},
-			{
-				path: '/onboarding',
-				element: <OnboardingPage />,
-			},
-			{
-				path: '/signup',
-				element: <SignupPage />,
-			},
-		],
-	},
+	}
 ])
 
 function App() {

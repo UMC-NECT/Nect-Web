@@ -1,11 +1,25 @@
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import MyIcon from '@/assets/icons/header/my.svg?react'
 import ProjectIcon from '@/assets/icons/header/project.svg?react'
 import MatchingIcon from '@/assets/icons/header/matching.svg?react'
 import { useGetProfileQuery, useLogoutMutation } from '@/hooks/auth/useUsersApi'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import DefaultProfileImage from '@/assets/Default_Profile.svg'
+import type { EnumItem } from '@/types/api/enums'
+
+/** role_field(value)에 해당하는 enum label 반환. roles 우선, 없으면 roleFields에서 검색 */
+const getRoleLabel = (roleValue: string, roles: EnumItem[], roleFields: Record<string, EnumItem[]>): string => {
+	if (!roleValue) return ''
+	const inRoles = roles.find(r => r.value === roleValue)?.label
+	if (inRoles) return inRoles
+	for (const fields of Object.values(roleFields)) {
+		const found = fields.find(f => f.value === roleValue)?.label
+		if (found) return found
+	}
+	return roleValue
+}
 
 interface ProfileDropdownProps {
 	isOpen: boolean
@@ -18,6 +32,11 @@ const ProfileDropdown = ({ isOpen, onClose }: ProfileDropdownProps) => {
 	const { mutate: logout } = useLogoutMutation()
 	useClickOutside(dropdownRef, () => onClose(), isOpen)
 	const { data: profileData } = useGetProfileQuery()
+	const { roles, roleFields } = useOnboardingEnums()
+	const roleLabel = useMemo(
+		() => getRoleLabel(profileData?.body?.role ?? '', roles, roleFields),
+		[profileData?.body?.role, roles, roleFields]
+	)
 
 	const handleMenuClick = (path: string) => {
 		navigate(path)
@@ -53,7 +72,7 @@ const ProfileDropdown = ({ isOpen, onClose }: ProfileDropdownProps) => {
 									</p>
 									<div className='w-0.5 h-4 relative bg-neutral-300 rounded-md' />
 									<div className='justify-start text-primary-500-normal title-3 font-regular leading-6'>
-										{profileData?.body?.role}
+										{roleLabel}
 									</div>
 								</div>
 								<div className='justify-start text-neutral-500 body-2 font-regular leading-5'>

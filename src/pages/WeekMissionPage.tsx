@@ -308,7 +308,7 @@ const WeekMissionPage = () => {
 	)
 
 	return (
-		<div className='flex flex-col pt-16 pb-20'>
+		<div className='flex flex-col pt-16 pb-20 px-13.5'>
 			{/* 페이지 타이틀 영역 */}
 			<StudioTitle title='위크 미션 (Week Misson)' description='주간 미션을 설정하고 프로젝트 완주를 돕는 팀 스페이스' />
 
