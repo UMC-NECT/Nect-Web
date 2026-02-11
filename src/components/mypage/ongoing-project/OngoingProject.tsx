@@ -127,11 +127,22 @@ const OngoingProject = () => {
 				setStoredProjectId(leaderProject.project_id, userId)
 			}
 		}
-		// userId가 같고 projectId가 없을 때만 기본값으로 설정
+		// userId가 같고 projectId가 없을 때 기본값으로 설정
 		else if (!storedProjectId) {
 			const leaderProject = projects.find(p => p.leader.user_id === userId)
 			if (leaderProject) {
 				setStoredProjectId(leaderProject.project_id, userId)
+			}
+		}
+		// userId가 같고 projectId가 있지만 삭제되었거나 유효하지 않은 경우
+		else if (storedProjectId) {
+			const isProjectValid = projects.some(p => p.project_id === storedProjectId)
+			if (!isProjectValid) {
+				// 현재 저장된 프로젝트가 목록에 없으면 리더인 첫 번째 프로젝트로 재설정
+				const leaderProject = projects.find(p => p.leader.user_id === userId)
+				if (leaderProject) {
+					setStoredProjectId(leaderProject.project_id, userId)
+				}
 			}
 		}
 	}, [storedProjectId, storedUserId, profileData, projectsData, setStoredProjectId])
