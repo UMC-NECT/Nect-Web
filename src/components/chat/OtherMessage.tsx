@@ -54,7 +54,7 @@ export const OtherMessage = ({
 
 					{/* 시간 및 읽음 수 */}
 					<div className="flex flex-col h-[30px] items-start justify-end py-0.5">
-						{readCount !== undefined && (
+						{readCount !== undefined && readCount > 0 && (
 							<div className="h-3.5 text-primary-400-normal caption-2 font-medium">
 								{readCount}
 							</div>

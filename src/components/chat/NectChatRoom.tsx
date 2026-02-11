@@ -95,6 +95,11 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 				}
 
 				// 메시지 추가
+				// readCount는 양수일 때만 표시되도록 undefined 또는 양수로 설정
+				const readCount = isMine 
+					? (msg.is_read ? 1 : undefined) // 내 메시지: 읽었으면 1, 아니면 표시 안 함
+					: undefined // 상대방 메시지는 readCount 없음
+				
 				const baseMessage: DisplayMessage = {
 					id: msg.message_id,
 					senderName: msg.sender_name,
@@ -102,7 +107,7 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 					time: formatTime(msg.created_at),
 					isMine,
 					profileImage: msg.sender_profile_image || undefined,
-					readCount: msg.is_read ? 1 : 0,
+					readCount,
 				}
 
 				displayMessages.push(baseMessage)
@@ -171,11 +176,17 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 						content: message.content,
 						is_pinned: false,
 						created_at: message.created_at || new Date().toISOString(),
-						is_read: false,
+						is_read: message.is_read !== undefined ? message.is_read : false,
 					}
 					
 					// WebSocket으로 받은 메시지는 날짜 구분선 없이 직접 변환
 					const isMine = dmMessage.sender_id === currentUserId
+					// 내가 보낸 메시지는 읽음 처리, 상대방이 보낸 메시지는 읽지 않음으로 처리
+					// readCount는 양수일 때만 표시되도록 undefined 또는 양수로 설정
+					const readCount = isMine 
+						? (dmMessage.is_read ? 1 : undefined) // 내 메시지: 읽었으면 1, 아니면 표시 안 함
+						: undefined // 상대방 메시지는 readCount 없음
+					
 					const newMessage: DisplayMessage = {
 						id: dmMessage.message_id,
 						senderName: dmMessage.sender_name,
@@ -183,7 +194,7 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 						time: formatTime(dmMessage.created_at),
 						isMine,
 						profileImage: dmMessage.sender_profile_image || undefined,
-						readCount: dmMessage.is_read ? 1 : 0,
+						readCount,
 					}
 					
 					// 이전 메시지와 날짜가 다르면 날짜 구분선 추가
