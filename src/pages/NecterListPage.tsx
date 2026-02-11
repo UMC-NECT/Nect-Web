@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import ContentBox from '@/components/main/ContentBox';
 import TabGroup from '@/components/main/TabGroup';
@@ -93,11 +94,15 @@ const NecterListPage = () => {
                     {!isLoading && !error && filteredMembers.length > 0 && (
                         <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px]">
                             {filteredMembers.map(member => (
-                                <RecommendationMemberCard
+                                <Link 
                                     key={member.userId}
-                                    member={member}
-                                    variant="list"
-                                />
+                                    to={`/matching-available/${member.userId}`}
+                                >
+                                    <RecommendationMemberCard 
+                                        member={member}
+                                        variant="list" 
+                                    />
+                                </Link>
                             ))}
                         </div>
                     )}

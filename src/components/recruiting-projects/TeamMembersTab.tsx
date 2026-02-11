@@ -3,78 +3,57 @@ import ProjectHistory from './ProjectHistory';
 import MemberCard from './MemberCard';
 import MemberProfileModal from './MemberProfileModal';
 import type { ProjectDetailDto } from '@/types/api/project';
+import type { ProjectMemberDto } from '@/types/api/project/members';
+import type { MemberDetailDto } from '@/types/api/member/detail';
+import { useProjectMembers } from '@/hooks/queries/project';
 
 interface TeamMembersTabProps {
     projectData: ProjectDetailDto;
     getPositionStyle: (position: string) => string;
+    projectId: number;
 }
 
-interface MemberDetail {
-    name: string;
-    role: string;
-    position: string;
-    email: string;
-    isRecruiting?: boolean;
-    jobTitle: string;
-    field: string;
-    experience: string;
-    introduction: string;
-    coreCompetencies: string[];
-    portfolioKeywords: string[];
-    designTools: string[];
-    recordTools: string[];
-    etcTools: string[];
-}
+const TeamMembersTab = ({ projectData, getPositionStyle, projectId }: TeamMembersTabProps) => {
+    const [selectedMember, setSelectedMember] = useState<MemberDetailDto | null>(null);
+    const { data: membersData } = useProjectMembers(projectId);
 
-const TeamMembersTab = ({ projectData, getPositionStyle }: TeamMembersTabProps) => {
-    const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
+    // role_field별로 멤버 그룹화
+    const getMembersByField = (field: string) => {
+        return membersData?.users.filter(user => user.role_field === field) || [];
+    };
 
-    // 멤버 데이터
-    const pmMembers = [
-        { name: '시루', role: 'Leader', position: 'PM', introduction: '디자인 전공 출신 만능형 프로덕트 매니저입니다 ! 함께 성장 할 팀을 구합니다 !' }
-    ];
+    const pmMembers = getMembersByField('PM');
+    const designMembers = getMembersByField('DESIGN');
+    const frontendMembers = getMembersByField('FRONTEND');
+    const backendMembers = getMembersByField('BACKEND');
 
-    const designMembers = [
-        { name: '이방토', role: 'Lead', position: 'Design', introduction: '디자인 프로젝트 경험이 많고 꼼꼼한 UX.UI 디자이너입니다 !...' },
-        { name: '매칭 중', position: 'Part', introduction: '해당 파트 매칭 대기 중', isMatching: true }
-    ];
+    // API 데이터를 모달 형식으로 변환
+    const convertToMemberDetail = (member: ProjectMemberDto): MemberDetailDto => {
+        return {
+            userId: member.user_id,
+            name: member.name,
+            nickname: member.nickname,
+            email: '',
+            role: member.member_type === 'LEADER' ? 'Leader' : 'Member',
+            profileImageUrl: member.profile_image_url,
+            bio: member.bio,
+            coreCompetencies: null,
+            userStatus: 'ACTIVE',
+            isPublicMatching: false,
+            careerDuration: null,
+            interestedJob: member.custom_role_field_name,
+            interestedField: member.part_label,
+            careers: null,
+            portfolios: null,
+            projectHistories: null,
+            skills: null,
+            profileType: null,
+            tags: null,
+        };
+    };
 
-    const frontendMembers = [
-        { name: '숀', role: 'Lead', position: 'Frontend', introduction: '프로필 소개' },
-        { name: '갱빈', position: 'Frontend', introduction: '프로필 소개' },
-        { name: '웬디', position: 'Frontend', introduction: '프로필 소개' },
-        { name: '미노', position: 'Frontend', introduction: '프로필 소개' }
-    ];
-
-    const backendMembers = [
-        { name: '세인트', role: 'Lead', position: 'Backend', introduction: '프로필 소개' },
-        { name: '미카엘', position: 'Backend', introduction: '프로필 소개' },
-        { name: '매칭 중', position: 'Part', introduction: '해당 파트 매칭 대기 중', isMatching: true },
-        { name: '매칭 중', position: 'Part', introduction: '해당 파트 매칭 대기 중', isMatching: true }
-    ];
-
-    // 상세 멤버 데이터 (모달용)
-    const memberDetailData = {
-        name: '이방토',
-        role: 'Lead',
-        position: 'Design',
-        email: 'ellaella2@hanyang.ac.kr',
-        isRecruiting: true,
-        jobTitle: 'UX/UI Product Designer / UX researcher',
-        field: 'UX/UI  브랜딩/제품',
-        experience: '6개월',
-        introduction: '디자인 프로젝트 경험이 많고 꼼꼼한 UX.UI 디자이너 입니다!\nUX리서치/ 브랜딩/ 패키지/ 그래픽 및 일러스트 모두 가능합니다.',
-        coreCompetencies: [
-            '사용자 경험을 기반으로 한 UX 전략 도출 및 서비스 프로토타입 설계 가능',
-            'UX 리서치 및 데이터 드리븐을 통한 가설 설정, 지표 개선 경험',
-            '기획 / 개발 / 비즈니스 / 마케팅 직군과의 커뮤니케이션 능숙',
-            '다양한 디바이스 환경(웹 접근성, 반응형, 앱 앱 등)에 대한 높은 이해도',
-            '디자인 시스템 구축 및 실 서비스에 활용 경험 보유'
-        ],
-        portfolioKeywords: ['#프트폴리오 집중', '#신중한 설계자', '#비주얼 전문가'],
-        designTools: ['Figma', 'Photoshop', 'Illustrator', 'Premiere Pro', 'After Effect', 'Procreate'],
-        recordTools: ['Notion', 'UX Research'],
-        etcTools: ['Claude', 'Consecutive Interpretation']
+    const handleMemberClick = (member: ProjectMemberDto) => {
+        setSelectedMember(convertToMemberDetail(member));
     };
 
     return (
@@ -88,8 +67,18 @@ const TeamMembersTab = ({ projectData, getPositionStyle }: TeamMembersTabProps) 
                         PM
                     </span>
                 </div>
-                {pmMembers.map((member, index) => (
-                    <MemberCard key={index} member={member} onClick={() => setSelectedMember(memberDetailData)} />
+                {pmMembers.map((member) => (
+                    <MemberCard 
+                        key={member.user_id} 
+                        member={{
+                            name: member.name,
+                            role: member.member_type === 'LEADER' ? 'Leader' : undefined,
+                            position: member.part_label,
+                            introduction: member.bio,
+                            profileImage: member.profile_image_url || undefined
+                        }} 
+                        onClick={() => handleMemberClick(member)} 
+                    />
                 ))}
             </div>
 
@@ -101,8 +90,18 @@ const TeamMembersTab = ({ projectData, getPositionStyle }: TeamMembersTabProps) 
                     </span>
                 </div>
                 <div className='flex gap-6'>
-                    {designMembers.map((member, index) => (
-                        <MemberCard key={index} member={member} onClick={() => !member.isMatching && setSelectedMember(memberDetailData)} />
+                    {designMembers.map((member) => (
+                        <MemberCard 
+                            key={member.user_id} 
+                            member={{
+                                name: member.name,
+                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
+                                position: member.part_label,
+                                introduction: member.bio,
+                                profileImage: member.profile_image_url || undefined
+                            }} 
+                            onClick={() => handleMemberClick(member)} 
+                        />
                     ))}
                 </div>
             </div>
@@ -115,13 +114,33 @@ const TeamMembersTab = ({ projectData, getPositionStyle }: TeamMembersTabProps) 
                     </span>
                 </div>
                 <div className='flex gap-6'>
-                    {frontendMembers.slice(0, 2).map((member, index) => (
-                        <MemberCard key={index} member={member} onClick={() => setSelectedMember(memberDetailData)} />
+                    {frontendMembers.slice(0, 2).map((member) => (
+                        <MemberCard 
+                            key={member.user_id} 
+                            member={{
+                                name: member.name,
+                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
+                                position: member.part_label,
+                                introduction: member.bio,
+                                profileImage: member.profile_image_url || undefined
+                            }} 
+                            onClick={() => handleMemberClick(member)} 
+                        />
                     ))}
                 </div>
                 <div className='flex gap-6 mt-[12px]'>
-                    {frontendMembers.slice(2, 4).map((member, index) => (
-                        <MemberCard key={index} member={member} onClick={() => setSelectedMember(memberDetailData)} />
+                    {frontendMembers.slice(2, 4).map((member) => (
+                        <MemberCard 
+                            key={member.user_id} 
+                            member={{
+                                name: member.name,
+                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
+                                position: member.part_label,
+                                introduction: member.bio,
+                                profileImage: member.profile_image_url || undefined
+                            }} 
+                            onClick={() => handleMemberClick(member)} 
+                        />
                     ))}
                 </div>
             </div>
@@ -134,13 +153,33 @@ const TeamMembersTab = ({ projectData, getPositionStyle }: TeamMembersTabProps) 
                     </span>
                 </div>
                 <div className='flex gap-6'>
-                    {backendMembers.slice(0, 2).map((member, index) => (
-                        <MemberCard key={index} member={member} onClick={() => !member.isMatching && setSelectedMember(memberDetailData)} />
+                    {backendMembers.slice(0, 2).map((member) => (
+                        <MemberCard 
+                            key={member.user_id} 
+                            member={{
+                                name: member.name,
+                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
+                                position: member.part_label,
+                                introduction: member.bio,
+                                profileImage: member.profile_image_url || undefined
+                            }} 
+                            onClick={() => handleMemberClick(member)} 
+                        />
                     ))}
                 </div>
                 <div className='flex gap-6 mt-[12px]'>
-                    {backendMembers.slice(2, 4).map((member, index) => (
-                        <MemberCard key={index} member={member} />
+                    {backendMembers.slice(2, 4).map((member) => (
+                        <MemberCard 
+                            key={member.user_id} 
+                            member={{
+                                name: member.name,
+                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
+                                position: member.part_label,
+                                introduction: member.bio,
+                                profileImage: member.profile_image_url || undefined
+                            }} 
+                            onClick={() => handleMemberClick(member)} 
+                        />
                     ))}
                 </div>
             </div>
@@ -148,11 +187,13 @@ const TeamMembersTab = ({ projectData, getPositionStyle }: TeamMembersTabProps) 
             <ProjectHistory projectData={projectData} getPositionStyle={getPositionStyle} />
 
             {/* 모달 */}
-            <MemberProfileModal 
-                isOpen={selectedMember !== null}
-                onClose={() => setSelectedMember(null)}
-                member={selectedMember || memberDetailData}
-            />
+            {selectedMember && (
+                <MemberProfileModal 
+                    isOpen={true}
+                    onClose={() => setSelectedMember(null)}
+                    member={selectedMember}
+                />
+            )}
         </div>
     );
 };

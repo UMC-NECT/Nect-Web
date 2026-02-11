@@ -55,9 +55,16 @@ const MemberProfileDetail = ({ memberData }: MemberProfileDetailProps) => {
             {/* 핵심역량 */}
             <div className='mb-[64px]'>
                 <h3 className='text-[20px] font-bold mb-4'>핵심역량</h3>
-                {memberData.coreCompetencies ? (
+                {memberData.coreCompetencies && (
+                    Array.isArray(memberData.coreCompetencies) ? 
+                        memberData.coreCompetencies.length > 0 : 
+                        memberData.coreCompetencies.trim()
+                ) ? (
                     <ul className='space-y-2 list-disc list-outside text-[16px] font-medium text-neutral-900 pl-5'>
-                        {memberData.coreCompetencies.split('\n').map((competency, index) => (
+                        {(Array.isArray(memberData.coreCompetencies) 
+                            ? memberData.coreCompetencies 
+                            : memberData.coreCompetencies.split('\n')
+                        ).map((competency, index) => (
                             <li key={index}>{competency}</li>
                         ))}
                     </ul>

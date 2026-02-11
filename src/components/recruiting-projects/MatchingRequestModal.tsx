@@ -1,21 +1,24 @@
 import { useState } from 'react';
+import type { RecruitmentDto } from '@/types/api/project/recruitment';
 
 interface MatchingRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onMatchingComplete?: () => void;
+    onMatchingComplete?: (field: string) => void;
     getPositionStyle: (position: string) => string;
+    recruitments: RecruitmentDto[];
 }
 
-const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPositionStyle }: MatchingRequestModalProps) => {
+const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPositionStyle, recruitments }: MatchingRequestModalProps) => {
     const [selectedParts, setSelectedParts] = useState<string[]>([]);
 
     if (!isOpen) return null;
 
-    const availableParts = [
-        { name: 'Design', width: 'w-[80px] px-[8px] py-[2px]' },
-        { name: 'Backend', width: 'w-[95px] px-[8px] py-[2px]' }
-    ];
+    const availableParts = recruitments.map(r => ({
+        name: r.customField || r.roleField,
+        field: r.roleField,
+        width: 'w-auto px-[8px] py-[2px]'
+    }));
 
     const togglePart = (part: string) => {
         if (selectedParts.includes(part)) {
@@ -27,7 +30,10 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPosition
 
     const handleNext = () => {
         if (selectedParts.length > 0 && onMatchingComplete) {
-            onMatchingComplete(); // 다음 단계로
+            const selectedRecruitment = availableParts.find(p => p.name === selectedParts[0]);
+            if (selectedRecruitment) {
+                onMatchingComplete(selectedRecruitment.field);
+            }
         }
     };
 
@@ -50,10 +56,10 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPosition
                 </p>
 
                 {/* 파트 선택 버튼들 */}
-                <div className='flex justify-center gap-15 mb-auto'>
+                <div className='flex justify-center gap-15 mb-auto flex-wrap'>
                     {availableParts.map((part) => {
                         const isSelected = selectedParts.includes(part.name);
-                        const positionKey = part.name.toLowerCase();
+                        const positionKey = part.field.toLowerCase();
                         
                         return (
                             <button

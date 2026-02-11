@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useParams } from 'react-router';
 import axios from 'axios';
 import hamburger from '@/assets/icons/common/hamburger-bar.svg';
@@ -8,14 +9,20 @@ import ProjectInfoTab from '@/components/recruiting-projects/ProjectInfoTab';
 import TeamMembersTab from '@/components/recruiting-projects/TeamMembersTab';
 import MatchingRequestModal from '@/components/recruiting-projects/MatchingRequestModal';
 import MatchingRequestConfirmModal from '@/components/matching-available/MatchingRequestConfirmModal';
+import MatchingLimitModal from '@/components/matching-available/MatchingLimitModal';
 import MatchingSuccessModal from '@/components/recruiting-projects/MatchingSuccessModal';
 import MatchingCancelModal from '@/components/recruiting-projects/MatchingCancelModal';
 import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlockedModal';
-import { useProjectDetail } from '@/hooks/queries/project';
+import { useProjectDetail, useProjectRecruitments } from '@/hooks/queries/project';
+import { useMatchingUserToProjectMutation, useMatchingsSentQuery, useMatchingCancelMutation } from '@/hooks/mypage/useMatchingApi';
 
 const RecruitingProjectsPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const { data: projectData, isLoading, error } = useProjectDetail(Number(projectId));
+    const { data: recruitments } = useProjectRecruitments(Number(projectId));
+    const matchingMutation = useMatchingUserToProjectMutation();
+    const { data: sentMatchings } = useMatchingsSentQuery('project', 'pending');
+    const cancelMutation = useMatchingCancelMutation();
 
     const [activeTab, setActiveTab] = useState<'info' | 'members'>('info');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,9 +30,29 @@ const RecruitingProjectsPage = () => {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
-    const [isMatching, setIsMatching] = useState(false);
-    const [isCancelled, setIsCancelled] = useState(false);
+    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [selectedField, setSelectedField] = useState<string>('');
+
+    // 보낸 매칭 요청에서 현재 프로젝트에 대한 매칭 정보 계산
+    const currentProjectMatching = useMemo(() => {
+        if (sentMatchings?.body?.projectMatchings && projectId) {
+            return sentMatchings.body.projectMatchings.find(
+                (matching) => matching.projectId === Number(projectId)
+            );
+        }
+        return undefined;
+    }, [sentMatchings, projectId]);
+
+    const isMatching = !!currentProjectMatching;
+    
+    // localStorage에서 matchingId 가져오기
+    const getStoredMatchingId = () => {
+        const stored = localStorage.getItem(`matching_${projectId}`);
+        return stored ? Number(stored) : null;
+    };
+    
+    const currentMatchingId = currentProjectMatching?.matchingId || getStoredMatchingId();
 
     // 포지션 색상 매핑
     const getPositionStyle = (position: string) => {
@@ -44,20 +71,37 @@ const RecruitingProjectsPage = () => {
         return styles[positionName] || 'bg-tag-yellow';
     };
 
+    const isMatchingLimitError = (error: unknown) => {
+        const err = error as { response?: { data?: { status?: { message?: string; description?: string } } } };
+        const status = err?.response?.data?.status;
+        const combinedMessage = [status?.message, status?.description].filter(Boolean).join(' ');
+        return combinedMessage.includes('해당 프로젝트의 해당 분야의 매칭 신청 가능 수를 초과하였습니다');
+    };
+
     const handleMatchingButtonClick = () => {
         if (isMatching) {
             setIsCancelModalOpen(true);
-        } else if (isCancelled) {
-            setIsBlockedModalOpen(true);
         } else {
             setIsModalOpen(true);
         }
     };
 
     const handleCancelConfirm = () => {
-        setIsMatching(false);
-        setIsCancelled(true);
-        setIsCancelModalOpen(false);
+        if (currentMatchingId) {
+            cancelMutation.mutate(String(currentMatchingId), {
+                onSuccess: () => {
+                    // localStorage에서 삭제
+                    if (projectId) {
+                        localStorage.removeItem(`matching_${projectId}`);
+                    }
+                    setIsCancelModalOpen(false);
+                },
+                onError: (error) => {
+                    console.error('매칭 취소 실패:', error);
+                    setIsCancelModalOpen(false);
+                }
+            });
+        }
     };
 
     const isBadRequest =
@@ -115,10 +159,13 @@ const RecruitingProjectsPage = () => {
                     </div>
                     <div className=' mt-8 flex items-center justify-between'>
                         <h1 className="text-[28px] font-bold mt-1">모집 중인 프로젝트</h1>
-                        <button className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 bg-neutral-100 border border-neutral-200 rounded-xl">
+                        <Link 
+                            to="/projectList"
+                            className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 bg-neutral-100 border border-neutral-200 rounded-xl"
+                        >
                             <img src={hamburger} alt="Menu" />
                             <p className='text-[14px] text-neutral-400'>목록으로 가기</p>
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -190,38 +237,60 @@ const RecruitingProjectsPage = () => {
 
                     {/* 탭 컨텐츠 */}
                     <div className='px-[46px] py-[40px] pb-[56px]'>
-                        {activeTab === 'info' && <ProjectInfoTab projectData={projectData} getPositionStyle={getPositionStyle} />}
-                        {activeTab === 'members' && <TeamMembersTab projectData={projectData} getPositionStyle={getPositionStyle} />}
+                        {activeTab === 'info' && <ProjectInfoTab projectData={projectData} projectId={Number(projectId)} getPositionStyle={getPositionStyle} />}
+                        {activeTab === 'members' && <TeamMembersTab projectData={projectData} getPositionStyle={getPositionStyle} projectId={Number(projectId)} />}
                     </div>
                 </div>
 
-                {/* 모달들 생략 (기존과 동일) */}
                 <MatchingRequestModal 
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
-                    onMatchingComplete={() => {
+                    onMatchingComplete={(field: string) => {
+                        setSelectedField(field);
                         setIsModalOpen(false);
                         setIsConfirmModalOpen(true);
                     }}
                     getPositionStyle={getPositionStyle}
+                    recruitments={recruitments || []}
                 />
 
                 <MatchingRequestConfirmModal 
                     isOpen={isConfirmModalOpen}
                     onClose={() => setIsConfirmModalOpen(false)}
                     onConfirm={() => {
-                        setIsConfirmModalOpen(false);
-                        setIsSuccessModalOpen(true);
+                        if (projectId && selectedField) {
+                            matchingMutation.mutate(
+                                { projectId, body: { field: selectedField } },
+                                {
+                                    onSuccess: (response) => {
+                                        // matchingId를 localStorage에 저장
+                                        if (response?.body?.id && projectId) {
+                                            localStorage.setItem(`matching_${projectId}`, String(response.body.id));
+                                        }
+                                        setIsConfirmModalOpen(false);
+                                        setIsSuccessModalOpen(true);
+                                    },
+                                    onError: (error) => {
+                                        if (isMatchingLimitError(error)) {
+                                            setIsConfirmModalOpen(false);
+                                            setIsLimitModalOpen(true);
+                                            return;
+                                        }
+                                        console.error('매칭 요청 실패:', error);
+                                        setIsConfirmModalOpen(false);
+                                    }
+                                }
+                            );
+                        }
                     }}
-                    memberName="프로젝트"
-                    position="Design"
+                    memberName={projectData?.defaultInfo?.project_title || '프로젝트'}
+                    position={selectedField}
                 />
 
                 <MatchingSuccessModal 
                     isOpen={isSuccessModalOpen}
                     onClose={() => {
                         setIsSuccessModalOpen(false);
-                        setIsMatching(true);
                     }}
                 />
 
@@ -229,11 +298,18 @@ const RecruitingProjectsPage = () => {
                     isOpen={isCancelModalOpen}
                     onClose={() => setIsCancelModalOpen(false)}
                     onConfirm={handleCancelConfirm}
+                    matchingId="" // 빌드 에러 수정을 위해 추가
                 />
 
                 <MatchingBlockedModal 
                     isOpen={isBlockedModalOpen}
                     onClose={() => setIsBlockedModalOpen(false)}
+                />
+
+                <MatchingLimitModal 
+                    isOpen={isLimitModalOpen}
+                    onClose={() => setIsLimitModalOpen(false)}
+                    onConfirm={() => setIsLimitModalOpen(false)}
                 />
             </div>
         </div>
