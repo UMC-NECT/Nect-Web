@@ -532,19 +532,46 @@ const OngoingProject = () => {
 
 	// (모달 핸들러) 모집 종료 확인
 	const handleRecruitmentEnd = () => {
-		open('recruitmentEndComplete')
+		if (!projectId) return
+
+		patchRecruitmentStatus(
+			{ projectId, status: 'CLOSED' },
+			{
+				onSuccess: () => {
+					setIsRecruitmentPublished(false)
+					setValue('recruitmentStatus', '모집 완료', { shouldDirty: false })
+					open('recruitmentEndComplete')
+				},
+				onError: error => {
+					console.error('모집 종료 실패:', error)
+				},
+			}
+		)
 	}
 
 	// (모달 핸들러) 모집 등록 확인
 	const handleRecruitmentRegister = () => {
-		setIsRecruitmentPublished(true)
-		open('recruitmentRegisterComplete')
+		if (!projectId) return
+
+		patchRecruitmentStatus(
+			{ projectId, status: 'OPEN' },
+			{
+				onSuccess: () => {
+					setIsRecruitmentPublished(true)
+					setValue('recruitmentStatus', '모집 중', { shouldDirty: false })
+					open('recruitmentRegisterComplete')
+				},
+				onError: error => {
+					console.error('모집 등록 실패:', error)
+				},
+			}
+		)
 	}
 
 	// (모달 핸들러) 매칭 현황으로 이동
 	const handleGoToMatching = () => {
 		close()
-		navigate('/matching')
+		navigate('/mypage/matching')
 	}
 
 	// (모달 핸들러) 삭제 확인
