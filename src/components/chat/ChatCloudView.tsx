@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import ChatSidebar from './ChatSidebar'
 import ChatHeader from './ChatHeader'
 import CloudImageViewer from './CloudImageViewer'
-import { getChatRooms, getChatRoomAlbum } from '@/api/chat'
+import { getProjectAlbums } from '@/api/chat'
 import { useQuery } from '@tanstack/react-query'
 
 interface CloudRoom {
@@ -21,67 +21,37 @@ interface ChatCloudViewProps {
 }
 
 const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
-	const [selectedImage, setSelectedImage] = useState<string | null>(null)
-	const [cloudRooms, setCloudRooms] = useState<CloudRoom[]>([])
-	const [isLoading, setIsLoading] = useState(false)
+	const [selectedFile, setSelectedFile] = useState<{ roomId: number; file: CloudRoom['files'][0] } | null>(null)
 
-	// 채팅방 목록 조회
-	const { data: chatRoomsData } = useQuery({
-		queryKey: ['chatRooms', projectId],
-		queryFn: () => getChatRooms(projectId),
+	// 프로젝트 앨범 조회 (채팅방별 파일 목록)
+	const { data: albumsData, isLoading } = useQuery({
+		queryKey: ['projectAlbums', projectId],
+		queryFn: () => getProjectAlbums(projectId, 6), // limit: 채팅방별 파일 조회 개수
 		enabled: !!projectId,
 	})
 
-	// 각 채팅방의 앨범 데이터 가져오기
-	useEffect(() => {
-		const loadAlbums = async () => {
-			if (!chatRoomsData?.body) return
+	// API 응답을 CloudRoom 형식으로 변환
+	const cloudRooms: CloudRoom[] = (albumsData?.body || [])
+		.filter((room) => room.files && room.files.length > 0)
+		.map((room) => ({
+			id: room.room_id,
+			name: room.room_name,
+			files: room.files,
+		}))
 
-			setIsLoading(true)
-			try {
-				const rooms = chatRoomsData.body
-				const albumPromises = rooms.map(async (room) => {
-					const roomId = (room as any).room_id || room.roomId
-					if (!roomId) return null
-
-					try {
-						const albumResponse = await getChatRoomAlbum(roomId, { page: 0, size: 6 })
-						if (albumResponse.body && albumResponse.body.files.length > 0) {
-							return {
-								id: roomId,
-								name: albumResponse.body.room_name || (room as any).room_name || room.roomName || '',
-								files: albumResponse.body.files,
-							}
-						}
-					} catch (error) {
-						console.error(`채팅방 ${roomId} 앨범 로드 실패:`, error)
-					}
-					return null
-				})
-
-				const albums = await Promise.all(albumPromises)
-				const validAlbums = albums.filter((album): album is CloudRoom => album !== null)
-				setCloudRooms(validAlbums)
-			} catch (error) {
-				console.error('앨범 로드 실패:', error)
-			} finally {
-				setIsLoading(false)
-			}
-		}
-
-		loadAlbums()
-	}, [chatRoomsData])
-
-	const renderGrid = (files: CloudRoom['files']) => {
-		// 최대 6개까지만 표시
-		const displayFiles = files.slice(0, 6)
+	const renderGrid = (files: CloudRoom['files'], roomId: number) => {
+		// 이미지 파일만 표시 (API에서 limit만큼 받아오므로 그대로 사용)
+		const displayFiles = files.filter((file) => {
+			const ext = file.file_name.split('.').pop()?.toLowerCase()
+			return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext || '')
+		})
 
 		return (
 			<div className="grid grid-cols-3 gap-[2px] w-[340px]">
 				{displayFiles.map((file, index) => (
 					<button
 						key={`${file.file_url}-${index}`}
-						onClick={() => setSelectedImage(file.file_url)}
+						onClick={() => setSelectedFile({ roomId, file })}
 						className="w-[112px] h-[112px] rounded-md cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
 					>
 						<img
@@ -89,7 +59,6 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 							alt={file.file_name}
 							className="w-full h-full object-cover"
 							onError={(e) => {
-								// 이미지 로드 실패 시 플레이스홀더 표시
 								const target = e.target as HTMLImageElement
 								target.src = 'https://placehold.co/112x112'
 							}}
@@ -145,7 +114,7 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 											</button>
 										</div>
 										{/* 그리드 */}
-										{renderGrid(room.files)}
+										{renderGrid(room.files, room.id)}
 									</div>
 								))}
 							</div>
@@ -155,20 +124,25 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 			</div>
 
 			{/* 이미지 뷰어 (별도 패널) */}
-			{selectedImage && (
+			{selectedFile && (
 				<div className="absolute w-[436px] h-[336px] top-[15%] left-[430px] flex items-center justify-center">
 					<CloudImageViewer
-						imageUrl={selectedImage}
-						onClose={() => setSelectedImage(null)}
+						imageUrl={selectedFile.file.file_url}
+						onClose={() => setSelectedFile(null)}
 						onDownload={() => {
-							// TODO: 다운로드 로직 구현
+							const link = document.createElement('a')
+							link.href = selectedFile.file.file_url
+							link.download = selectedFile.file.file_name || 'download'
+							document.body.appendChild(link)
+							link.click()
+							document.body.removeChild(link)
 						}}
 						onForward={() => {
 							// TODO: 전달 로직 구현
 						}}
 						onDelete={() => {
-							// TODO: 삭제 로직 구현
-							setSelectedImage(null)
+							// TODO: 삭제 로직 구현 (서버 API 필요)
+							setSelectedFile(null)
 						}}
 					/>
 				</div>

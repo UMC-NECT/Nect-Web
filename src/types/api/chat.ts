@@ -177,19 +177,21 @@ export type ResponseGetProjectUsersDto = CommonResponse<ProjectMemberResponseDto
 // 3-2. 파일 삭제 (204 No Content)
 
 // 3-3. 프로젝트 앨범 조회
-export type ChatRoomImageDto = {
-	fileId: number
-	fileUrl: string
-	uploadedAt: string
+export type ProjectAlbumFileDto = {
+	file_name: string
+	file_url: string
+	created_at: string
 }
 
-export type ChatRoomAlbumResponseDto = {
-	roomId: number
-	roomName: string
-	images: ChatRoomImageDto[]
+export type ProjectAlbumRoomDto = {
+	room_id: number
+	room_name: string
+	room_type: string
+	file_count: number
+	files: ProjectAlbumFileDto[]
 }
 
-export type ResponseGetProjectAlbumsDto = CommonResponse<ChatRoomAlbumResponseDto[]>
+export type ResponseGetProjectAlbumsDto = CommonResponse<ProjectAlbumRoomDto[]>
 
 // 3-4. 채팅방 앨범 상세 조회 (GET /api/v1/chats/rooms/{roomId}/album) 응답 스펙
 export type ChatRoomAlbumFileDto = {
