@@ -213,6 +213,7 @@ interface ChatModalProps {
 								key={message.id}
 								message={message}
 								showDivider={index === 0}
+								projectId={projectId}
 								onClick={() => {
 									if (message.roomId) {
 										const roomData = message.roomData as any

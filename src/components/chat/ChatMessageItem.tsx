@@ -1,12 +1,16 @@
 import { type ChatMessage } from '@/types/message'
+import { useQuery } from '@tanstack/react-query'
+import { getTeamBoardMembers } from '@/api/team-board/boards'
+import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 
 interface ChatMessageItemProps {
 	message: ChatMessage
 	showDivider?: boolean
 	onClick?: () => void
+	projectId?: number
 }
 
-export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatMessageItemProps) => {
+export const ChatMessageItem = ({ message, showDivider = false, onClick, projectId }: ChatMessageItemProps) => {
 	const isGroup = message.isGroup ?? (message.memberCount !== undefined && message.memberCount > 1)
 	const participants = message.participants || []
 	// member_count를 우선 사용, 없으면 participants.length 사용
@@ -20,6 +24,27 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 		participants[index] || defaultImage
 	)
 	const profileImage = message.profileImage || defaultImage
+
+	// 현재 사용자 ID 가져오기
+	const { data: profileData } = useGetProfileQuery()
+	const currentUserId = profileData?.body?.userId
+
+	// member_count가 2일 때 멤버 정보 조회 (나를 제외한 상대방의 field 정보)
+	const { data: membersData } = useQuery({
+		queryKey: ['teamBoardMembers', projectId],
+		queryFn: () => getTeamBoardMembers(projectId!),
+		enabled: !!projectId && message.memberCount === 2 && !!currentUserId,
+	})
+
+	// member_count가 2일 때 상대방의 field 정보 가져오기
+	const otherMemberField = membersData?.body?.members?.find(
+		(member) => member.user_id !== currentUserId
+	)
+	const fieldDisplayName = otherMemberField?.field
+		? (otherMemberField.field.type === 'CUSTOM' 
+			? otherMemberField.field.custom_name 
+			: otherMemberField.field.type)
+		: null
 
 	return (
 		<>
@@ -155,8 +180,10 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 									{message.senderName}
 								</div>
 								{isGroup && message.memberCount !== undefined && (
-									<div className='justify-center text-neutral-500 caption-1 font-medium leading-4'>
-										{message.memberCount}
+									<div className='justify-center text-neutral-500 body-2 font-medium leading-4'>
+										{message.memberCount === 2 && fieldDisplayName 
+											? fieldDisplayName 
+											: message.memberCount}
 									</div>
 						)}
 								{!isGroup && message.role && (

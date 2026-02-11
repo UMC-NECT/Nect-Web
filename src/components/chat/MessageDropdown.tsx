@@ -27,7 +27,7 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const projectData = useGetProjectUsers()
 	
 	// 필터링된 프로젝트 목록 (최대 2개)
-	const filteredProjects = useFilteredWorkspaceItems(projectData, { maxCount: 2 })
+	const filteredProjects = useFilteredWorkspaceItems(projectData, { maxCount: 3 })
 	
 	// 선택된 프로젝트 ID (첫 번째 프로젝트를 기본값으로)
 	const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(undefined)
@@ -189,7 +189,7 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 			</div>
 
 			{/* 메시지 리스트 - 스크롤 영역 */}
-			<div className='flex flex-col gap-[12px] items-start relative shrink-0 w-full overflow-y-auto notification-scroll flex-1'>
+			<div className='flex flex-col items-start relative shrink-0 w-full overflow-y-auto notification-scroll flex-1'>
 				{activeTab === 'matching' ? (
 					isLoadingDM ? (
 						<div className='flex items-center justify-center w-full py-8 text-neutral-500'>
@@ -235,6 +235,7 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 										key={message.id}
 										message={message}
 										showDivider={index === 0}
+										projectId={selectedProjectId}
 										onClick={() => {
 											setSelectedRoomId(roomId)
 											setSelectedRoom({
