@@ -31,6 +31,7 @@ import {
 	useProjectPurposesQuery,
 	useProjectFunctionsQuery,
 	useProjectsServiceUsersQuery,
+	useDeleteProjectMutation,
 } from '@/hooks/mypage/useMypageApi'
 import type { RecruitmentLocalItem } from './tab1-project-setting/sections/Section02RecruitmentInfo'
 import { getProjectFieldValue } from '@/utils/projectField'
@@ -387,6 +388,7 @@ const OngoingProject = () => {
 	const { mutate: patchProjectsFunctions } = usePatchProjectsFunctions()
 	const { mutate: patchProjectsServiceUsers } = usePatchProjectsServiceUsersMutation()
 	const { mutate: patchRecruitmentStatus } = usePatchProjectRecruitmentStatusMutation()
+	const { mutate: deleteProjectMutation } = useDeleteProjectMutation()
 	const recruitmentDataRef = useRef<RecruitmentLocalItem[]>([])
 	const handleRecruitmentDataChange = useCallback(
 		(data: RecruitmentLocalItem[]) => {
@@ -583,7 +585,21 @@ const OngoingProject = () => {
 
 	// (모달 핸들러) 삭제 확인
 	const handleDeleteConfirm = () => {
-		open('deleteComplete')
+		if (!projectId) return
+
+		deleteProjectMutation(projectId, {
+			onSuccess: () => {
+				open('deleteComplete')
+				setTimeout(() => {
+					close()
+					navigate('/mypage/projects')
+				}, 1500)
+			},
+			onError: error => {
+				console.error('프로젝트 삭제 실패:', error)
+				close()
+			},
+		})
 	}
 
 	// (탭바 핸들러)

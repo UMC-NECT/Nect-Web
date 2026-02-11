@@ -21,6 +21,7 @@ import {
 	postProjectPlanFile,
 	patchProjectPlanFile,
 	deleteProjectPlanFile,
+	deleteProject,
 	getMypageProjectUsers,
 	postMypageTeamRoleEdit,
 	patchMemberField,
@@ -327,6 +328,18 @@ export const useDeleteProjectPlanFileMutation = () => {
 			queryClient.invalidateQueries({
 				queryKey: [...QUERY_KEY.mypage.project(), 'plan-file', variables.projectId],
 			})
+		},
+	})
+}
+
+// 프로젝트 삭제
+export const useDeleteProjectMutation = () => {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (projectId: string) => deleteProject(projectId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
 		},
 	})
 }

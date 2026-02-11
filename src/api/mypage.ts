@@ -216,6 +216,13 @@ export const deleteProjectPlanFile = async (projectId: string, planFileId: strin
 	return data
 }
 
+// 프로젝트 삭제
+export const deleteProject = async (projectId: string): Promise<CommonResponse> => {
+	const { data } = await api.delete(`/api/v1/mypage/${projectId}`)
+
+	return data
+}
+
 // 섹션 08. 리더 프로필
 
 // === 진행중인 프로젝트 (팀원 관리) ==========================================================
