@@ -4,4 +4,5 @@ export interface RecruitmentDto {
     customField: string | null;
     capacity: number;
     requirements: string[];
+    description?: string | null;
 }

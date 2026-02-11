@@ -32,7 +32,7 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPosition
         if (selectedParts.length > 0 && onMatchingComplete) {
             const selectedRecruitment = availableParts.find(p => p.name === selectedParts[0]);
             if (selectedRecruitment) {
-                onMatchingComplete(selectedRecruitment.field); // 선택한 field를 전달
+                onMatchingComplete(selectedRecruitment.field);
             }
         }
     };

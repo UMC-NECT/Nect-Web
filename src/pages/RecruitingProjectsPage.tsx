@@ -9,6 +9,7 @@ import ProjectInfoTab from '@/components/recruiting-projects/ProjectInfoTab';
 import TeamMembersTab from '@/components/recruiting-projects/TeamMembersTab';
 import MatchingRequestModal from '@/components/recruiting-projects/MatchingRequestModal';
 import MatchingRequestConfirmModal from '@/components/matching-available/MatchingRequestConfirmModal';
+import MatchingLimitModal from '@/components/matching-available/MatchingLimitModal';
 import MatchingSuccessModal from '@/components/recruiting-projects/MatchingSuccessModal';
 import MatchingCancelModal from '@/components/recruiting-projects/MatchingCancelModal';
 import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlockedModal';
@@ -29,6 +30,7 @@ const RecruitingProjectsPage = () => {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
+    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [selectedField, setSelectedField] = useState<string>('');
 
@@ -67,6 +69,13 @@ const RecruitingProjectsPage = () => {
         };
 
         return styles[positionName] || 'bg-tag-yellow';
+    };
+
+    const isMatchingLimitError = (error: unknown) => {
+        const err = error as { response?: { data?: { status?: { message?: string; description?: string } } } };
+        const status = err?.response?.data?.status;
+        const combinedMessage = [status?.message, status?.description].filter(Boolean).join(' ');
+        return combinedMessage.includes('해당 프로젝트의 해당 분야의 매칭 신청 가능 수를 초과하였습니다');
     };
 
     const handleMatchingButtonClick = () => {
@@ -262,6 +271,11 @@ const RecruitingProjectsPage = () => {
                                         setIsSuccessModalOpen(true);
                                     },
                                     onError: (error) => {
+                                        if (isMatchingLimitError(error)) {
+                                            setIsConfirmModalOpen(false);
+                                            setIsLimitModalOpen(true);
+                                            return;
+                                        }
                                         console.error('매칭 요청 실패:', error);
                                         setIsConfirmModalOpen(false);
                                     }
@@ -290,6 +304,12 @@ const RecruitingProjectsPage = () => {
                 <MatchingBlockedModal 
                     isOpen={isBlockedModalOpen}
                     onClose={() => setIsBlockedModalOpen(false)}
+                />
+
+                <MatchingLimitModal 
+                    isOpen={isLimitModalOpen}
+                    onClose={() => setIsLimitModalOpen(false)}
+                    onConfirm={() => setIsLimitModalOpen(false)}
                 />
             </div>
         </div>

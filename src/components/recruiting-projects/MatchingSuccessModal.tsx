@@ -4,6 +4,11 @@ interface MatchingSuccessModalProps {
 }
 
 const MatchingSuccessModal = ({ isOpen, onClose }: MatchingSuccessModalProps) => {
+    const handleGoToMatching = () => {
+        onClose();
+        window.location.href = '/mypage/matching';
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -22,7 +27,7 @@ const MatchingSuccessModal = ({ isOpen, onClose }: MatchingSuccessModalProps) =>
                 {/* 하단 버튼들 */}
                 <div className='flex gap-4 justify-center w-full'>
                     <button 
-                        onClick={onClose}
+                        onClick={handleGoToMatching}
                         className='w-[160px] h-[48px] border border-neutral-300 rounded-2xl text-[18px] font-semibold text-neutral-900 hover:bg-neutral-50 transition-colors'
                     >
                         매칭 현황 가기

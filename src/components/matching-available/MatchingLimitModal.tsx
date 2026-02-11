@@ -5,6 +5,11 @@ interface MatchingLimitModalProps {
 }
 
 const MatchingLimitModal = ({ isOpen, onClose, onConfirm }: MatchingLimitModalProps) => {
+    const handleConfirm = () => {
+        onConfirm();
+        window.location.href = '/mypage/matching';
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -43,7 +48,7 @@ const MatchingLimitModal = ({ isOpen, onClose, onConfirm }: MatchingLimitModalPr
                         돌아가기
                     </button>
                     <button 
-                        onClick={onConfirm}
+                        onClick={handleConfirm}
                         className='w-[160px] h-[48px] rounded-2xl text-[18px] font-semibold bg-primary-400-normal text-white hover:bg-primary-500-normal transition-colors'
                     >
                         매칭 현황 가기

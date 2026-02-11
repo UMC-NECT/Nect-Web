@@ -1,6 +1,12 @@
-export interface TeamRole {
+export interface TeamRoleField {
     role_field: string;
-    required_count: number;
+    count: number;
+}
+
+export interface TeamRole {
+    role: string;
+    count: number;
+    role_fields: TeamRoleField[];
 }
 
 export interface Leader {
@@ -25,7 +31,7 @@ export interface DefaultInfo {
     planned_started_on: string | null;
     planned_ended_on: string | null;
     image_name: string | null;
-    team_roles: TeamRole[];
+    team_roles: { roles: TeamRole[] } | TeamRole[];
     leader?: Leader;
     team_member_projects: TeamMemberProject[];
 }

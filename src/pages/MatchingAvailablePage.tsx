@@ -5,7 +5,7 @@ import hamburger from '@/assets/icons/common/hamburger-bar.svg';
 import chat from '@/assets/icons/common/message.svg';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import SelectProjectModal from '@/components/matching-available/SelectProjectModal';
-import SelectMultipleProjectModal from '@/components/matching-available/SelectMultipleProjectModal';
+import NoMatchingProjectModal from '@/components/matching-available/NoMatchingProjectModal';
 import MatchingRequestConfirmModal from '@/components/matching-available/MatchingRequestConfirmModal';
 import MatchingLimitModal from '@/components/matching-available/MatchingLimitModal';
 import MatchingRequestModal from '@/components/recruiting-projects/MatchingRequestModal';
@@ -15,7 +15,7 @@ import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlock
 import MemberProfileHeader from '@/components/recruiting-projects/MemberProfileHeader';
 import MemberProfileDetail from '@/components/recruiting-projects/MemberProfileDetail';
 import { useMemberDetail } from '@/hooks/queries/member/useMemberDetail';
-import { useMatchingsSentQuery } from '@/hooks/mypage/useMatchingApi';
+import { useMatchingsSentQuery, useMatchingCancelMutation, useMatchingProjectToUserMutation } from '@/hooks/mypage/useMatchingApi';
 import { useProjectRecruitments } from '@/hooks/queries/project';
 
 const MatchingAvailablePage = () => {
@@ -23,6 +23,8 @@ const MatchingAvailablePage = () => {
     const { data: memberData, isLoading, error } = useMemberDetail(Number(userId));
     
     const { data: sentMatchingsData } = useMatchingsSentQuery('project', 'pending');
+    const cancelMutation = useMatchingCancelMutation();
+    const matchingRequestMutation = useMatchingProjectToUserMutation();
     
     const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
     const [selectedField, setSelectedField] = useState<string>('');
@@ -30,15 +32,16 @@ const MatchingAvailablePage = () => {
     const { data: recruitments } = useProjectRecruitments(selectedProjectId || 0);
 
     const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
-    const [isSelectMultipleModalOpen, setIsSelectMultipleModalOpen] = useState(false);
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
     const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+    const [isNoProjectModalOpen, setIsNoProjectModalOpen] = useState(false);
     
     const [matchingCount, setMatchingCount] = useState(0);
+    const [cancelMatchingId, setCancelMatchingId] = useState('');
     const [isHovered, setIsHovered] = useState(false);
 
     const currentMatchingId = useMemo(() => {
@@ -46,9 +49,9 @@ const MatchingAvailablePage = () => {
             matching => matching.matchingStatus === 'PENDING'
         );
         return activeMatching?.matchingId ? String(activeMatching.matchingId) : '';
-    }, [sentMatchingsData]);
+    }, [sentMatchingsData, userId]);
 
-    const isMatching = useMemo(() => !!currentMatchingId, [currentMatchingId]);
+    const isMatching = !!currentMatchingId;
 
     const getPositionStyle = (position: string) => {
         const positionName = position.toLowerCase();
@@ -62,6 +65,13 @@ const MatchingAvailablePage = () => {
             'data': 'bg-tag-yellow',
         };
         return styles[positionName] || 'bg-tag-yellow';
+    };
+
+    const isMatchingLimitError = (error: unknown) => {
+        const err = error as { response?: { data?: { status?: { message?: string; description?: string } } } };
+        const status = err?.response?.data?.status;
+        const combinedMessage = [status?.message, status?.description].filter(Boolean).join(' ');
+        return combinedMessage.includes('해당 프로젝트의 해당 분야의 매칭 신청 가능 수를 초과하였습니다');
     };
 
     const handleMatchingButtonClick = () => {
@@ -79,16 +89,13 @@ const MatchingAvailablePage = () => {
         
         if (isMatching || realTimeMatchingId) {
             if (!realTimeMatchingId) {
-                alert('취소할 매칭을 찾을 수 없습니다.');
                 return;
             }
-            
+            setCancelMatchingId(realTimeMatchingId);
             setIsCancelModalOpen(true);
             
-        } else if (matchingCount === 0) {
+        } else if (matchingCount < 2) {
             setIsSelectModalOpen(true);
-        } else if (matchingCount === 1) {
-            setIsSelectMultipleModalOpen(true);
         } else if (matchingCount >= 2) {
             setIsLimitModalOpen(true);
         }
@@ -100,16 +107,66 @@ const MatchingAvailablePage = () => {
         setIsRequestModalOpen(true);
     };
 
-    const handleMultipleProjectSelect = (projectId: string) => {
-        setSelectedProjectId(Number(projectId));
-        setIsSelectMultipleModalOpen(false);
-        setIsRequestModalOpen(true);
-    };
-
     const handleFieldSelect = (field: string) => {
         setSelectedField(field);
         setIsRequestModalOpen(false);
         setIsConfirmModalOpen(true);
+    };
+
+    const handleMatchingConfirm = async () => {
+        console.log('🔵 handleMatchingConfirm 시작');
+        console.log('selectedProjectId:', selectedProjectId);
+        console.log('userId:', userId);
+        console.log('selectedField:', selectedField);
+        
+        if (!selectedProjectId || !userId || !selectedField) {
+            console.log('❌ 필수 정보 누락으로 리턴');
+            return;
+        }
+
+        console.log('sentMatchingsData:', sentMatchingsData);
+        console.log('projectMatchings:', sentMatchingsData?.body?.projectMatchings);
+        
+        // PENDING 상태 매칭 개수 확인
+        const totalPendingCount = sentMatchingsData?.body?.projectMatchings?.filter(
+            matching => matching.matchingStatus === 'PENDING'
+        ).length || 0;
+        
+        console.log(`✅ 현재 PENDING 매칭 개수: ${totalPendingCount}`);
+        
+        // 3개 이상이면 제한 모달 표시
+        if (totalPendingCount >= 3) {
+            console.log('⚠️ 매칭 개수 3개 이상 - 제한 모달 표시');
+            setIsConfirmModalOpen(false);
+            setIsLimitModalOpen(true);
+            return;
+        }
+
+        console.log('✅ 매칭 요청 진행');
+        const requestData = {
+            projectId: String(selectedProjectId),
+            targetUserId: userId,
+            body: { field: selectedField },
+        };
+        
+        console.log('📤 매칭 요청 전송 데이터:', requestData);
+
+        try {
+            await matchingRequestMutation.mutateAsync(requestData);
+            console.log('✅ 매칭 요청 성공');
+            setIsConfirmModalOpen(false);
+            setIsSuccessModalOpen(true);
+        } catch (error: unknown) {
+            if (isMatchingLimitError(error)) {
+                setIsConfirmModalOpen(false);
+                setIsLimitModalOpen(true);
+                return;
+            }
+            const err = error as { response?: { data?: { status?: { statusCode?: string; message?: string; description?: string } } } };
+            console.error('❌ 매칭 요청 실패:', error);
+            console.error('❌ Response:', err?.response);
+            console.error('❌ Response data:', err?.response?.data);
+        }
     };
 
     const handleMatchingSuccess = () => {
@@ -120,7 +177,23 @@ const MatchingAvailablePage = () => {
     };
 
     const handleCancelConfirm = () => {
-        setMatchingCount(Math.max(0, matchingCount - 1));
+        const matchingId = cancelMatchingId || currentMatchingId;
+        if (!matchingId) {
+            return;
+        }
+
+        cancelMutation.mutate(matchingId, {
+            onSuccess: () => {
+                setMatchingCount(Math.max(0, matchingCount - 1));
+                setCancelMatchingId('');
+                setIsCancelModalOpen(false);
+            },
+            onError: (error) => {
+                console.error('매칭 취소 실패:', error);
+                setCancelMatchingId('');
+                setIsCancelModalOpen(false);
+            },
+        });
     };
 
     if (isLoading) {
@@ -224,12 +297,15 @@ const MatchingAvailablePage = () => {
                     isOpen={isSelectModalOpen}
                     onClose={() => setIsSelectModalOpen(false)}
                     onConfirm={handleProjectSelect}
+                    onNoProject={() => {
+                        setIsSelectModalOpen(false);
+                        setIsNoProjectModalOpen(true);
+                    }}
                 />
 
-                <SelectMultipleProjectModal 
-                    isOpen={isSelectMultipleModalOpen}
-                    onClose={() => setIsSelectMultipleModalOpen(false)}
-                    onConfirm={handleMultipleProjectSelect}
+                <NoMatchingProjectModal 
+                    isOpen={isNoProjectModalOpen}
+                    onClose={() => setIsNoProjectModalOpen(false)}
                 />
 
                 <MatchingRequestModal 
@@ -243,10 +319,7 @@ const MatchingAvailablePage = () => {
                 <MatchingRequestConfirmModal 
                     isOpen={isConfirmModalOpen}
                     onClose={() => setIsConfirmModalOpen(false)}
-                    onConfirm={() => {
-                        setIsConfirmModalOpen(false);
-                        setIsSuccessModalOpen(true);
-                    }}
+                    onConfirm={handleMatchingConfirm}
                     memberName={memberData.name}
                     position={selectedField}
                 />
