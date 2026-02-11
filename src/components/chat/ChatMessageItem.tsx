@@ -231,7 +231,7 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick, project
 			</div>
 			{/* 구분선 */}
 			{showDivider && (
-				<div className='w-96 h-0 outline-1 -outline-offset-0.5 outline-neutral-200' />
+				<div className='w-[356px] h-px border-t border-neutral-200 mx-auto' />
 			)}
 		</>
 	)
