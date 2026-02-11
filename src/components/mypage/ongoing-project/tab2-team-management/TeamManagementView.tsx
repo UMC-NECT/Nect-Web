@@ -4,6 +4,7 @@ import Section02TeamHistory from './sections/Section02TeamHistory'
 import Section01TeamMembers from './sections/Section01TeamMembers'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
+import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 
 interface ITeamManagementView {
 	teamMembersByRole: TeamMembersByRole[]
@@ -11,10 +12,11 @@ interface ITeamManagementView {
 
 const TeamManagementView = ({ teamMembersByRole }: ITeamManagementView) => {
 	const openPartSettings = usePartSettingsModal(state => state.open)
-	const { teamMembersHistory } = useTeamMembersStore()
+	const { teamMembersHistory, memberApiDataMap } = useTeamMembersStore()
+	const projectId = useProjectIdStore(state => state.projectId)
 
 	const handleOpenPartSettings = () => {
-		openPartSettings(teamMembersByRole)
+		openPartSettings(String(projectId ?? ''), teamMembersByRole, memberApiDataMap)
 	}
 
 	return (
