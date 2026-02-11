@@ -13,7 +13,7 @@ export const MissonPart_Title = ({ title, task }: MissonPart_TitleProps) => {
 	return (
 		<div className={`flex flex-col items-center justify-center rounded-xl px-2.5 py-4 gap-1 mt-3 ${task ? 'bg-primary-400-normal' : 'bg-neutral-600'} w-[72px] h-[118px]`}>
 			{task && <GoalIcon className='w-[18px] h-[18px]' stroke='#FBF9FF' />}
-			<p className={cn('body-2 text-neutral-000 text-center', task ? 'text-white font-bold' : 'text-neutral-000 font-semibold')}>{title}</p>
+			<p className={cn('body-2 text-neutral-000 text-center w-[66px] line-clamp-2', task ? 'text-white font-bold' : 'text-neutral-000 font-semibold')}>{title}</p>
 		</div>
 	)
 }
@@ -85,7 +85,7 @@ export const MissionPart_Add = () => {
 					onClick={handleSubmit}
 					className='cursor-pointer hover:opacity-70 transition-opacity'
 				>
-					<PlusIcon className='w-[18px] h-[18px] stroke-neutral-000' />
+					<PlusIcon className='w-[18px] h-[18px] stroke-neutral-000 ' />
 				</button>
 			</div>
 		)
@@ -97,7 +97,7 @@ export const MissionPart_Add = () => {
 			onClick={handleClick}
 		>
 			<p className='body-2 font-bold text-neutral-000 text-center'>팀 추가</p>
-			<PlusIcon className='w-[18px] h-[18px] stroke-neutral-000' />
+			<PlusIcon className='w-[18px] h-[18px] stroke-neutral-000 ' />
 		</div>
 	)
 }
