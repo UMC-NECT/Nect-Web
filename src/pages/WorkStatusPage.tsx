@@ -55,6 +55,19 @@ const getTeamDisplayNameFromRoleFields = (roleFields: string[], parts: Part[]): 
 	return part?.part_label ?? part?.custom_role_field_name ?? rf
 }
 
+/** 팀 작업 진행률 title: 팀 키(enum/lane_name)를 parts와 매칭해 part_label 등 라벨로 반환 */
+const getTeamProgressLabel = (teamKey: string, parts: Part[]): string => {
+	if (!teamKey) return teamKey
+	const part = parts.find(
+		p =>
+			p.role_field === teamKey ||
+			p.role_field === `ROLE:${teamKey}` ||
+			p.custom_role_field_name === teamKey ||
+			p.part_label === teamKey
+	)
+	return part ? (part.part_label ?? part.custom_role_field_name ?? teamKey) : teamKey
+}
+
 /** 파트 API 그룹의 processes + status → WorkStatusItem */
 const mapPartProcessToWorkStatusItem = (
 	p: ProcessWeekProcessItem,
@@ -431,7 +444,11 @@ const WorkStatusPage = () => {
 					<h2 className='title-2 text-neutral-900 font-bold relative shrink-0 w-full'>팀 작업 진행률</h2>
 					<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
 						{Object.entries(progressData).map(([team, progress]) => (
-							<WorkProgress key={team} title={team} progress={progress} />
+							<WorkProgress
+								key={team}
+								title={getTeamProgressLabel(team, parts)}
+								progress={progress}
+							/>
 						))}
 
 						{/* 범례 */}
