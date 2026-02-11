@@ -20,6 +20,23 @@ export type ChatRoomListDto = {
 
 export type ResponseGetChatRoomsDto = CommonResponse<ChatRoomListDto[]>
 
+// 1-1-1. DM 채팅방 목록 조회
+export type DMRoomMessageDto = {
+	other_user_id: number
+	other_user_name: string
+	other_user_image_url: string | null
+	other_user_role_field: string | null
+	last_message_id: number
+	last_message: string | null
+	last_message_at: string
+	is_read: boolean
+}
+
+export type ResponseGetDMRoomsDto = CommonResponse<{
+	messages: DMRoomMessageDto[]
+	nextCursor: number | null
+}>
+
 // 1-2. 채팅방 메시지 조회
 export type ChatMessageDto = {
 	message_id: number

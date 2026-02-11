@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import SegmentsBarLg from '@/components/common/SegmentsBarLg'
 import { MessageItem } from './MessageItem'
 import { type ChatMessage } from '@/types/message'
 import NectChatRoom from './NectChatRoom'
+import { useQuery } from '@tanstack/react-query'
+import { getDMRooms } from '@/api/chat'
 
 interface MessageDropdownProps {
 	defaultTab?: 'matching' | 'team'
@@ -15,7 +17,30 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const [showChatRoom, setShowChatRoom] = useState(false)
 	const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null)
 
-	const messages: ChatMessage[] = [
+	// DM 채팅방 목록 조회 (매칭 요청 탭)
+	const { data: dmRoomsData, isLoading: isLoadingDM } = useQuery({
+		queryKey: ['dmRooms'],
+		queryFn: () => getDMRooms({ size: 20 }),
+		enabled: activeTab === 'matching',
+	})
+
+	// DM 채팅방 데이터를 ChatMessage 형식으로 변환
+	const dmMessages: ChatMessage[] = useMemo(() => {
+		if (!dmRoomsData?.body?.messages) return []
+		
+		return dmRoomsData.body.messages.map((dm) => ({
+			id: dm.other_user_id,
+			senderName: dm.other_user_name,
+			content: dm.last_message || '',
+			time: dm.last_message_at || '',
+			isRead: dm.is_read,
+			profileImage: dm.other_user_image_url || undefined,
+			role: dm.other_user_role_field || undefined,
+			isGroup: false,
+		}))
+	}, [dmRoomsData])
+
+	const teamMessages: ChatMessage[] = [
 		{
 			id: 1,
 			senderName: '이방토',
@@ -118,45 +143,72 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 					/>
 				</div>
 
-				{/* 필터 버튼 */}
-				<div className='flex gap-1 items-center relative shrink-0 w-[340px]'>
-					<button
-						onClick={() => setSelectedFilter('nect')}
-						className={`px-[14px] py-1 body-1 font-medium rounded-100 transition-colors ${
-							selectedFilter === 'nect'
-								? 'bg-primary-150-light border-[1.5px] border-primary-200-light text-primary-500-normal'
-								: 'bg-neutral-000 border border-neutral-200 text-neutral-900'
-						}`}
-					>
-						넥트
-					</button>
-					<button
-						onClick={() => setSelectedFilter('triple')}
-						className={`px-[14px] py-1 body-1 font-medium rounded-100 transition-colors ${
-							selectedFilter === 'triple'
-								? 'bg-primary-150-light border-[1.5px] border-primary-200-light text-primary-500-normal'
-								: 'bg-neutral-000 border border-neutral-200 text-neutral-900'
-						}`}
-					>
-						트리플
-					</button>
-				</div>
+				{/* 필터 버튼 - 팀 작업실 탭에서만 표시 */}
+				{activeTab === 'team' && (
+					<div className='flex gap-1 items-center relative shrink-0 w-[340px]'>
+						<button
+							onClick={() => setSelectedFilter('nect')}
+							className={`px-[14px] py-1 body-1 font-medium rounded-100 transition-colors ${
+								selectedFilter === 'nect'
+									? 'bg-primary-150-light border-[1.5px] border-primary-200-light text-primary-500-normal'
+									: 'bg-neutral-000 border border-neutral-200 text-neutral-900'
+							}`}
+						>
+							넥트
+						</button>
+						<button
+							onClick={() => setSelectedFilter('triple')}
+							className={`px-[14px] py-1 body-1 font-medium rounded-100 transition-colors ${
+								selectedFilter === 'triple'
+									? 'bg-primary-150-light border-[1.5px] border-primary-200-light text-primary-500-normal'
+									: 'bg-neutral-000 border border-neutral-200 text-neutral-900'
+							}`}
+						>
+							트리플
+						</button>
+					</div>
+				)}
 			</div>
 
 			{/* 메시지 리스트 - 스크롤 영역 */}
 			<div className='flex flex-col gap-[12px] items-start relative shrink-0 w-full overflow-y-auto notification-scroll flex-1'>
-				{messages.map(message => (
-					<MessageItem
-						key={message.id}
-						message={message}
-						isSelected={selectedMessageId === message.id}
-						onClick={() => {
-							setSelectedMessageId(message.id)
-							setSelectedMessage(message)
-							setShowChatRoom(true)
-						}}
-					/>
-				))}
+				{activeTab === 'matching' ? (
+					isLoadingDM ? (
+						<div className='flex items-center justify-center w-full py-8 text-neutral-500'>
+							메시지를 불러오는 중...
+						</div>
+					) : dmMessages.length === 0 ? (
+						<div className='flex items-center justify-center w-full py-8 text-neutral-500'>
+							메시지가 없습니다.
+						</div>
+					) : (
+						dmMessages.map(message => (
+							<MessageItem
+								key={message.id}
+								message={message}
+								isSelected={selectedMessageId === message.id}
+								onClick={() => {
+									setSelectedMessageId(message.id)
+									setSelectedMessage(message)
+									setShowChatRoom(true)
+								}}
+							/>
+						))
+					)
+				) : (
+					teamMessages.map(message => (
+						<MessageItem
+							key={message.id}
+							message={message}
+							isSelected={selectedMessageId === message.id}
+							onClick={() => {
+								setSelectedMessageId(message.id)
+								setSelectedMessage(message)
+								setShowChatRoom(true)
+							}}
+						/>
+					))
+				)}
 			</div>
 
 			{/* 하단 그라데이션 페이드 */}

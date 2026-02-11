@@ -12,6 +12,7 @@ import type {
 	CommonResponse,
 	GroupChatRoomCreateRequestDto,
 	ResponseGetChatRoomsDto,
+	ResponseGetDMRoomsDto,
 	ResponseGetProjectAlbumsDto,
 	ResponseGetProjectMembersDto,
 	ResponseGetProjectUsersDto,
@@ -26,6 +27,19 @@ import { toQueryString } from "@/utils/queryString"
 /** 특정 프로젝트의 모든 채팅방 목록 조회 */
 export const getChatRooms = async (projectId: number): Promise<ResponseGetChatRoomsDto> => {
 	const { data } = await api.get(`/api/v1/chats/projects/${projectId}/rooms`)
+	return data
+}
+
+/** DM 채팅방 목록 조회 */
+export const getDMRooms = async (options?: {
+	cursor?: number | null
+	size?: number
+}): Promise<ResponseGetDMRoomsDto> => {
+	const query = toQueryString({
+		cursor: options?.cursor?.toString(),
+		size: options?.size?.toString(),
+	})
+	const { data } = await api.get(`/api/v1/dms/rooms${query}`)
 	return data
 }
 
