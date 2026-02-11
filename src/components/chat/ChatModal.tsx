@@ -39,6 +39,8 @@ interface ChatModalProps {
 		const lastMessage = (room as any).last_message || room.lastMessage
 		const lastMessageTime = (room as any).last_message_time || room.lastMessageTime
 		const unreadCount = (room as any).unread_count || room.unreadCount
+		const memberCount = (room as any).member_count || (room as any).memberCount
+		const profileImages = (room as any).profile_images || (room as any).profileImages || []
 		
 		return {
 			id: roomId,
@@ -51,7 +53,8 @@ interface ChatModalProps {
 					})
 				: '',
 			isRead: unreadCount === 0,
-			memberCount: undefined,
+			memberCount: memberCount,
+			participants: profileImages, // 프로필 이미지 배열
 			unreadCount: unreadCount,
 			isGroup: true,
 			roomId: roomId,

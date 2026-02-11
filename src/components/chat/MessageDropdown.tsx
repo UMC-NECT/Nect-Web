@@ -82,6 +82,8 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 			const lastMessage = (room as any).last_message || room.lastMessage
 			const lastMessageTime = (room as any).last_message_time || room.lastMessageTime
 			const unreadCount = (room as any).unread_count || room.unreadCount
+			const memberCount = (room as any).member_count || (room as any).memberCount
+			const profileImages = (room as any).profile_images || (room as any).profileImages || []
 			
 			return {
 				id: roomId,
@@ -94,7 +96,8 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 						})
 					: '',
 				isRead: unreadCount === 0,
-				memberCount: undefined,
+				memberCount: memberCount,
+				participants: profileImages, // 프로필 이미지 배열
 				unreadCount: unreadCount || 0,
 				isGroup: true,
 				roomId: roomId,

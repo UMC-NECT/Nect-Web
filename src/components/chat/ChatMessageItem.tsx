@@ -7,11 +7,19 @@ interface ChatMessageItemProps {
 }
 
 export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatMessageItemProps) => {
-	const isGroup = message.isGroup ?? (message.participants && message.participants.length > 1)
+	const isGroup = message.isGroup ?? (message.memberCount !== undefined && message.memberCount > 1)
 	const participants = message.participants || []
-	const participantCount = participants.length
-	const displayParticipants = participants.slice(0, 4)
-	const profileImage = message.profileImage || 'https://placehold.co/44x44'
+	// member_count를 우선 사용, 없으면 participants.length 사용
+	// 나를 제외하고 표시하기 위해 -1
+	const baseCount = message.memberCount ?? participants.length
+	const participantCount = baseCount > 0 ? Math.max(1, baseCount - 1) : 0
+	// participantCount에 맞춰 기본 이미지로 채워서 표시 (최대 4개)
+	const defaultImage = 'https://placehold.co/44x44'
+	const displayCount = Math.min(participantCount, 4)
+	const displayParticipants = Array.from({ length: displayCount }, (_, index) => 
+		participants[index] || defaultImage
+	)
+	const profileImage = message.profileImage || defaultImage
 
 	return (
 		<>
@@ -35,11 +43,19 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 									const pos = positions[index]
 									return (
 										<div key={index} className={`w-5 h-5 ${pos.left} ${pos.top} absolute`}>
-											<img
-												className='w-5 h-5 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
-												src={participant || 'https://placehold.co/20x20'}
-												alt={`Participant ${index + 1}`}
-											/>
+											{participant && participant !== defaultImage ? (
+												<img
+													className='w-5 h-5 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
+													src={participant}
+													alt={`Participant ${index + 1}`}
+													onError={(e) => {
+														const target = e.target as HTMLImageElement
+														target.src = defaultImage
+													}}
+												/>
+											) : (
+												<div className='w-5 h-5 absolute inset-0 rounded-full outline-1 outline-neutral-000 bg-neutral-200' />
+											)}
 										</div>
 									)
 								})}
@@ -56,11 +72,19 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 									const pos = positions[index]
 									return (
 										<div key={index} className={`w-5 h-5 ${pos.left} ${pos.top} absolute`}>
-											<img
-												className='w-5 h-5 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
-												src={participant || 'https://placehold.co/20x20'}
-												alt={`Participant ${index + 1}`}
-											/>
+											{participant && participant !== defaultImage ? (
+												<img
+													className='w-5 h-5 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
+													src={participant}
+													alt={`Participant ${index + 1}`}
+													onError={(e) => {
+														const target = e.target as HTMLImageElement
+														target.src = defaultImage
+													}}
+												/>
+											) : (
+												<div className='w-5 h-5 absolute inset-0 rounded-full outline-1 outline-neutral-000 bg-neutral-200' />
+											)}
 										</div>
 									)
 								})}
@@ -76,23 +100,39 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick }: ChatM
 									const pos = positions[index]
 									return (
 										<div key={index} className={`w-6 h-6 ${pos.left} ${pos.top} ${pos.zIndex} absolute`}>
-							<img
-												className='w-6 h-6 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
-												src={participant || 'https://placehold.co/24x24'}
-												alt={`Participant ${index + 1}`}
-							/>
-						</div>
+											{participant && participant !== defaultImage ? (
+												<img
+													className='w-6 h-6 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
+													src={participant}
+													alt={`Participant ${index + 1}`}
+													onError={(e) => {
+														const target = e.target as HTMLImageElement
+														target.src = defaultImage
+													}}
+												/>
+											) : (
+												<div className='w-6 h-6 absolute inset-0 rounded-full outline-1 outline-neutral-000 bg-neutral-200' />
+											)}
+										</div>
 									)
 								})}
 				</div>
 			) : (
 							// 1명: 단일 이미지
 							<div className='w-11 h-11 relative shrink-0'>
-								<img
-									className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
-									src={displayParticipants[0] || 'https://placehold.co/44x44'}
-									alt='Participant'
-								/>
+								{displayParticipants[0] && displayParticipants[0] !== defaultImage ? (
+									<img
+										className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
+										src={displayParticipants[0]}
+										alt='Participant'
+										onError={(e) => {
+											const target = e.target as HTMLImageElement
+											target.src = defaultImage
+										}}
+									/>
+								) : (
+									<div className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 bg-neutral-200' />
+								)}
 							</div>
 						)
 					) : (

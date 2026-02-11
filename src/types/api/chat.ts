@@ -10,12 +10,18 @@ export type ChatRoomListDto = {
 	last_message?: string | null
 	last_message_time?: string | null
 	unread_count?: number
+	member_count?: number
+	profile_images?: string[]
+	has_new_message?: boolean
 	// camelCase도 지원 (하위 호환성)
 	roomId?: number
 	roomName?: string
 	lastMessage?: string | null
 	lastMessageTime?: string | null
 	unreadCount?: number
+	memberCount?: number
+	profileImages?: string[]
+	hasNewMessage?: boolean
 }
 
 export type ResponseGetChatRoomsDto = CommonResponse<ChatRoomListDto[]>
