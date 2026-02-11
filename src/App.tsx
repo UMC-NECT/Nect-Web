@@ -66,7 +66,7 @@ const router = createBrowserRouter([
 		errorElement: <ErrorPage />,
 		children: [
 			{
-				path: '/week-mission',
+				path: '/week-mission/:projectId?',
 				element: <WeekMissionPage />,
 			},
 			{
@@ -82,7 +82,7 @@ const router = createBrowserRouter([
 				element: <SharedDocumentsPage />,
 			},
 			{
-				path: '/work-status',
+				path: '/work-status/:projectId?',
 				element: <WorkStatusPage />,
 			},
 		],

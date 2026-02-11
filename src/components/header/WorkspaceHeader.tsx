@@ -3,10 +3,9 @@ import { createPortal } from 'react-dom'
 import LogoIcon from '@/assets/icons/header/Logo.svg?react'
 import BarIcon from '@/assets/icons/common/Bar.svg?react'
 import SearchIcon from '@/assets/icons/header/Search.svg?react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useParams, useLocation } from 'react-router'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import CTAModal from '@/components/common/CTAModal'
@@ -21,23 +20,34 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
 	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)
 	const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
 	const navigate = useNavigate()
+	const location = useLocation()
+	const params = useParams<{ projectId?: string }>()
 	const projectData = useGetProjectUsers()
 	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
-	const { setProjectId } = useProjectIdStore()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const isLoggedIn = getAccessToken()
+
+	const projectIdFromUrl = params.projectId != null ? parseInt(params.projectId, 10) : null
+	const displaySelectedId =
+		projectIdFromUrl ??
+		selectedProjectId ??
+		(filteredWorkspaceItems.length === 1 ? filteredWorkspaceItems[0].projectId : null)
 
 	const exploreMenuItems = [
 		{ name: '프로젝트 찾기', href: '/projectList' },
 		{ name: '팀원 찾기', href: '/necterList' },
 	]
 
-	const displaySelectedId = selectedProjectId ?? (filteredWorkspaceItems.length === 1 ? filteredWorkspaceItems[0].projectId : null)
-
 	const handleProjectSelect = (projectId: number) => {
 		setSelectedProjectId(projectId)
 		setShowWorkspaceMenu(false)
-		navigate(`/team-board/${projectId}`)
+		const pathBase = location.pathname.split('/').filter(Boolean)[0]
+		const workspaceMenus = ['team-board', 'week-mission', 'board', 'shared-documents', 'work-status']
+		if (pathBase && workspaceMenus.includes(pathBase)) {
+			navigate(`/${pathBase}/${projectId}`)
+		} else {
+			navigate(`/team-board/${projectId}`)
+		}
 	}
 
 	const shouldShowMenu = filteredWorkspaceItems.length >= 2
@@ -68,7 +78,6 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                             <button
                                 onClick={() => {
                                     onNavigate?.()
-                                    setProjectId(null)
                                     navigate('/')
                                 }}
                                 onMouseEnter={() => {
@@ -124,7 +133,6 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                                         return
                                     }
                                     const targetProjectId = displaySelectedId ?? filteredWorkspaceItems[0].projectId
-                                    setProjectId(targetProjectId)
                                     navigate(`/team-board/${targetProjectId}`)
                                 }}
                                 className={`title-3 font-medium transition-colors ${

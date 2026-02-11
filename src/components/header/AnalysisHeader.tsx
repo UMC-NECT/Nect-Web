@@ -16,14 +16,11 @@ import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
-
 const AnalysisHeader = () => {
 	const navigate = useNavigate()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const isLoggedIn = getAccessToken()
 	const projectData = useGetProjectUsers()
-	const { setProjectId } = useProjectIdStore()
 	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
 
 	const [showNotifications, setShowNotifications] = useState(false)
@@ -82,8 +79,7 @@ const AnalysisHeader = () => {
 									return
 								}
 								if (filteredWorkspaceItems.length === 1) {
-									setProjectId(filteredWorkspaceItems[0].projectId)
-									navigate('/team-board')
+									navigate(`/team-board/${filteredWorkspaceItems[0].projectId}`)
 								}
 							}}
 							onMouseEnter={() => setShowWorkspaceMenu(true)}
@@ -112,10 +108,7 @@ const AnalysisHeader = () => {
 										<button
 											type='button'
 											className='w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center whitespace-nowrap'
-											onClick={() => {
-												setProjectId(item.projectId)
-												navigate('/team-board')
-											}}
+											onClick={() => navigate(`/team-board/${item.projectId}`)}
 										>
 											{item.name}
 										</button>

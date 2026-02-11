@@ -7,6 +7,7 @@ export interface Feedback{
     created_by: {
         user_id: number
         user_name: string
+        nickname: string
         role_fields: string[]
     }
     created_at: string
@@ -23,7 +24,8 @@ export type ResponseFeedbackDeleteDto = CommonResponse<{
 }>
 
 export type RequestFeedbackPatchDto = {
-    content: string
+    content?: string
+    feedback_status?: "OPEN" | "RESOLVED"
 }
 
 export type ResponseFeedbackPatchDto = CommonResponse<Feedback & { updated_at: string }>

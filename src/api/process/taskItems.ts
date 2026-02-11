@@ -25,7 +25,7 @@ export const patchTaskItemsOrder = async (
 	processId: string,
 	body: RequestTaskItemsOrderPatchDto
 ): Promise<ResponseTaskItemsOrderPatchDto> => {
-	const { data } = await api.patch(`/api/v1/projects/${projectId}/processes/${processId}/task-items/order`, body)
+	const { data } = await api.patch(`/api/v1/projects/${projectId}/processes/${processId}/task-items/reorder`, body)
 	return data
 }
 

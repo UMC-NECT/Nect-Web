@@ -6,8 +6,9 @@ import {
 	patchMissionStatus,
 	patchTaskItem,
 	deleteTaskItem,
+	patchTaskItemsReorder,
 } from '@/api/process/weekMission'
-import type { RequestStatusPatchDto, RequestTaskPatchDto } from '@/types/api/process/weekMission'
+import type { RequestStatusPatchDto, RequestTaskPatchDto, RequestTaskItemsReorderPatchDto } from '@/types/api/process/weekMission'
 import { QUERY_KEY } from '@/constants/key'
 
 /** start_date 기준 위크미션 주차 목록 조회 */
@@ -98,6 +99,26 @@ export const useDeleteTaskItemMutation = () => {
 			processId: string
 			taskItemId: string
 		}) => deleteTaskItem(projectId, processId, taskItemId),
+		onSuccess: (_, { projectId, processId }) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectId) })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.detail(projectId, processId) })
+		},
+	})
+}
+
+/** 위크미션 TaskItem 정렬 순서 수정 */
+export const usePatchTaskItemsReorderMutation = () => {
+	const queryClient = useQueryClient()
+	return useMutation({
+		mutationFn: ({
+			projectId,
+			processId,
+			body,
+		}: {
+			projectId: string
+			processId: string
+			body: RequestTaskItemsReorderPatchDto
+		}) => patchTaskItemsReorder(projectId, processId, body),
 		onSuccess: (_, { projectId, processId }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectId) })
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.detail(projectId, processId) })

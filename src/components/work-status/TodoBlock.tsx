@@ -3,6 +3,7 @@ import AvatarGroup from '@/components/common/AvatarGroup'
 import ProgressBar from '@/components/week-mission/ProgressBar'
 import LinkIcon from '@/assets/icons/work-status/link.svg?react'
 import DoIcon from '@/assets/icons/work-status/do.svg?react'
+import ClipIcon from '@/assets/icons/common/clip.svg?react'
 import ChevronDownIcon from '@/assets/icons/common/chevron-down.svg?react'
 import { calculateDateSpan } from '@/utils/dateUtils'
 import LinkChip from './LinkChip'
@@ -21,9 +22,18 @@ interface TodoBlockProps {
 	dueDate?: string // "2025.11.21" 형식
 	/** API 응답 left_day (있으면 D-day 표시에 사용, 없으면 dueDate로 계산) */
 	leftDay?: number
-	participants?: { id: number; name: string; avatar: string }[] // 사용자 아바타 이미지 URL 배열
+	participants?: { id: number; name: string; avatar: string }[]
 	links?: string | string[]
-	attachments?: number // 첨부파일 개수
+	attachments?: number
+	/** 파트 조회 API attachment_summary (있으면 파일/링크 개수·확장자 표시) */
+	attachmentSummary?: {
+		file_count: number
+		link_count: number
+		total_count: number
+		file_extensions: string[]
+	}
+	/** 파트 조회 API attachments_meta (상위 2개 아이콘, 나머지 +N) */
+	attachmentsMeta?: Array<{ type: 'FILE' | 'LINK'; file_ext: string | null }>
 	variant?: 'Default' | 'Minimum' | 'Edit'
 	isEdit?: boolean
 	onClick?: () => void
@@ -49,8 +59,10 @@ const TodoBlock = ({
 	dueDate,
 	leftDay,
 	participants = [],
-    links,
-    attachments,
+	links,
+	attachments,
+	attachmentSummary,
+	attachmentsMeta,
 	variant = 'Default',
 	isEdit = false,
 	onClick,
@@ -118,19 +130,76 @@ const TodoBlock = ({
 					<div className='flex flex-col gap-[8px] items-start relative shrink-0 w-full'>
 						{/* 아이콘 + 카운트 */}
 						<div className='flex gap-[7px] h-[28px] items-center relative shrink-0'>
-							{/* 링크/첨부파일 아이콘 + 카운트 */}
+							{/* 링크/첨부파일: attachmentsMeta(상위 2개 아이콘 + +N) 우선, 없으면 attachmentSummary/links/attachments */}
 							{(() => {
-								// links를 배열로 변환 (쉼표로 구분된 문자열이거나 이미 배열)
+								const meta = attachmentsMeta ?? []
+								if (meta.length > 0) {
+									const displayItems = meta.slice(0, 2)
+									const remainingCount = meta.length - 2
+									return (
+										<div className='flex gap-[2px] items-center relative shrink-0'>
+											<div className='flex gap-[7px] items-center'>
+												{displayItems.map((item, index) =>
+													item.type === 'FILE' && item.file_ext ? (
+														<LinkChip key={index} app={item.file_ext.toUpperCase()} />
+													) : (
+														<LinkIcon key={index} className='size-[14px]' style={{ filter: 'opacity(0.65)' }} />
+													)
+												)}
+											</div>
+											{remainingCount > 0 && (
+												<span className='body-3 text-status-info-cool-gray-deep font-medium'>
+													+{remainingCount}
+												</span>
+											)}
+										</div>
+									)
+								}
+								if (attachmentSummary && attachmentSummary.total_count > 0) {
+									const { file_count, link_count, file_extensions } = attachmentSummary
+									const displayExts = (file_extensions ?? []).slice(0, 2)
+									const remainingExts = (file_extensions?.length ?? 0) - 2
+									return (
+										<div className='flex gap-[3px] items-center relative shrink-0 flex-wrap'>
+											{displayExts.length > 0 &&
+												displayExts.map((ext, index) => (
+													<LinkChip key={index} app={ext.toUpperCase()} />
+												))}
+											{remainingExts > 0 && (
+												<span className='body-3 text-status-info-cool-gray-deep font-medium'>
+													+{remainingExts}
+												</span>
+											)}
+											{file_count > 0 && (
+												<div className='flex gap-[3px] items-center relative shrink-0'>
+													<div className='overflow-clip relative shrink-0 size-[18px]'>
+														<ClipIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
+													</div>
+													<p className='body-3 text-status-info-cool-gray-deep font-medium leading-[1.4]'>
+														{file_count}
+													</p>
+												</div>
+											)}
+											{link_count > 0 && (
+												<div className='flex gap-[3px] items-center relative shrink-0'>
+													<div className='overflow-clip relative shrink-0 size-[18px]'>
+														<LinkIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
+													</div>
+													<p className='body-3 text-status-info-cool-gray-deep font-medium leading-[1.4]'>
+														{link_count}
+													</p>
+												</div>
+											)}
+										</div>
+									)
+								}
 								const linksArray = links
 									? Array.isArray(links)
 										? links
 										: links.split(',').map(link => link.trim()).filter(link => link)
 									: []
-
-								// 최대 2개까지 표시
 								const displayLinks = linksArray.slice(0, 2)
 								const remainingCount = linksArray.length - 2
-
 								if (displayLinks.length > 0) {
 									return (
 										<div className='flex gap-[3px] items-center relative shrink-0'>
@@ -144,17 +213,16 @@ const TodoBlock = ({
 											)}
 										</div>
 									)
-								} else if (attachments) {
+								}
+								if (attachments) {
 									return (
 										<div className='flex gap-[3px] items-center relative shrink-0'>
 											<div className='overflow-clip relative shrink-0 size-[18px]'>
 												<LinkIcon className='w-full h-full' style={{ filter: 'opacity(0.65)' }} />
 											</div>
-											<div className='flex items-center relative shrink-0'>
-												<p className='body-3 text-status-info-cool-gray-deep font-medium leading-[1.4] relative shrink-0 whitespace-pre'>
-													{attachments}
-												</p>
-											</div>
+											<p className='body-3 text-status-info-cool-gray-deep font-medium leading-[1.4]'>
+												{attachments}
+											</p>
 										</div>
 									)
 								}

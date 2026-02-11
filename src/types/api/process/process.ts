@@ -32,13 +32,28 @@ export type ResponseProcessPostDto = CommonResponse<{
     process_id: number
 }>
 
+export type ProcessPartProcessItem = ProcessWeekProcessItem & {
+	attachment_summary?: {
+		total_count: number
+		file_count: number
+		link_count: number
+		file_extensions: string[]
+	}
+	attachments_meta?: Array<{
+		type: 'FILE' | 'LINK'
+		document_id: number
+		attached_at: string
+		file_ext: string | null
+	}>
+}
+
 export type ResponseProcessPartDto = CommonResponse<{
-    lane_key: string | null
-    groups: {
-        status: string
-        count: number
-        processes: ProcessWeekProcessItem[]
-    }[]
+	lane_key: string | null
+	groups: {
+		status: string
+		count: number
+		processes: ProcessPartProcessItem[]
+	}[]
 }>
 
 /** 주차별 프로세스 조회 - 한 주의 한 건 카드 (API 응답 필드명 그대로) */
@@ -136,22 +151,36 @@ export type ResponseProcessDetailDto = CommonResponse<{
     task_items: TaskItems[]
     feedbacks: ProcessDetailFeedback[]
     attachments: ProcessDetailAttachment[]
+    writer: {
+        user_id: number
+        name: string
+        nickname: string
+        role_field: string | null
+        custom_role_field_name: string | null
+    }
+    last_edited_by: {
+        user_id: number
+        name: string
+        nickname: string
+        role_field: string | null
+        custom_role_field_name: string | null
+    }
     created_at: string
     updated_at: string
     deleted_at: boolean | null
 }>
 
 export type RequestProcessPatchDto = {
-    process_title: string
-    process_content: string
-    process_status: string
-    start_date: string
-    dead_line: string
-    role_fields: string[]
-    custom_fields: string[]
-    mission_number: number
-    assignee_ids: number[]
-    mention_user_ids: number[]
+    process_title?: string
+    process_content?: string
+    process_status?: string
+    start_date?: string
+    dead_line?: string
+    role_fields?: string[]
+    custom_fields?: string[]
+    mission_number?: number
+    assignee_ids?: number[]
+    mention_user_ids?: number[]
 }
 
 export type ResponseProcessPatchDto = CommonResponse<{
@@ -214,12 +243,19 @@ export type ResponseProgressSummaryDto = CommonResponse<{
 export type ResponseHistoryDto = CommonResponse<{
     next_cursor: number | null
     items: {
-        actor_user_id: number
-        target_type: string
-        created_at: string
-        action: string
-        target_id: number
         history_id: number
-        meta_json: string
+        action: string
+        target_type: string
+        target_id: number
+        actor: {
+            user_id: number
+            name: string
+            nickname: string
+            role_field: string | null
+            custom_field_name: string | null
+        }
+        main_message: string
+        content_message: string | null
+        created_at: string
     }[]
 }>

@@ -10,6 +10,8 @@ interface WorkContentInputProps {
 	onChange: (value: string) => void
 	partName?: string
 	authorName?: string
+	/** API 응답의 created_at/updated_at 포맷된 값 (있으면 이 값 표시) */
+	timestamp?: string
 	placeholder?: string
 	className?: string
 }
@@ -19,6 +21,7 @@ const WorkContentInput = ({
 	onChange,
 	partName = '내 파트',
 	authorName = '나',
+	timestamp: timestampFromProps,
 	placeholder = '미션의 업무 내용을 적어주세요',
 	className,
 }: WorkContentInputProps) => {
@@ -48,7 +51,7 @@ const WorkContentInput = ({
 
 	const handleFocus = () => {
 		setIsFocused(true)
-		if (!timestamp) {
+		if (!timestampFromProps && !timestamp) {
 			setTimestamp(formatTimestamp())
 		}
 	}
@@ -171,7 +174,7 @@ const WorkContentInput = ({
 						<div className='w-0.5 h-3 bg-neutral-300 rounded-6' />
 						<p className='body-2 font-medium text-neutral-900'>{authorName}</p>
 					</div>
-					<p className='caption-1 font-normal text-neutral-400'>{timestamp || formatTimestamp()}</p>
+					<p className='caption-1 font-normal text-neutral-400'>{timestampFromProps ?? timestamp ?? formatTimestamp()}</p>
 				</div>
 			)}
 

@@ -6,7 +6,7 @@ import { useWeekStore } from '@/stores/weekStore'
 import StudioTitle from '@/components/common/StudioTitle'
 import ScheduleAddIcon from '@/assets/icons/week-mission/schedule-add.svg?react'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import { useWorkspaceProjectId } from '@/hooks/useWorkspaceProjectId'
 import { useProcessWeekQuery } from '@/hooks/process/useProcessApi'
 import { useWeekMissionQuery } from '@/hooks/process/useWeekMissionApi'
 import type { WeekMissionItem } from '@/types/api/process/weekMission'
@@ -116,10 +116,9 @@ const WeekMissionPage = () => {
 	const { missions, updateMission, setMissions, removeMission } = useMissionStore()
 	const { openMissionModal } = useMissionModalStore()
 	const { roles, setRoles, setPersons } = useTeamStore()
-	const { projectId } = useProjectIdStore()
+	const { projectIdStr } = useWorkspaceProjectId({ redirectIfMissing: true })
 	const { weekInfo } = useWeekStore()
 	const queryClient = useQueryClient()
-	const projectIdStr = projectId?.toString() ?? ''
 
 	// weekStore 기준일(선택한 주의 월요일)에서 2주 전을 start_date로 사용, weeks 6으로 요청
 	const baseDate = weekInfo?.dates?.[0] ? new Date(weekInfo.dates[0]) : new Date()
@@ -236,33 +235,21 @@ const WeekMissionPage = () => {
 				)
 				return
 			}
-			// 드래그·리사이즈로 start_date / dead_line 변경 시 PATCH 프로세스 호출
-			if (updates.start_date !== undefined || updates.dead_line !== undefined) {
+			// 드래그·리사이즈로 start_date / dead_line / sectionIndex(줄) 변경 시 PATCH — 변경된 필드만 전달
+			if (updates.start_date !== undefined || updates.dead_line !== undefined || updates.sectionIndex !== undefined) {
 				const mission = missions.find(m => m.process_id === missionId)
 				if (!mission) return
-				const cachedDetail = queryClient.getQueryData<{
-					body?: {
-						process_title?: string
-						process_content?: string
-						process_status?: string
-						role_fields?: string[]
-						custom_fields?: string[]
-						assignees?: Array<{ user_id: number }>
-						mention_user_ids?: number[]
-					}
-				}>(QUERY_KEY.process.detail(projectIdStr, String(missionId)))
-				const body = {
-					process_title: cachedDetail?.body?.process_title ?? mission.title,
-					process_content: cachedDetail?.body?.process_content ?? '',
-					process_status: mission.status ?? 'PLANNING',
-					start_date: formatDateToApi(updates.start_date ?? mission.start_date),
-					dead_line: formatDateToApi(updates.dead_line ?? mission.dead_line),
-					role_fields: cachedDetail?.body?.role_fields ?? [],
-					custom_fields: cachedDetail?.body?.custom_fields ?? [],
-					mission_number: mission.mission_number ?? 0,
-					assignee_ids: cachedDetail?.body?.assignees?.map(a => a.user_id) ?? mission.assignee?.map(a => a.user_id) ?? [],
-					mention_user_ids: cachedDetail?.body?.mention_user_ids ?? [],
+
+				const body: { start_date?: string; dead_line?: string; role_fields?: string[]; custom_fields?: string[] } = {}
+				if (updates.start_date !== undefined) body.start_date = formatDateToApi(updates.start_date)
+				if (updates.dead_line !== undefined) body.dead_line = formatDateToApi(updates.dead_line)
+				if (updates.sectionIndex !== undefined && updates.sectionIndex >= 1 && roles[updates.sectionIndex - 1]) {
+					const part = roles[updates.sectionIndex - 1]
+					body.role_fields = part.role_field != null && part.role_field !== '' ? [part.role_field] : []
+					body.custom_fields = part.custom_role_field_name != null && part.custom_role_field_name !== '' ? [part.custom_role_field_name] : []
 				}
+				if (Object.keys(body).length === 0) return
+
 				patchProcessMutation.mutate(
 					{
 						projectId: projectIdStr,
@@ -284,6 +271,7 @@ const WeekMissionPage = () => {
 		[
 			projectIdStr,
 			missions,
+			roles,
 			queryClient,
 			patchProcessStatusMutation,
 			patchProcessMutation,

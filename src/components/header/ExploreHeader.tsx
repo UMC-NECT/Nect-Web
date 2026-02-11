@@ -16,7 +16,6 @@ import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { Link, useLocation, useNavigate } from 'react-router'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import { useNotificationList } from '@/hooks/notification/useNotificationList'
 
 interface ExploreHeaderProps {
@@ -32,7 +31,6 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)
 	const navigate = useNavigate()
 	const projectData = useGetProjectUsers()
-	const { setProjectId } = useProjectIdStore()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const location = useLocation()
 	const currentPath = location.pathname
@@ -121,8 +119,8 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 										return
 									}
 									onNavigate?.()
-									setProjectId(projectData?.[0]?.projectId ?? null)
-									navigate('/team-board')
+									const firstId = filteredWorkspaceItems[0]?.projectId ?? projectData?.[0]?.projectId
+									navigate(firstId != null ? `/team-board/${firstId}` : '/team-board')
 								}}
 								onMouseEnter={() => setShowWorkspaceMenu(true)}
 								className='title-3 font-medium text-neutral-400 hover:text-primary-500-normal transition-colors'
@@ -150,10 +148,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 											<div key={item.projectId}>
 												<button
 													className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center whitespace-nowrap"
-													onClick={() => {
-														setProjectId(item.projectId ?? null)
-														navigate('/team-board')
-													}}
+													onClick={() => navigate(`/team-board/${item.projectId}`)}
 												>
 													{item.name}
 												</button>
