@@ -31,6 +31,7 @@ import {
 	usePatchTaskItemMutation,
 	useDeleteTaskItemMutation,
 	usePatchMissionStatusMutation,
+	usePatchTaskItemsReorderMutation,
 } from '@/hooks/process/useWeekMissionApi'
 import { usePostProcessMutation, usePostFileMutation, usePatchProcessMutation } from '@/hooks/process/useProcessApi'
 import {
@@ -154,6 +155,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		addRoleTask,
 		updateRoleTask,
 		toggleRoleTask,
+		reorderRoleTasks,
 		addFeedback,
 		updateFeedback,
 		removeFeedback,
@@ -181,6 +183,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const patchTaskItemMutation = usePatchTaskItemMutation()
 	const deleteTaskItemMutation = useDeleteTaskItemMutation()
 	const patchMissionStatusMutation = usePatchMissionStatusMutation()
+	const patchTaskItemsReorderMutation = usePatchTaskItemsReorderMutation()
 
 	useEffect(() => {
 		if (!missionListData?.body?.missions) return
@@ -1102,6 +1105,23 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 							)
 						}
 					},
+					onReorderTask: (roleId: number, orderedTaskItemIds: number[]) => {
+						const part = roles.find(r => r.part_id === roleId)
+						const rolePayload = toRoleFieldPayload(part ?? undefined)
+						patchTaskItemsReorderMutation.mutate(
+							{
+								projectId,
+								processId: String(editingMissionId),
+								body: {
+									...rolePayload,
+									ordered_task_item_ids: orderedTaskItemIds,
+								},
+							},
+							{
+								onSuccess: () => reorderRoleTasks(roleId, orderedTaskItemIds),
+							}
+						)
+					},
 				}
 			: undefined
 
@@ -1348,6 +1368,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 									onAddTask={rolePanelApiHandlers?.onAddTask}
 									onToggleTask={rolePanelApiHandlers?.onToggleTask}
 									onUpdateTask={rolePanelApiHandlers?.onUpdateTask}
+									onReorderTask={rolePanelApiHandlers?.onReorderTask}
 								/>
 							</div>
 								)

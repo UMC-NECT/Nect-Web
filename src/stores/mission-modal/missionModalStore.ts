@@ -127,6 +127,8 @@ interface MissionModalStore {
 	updateRoleTask: (taskId: number, updates: Partial<RoleTask>) => void
 	removeRoleTask: (taskId: number) => void
 	toggleRoleTask: (taskId: number) => void
+	/** 해당 역할의 업무 순서를 변경 (orderedTaskIds 순서로 정렬) */
+	reorderRoleTasks: (roleId: number, orderedTaskIds: number[]) => void
 	resetMissionModal: () => void
 
 	// 모달 상태 액션
@@ -323,6 +325,23 @@ export const useMissionModalStore = create<MissionModalStore>(set => ({
 		set(state => ({
 			roleTasks: state.roleTasks.map(t => (t.id === taskId ? { ...t, isComplete: !t.isComplete } : t)),
 		})),
+	reorderRoleTasks: (roleId, orderedTaskIds) =>
+		set(state => {
+			const byRole = new Map<number, RoleTask[]>()
+			for (const t of state.roleTasks) {
+				if (!byRole.has(t.roleId)) byRole.set(t.roleId, [])
+				byRole.get(t.roleId)!.push(t)
+			}
+			const orderMap = new Map(orderedTaskIds.map((id, i) => [id, i]))
+			const reordered = (byRole.get(roleId) ?? [])
+				.slice()
+				.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0))
+			byRole.set(roleId, reordered)
+			const roleOrder = [...new Set(state.roleTasks.map(t => t.roleId))]
+			return {
+				roleTasks: roleOrder.flatMap(rid => byRole.get(rid) ?? []),
+			}
+		}),
 	resetMissionModal: () => set(initialMissionModalState),
 
 	// 모달 상태 액션

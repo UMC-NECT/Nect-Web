@@ -98,3 +98,14 @@ export type ResponseTaskPatchDto = CommonResponse<{
     sort_order: number
     done_at: string
 }>
+
+export type RequestTaskItemsReorderPatchDto = {
+    role_field: string |null
+    custom_role_field_name: string |null
+    ordered_task_item_ids: number[]
+}
+
+export type ResponseTaskItemsReorderPatchDto = CommonResponse<{
+    process_id: number
+    ordered_task_items: WeekMissionTaskItem[]
+}>

@@ -7,6 +7,8 @@ import type {
 	ResponseMissionListDto,
 	ResponseStatusPatchDto,
 	ResponseTaskPatchDto,
+	ResponseTaskItemsReorderPatchDto,
+	RequestTaskItemsReorderPatchDto,
 } from '@/types/api/process/weekMission'
 import type { CommonResponse } from '@/types/api/commonResponse'
 
@@ -49,5 +51,14 @@ export const deleteTaskItem = async (
     taskItemId: string
 ): Promise<CommonResponse<void>> => {
     const { data } = await api.delete(`/api/v1/projects/${projectId}/week-missions/${processId}/task-items/${taskItemId}`)
+    return data
+}
+
+export const patchTaskItemsReorder = async (
+    projectId: string,
+    processId: string,
+    body: RequestTaskItemsReorderPatchDto
+): Promise<ResponseTaskItemsReorderPatchDto> => {
+    const { data } = await api.patch(`/api/v1/projects/${projectId}/week-missions/${processId}/task-items/reorder`, body)
     return data
 }
