@@ -155,7 +155,8 @@ const buildPlanFileFormData = (payload: ProjectPlanFileRequest): FormData => {
 	formData.append('name', payload.name)
 	formData.append('planFileType', payload.planFileType)
 	if (payload.planFileType === 'FILE') {
-		formData.append('file', payload.file)
+		const fileName = payload.file instanceof File ? payload.file.name : 'file'
+		formData.append('file', payload.file, fileName)
 	} else {
 		formData.append('link', payload.link)
 	}
@@ -169,7 +170,7 @@ export const getProjectPlanFile = async (projectId: string): Promise<ResponsePro
 	return data
 }
 
-// 섹션 07. 프로젝트 세부 기획 파일 - 생성
+// 섹션 07. 프로젝트 세부 기획 파일 - 생성 (파일/링크 모두 POST 사용)
 export const postProjectPlanFile = async (projectId: string, body: ProjectPlanFileRequest): Promise<CommonResponse> => {
 	const formData = buildPlanFileFormData(body)
 	const { data } = await api.post(`/api/v1/mypage/projects/${projectId}/plan-file`, formData, {

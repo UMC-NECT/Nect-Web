@@ -45,19 +45,33 @@ const Section07ProjectFiles = ({ control, setValue, watch, projectId }: ISection
 		queueMicrotask(() => {
 			const files = planFilesData.body?.files?.flat() || []
 			if (files.length === 0) {
-				replace([])
+				replace([
+					{
+						id: tempIdCounter.current--,
+						title: '',
+						link: '',
+						fileUrl: '',
+						file: undefined,
+						planFileType: 'LINK' as PlanFileTypeEnum,
+						isCompleted: false,
+					},
+				])
 				return
 			}
 
-			const mapped = files.map(file => ({
-				id: file.plan_file_id,
-				title: file.name || '',
-				link: file.plan_file_type === 'LINK' ? file.link || '' : file.file_url || '',
-				file: undefined,
-				planFileType: file.plan_file_type,
-				fileName: file.file_name || undefined,
-				isCompleted: true,
-			}))
+			const mapped = files.map(file => {
+				const isFile = file.plan_file_type === 'FILE'
+				return {
+					id: file.plan_file_id,
+					title: file.name || '',
+					link: isFile ? file.file_name || '' : file.link || '',
+					fileUrl: isFile ? file.file_url || '' : file.link || '',
+					file: undefined,
+					planFileType: file.plan_file_type,
+					fileName: file.file_name || undefined,
+					isCompleted: true,
+				}
+			})
 
 			replace(mapped)
 			setValue('portfolioFiles', mapped, { shouldDirty: false })
@@ -69,6 +83,7 @@ const Section07ProjectFiles = ({ control, setValue, watch, projectId }: ISection
 			id: tempIdCounter.current--,
 			title: '',
 			link: '',
+			fileUrl: '',
 			file: undefined,
 			planFileType: 'LINK' as PlanFileTypeEnum,
 			isCompleted: false,
@@ -93,14 +108,16 @@ const Section07ProjectFiles = ({ control, setValue, watch, projectId }: ISection
 
 		const planFileId = watch(`portfolioFiles.${index}.id`)
 		const currentTitle = watch(`portfolioFiles.${index}.title`)
-		const safeTitle = currentTitle?.trim() || file.name.replace(/\.[^/.]+$/, '')
+		const safeTitle = currentTitle?.trim() || file.name
 		const payload = { name: safeTitle, planFileType: 'FILE' as const, file }
 
 		// UI 업데이트
 		const blobUrl = URL.createObjectURL(file)
 		setValue(`portfolioFiles.${index}.title`, safeTitle, { shouldDirty: true })
-		setValue(`portfolioFiles.${index}.link`, blobUrl, { shouldDirty: true })
+		setValue(`portfolioFiles.${index}.link`, file.name, { shouldDirty: true })
+		setValue(`portfolioFiles.${index}.fileUrl`, blobUrl, { shouldDirty: true })
 		setValue(`portfolioFiles.${index}.file`, file, { shouldDirty: true })
+		setValue(`portfolioFiles.${index}.fileName`, file.name, { shouldDirty: true })
 		setValue(`portfolioFiles.${index}.planFileType`, 'FILE', { shouldDirty: true })
 		setValue(`portfolioFiles.${index}.isCompleted`, true, { shouldDirty: true })
 
@@ -195,6 +212,8 @@ const Section07ProjectFiles = ({ control, setValue, watch, projectId }: ISection
 					const currentIsCompleted = watch(`portfolioFiles.${index}.isCompleted`)
 					const currentTitle = watch(`portfolioFiles.${index}.title`)
 					const currentLink = watch(`portfolioFiles.${index}.link`)
+					const currentPlanFileType = watch(`portfolioFiles.${index}.planFileType`)
+					const currentFileUrl = watch(`portfolioFiles.${index}.fileUrl`)
 					const hasContent = !!(currentTitle || currentLink)
 
 					return (
@@ -209,7 +228,9 @@ const Section07ProjectFiles = ({ control, setValue, watch, projectId }: ISection
 								onDragLeave={handleDragLeave}
 								onDrop={e => handleDrop(e, index)}
 							>
-								<ClipIcon className={`w-5 h-5 mt-1 shrink-0 ${hasContent ? 'text-neutral-700' : 'text-neutral-400'}`} />
+								<ClipIcon
+									className={`w-5 h-5 mt-1 shrink-0 ${hasContent ? 'text-neutral-700' : 'text-neutral-400'}`}
+								/>
 								<div className='flex-1 flex gap-2 items-start'>
 									<div className='flex-1'>
 										<input
@@ -240,9 +261,10 @@ const Section07ProjectFiles = ({ control, setValue, watch, projectId }: ISection
 											onKeyDown={e => handleKeyDown(e, index)}
 											onClick={() => {
 												if (currentIsCompleted) {
-													const link = watch(`portfolioFiles.${index}.link`)
-													if (link) {
-														window.open(link, '_blank', 'noopener,noreferrer')
+													const resourceUrl =
+														currentPlanFileType === 'FILE' ? currentFileUrl : currentLink
+													if (resourceUrl) {
+														window.open(resourceUrl, '_blank', 'noopener,noreferrer')
 													}
 												}
 											}}

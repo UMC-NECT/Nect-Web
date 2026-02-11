@@ -12,7 +12,7 @@ import {
 } from '@/mocks/ongoingProjectData'
 import type { PortfolioFileType } from '@/utils/schemas/projectSchema'
 
-const INITIAL_PORTFOLIOS: PortfolioFileType[] = [{ id: 1, title: '테스트제목', link: '테스트링크', isCompleted: false }]
+const INITIAL_PORTFOLIOS: PortfolioFileType[] = [{ id: -1, title: '', link: '', fileUrl: '', isCompleted: false }]
 
 export const useOngoingProjectForm = () => {
 	const methods = useForm<ProjectSettingsType>({

@@ -251,7 +251,7 @@ export const useProjectPlanFileQuery = (projectId: string) => {
 	})
 }
 
-// 섹션 07. 프로젝트 세부 기획 파일 - 생성
+// 섹션 07. 프로젝트 세부 기획 파일 - 생성 (파일/링크 모두 POST 사용)
 export const usePostProjectPlanFileMutation = () => {
 	const queryClient = useQueryClient()
 
