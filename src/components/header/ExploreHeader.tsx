@@ -15,8 +15,8 @@ import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import { Link, useLocation, useNavigate } from 'react-router'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
-import { useProjectIdStore } from '@/stores/useProjectIdStroe'
-import { useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
+import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
+import { useNotificationList } from '@/hooks/notification/useNotificationList'
 
 interface ExploreHeaderProps {
 	onNavigate?: () => void
@@ -28,11 +28,9 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [showProfile, setShowProfile] = useState(false)
 	const [isScrolled, setIsScrolled] = useState(false)
 	const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false)
+	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)
 	const navigate = useNavigate()
 	const projectData = useGetProjectUsers()
-	const { setProjectId } = useProjectIdStore()
-	const { data: profileData } = useMypageProfileQuery()
-	const userId = profileData?.body?.userId ?? null
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const location = useLocation()
 	const currentPath = location.pathname
@@ -59,11 +57,8 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	useClickOutside(messageRef, () => setShowMessages(false), showMessages)
 	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
-	const subMenuItems = [{ name: '홈' }, { name: '프로젝트 찾기' }, { name: '팀원 찾기' }, { name: '출시 프로젝트' }]
-	const workspaceMenuItems = [
-		{ projectId: projectData?.[0]?.projectId, name: `${projectData?.[0]?.projectTitle}` },
-		{ projectId: projectData?.[1]?.projectId, name: `${projectData?.[1]?.projectTitle}` },
-	]
+	const subMenuItems = [{ name: '홈', href: '/' }, { name: '프로젝트 찾기', href: '/projectList' }, { name: '팀원 찾기', href: '/necterList' }]
+	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {
@@ -132,32 +127,38 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 							>
 								팀 작업실
 							</button>
-							{/* 팀 작업실 드롭다운 */}
-
-							{showWorkspaceMenu && (
-								<div
-									className='absolute top-[46px] left-[-20px] w-[160px] bg-white rounded-12 border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]'
-									onMouseEnter={() => setShowWorkspaceMenu(true)}
-									onMouseLeave={() => setShowWorkspaceMenu(false)}
-								>
-									{workspaceMenuItems.map((item, index) => (
-										<div key={item.name}>
-											<button
-												className='w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center'
-												onClick={() => {
-													setProjectId(item.projectId ?? null)
-													navigate('/team-board')
-												}}
-											>
-												{item.name}
-											</button>
-											{index < workspaceMenuItems.length - 1 && (
-												<div className='border-b border-neutral-200'></div>
-											)}
-										</div>
-									))}
-								</div>
-							)}
+							{showNoWorkspaceModal &&
+								createPortal(
+									<CTAModal
+										message='생성된 작업실이 없습니다.'
+										subMessage='프로젝트 등록 후 이용 할 수 있습니다.'
+										buttonMsg='확인'
+										onButtonClick={() => setShowNoWorkspaceModal(false)}
+									/>,
+									document.body
+								)}
+							{/* 팀 작업실 드롭다운 - 데이터 2개 이상일 때만 표시 */}
+							{showWorkspaceMenu && filteredWorkspaceItems.length > 1 && (
+									<div
+										className="absolute top-[46px] left-[-20px] min-w-[160px] bg-white rounded-12 border border-neutral-200 overflow-hidden z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.04)]"
+										onMouseEnter={() => setShowWorkspaceMenu(true)}
+										onMouseLeave={() => setShowWorkspaceMenu(false)}
+									>
+										{filteredWorkspaceItems.map((item, index) => (
+											<div key={item.projectId}>
+												<button
+													className="w-full h-[54px] px-4 text-left text-[16px] font-medium text-neutral-900 hover:bg-neutral-50 transition-colors flex items-center whitespace-nowrap"
+													onClick={() => navigate(`/team-board/${item.projectId}`)}
+												>
+													{item.name}
+												</button>
+												{index < filteredWorkspaceItems.length - 1 && (
+													<div className="border-b border-neutral-200"></div>
+												)}
+											</div>
+										))}
+									</div>
+								)}
 						</div>
 					</nav>
 
@@ -231,10 +232,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						</>
 					) : (
 						<>
-							<Link
-								to='/login'
-								className='text-[16px] font-medium text-neutral-600 hover:text-primary-600-normal pointer-cursor'
-							>
+							<Link to='/login' className='text-[16px] font-medium text-neutral-600 hover:text-primary-600-normal pointer-cursor'>
 								로그인/회원가입
 							</Link>
 						</>
@@ -267,10 +265,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
 					{/* 오른쪽 버튼들 */}
 					<div className='flex items-center gap-3'>
-						<button
-							className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors'
-							onClick={() => navigate('/idea-analyze')}
-						>
+						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors' onClick={() => navigate('/idea-analyze')}>
 							AI 프로젝트 등록
 						</button>
 						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2'>
