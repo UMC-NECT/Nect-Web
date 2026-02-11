@@ -240,13 +240,12 @@ class ChatWebSocketClient {
 					console.error("WebSocket 오류:", event.type)
 					if (event.target) {
 						console.error("WebSocket 상태:", event.target.readyState)
-						// URL은 토큰 정보가 포함될 수 있으므로 로그에 출력하지 않음
+						// WebSocket 실패는 SockJS의 정상적인 폴백 과정일 수 있음
+						// xhr-streaming이나 xhr-polling으로 자동 전환됨
+						console.log("SockJS가 자동으로 폴백 메커니즘을 시도합니다 (xhr-streaming → xhr-polling)")
 					}
-					this.callbacks.onError?.(new Error("WebSocket 연결 오류"))
-					// 재연결 시도는 잠시 후에 (너무 빠른 재연결 방지)
-					setTimeout(() => {
-						this.handleReconnect()
-					}, 2000)
+					// WebSocket 실패는 SockJS가 자동으로 폴백하므로 즉시 에러로 처리하지 않음
+					// 실제 연결 실패는 onStompError에서 처리됨
 				},
 			})
 
