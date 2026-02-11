@@ -225,7 +225,7 @@ const BoardPage = () => {
 	const currentItems = boardItems
 
 	return (
-		<div className="flex flex-col w-full mx-auto px-[72px] py-[64px] gap-[30px]">
+		<div className="flex flex-col w-full mx-auto px-[72px] pt-[64px] gap-[30px]">
 			<ContentHeader
 				title="게시판"
 				description="팀 전용 게시판입니다. 공지사항, 회의록, 업무 보고 등을 공유할 수 있습니다."

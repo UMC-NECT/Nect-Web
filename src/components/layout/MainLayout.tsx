@@ -5,6 +5,7 @@ import CTAModal from '@/components/common/CTAModal'
 import { useCTAModal } from '@/stores/useCTAModal'
 import { OnboardingGuard } from './OnboardingGuard'
 import ExploreHeader from '../header/ExploreHeader'
+import Footer from './Footer'
 
 export const MainLayout = () => {
 	const { isWorkspace } = useWorkspace()
@@ -35,6 +36,7 @@ export const MainLayout = () => {
 			<div className={getContentClassName()}>
 				<Outlet />
 			</div>
+			<Footer type='Default' margin='196' />
 
 			{/* CTA 모달 */}
 			{isCTAModalOpen && ctaModalConfig && (

@@ -251,7 +251,7 @@ const SharedDocumentsPage = () => {
 	}
 
 	return (
-		<div className="flex flex-col w-full mx-auto px-[72px] py-[64px] gap-[30px]">
+		<div className="flex flex-col w-full mx-auto px-[72px] pt-[64px] gap-[30px]">
 			<ContentHeader
 				title="공유 문서함"
 				description="프로젝트 자료를 한곳에 모으는 공유 문서 클라우드"

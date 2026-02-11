@@ -211,7 +211,7 @@ const IdeaAnalyzePage = () => {
 					</div>
 
 					{/* 홈으로 이동 */}
-					<div className='flex justify-center mb-80'>
+					<div className='flex justify-center'>
 						<button
 							onClick={() => navigate('/')}
 							className='title-3 font-medium text-neutral-500 underline underline-offset-4 m-[44px] cursor-pointer'
