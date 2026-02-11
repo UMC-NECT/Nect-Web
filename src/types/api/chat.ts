@@ -178,6 +178,7 @@ export type ResponseGetProjectUsersDto = CommonResponse<ProjectMemberResponseDto
 
 // 3-3. 프로젝트 앨범 조회
 export type ProjectAlbumFileDto = {
+	file_id: number
 	file_name: string
 	file_url: string
 	created_at: string

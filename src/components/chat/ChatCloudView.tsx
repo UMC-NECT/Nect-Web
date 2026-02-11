@@ -2,13 +2,14 @@ import { useState } from 'react'
 import ChatSidebar from './ChatSidebar'
 import ChatHeader from './ChatHeader'
 import CloudImageViewer from './CloudImageViewer'
-import { getProjectAlbums } from '@/api/chat'
-import { useQuery } from '@tanstack/react-query'
+import { getProjectAlbums, downloadChatFile, deleteChatFile } from '@/api/chat'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface CloudRoom {
 	id: number
 	name: string
 	files: Array<{
+		file_id: number
 		file_name: string
 		file_url: string
 		created_at: string
@@ -22,6 +23,7 @@ interface ChatCloudViewProps {
 
 const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 	const [selectedFile, setSelectedFile] = useState<{ roomId: number; file: CloudRoom['files'][0] } | null>(null)
+	const queryClient = useQueryClient()
 
 	// 프로젝트 앨범 조회 (채팅방별 파일 목록)
 	const { data: albumsData, isLoading } = useQuery({
@@ -129,20 +131,41 @@ const ChatCloudView = ({ onBack, projectId = 1 }: ChatCloudViewProps) => {
 					<CloudImageViewer
 						imageUrl={selectedFile.file.file_url}
 						onClose={() => setSelectedFile(null)}
-						onDownload={() => {
-							const link = document.createElement('a')
-							link.href = selectedFile.file.file_url
-							link.download = selectedFile.file.file_name || 'download'
-							document.body.appendChild(link)
-							link.click()
-							document.body.removeChild(link)
+						onDownload={async () => {
+							if (!selectedFile.file.file_id) {
+								console.error('파일 ID가 없습니다.')
+								return
+							}
+
+							try {
+								await downloadChatFile(selectedFile.file.file_id, selectedFile.file.file_name)
+							} catch (error) {
+								console.error('파일 다운로드 실패:', error)
+								alert('파일 다운로드에 실패했습니다.')
+							}
 						}}
 						onForward={() => {
 							// TODO: 전달 로직 구현
 						}}
-						onDelete={() => {
-							// TODO: 삭제 로직 구현 (서버 API 필요)
-							setSelectedFile(null)
+						onDelete={async () => {
+							if (!selectedFile.file.file_id) {
+								console.error('파일 ID가 없습니다.')
+								return
+							}
+
+							if (!confirm('정말 이 파일을 삭제하시겠습니까?')) {
+								return
+							}
+
+							try {
+								await deleteChatFile(selectedFile.file.file_id)
+								// 앨범 목록 새로고침
+								queryClient.invalidateQueries({ queryKey: ['projectAlbums', projectId] })
+								setSelectedFile(null)
+							} catch (error) {
+								console.error('파일 삭제 실패:', error)
+								alert('파일 삭제에 실패했습니다.')
+							}
 						}}
 					/>
 				</div>
