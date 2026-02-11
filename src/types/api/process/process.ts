@@ -136,6 +136,20 @@ export type ResponseProcessDetailDto = CommonResponse<{
     task_items: TaskItems[]
     feedbacks: ProcessDetailFeedback[]
     attachments: ProcessDetailAttachment[]
+    writer: {
+        user_id: number
+        name: string
+        nickname: string
+        role_field: string | null
+        custom_role_field_name: string | null
+    }
+    last_edited_by: {
+        user_id: number
+        name: string
+        nickname: string
+        role_field: string | null
+        custom_role_field_name: string | null
+    }
     created_at: string
     updated_at: string
     deleted_at: boolean | null

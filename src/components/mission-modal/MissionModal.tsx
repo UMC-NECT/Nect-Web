@@ -245,10 +245,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		const feedbackList = (body.feedbacks ?? []).map(f => ({
 			id: f.feedback_id,
 			partName: f.created_by?.role_fields?.[0] ?? '',
-			authorName: f.created_by?.user_name ?? f.created_by?.nickname ?? '',
+			authorName: f.created_by?.nickname ?? f.created_by?.user_name ?? '',
 			content: f.content,
 			timestamp: formatTimestampDisplay(f.created_at),
-			state: (f.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
+			state: (f.status === 'RESOLVED' || f.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
 		}))
 		setFeedbacks(feedbackList)
 
@@ -829,10 +829,10 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 							addFeedback({
 								id: b.feedback_id,
 								partName: b.created_by?.role_fields?.[0] ?? '',
-								authorName: b.created_by?.user_name ?? '',
+								authorName: b.created_by?.nickname ?? b.created_by?.user_name ?? '',
 								content: b.content,
 								timestamp: formatTimestampDisplay(b.created_at),
-								state: (b.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
+								state: (b.status === 'RESOLVED' || b.status === 'complete' ? 'complete' : 'default') as 'default' | 'complete' | 'disabled',
 							})
 						}
 						setNewFeedbackContent('')
@@ -883,6 +883,25 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 			updateFeedback(editingFeedbackId, { content: editingFeedbackContent.trim() })
 			setEditingFeedbackId(null)
 			setEditingFeedbackContent('')
+		}
+	}
+
+	const handleFeedbackStatusToggle = (feedback: { id: number; state: string }) => {
+		if (isEditMode && projectId != null && editingMissionId != null) {
+			const nextStatus = feedback.state === 'complete' ? 'OPEN' : 'RESOLVED'
+			patchFeedbackMutation.mutate(
+				{
+					projectId,
+					processId: String(editingMissionId),
+					feedbackId: String(feedback.id),
+					body: { feedback_status: nextStatus },
+				},
+				{
+					onSuccess: () => toggleFeedback(feedback.id),
+				}
+			)
+		} else {
+			toggleFeedback(feedback.id)
 		}
 	}
 
@@ -1605,7 +1624,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 														state={feedback.state}
 														isEditing={editingFeedbackId === feedback.id}
 														autoFocus={editingFeedbackId === feedback.id}
-														onClick={() => toggleFeedback(feedback.id)}
+														onClick={() => handleFeedbackStatusToggle(feedback)}
 														onContentClick={() => handleFeedbackEdit(feedback.id, feedback.content)}
 														onChange={setEditingFeedbackContent}
 														onSubmit={handleFeedbackEditSubmit}
