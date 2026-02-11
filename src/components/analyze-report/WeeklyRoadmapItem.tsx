@@ -28,7 +28,7 @@ const WeeklyRoadmapItem = ({ title, role_tasks, isExpanded, onToggle }: WeeklyRo
 				<div className='flex flex-col gap-2 bg-primary-50-light border border-primary-200-light rounded-b-xl py-4 px-5.5 shadow-inner-neutral-1'>
 					{role_tasks.map(task => (
 						<div key={task.role_field} className='flex gap-2'>
-							<span className='body-1 font-semibold text-primary-500-normal'>{task.role_field_display_name}</span>
+							<span className='body-1 font-semibold text-primary-500-normal whitespace-nowrap'>{task.role_field_display_name}</span>
 							<span className='body-1 font-medium text-neutral-800'>{task.tasks}</span>
 						</div>
 					))}

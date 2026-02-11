@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import RoleTag from '@/components/mypage/RoleTag';
 import type { RecruitmentDto } from '@/types/api/project/recruitment';
 
 interface MatchingRequestModalProps {
@@ -9,7 +10,7 @@ interface MatchingRequestModalProps {
     recruitments: RecruitmentDto[];
 }
 
-const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPositionStyle, recruitments }: MatchingRequestModalProps) => {
+const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, recruitments }: MatchingRequestModalProps) => {
     const [selectedParts, setSelectedParts] = useState<string[]>([]);
 
     if (!isOpen) return null;
@@ -56,19 +57,17 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPosition
                 </p>
 
                 {/* 파트 선택 버튼들 */}
-                <div className='flex justify-center gap-15 mb-auto flex-wrap'>
+                <div className='flex justify-center gap-4 mb-auto flex-wrap '>
                     {availableParts.map((part) => {
                         const isSelected = selectedParts.includes(part.name);
-                        const positionKey = part.field.toLowerCase();
                         
                         return (
                             <button
                                 key={part.name}
                                 onClick={() => togglePart(part.name)}
                                 disabled={!isSelected && selectedParts.length >= 1}
-                                className={`${part.width} h-[32px] rounded-md text-[20px] font-medium transition-all
-                                    ${getPositionStyle(positionKey)} text-neutral-700
-                                    ${isSelected 
+                                className={`transition-all ${
+                                    isSelected 
                                         ? 'opacity-100' 
                                         : 'opacity-50'
                                     }
@@ -77,7 +76,11 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, getPosition
                                         : 'hover:opacity-80 cursor-pointer'
                                     }`}
                             >
-                                {part.name}
+                                <RoleTag 
+                                    role={part.name}
+                                    showTotal={false}
+                                    className='text-[20px] text-neutral-700'
+                                />
                             </button>
                         );
                     })}

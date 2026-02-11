@@ -51,6 +51,7 @@ export type RequestAgreeDto = {
     termsAgreed: boolean
     privacyAgreed: boolean
     marketingAgreed: boolean
+    email?: string
 }
 
 export type RequestCheckDto = {

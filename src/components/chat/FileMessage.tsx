@@ -89,7 +89,7 @@ export const FileMessage = ({
 			{/* 내 메시지: 시간 표시만 */}
 			{isMine && (
 				<div className="flex flex-col h-[30px] items-end justify-end py-0.5">
-					{readCount !== undefined && (
+					{readCount !== undefined && readCount > 0 && (
 						<div className="h-3.5 text-primary-400-normal caption-2 font-medium">
 							{readCount}
 						</div>
@@ -157,7 +157,7 @@ export const FileMessage = ({
 					{/* 상대방 메시지: 시간 및 읽음 수 */}
 					{!isMine && (
 						<div className="flex flex-col h-[30px] items-start justify-end py-0.5">
-							{readCount !== undefined && (
+							{readCount !== undefined && readCount > 0 && (
 								<div className="h-3.5 text-primary-400-normal caption-2 font-medium">
 									{readCount}
 								</div>

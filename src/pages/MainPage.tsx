@@ -8,7 +8,6 @@ import Statistics from '@/components/main/Statistics';
 import ProjectShowcase from '@/components/main/ProjectShowcase';
 import NewsSection from '@/components/main/NewsSection';
 import CallToAction from '@/components/main/CallToAction';
-import Footer from '@/components/common/Footer';
 import { useAuthStore } from '@/stores/authStore';
 
 const MainPage = () => {
@@ -79,13 +78,6 @@ const MainPage = () => {
                         </div>
                     </section>
                 )}
-
-                {/* footer - 흰색 배경 */}
-                <section className="relative bg-white z-10 w-screen -ml-[calc((100vw-100%)/2)]">
-                    <div className='relative w-full bg-white z-10'>
-                        <Footer />
-                    </div>
-                </section>
             </div>
         </div>
     );

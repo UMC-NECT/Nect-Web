@@ -11,36 +11,36 @@ import { CATEGORIES, TABS, PART_MAP } from '@/constants/filters';
 const NecterListPage = () => {
     const [selectedTab, setSelectedTab] = useState('전체');
     const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
-    
+
     // API 호출 (100개 요청)
     const { data: members, isLoading, error } = useMatchableMembers(100);
 
     // 탭에 따라 필터링
     const filteredMembers = members?.filter(member => {
         if (selectedTab === '전체') return true;
-        
+
         // part가 null이면 '기타'로 처리
         if (!member.part) {
             return selectedTab === '기타';
         }
-        
+
         const memberPart = PART_MAP[member.part] || '기타';
         return memberPart === selectedTab;
     }) || [];
 
     useEffect(() => {
         document.body.style.backgroundColor = '#FAFAFA';
-        
+
         return () => {
             document.body.style.backgroundColor = '';
         };
     }, []);
 
     return (
-        <div className="py-16">
-            <div className="my-9 w-[912px] h-[86px] mx-auto">
+        <div className="pt-16">
+            <div className="mt-9 w-[912px] mx-auto">
                 <div className='ml-7'>
-                    <Breadcrumb 
+                    <Breadcrumb
                         items={[
                             { label: '홈', path: '/' },
                             { label: '넥터 찾기', path: '/necters' },
@@ -48,7 +48,7 @@ const NecterListPage = () => {
                             { label: selectedCategory }
                         ]}
                     />
-                    
+
                     <h1 className="mt-7 text-[28px] font-bold">
                         지금 가능한 넥터
                     </h1>
@@ -56,7 +56,7 @@ const NecterListPage = () => {
 
                 <ContentBox className="mt-[42px] w-[972px] mx-auto">
                     {/* 탭 영역 */}
-                    <TabGroup 
+                    <TabGroup
                         tabs={[...TABS]}
                         activeTab={selectedTab}
                         onTabChange={setSelectedTab}
@@ -64,7 +64,7 @@ const NecterListPage = () => {
 
                     {/* 드롭다운 영역 */}
                     <div className="mt-[44px] mx-5">
-                        <CategoryDropdown 
+                        <CategoryDropdown
                             categories={[...CATEGORIES]}
                             selectedCategory={selectedCategory}
                             onCategoryChange={setSelectedCategory}

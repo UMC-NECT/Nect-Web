@@ -111,3 +111,13 @@ export const onboardingSchema = z.object({
 })
 
 export type OnboardingFormType = z.infer<typeof onboardingSchema>
+
+// ===== 소셜 로그인 =====
+const socialEmail = z
+	.string()
+	.min(1, '@를 포함한 이메일 형식의 아이디를 입력해주세요.')
+	.email('@를 포함한 이메일 형식의 아이디를 입력해주세요.')
+export const socialAgreeSchema = z.object({
+	email: socialEmail,
+})
+export type SocialAgreeFormType = z.infer<typeof socialAgreeSchema>

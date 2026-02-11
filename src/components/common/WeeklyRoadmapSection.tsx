@@ -83,8 +83,8 @@ const WeeklyRoadmapSection = ({ roadmapItems }: WeeklyRoadmapSectionProps) => {
 								className='shrink-0 w-[60px] h-[60px] flex items-center justify-center'
 							>
 								<div className='w-[60px] h-[32px] body-1 font-medium text-center bg-primary-500-normal text-white rounded-6 flex items-center justify-center px-2.5 py-1 shadow-drop-neutral-2 z-10'>
-									<span className='mr-0.5'>{item.week}</span>
-									<span>주차</span>
+									<span className='mr-0.5 whitespace-nowrap'>{item.week}</span>
+									<span className='whitespace-nowrap'>주차</span>
 								</div>
 							</div>
 							<div className='flex-1 min-w-0'>

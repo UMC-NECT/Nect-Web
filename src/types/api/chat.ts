@@ -10,15 +10,55 @@ export type ChatRoomListDto = {
 	last_message?: string | null
 	last_message_time?: string | null
 	unread_count?: number
+	member_count?: number
+	profile_images?: string[]
+	has_new_message?: boolean
 	// camelCase도 지원 (하위 호환성)
 	roomId?: number
 	roomName?: string
 	lastMessage?: string | null
 	lastMessageTime?: string | null
 	unreadCount?: number
+	memberCount?: number
+	profileImages?: string[]
+	hasNewMessage?: boolean
 }
 
 export type ResponseGetChatRoomsDto = CommonResponse<ChatRoomListDto[]>
+
+// 1-1-1. DM 채팅방 목록 조회
+export type DMRoomMessageDto = {
+	other_user_id: number
+	other_user_name: string
+	other_user_image_url: string | null
+	other_user_role_field: string | null
+	last_message_id: number
+	last_message: string | null
+	last_message_at: string
+	is_read: boolean
+}
+
+export type ResponseGetDMRoomsDto = CommonResponse<{
+	messages: DMRoomMessageDto[]
+	nextCursor: number | null
+}>
+
+// 1-1-2. DM 메시지 조회
+export type DMMessageDto = {
+	message_id: number
+	sender_id: number
+	sender_name: string
+	sender_profile_image: string | null
+	content: string | null
+	is_pinned: boolean
+	created_at: string
+	is_read: boolean
+}
+
+export type ResponseGetDMMessagesDto = CommonResponse<{
+	messages: DMMessageDto[]
+	next_cursor: number | null
+}>
 
 // 1-2. 채팅방 메시지 조회
 export type ChatMessageDto = {
@@ -143,19 +183,22 @@ export type ResponseGetProjectUsersDto = CommonResponse<ProjectMemberResponseDto
 // 3-2. 파일 삭제 (204 No Content)
 
 // 3-3. 프로젝트 앨범 조회
-export type ChatRoomImageDto = {
-	fileId: number
-	fileUrl: string
-	uploadedAt: string
+export type ProjectAlbumFileDto = {
+	file_id: number
+	file_name: string
+	file_url: string
+	created_at: string
 }
 
-export type ChatRoomAlbumResponseDto = {
-	roomId: number
-	roomName: string
-	images: ChatRoomImageDto[]
+export type ProjectAlbumRoomDto = {
+	room_id: number
+	room_name: string
+	room_type: string
+	file_count: number
+	files: ProjectAlbumFileDto[]
 }
 
-export type ResponseGetProjectAlbumsDto = CommonResponse<ChatRoomAlbumResponseDto[]>
+export type ResponseGetProjectAlbumsDto = CommonResponse<ProjectAlbumRoomDto[]>
 
 // 3-4. 채팅방 앨범 상세 조회 (GET /api/v1/chats/rooms/{roomId}/album) 응답 스펙
 export type ChatRoomAlbumFileDto = {

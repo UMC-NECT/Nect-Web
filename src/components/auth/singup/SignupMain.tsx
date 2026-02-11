@@ -11,10 +11,11 @@ const SignupMain = () => {
 	const navigate = useNavigate()
 	const { setCurrentStep } = useSignupStep()
 
-	// 테스트용
-	const handleSocialLogin = () => {
-		//setIsSignup(true)
-		setCurrentStep('agree')
+	const handleGoogleLogin = () => {
+		window.location.href = 'https://getnect.tech/oauth2/authorization/google'
+	}
+	const handleKakaoLogin = () => {
+		window.location.href = 'https://getnect.tech/oauth2/authorization/kakao'
 	}
 
 	return (
@@ -32,12 +33,12 @@ const SignupMain = () => {
 
 				{/* 소셜 로그인 */}
 				<div className='w-105 flex flex-col gap-3 mb-8'>
-					<Button color='socialLogin' fullWidth onClick={handleSocialLogin}>
+					<Button color='socialLogin' fullWidth onClick={handleGoogleLogin}>
 						<GoogleIcon className='w-5.25 h-5.25' />
 						Google로 시작하기
 					</Button>
 
-					<Button color='socialLogin' fullWidth onClick={handleSocialLogin} className='bg-social-kakao border-none'>
+					<Button color='socialLogin' fullWidth onClick={handleKakaoLogin} className='bg-social-kakao border-none'>
 						<KakaoIcon className='w-5.25 h-5.25' />
 						카카오로 시작하기
 					</Button>
