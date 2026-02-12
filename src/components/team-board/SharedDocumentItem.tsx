@@ -63,7 +63,25 @@ const getFileIcon = (fileName: string) => {
 	}
 }
 
-// 링크 URL에 따른 아이콘 매핑
+// URL에서 도메인 추출
+const extractDomain = (url: string): string => {
+	try {
+		const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`)
+		return urlObj.hostname.replace('www.', '')
+	} catch {
+		// URL 파싱 실패 시 기본값
+		return ''
+	}
+}
+
+// 파비콘 URL 생성 (Google Favicon API 사용)
+const getFaviconUrl = (url: string): string => {
+	const domain = extractDomain(url)
+	if (!domain) return ''
+	return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+}
+
+// 링크 URL에 따른 아이콘 매핑 (특정 사이트는 커스텀 아이콘 사용)
 const getLinkIcon = (url: string) => {
 	const lowerUrl = url.toLowerCase()
 
@@ -96,6 +114,7 @@ const SharedDocumentItem = ({
 }: SharedDocumentItemProps) => {
 	const [showMenu, setShowMenu] = useState(false)
 	const [editName, setEditName] = useState(data.name)
+	const [faviconError, setFaviconError] = useState(false)
 	const menuRef = useRef<HTMLDivElement>(null)
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -113,6 +132,11 @@ const SharedDocumentItem = ({
 			setEditName(data.name)
 		}
 	}, [isEditing, data.name])
+
+	// URL이 변경되면 파비콘 에러 상태 초기화
+	useEffect(() => {
+		setFaviconError(false)
+	}, [data.url])
 
 	// 메뉴 외부 클릭 감지
 	useEffect(() => {
@@ -135,18 +159,58 @@ const SharedDocumentItem = ({
 			return <Icon className="w-7 h-7" />
 		}
 		if (data.type === 'link' && data.url) {
+			const lowerUrl = data.url.toLowerCase()
 			const Icon = getLinkIcon(data.url)
-			// Figma인 경우 배경색이 다름
-			if (data.url.toLowerCase().includes('figma.com') || data.url.toLowerCase().includes('figma')) {
+			const faviconUrl = getFaviconUrl(data.url)
+			
+			// 특정 사이트는 커스텀 아이콘 사용 (Figma, Google Docs 등)
+			const useCustomIcon = lowerUrl.includes('figma.com') || 
+				lowerUrl.includes('figma') ||
+				lowerUrl.includes('docs.google.com') ||
+				lowerUrl.includes('sheets.google.com') ||
+				lowerUrl.includes('slides.google.com')
+			
+			if (useCustomIcon) {
+				// Figma인 경우 배경색이 다름
+				if (lowerUrl.includes('figma.com') || lowerUrl.includes('figma')) {
+					return (
+						<div className="relative w-7 h-7">
+							<div className="absolute bg-[#141515] inset-0 rounded-[6.222px]" />
+							<div className="absolute inset-0 flex items-center justify-center">
+								<Icon className="w-7 h-7" />
+							</div>
+						</div>
+					)
+				}
+				return <Icon className="w-7 h-7" />
+			}
+			
+			// 그 외 사이트는 파비콘 사용
+			if (faviconUrl) {
 				return (
 					<div className="relative w-7 h-7">
-						<div className="absolute bg-[#141515] inset-0 rounded-[6.222px]" />
-						<div className="absolute inset-0 flex items-center justify-center">
-							<Icon className="w-7 h-7" />
-						</div>
+						{!faviconError && (
+							<img
+								src={faviconUrl}
+								alt=""
+								className="w-7 h-7 rounded-[6.222px] object-cover"
+								onError={() => {
+									// 파비콘 로드 실패 시 fallback 아이콘 표시
+									setFaviconError(true)
+								}}
+							/>
+						)}
+						{/* 파비콘 로드 실패 시에만 fallback 아이콘 표시 */}
+						{faviconError && (
+							<div className="absolute inset-0 flex items-center justify-center">
+								<Icon className="w-7 h-7" />
+							</div>
+						)}
 					</div>
 				)
 			}
+			
+			// 파비콘 URL 생성 실패 시 기본 아이콘
 			return <Icon className="w-7 h-7" />
 		}
 		return <LinkIcon className="w-7 h-7" />
