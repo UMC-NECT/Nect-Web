@@ -23,11 +23,15 @@ export interface TeamMember {
 	part: string
 	introduction?: string
 	profileImage?: React.ReactNode
+	profileImageUrl?: string
 	isLeader?: boolean
 	isMatching?: boolean
 }
 export interface TeamMembersByRole {
+	partId?: number // getTeamRoles parts 응답의 id
 	role: RoleType
+	roleField?: string
+	customRoleFieldName?: string | null
 	color: ColorType
 	members: TeamMember[]
 	targetCount?: number // 희망 모집인원

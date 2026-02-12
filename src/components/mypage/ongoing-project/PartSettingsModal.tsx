@@ -3,7 +3,7 @@ import { DndContext, closestCenter, useDraggable, useDroppable } from '@dnd-kit/
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { TeamMembersByRole, TeamMember } from '@/types/mypage/ongoindProject'
 import Button from '@/components/common/Button'
-import RoleTag from '@/components/mypage/RoleTag'
+import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import HamburgerIcon from '@/assets/icons/common/hamburger.svg?react'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
@@ -51,10 +51,10 @@ const DraggableMemberCard = ({ member, index, role }: { member: TeamMember; inde
 
 			{/* 정보 */}
 			<div className='flex items-center gap-1'>
-				{isProjectLeader && <span className='body-2 font-medium text-primary-400-normal'>Leader</span>}
-				<span className='title-3 font-semibold text-neutral-800'>{member.nickname}</span>
+				{isProjectLeader && <span className='body-2 font-medium text-primary-400-normal whitespace-nowrap'>Leader</span>}
+				<span className='title-3 font-semibold text-neutral-800 whitespace-nowrap'>{member.nickname}</span>
 				<span className='body-2 text-neutral-300'>|</span>
-				<span className='title-3 text-neutral-500'>{member.part}</span>
+				<span className='title-3 text-neutral-500 line-clamp-1'>{member.part}</span>
 			</div>
 		</div>
 	)
@@ -62,12 +62,14 @@ const DraggableMemberCard = ({ member, index, role }: { member: TeamMember; inde
 
 // 드롭 가능한 파트 영역 컴포넌트
 const DroppablePartSection = ({
+	partId,
 	role,
 	members,
 	targetCount,
 	onCountChange,
 	onRoleChange,
 }: {
+	partId?: number
 	role: string
 	members: TeamMember[]
 	targetCount: number
@@ -164,7 +166,12 @@ const DroppablePartSection = ({
 					/>
 				) : (
 					<button type='button' onClick={handleRoleClick} className='cursor-pointer'>
-						<RoleTag role={role} showTotal={false} />
+						<RoleTagChip
+							roleId={partId ?? 1}
+							roleName={role}
+							roleField={role}
+							state='default'
+						/>
 					</button>
 				)}
 
@@ -238,6 +245,8 @@ const PartSettingsModal = () => {
 	const handleAddPart = () => {
 		const newPart: TeamMembersByRole = {
 			role: '새 파트',
+			roleField: 'CUSTOM',
+			customRoleFieldName: '새 파트',
 			color: 'gray',
 			targetCount: 0,
 			members: [],
@@ -305,6 +314,10 @@ const PartSettingsModal = () => {
 
 			// 변경된 데이터에서 변경사항 확인
 			for (const role of parts) {
+				// 파트의 roleField (getTeamRoles 기반 - 빈 파트도 대응)
+				const partRoleField = role.roleField ?? 'CUSTOM'
+				const partCustomField = role.customRoleFieldName ?? (partRoleField === 'CUSTOM' ? role.role : null)
+
 				for (const member of role.members) {
 					const originalPart = originalMemberPartMap.get(member.id)
 					if (originalPart && originalPart !== role.role) {
@@ -314,17 +327,12 @@ const PartSettingsModal = () => {
 							continue
 						}
 
-						// 새로운 파트의 첫 번째 멤버의 roleField 찾기
-						const firstMemberOfNewPart = role.members[0]
-						const firstMemberApiData = memberApiDataMap.get(firstMemberOfNewPart.id)
-						const newRoleField = firstMemberApiData?.roleField || 'CUSTOM'
-
 						memberFieldChanges.push({
 							userId: member.id,
 							oldPart: originalPart,
 							newPart: role.role,
-							newRoleField,
-							customField: role.role !== newRoleField ? role.role : '',
+							newRoleField: partRoleField,
+							customField: partCustomField ?? '',
 						})
 					}
 				}
@@ -356,15 +364,14 @@ const PartSettingsModal = () => {
 				if (role.members.length === 0) continue
 
 				const orderedUserIds = role.members.map(m => parseInt(m.id, 10))
-				const firstMemberApiData = memberApiDataMap.get(role.members[0].id)
+				const roleField = role.roleField ?? 'CUSTOM'
+				const customRoleField = role.customRoleFieldName ?? (roleField === 'CUSTOM' ? role.role : null)
 
-				if (firstMemberApiData) {
-					reorderUpdates.push({
-						roleField: firstMemberApiData.roleField,
-						customRoleField: firstMemberApiData.customRoleFieldName,
-						orderedUserIds,
-					})
-				}
+				reorderUpdates.push({
+					roleField,
+					customRoleField,
+					orderedUserIds,
+				})
 			}
 
 			console.log('순서 변경 데이터:', reorderUpdates)
@@ -566,9 +573,10 @@ const PartSettingsModal = () => {
 				<DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
 					<div className='flex-1 overflow-y-auto'>
 						<div className='flex flex-col gap-11.5 pb-10.5'>
-							{parts.map(({ role, members, targetCount }) => (
+							{parts.map(({ partId, role, members, targetCount }) => (
 								<DroppablePartSection
 									key={role}
+									partId={partId}
 									role={role}
 									members={members}
 									targetCount={targetCount ?? members.length}

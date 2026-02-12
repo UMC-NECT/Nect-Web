@@ -19,6 +19,8 @@ import Section05Skills from './sections/Section05Skills'
 import Section06CareerHistory from './sections/Section06CareerHistory'
 import Section07Portfolio from './sections/Section07Portfolio'
 import Section08ProjectHistory from './sections/Section08ProjectHistory'
+import { useErrorModal } from '@/stores/useErrorModal'
+import axios from 'axios'
 
 export const ProfileSettings = () => {
 	const [hasProfileKeyword] = useState(false) // 프로필 분석키워드 리포트 보유여부
@@ -58,7 +60,8 @@ export const ProfileSettings = () => {
 	const navigate = useNavigate()
 
 	// CTA 모달
-	const { modalType, open, close } = useCTAModal()
+	const { modalType, open, close, config } = useCTAModal()
+	const { setErrorModal } = useErrorModal()
 
 	// 저장 (유효성 실패 자동 포커싱을 곁들인..)
 	const handleSave = useCallback(
@@ -69,7 +72,7 @@ export const ProfileSettings = () => {
 						try {
 							// 폼 데이터를 API request DTO로 변환
 							const requestBody = {
-								profileImageFileName: uploadedFileName ?? profile?.profileImageFileName ?? '',
+								profileImageUrl: uploadedFileName ?? profile?.profileImageUrl ?? '',
 								bio: data.introduction ?? '',
 								coreCompetencies: data.coreCompetency ?? '',
 								userStatus: data.userStatus ?? '',
@@ -112,12 +115,11 @@ export const ProfileSettings = () => {
 							await saveProfile(requestBody)
 							resolve(true)
 						} catch (error) {
-							console.error('프로필 저장 실패:', error)
-							if (error instanceof Error && 'response' in error) {
-								const axiosError = error as { response?: { data?: unknown } }
-								console.error('서버 응답:', axiosError.response?.data)
+							if (axios.isAxiosError(error)) {
+								const status = error.response?.status ? error.response.status.toString() : '';
+								const message = error.response?.data?.status?.message ?? '';
+								setErrorModal(status, message);
 							}
-							alert('저장에 실패했습니다. 다시 시도해주세요.')
 							resolve(false)
 						}
 					},
@@ -126,6 +128,7 @@ export const ProfileSettings = () => {
 
 						// 첫 번째 에러 찾기
 						const fieldOrder: (keyof ProfileFormDataType)[] = [
+							'userStatus',
 							'introduction',
 							'coreCompetency',
 							'interestFields',
@@ -180,12 +183,15 @@ export const ProfileSettings = () => {
 						}
 
 						const errorMessages = extractMessages(errors)
-						alert(errorMessages[0] || '필수 항목을 입력해주세요')
+						open('validationError', {
+							message: errorMessages[0] || '필수 항목을 입력해주세요',
+							rightButton: { text: '확인', onClick: close },
+						})
 						resolve(false)
 					}
 				)()
 			}),
-		[handleSubmit, profile, isOpenRecruit, saveProfile, uploadedFileName]
+		[handleSubmit, profile, isOpenRecruit, saveProfile, uploadedFileName, setErrorModal, open, close]
 	)
 
 	// (버튼 핸들러) 저장 버튼
@@ -271,7 +277,7 @@ export const ProfileSettings = () => {
 							isSaving={isSaving}
 							onSave={handleSaveWithModal}
 							onRecruit={handlePublishRecruitment}
-							profileImageFileName={profile?.profileImageFileName}
+							profileImageFileName={profile?.profileImageUrl ?? ''}
 							userName={profile?.nickname}
 							userRole={profile?.role}
 							userStatus={userStatus}
@@ -321,6 +327,15 @@ export const ProfileSettings = () => {
 						</div>
 					</div>
 				</div>
+
+				{/* 유효성 에러 모달 */}
+				{modalType === 'validationError' && config && (
+					<CTAModal
+						message={config.message}
+						buttonMsg={config.rightButton?.text ?? '확인'}
+						onButtonClick={config.rightButton?.onClick ?? close}
+					/>
+				)}
 
 				{/* 저장 완료 모달 */}
 				{modalType === 'save' && (

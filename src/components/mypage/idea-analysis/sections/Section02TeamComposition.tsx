@@ -1,5 +1,5 @@
 import type { AnalysisType } from '@/types/api/mypage'
-import RoleTag from '@/components/mypage/RoleTag'
+import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 
 interface Section02TeamCompositionProps {
 	analysisData: AnalysisType
@@ -27,10 +27,13 @@ const Section02TeamComposition = ({ analysisData }: Section02TeamCompositionProp
 						{/* 태그 모음 */}
 						<div className='flex items-center gap-3'>
 							{analysisData.team_composition.map((field, index) => (
-								<RoleTag
+								<RoleTagChip
 									key={index}
-									role={field.role_field_display_name}
-									total={field.required_count}
+									roleId={index + 1}
+									roleName={field.role_field_display_name}
+									roleField={field.role_field}
+									state='default'
+									count={field.required_count}
 								/>
 							))}
 						</div>

@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import Button from '@/components/common/Button'
 import BulletTextArea from '@/components/common/BulletTextArea'
 import RoleSelectModal from '../RoleSelectModal'
-import RoleTag from '@/components/mypage/RoleTag'
+import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import { useMypageProjectRecruitmentsQuery } from '@/hooks/mypage/useMypageApi'
 import type { UseFormSetValue } from 'react-hook-form'
 import type { ProjectSettingsType } from '@/utils/schemas/projectSchema'
+import type { TeamMembersByRole } from '@/types/mypage/ongoindProject'
 
 export type RecruitmentLocalItem = {
 	recruitmentId: number
@@ -52,14 +53,18 @@ const extractRecruitments = (payload: unknown): RecruitmentApiItem[] => {
 	return []
 }
 
+const getPartByRoleField = (roleField: string, teamMembersByRole: TeamMembersByRole[]) =>
+	teamMembersByRole.find(p => p.roleField === roleField || p.role === roleField)
+
 interface ISection02RecruitmentInfo {
 	projectId: string
 	onDataChange?: (data: RecruitmentLocalItem[]) => void
 	setValue: UseFormSetValue<ProjectSettingsType>
 	availableRoles?: string[]
+	teamMembersByRole?: TeamMembersByRole[]
 }
 
-const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, availableRoles }: ISection02RecruitmentInfo) => {
+const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, availableRoles, teamMembersByRole = [] }: ISection02RecruitmentInfo) => {
 	const [openModalIndex, setOpenModalIndex] = useState<number | null>(null)
 	const [localData, setLocalData] = useState<RecruitmentLocalItem[]>([])
 	const tempIdCounter = useRef(-1)
@@ -82,9 +87,6 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, available
 					capacity: 1,
 					requirements: '',
 				}])
-				queueMicrotask(() => {
-					isInitialLoadRef.current = false
-				})
 				return
 			}
 
@@ -96,10 +98,6 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, available
 					requirements: Array.isArray(item.requirements) ? item.requirements.join('\n') : (item.requirements ?? ''),
 				}))
 			)
-			// 초기 API 로드 완료 후 다음 변경부터는 유저 변경으로 간주
-			queueMicrotask(() => {
-				isInitialLoadRef.current = false
-			})
 		})
 	}, [recruitmentsData])
 
@@ -117,6 +115,7 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, available
 
 	// 모집 팀원 추가 (로컬 UI만 추가, 저장 시 API 호출)
 	const handleAddItem = () => {
+		isInitialLoadRef.current = false
 		setLocalData(prev => [
 			...prev,
 			{
@@ -132,12 +131,13 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, available
 	const handleRoleChange = (index: number, role: string) => {
 		const item = localData[index]
 		if (!item) return
-
+		isInitialLoadRef.current = false
 		setLocalData(prev => prev.map((d, i) => (i === index ? { ...d, roleField: role } : d)))
 	}
 
 	// 설명(요구사항) 변경 (로컬만 - 저장 버튼에서 PUT)
 	const handleRequirementsChange = (index: number, value: string) => {
+		isInitialLoadRef.current = false
 		setLocalData(prev => prev.map((d, i) => (i === index ? { ...d, requirements: value } : d)))
 	}
 
@@ -157,13 +157,15 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, available
 
 			{/* 모집 팀원 목록 */}
 			{localData.map((item, index) => (
-				<div key={item.recruitmentId} className='flex items-start gap-5.5'>
+				<div key={item.recruitmentId} className='flex flex-col items-start gap-1.5'>
 					{/* 선택 직무 */}
 					<div className='relative shrink-0 mt-5 w-25'>
-						<RoleTag
-							role={item.roleField || '직무 선택'}
-							showTotal={!!item.roleField}
-							total={item.roleField ? item.capacity : 0}
+						<RoleTagChip
+							roleId={getPartByRoleField(item.roleField, teamMembersByRole)?.partId ?? 1}
+							roleName={item.roleField || '직무 선택'}
+							roleField={item.roleField}
+							state='default'
+							count={item.roleField ? (getPartByRoleField(item.roleField, teamMembersByRole)?.targetCount ?? item.capacity) : undefined}
 							onClick={() => setOpenModalIndex(index)}
 							className='cursor-pointer hover:opacity-80 transition-opacity'
 						/>

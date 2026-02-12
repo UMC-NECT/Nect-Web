@@ -1,5 +1,5 @@
 import HistoryCard from '@/components/mypage/HistoryCard'
-import RoleTag from '@/components/mypage/RoleTag'
+import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import type { ProjectHistory } from '@/types/mypage/ongoindProject'
 
 interface ISection02TeamHistory {
@@ -17,7 +17,13 @@ const Section02TeamHistory = ({ projectHistories }: ISection02TeamHistory) => {
 						{/* 역할 태그들 */}
 						<div className='flex flex-wrap gap-2'>
 							{project.tags.map((tag, index) => (
-								<RoleTag key={index} role={tag} showTotal={false} />
+								<RoleTagChip
+									key={index}
+									roleId={index + 1}
+									roleName={tag}
+									roleField={tag}
+									state='default'
+								/>
 							))}
 						</div>
 

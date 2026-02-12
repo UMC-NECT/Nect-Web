@@ -31,6 +31,7 @@ import {
 	patchTeamRoleUpdate,
 	postProjectUsersReorder,
 	patchProjectRecruitmentStatus,
+	getTeamRoles,
 } from '@/api/mypage'
 import { QUERY_KEY } from '@/constants/key'
 import type {
@@ -67,6 +68,7 @@ export const useMypageProfileMutation = () => {
 		mutationFn: (body: RequestMypageProfileSaveDto) => patchMypageProfileSave(body),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.profile() })
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.users.profile() })
 		},
 	})
 }
@@ -417,6 +419,16 @@ export const usePostTeamRoleCreateMutation = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
 		},
+	})
+}
+
+export const useGetTeamRolesQuery = (projectId: string) => {
+	return useQuery({
+		queryKey: [...QUERY_KEY.mypage.project(), 'team-roles', projectId],
+		queryFn: () => getTeamRoles(projectId),
+		enabled: !!projectId,
+		refetchOnMount: 'always',
+		staleTime: 0,
 	})
 }
 

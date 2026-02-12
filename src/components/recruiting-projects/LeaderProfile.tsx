@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { ProjectDetailDto } from '@/types/api/project'
+import type { ProjectDetailDto } from '@/types/api/project';
+import ProfileCard from '@/components/mypage/ProfileCard';
 import MemberProfileModal from './MemberProfileModal';
 import { useMemberDetail } from '@/hooks/queries/member/useMemberDetail';
 
@@ -35,7 +36,7 @@ const LeaderProfile = ({ projectData }: LeaderProfileProps) => {
     const leaderId = getLeaderId();
     
     // 리더의 상세 정보 가져오기
-    const { data: leaderDetail } = useMemberDetail(leaderId);
+    const { data: leaderDetail, isLoading: isLeaderDetailLoading } = useMemberDetail(leaderId);
 
     if (!leader) {
         return (
@@ -76,40 +77,32 @@ const LeaderProfile = ({ projectData }: LeaderProfileProps) => {
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h3>
                 
-                <div 
-                    onClick={handleLeaderClick}
-                    className='w-[386px] h-[112px] bg-primary-50-light border border-primary-200-light rounded-xl p-[16px] flex gap-3 cursor-pointer hover:bg-primary-100-light transition-colors'
-                >
-                    <div className='w-[80px] h-[80px] bg-yellow-200 rounded-full flex-shrink-0 overflow-hidden'>
-                        {profileImageUrl ? (
-                            <img 
-                                src={profileImageUrl} 
-                                alt={leaderName}
-                                className='w-full h-full object-cover'
-                            />
-                        ) : (
-                            <div className='w-full h-full bg-yellow-200'></div>
-                        )}
-                    </div>
-                    
-                    <div className='flex-1 h-[74px]'>
-                        <div className='flex items-baseline mb-2'>
-                            <h4 className='text-[18px] text-primary-600-normal mr-[6px]'>Leader</h4>
-                            <span className='text-[18px] text-neutral-900'>{leaderName || '-'}</span>
-                        </div>
-                        <p className='text-[14px] text-neutral-600'>
-                            리더 프로필입니다.
-                        </p>
-                    </div>
+                <div className='cursor-pointer' onClick={handleLeaderClick}>
+                    <ProfileCard
+                        profileImage={
+                            profileImageUrl ? (
+                                <img
+                                    src={profileImageUrl}
+                                    alt=''
+                                    className='w-20 h-20 rounded-full object-cover'
+                                />
+                            ) : undefined
+                        }
+                        isLeader
+                        highlighted
+                        nickname={leaderName || '-'}
+                        introduction='리더 프로필입니다.'
+                    />
                 </div>
             </div>
 
             {/* 리더 프로필 상세 모달 */}
-            {leaderDetail && (
+            {isModalOpen && (
                 <MemberProfileModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     member={leaderDetail}
+                    isLoading={isLeaderDetailLoading}
                 />
             )}
         </>

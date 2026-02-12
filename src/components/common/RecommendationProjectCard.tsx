@@ -5,7 +5,6 @@ import type { ProjectCardRoles, ProjectCardRoleItem } from '@/types/api/home/pro
 import type { FC } from 'react'
 import { useRef, useState, useLayoutEffect, useEffect } from 'react'
 import { Link } from 'react-router'
-import { useFieldsQuery } from '@/hooks/useFieldsQuery'
 
 export interface RecommendationProjectCardProps {
 	project: ProjectCard
@@ -13,22 +12,18 @@ export interface RecommendationProjectCardProps {
 }
 
 const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project, variant = 'default' }) => {
-	const { fieldLabelMap } = useFieldsQuery()
-	const getRoleFieldLabel = (value: string) => fieldLabelMap[value] ?? fieldLabelMap[value.toUpperCase()] ?? value
-
 	const rolesData = project.roles && 'roles' in project.roles ? (project.roles as ProjectCardRoles) : null
-	type TagItem = { label: string; count: number }
+	type TagItem = { roleField: string; count: number }
 	const getRoleTagsWithCount = (): { tags: TagItem[]; total: number } => {
 		if (!rolesData?.roles?.length) return { tags: [], total: 0 }
 		const map = new Map<string, number>()
 		;(rolesData.roles as ProjectCardRoleItem[]).forEach((role: ProjectCardRoleItem) => {
 			;(role.role_fields ?? []).forEach(rf => {
-				const label = getRoleFieldLabel(rf.role_field)
-				if (!label) return
-				map.set(label, (map.get(label) ?? 0) + rf.count)
+				if (!rf.role_field) return
+				map.set(rf.role_field, (map.get(rf.role_field) ?? 0) + rf.count)
 			})
 		})
-		const entries = Array.from(map.entries()).map(([label, count]) => ({ label, count }))
+		const entries = Array.from(map.entries()).map(([roleField, count]) => ({ roleField, count }))
 		return { tags: entries.slice(0, 3), total: entries.length }
 	}
 	const { tags: roleTags, total: roleTagTotal } = getRoleTagsWithCount()
@@ -124,9 +119,10 @@ const RecommendationProjectCard: FC<RecommendationProjectCardProps> = ({ project
 					>
 						{visibleTags.map((tag, index) => (
 							<RoleTagChip
-								key={`${tag.label}-${index}`}
+								key={`${tag.roleField}-${index}`}
 								roleId={index + 1}
-								roleName={tag.label}
+								roleName={tag.roleField}
+								roleField={tag.roleField}
 								state='default'
 								count={tag.count}
 							/>

@@ -5,9 +5,10 @@ interface ProjectHistoryProps {
     projectData: ProjectDetailDto;
     getPositionStyle: (position: string) => string;
     variant?: 'default' | 'large';
+    noTopMargin?: boolean;
 }
 
-const ProjectHistory = ({ projectData, getPositionStyle, variant = 'default' }: ProjectHistoryProps) => {
+const ProjectHistory = ({ projectData, getPositionStyle, variant = 'default', noTopMargin }: ProjectHistoryProps) => {
     const teamMemberProjects = projectData.defaultInfo?.team_member_projects || [];
 
     // 날짜 포맷팅
@@ -22,9 +23,11 @@ const ProjectHistory = ({ projectData, getPositionStyle, variant = 'default' }: 
         return `${formatDate(start)}~${formatDate(end)}`;
     };
 
+    const containerClass = noTopMargin ? 'ml-[10px]' : 'mt-[64px] ml-[10px]';
+
     if (teamMemberProjects.length === 0) {
         return (
-            <div className='mt-[64px] ml-[10px]'>
+            <div className={containerClass}>
                 <h3 className='font-bold text-[20px] mb-6'>팀원들의 프로젝트 히스토리</h3>
                 <p className='text-[16px] text-neutral-500'>프로젝트 히스토리가 없습니다.</p>
             </div>
@@ -32,7 +35,7 @@ const ProjectHistory = ({ projectData, getPositionStyle, variant = 'default' }: 
     }
 
     return (
-        <div className='mt-[64px] ml-[10px]'>
+        <div className={containerClass}>
             <h3 className='font-bold text-[20px] mb-6'>팀원들의 프로젝트 히스토리</h3>
             
             <div className='grid grid-cols-2 gap-6'>

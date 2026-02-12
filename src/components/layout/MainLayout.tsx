@@ -36,7 +36,7 @@ export const MainLayout = () => {
 			<div className={getContentClassName()}>
 				<Outlet />
 			</div>
-			<Footer type='Default' margin='196' />
+			<Footer type='Default' margin='196' className='bg-neutral-000' />
 
 			{/* CTA 모달 */}
 			{isCTAModalOpen && ctaModalConfig && (

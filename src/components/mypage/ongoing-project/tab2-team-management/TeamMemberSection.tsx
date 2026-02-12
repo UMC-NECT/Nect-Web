@@ -1,24 +1,28 @@
 import { useEffect, useState } from 'react'
-import RoleTag from '@/components/mypage/RoleTag'
+import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import ProfileCard from '@/components/mypage/ProfileCard'
-import type { ColorType, TeamMember } from '@/types/mypage/ongoindProject'
+import type { TeamMember } from '@/types/mypage/ongoindProject'
 import TeamMemberModal from './modals/TeamMemberModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
+import { usePatchMemberTypeMutation, usePatchMemberKickMutation } from '@/hooks/mypage/useMypageApi'
 
 interface ITeamMemberSection {
+	roleId?: number
 	role: string
-	roleColor: ColorType
+	roleField?: string
 	members: TeamMember[]
 	onOpenPartSettings?: () => void
 }
 
-const TeamMemberSection = ({ role, members, onOpenPartSettings }: ITeamMemberSection) => {
+const TeamMemberSection = ({ roleId, role, roleField, members, onOpenPartSettings }: ITeamMemberSection) => {
 	const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
 	const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | undefined>(undefined)
 
 	// 팀원 관리용
 	const setLeader = useTeamMembersStore(state => state.setLeader)
 	const removeMember = useTeamMembersStore(state => state.removeMember)
+	const patchMemberTypeMutation = usePatchMemberTypeMutation()
+	const patchMemberKickMutation = usePatchMemberKickMutation()
 
 	// 모달이 열리면 백그라운드 스크롤 방지
 	useEffect(() => {
@@ -55,6 +59,27 @@ const TeamMemberSection = ({ role, members, onOpenPartSettings }: ITeamMemberSec
 		onOpenPartSettings?.()
 	}
 
+	// 파트장(Lead) 설정 - API 호출 후 로컬 상태 업데이트
+	const handleSetLeader = (memberId: string) => {
+		patchMemberTypeMutation.mutate(
+			{ projectUserId: memberId, body: { memberType: 'LEAD' } },
+			{
+				onSuccess: () => {
+					setLeader(role, memberId)
+				},
+			}
+		)
+	}
+
+	// 팀원 강퇴 - API 호출 후 로컬 상태 업데이트
+	const handleKickMember = (memberId: string) => {
+		patchMemberKickMutation.mutate(memberId, {
+			onSuccess: () => {
+				removeMember(role, memberId)
+			},
+		})
+	}
+
 	// 리더를 먼저 정렬
 	const sortedMembers = [...members].sort((a, b) => {
 		if (a.isLeader && !b.isLeader) return -1
@@ -65,7 +90,12 @@ const TeamMemberSection = ({ role, members, onOpenPartSettings }: ITeamMemberSec
 	return (
 		<div className='flex flex-col gap-3 w-full'>
 			{/* 역할 태그 */}
-			<RoleTag role={role} showTotal={false} />
+			<RoleTagChip
+				roleId={roleId ?? 1}
+				roleName={role}
+				roleField={roleField}
+				state='default'
+			/>
 
 			{/* 멤버 카드 그리드 */}
 			<div className='flex flex-wrap gap-3 w-full'>
@@ -79,9 +109,17 @@ const TeamMemberSection = ({ role, members, onOpenPartSettings }: ITeamMemberSec
 							}}
 						>
 							<ProfileCard
-								profileImage={member.profileImage}
+								profileImage={
+									member.profileImageUrl ? (
+										<img
+											src={member.profileImageUrl}
+											alt=''
+											className='w-20 h-20 rounded-full object-cover'
+										/>
+									) : undefined
+								}
 								isLeader={member.isLeader}
-								highlighted={role === 'PM' && member.isLeader}
+								highlighted={member.isLeader}
 								nickname={member.nickname}
 								part={member.part}
 								introduction={member.introduction}
@@ -93,8 +131,8 @@ const TeamMemberSection = ({ role, members, onOpenPartSettings }: ITeamMemberSec
 							<TeamMemberModal
 								onClose={() => setOpenDropdownId(null)}
 								onChangeRole={handleChangeRole}
-								onSetLeader={() => setLeader(role, member.id)}
-								onKickMember={() => removeMember(role, member.id)}
+								onSetLeader={() => handleSetLeader(member.id)}
+								onKickMember={() => handleKickMember(member.id)}
 								position={dropdownPosition}
 							/>
 						)}

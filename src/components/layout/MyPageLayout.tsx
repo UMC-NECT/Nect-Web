@@ -3,9 +3,12 @@ import ExploreHeader from "../header/ExploreHeader"
 import { useCTAModal } from "@/stores/useCTAModal"
 import CTAModal from "../common/CTAModal"
 import Footer from './Footer'
+import ErrorModal from "../splash/ErrorModal"
+import { useErrorModal } from "@/stores/useErrorModal"
 
 const MyPageLayout = () => {
 	const { isOpen: isCTAModalOpen, config: ctaModalConfig } = useCTAModal()
+	const { isOpen: isErrorModalOpen } = useErrorModal()
 	return (
 		<>
 			<ExploreHeader />
@@ -26,6 +29,9 @@ const MyPageLayout = () => {
 					onLeftClick={ctaModalConfig.leftButton?.onClick}
 					onRightClick={ctaModalConfig.rightButton?.onClick}
 				/>
+			)}
+			{isErrorModalOpen && (
+				<ErrorModal />
 			)}
 		</>
 	)

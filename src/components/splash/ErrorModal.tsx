@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
 import Button from '@/components/common/Button'
 import Character from '@/assets/Character.png'
+import { useErrorModal } from '@/stores/useErrorModal'
 
 /** 숫자와 캐릭터 이미지가 겹치도록 (ErrorPage와 동일) */
 const ErrorSection = ({ code }: { code: string }) => {
@@ -14,15 +15,9 @@ const ErrorSection = ({ code }: { code: string }) => {
 	)
 }
 
-export interface ErrorModalProps {
-    code: string
-    message: string
-	isOpen: boolean
-	onClose: () => void
-}
-
-const ErrorModal = ({ code, message, isOpen, onClose }: ErrorModalProps) => {
+const ErrorModal = () => {
 	const navigate = useNavigate()
+	const { isOpen, code, message, onClose } = useErrorModal()
 
 	if (!isOpen) return null
 

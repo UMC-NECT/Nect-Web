@@ -18,13 +18,7 @@ interface LeaderInfo {
 	nickname: string
 	role: string
 	bio: string
-	profileImageFileName: string
-}
-
-interface TeamRole {
-	role: string
-	targetCount: number
-	members: Array<{ id: number; name: string }>
+	profileImageUrl: string
 }
 
 interface IProjectManagementView {
@@ -37,7 +31,7 @@ interface IProjectManagementView {
 	projectId: string
 	onRecruitmentDataChange?: (data: RecruitmentLocalItem[]) => void
 	leaderInfo: LeaderInfo | null
-	teamRoles: TeamRole[]
+	availableRoles?: string[]
 }
 
 const ProjectManagementView = ({
@@ -50,7 +44,7 @@ const ProjectManagementView = ({
 	projectId,
 	onRecruitmentDataChange,
 	leaderInfo,
-	teamRoles,
+	availableRoles = [],
 }: IProjectManagementView) => {
 	const recruitStatus = watch('recruitmentStatus') ?? '모집 전'
 	const openPartSettings = usePartSettingsModal(state => state.open)
@@ -88,12 +82,13 @@ const ProjectManagementView = ({
 						projectId={projectId}
 						onDataChange={onRecruitmentDataChange}
 						setValue={setValue}
-						availableRoles={teamRoles.map(r => r.role)}
+						availableRoles={availableRoles}
+						teamMembersByRole={teamMembersByRole}
 					/>
 			</div>
 
 			{/* 섹션 03. 팀 구성 (읽기전용) */}
-			<Section03TeamComposition teamRoles={teamRoles} onEditClick={handleOpenPartSettings} />
+			<Section03TeamComposition projectId={projectId} onEditClick={handleOpenPartSettings} />
 
 			{/* 섹션 04. 프로젝트 목표 */}
 			<div id='section-04'>

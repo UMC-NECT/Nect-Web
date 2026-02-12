@@ -3,7 +3,8 @@ export interface ProjectMemberDto {
     name: string;
     nickname: string;
     profile_image_url: string | null;
-    bio: string;
+    bio: string | null;
+    role?: string;
     role_field: string;
     custom_role_field_name: string | null;
     part_label: string;

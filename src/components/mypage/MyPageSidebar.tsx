@@ -1,8 +1,10 @@
+import { useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import { useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
 import { useMatchingCountQuery } from '@/hooks/mypage/useMatchingApi'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import { MYPAGE_MENU } from '@/constants/mypage'
-import { formatRoleName } from '@/utils/roleColor'
+import { getRoleLabel } from '@/utils/enumUtils'
 import ProfileImageIcon from '@/assets/icons/mypage/profile-image.svg?react'
 
 export const MyPageSidebar = () => {
@@ -12,6 +14,11 @@ export const MyPageSidebar = () => {
 	const matchingWaitCount = countData?.body?.sentCount ?? 0
 	const receivedRequestCount = countData?.body?.receivedCount ?? 0
 	const profile = profileData?.body
+	const { roles, roleFields } = useOnboardingEnums()
+	const roleLabel = useMemo(
+		() => getRoleLabel(profile?.role ?? '', roles, roleFields),
+		[profile?.role, roles, roleFields]
+	)
 	const navigate = useNavigate()
 	const location = useLocation()
 
@@ -32,9 +39,9 @@ export const MyPageSidebar = () => {
 			{/* 프로필 섹션 */}
 			<div className='flex flex-col items-start px-4 py-2.5 gap-4 mb-3'>
 				{/* 프사 */}
-				{profile?.profileImageFileName ? (
+				{profile?.profileImageUrl ? (
 					<img
-						src={profile.profileImageFileName}
+						src={profile.profileImageUrl}
 						alt='프로필'
 						className='w-20 h-20 rounded-full overflow-hidden object-cover border border-neutral-100'
 					/>
@@ -49,7 +56,7 @@ export const MyPageSidebar = () => {
 					</div>
 
 					{/* 소개 */}
-					<span className='button-1 font-semibold text-primary-500-normal'>{formatRoleName(profile?.role)}</span>
+					<span className='button-1 font-semibold text-primary-500-normal'>{roleLabel}</span>
 					<span className='caption-2 text-neutral-500'>{profile?.email}</span>
 				</div>
 			</div>

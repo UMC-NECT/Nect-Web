@@ -22,6 +22,9 @@ type CTAModalType =
 	| 'careerRefreshSuccess'
 	| 'careerRefreshFail'
 
+	// (내 프로필 설정) 유효성 에러
+	| 'validationError'
+
 	// (나의 아이디어 분석) 프로젝트 만들기
 	| 'projectRegister'
 

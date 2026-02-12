@@ -1,6 +1,5 @@
 import ProfileCard from '@/components/mypage/ProfileCard'
-import RoleTag from '@/components/mypage/RoleTag'
-import type { RoleType } from '@/types/mypage/ongoindProject'
+import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import { formatRoleName } from '@/utils/roleColor'
 
 interface LeaderInfo {
@@ -8,7 +7,7 @@ interface LeaderInfo {
 	nickname: string
 	role: string
 	bio: string
-	profileImageFileName: string
+	profileImageUrl: string
 }
 
 interface ISection08LeaderProfile {
@@ -33,7 +32,14 @@ const Section08LeaderProfile = ({ leaderInfo, hasTag }: ISection08LeaderProfile)
 			<h3 className='title-2 font-semibold text-neutral-900'>리더 프로필</h3>
 
 			<div className='flex flex-col gap-3'>
-				{hasTag && <RoleTag role={formatRoleName(leaderInfo.role) as RoleType} showTotal={false} />}
+				{hasTag && (
+					<RoleTagChip
+						roleId={1}
+						roleName={formatRoleName(leaderInfo.role)}
+						roleField={leaderInfo.role}
+						state='default'
+					/>
+				)}
 				<ProfileCard
 					isLeader
 					nickname={leaderInfo.nickname}
@@ -41,9 +47,9 @@ const Section08LeaderProfile = ({ leaderInfo, hasTag }: ISection08LeaderProfile)
 					introduction={leaderInfo.bio}
 					highlighted={true}
 					profileImage={
-						leaderInfo.profileImageFileName ? (
+						leaderInfo.profileImageUrl ? (
 							<img
-								src={leaderInfo.profileImageFileName}
+								src={leaderInfo.profileImageUrl}
 								alt={leaderInfo.nickname}
 								className='w-20 h-20 rounded-full object-cover'
 							/>

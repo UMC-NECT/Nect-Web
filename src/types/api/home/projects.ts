@@ -26,6 +26,7 @@ export interface ProjectCard {
     curMemberCount: number;
     isScrapped: boolean;
     status: string;
+    interestField?: string | null;
     /** 추천 프로젝트: roles.roles[].role_fields, 구 API: Record<role, count> */
     roles?: ProjectCardRoles | Record<string, number>;
 }

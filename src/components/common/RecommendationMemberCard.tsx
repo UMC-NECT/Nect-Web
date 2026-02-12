@@ -1,5 +1,4 @@
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
-import { getTagStyle } from '@/utils/tagStyles';
 import type { MemberCard } from '@/types/api/home';
 import type { FC } from 'react'
 import DefaultProfile from '@/assets/Default_Profile.svg'
@@ -7,14 +6,14 @@ import DefaultProfile from '@/assets/Default_Profile.svg'
 export interface RecommendationMemberCardProps {
 	member: MemberCard
 	variant?: 'default' | 'list'
-	showRoles?: boolean // 역할 태그 표시 여부
 }
 
-const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, variant = 'default', showRoles = true }) => {
+const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, variant = 'default' }) => {
 	// status 변환: "JOB_SEEKING" → "매칭 가능", "EMPLOYED" → "재직 중"
 	const statusMap: Record<string, string> = {
-		JOB_SEEKING: '매칭 가능',
+		JOB_SEEKING: '구직 중',
 		EMPLOYED: '재직 중',
+		ENROLLED: '재학 중',
 	}
 
 	// part 변환: "DESIGNER" → "디자인", "DEVELOPER" → "개발" 등
@@ -54,7 +53,7 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
 			{/* 상단: 배경 + 캐릭터 영역 */}
 			<div className={`relative ${styles.background}`}>
 				{member.imageUrl ? (
-					<img src={member.imageUrl} alt={''} className='w-full h-full object-cover object-top bg-neutral-300' />
+					<img src={member.imageUrl} alt={''} className='w-full h-full object-cover object-top bg-neutral-300 rounded-12' />
 				) : (
 					<div className='w-full h-full bg-neutral-300 rounded-12' />
 				)}
@@ -82,17 +81,6 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
 				</div>
 
 				<p className='body-2 text-neutral-600 font-medium line-clamp-2 mb-3'>{displayIntroduction}</p>
-
-				{/* 역할 태그 - showRoles가 true이고 roles가 있을 때만 렌더링 */}
-				{showRoles && member.roles && member.roles.length > 0 && (
-					<div className='flex gap-2 flex-wrap h-6'>
-						{member.roles.map((role, index) => (
-							<span key={index} className={`px-2 py-0.5 text-sm text-neutral-700 rounded-md ${getTagStyle(role)}`}>
-								{role}
-							</span>
-						))}
-					</div>
-				)}
 			</div>
 		</div>
 	)

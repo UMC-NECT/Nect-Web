@@ -48,7 +48,7 @@ const ProjectListPage = () => {
                         ]}
                     />
 
-                    <h1 className="mt-7 text-[40px] font-bold">
+                    <h1 className="heading-2 font-bold mt-7">
                         모집 중인 프로젝트
                     </h1>
                 </div>

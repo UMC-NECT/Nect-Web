@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import type { RoleType } from '@/types/mypage/ongoindProject'
-import RoleTag from '../../RoleTag'
+import RoleTagChip from '@/components/mission-modal/RoleTagChip'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
@@ -41,14 +41,15 @@ const RoleSelectModal = ({ isOpen, onClose, onSelect, availableRoles }: IRoleSel
 
 				{/* 파트 목록 */}
 				<div className='flex flex-col gap-2.5 pl-3.5 pr-2 pt-2'>
-					{roles.map(role => (
-						<RoleTag
-							key={role}
-							role={role as RoleType}
-							showTotal={false}
-							onClick={() => handlePartClick(role as RoleType)}
-							className='cursor-pointer hover:opacity-80 transition-opacity'
-						/>
+					{roles.map((role, index) => (
+						<div key={role} onClick={() => handlePartClick(role as RoleType)} className='cursor-pointer hover:opacity-80 transition-opacity'>
+							<RoleTagChip
+								roleId={index + 1}
+								roleName={role}
+								roleField={role}
+								state='default'
+							/>
+						</div>
 					))}
 				</div>
 			</div>
