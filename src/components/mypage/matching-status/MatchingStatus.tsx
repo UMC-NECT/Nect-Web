@@ -199,6 +199,7 @@ export const MatchingStatus = () => {
 											<RoleTagChip
 												roleId={getRoleIdByName(group.field)}
 												roleName={group.field}
+												roleField={group.field}
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>
@@ -280,6 +281,7 @@ export const MatchingStatus = () => {
 											<RoleTagChip
 												roleId={getRoleIdByName(group.field)}
 												roleName={group.field}
+												roleField={group.field}
 												state='default'
 											/>
 											<div className='flex flex-col gap-3 items-start relative shrink-0 w-full'>

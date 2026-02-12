@@ -238,6 +238,7 @@ export type ResponseMypageRecruitmentUpdateDto = CommonResponse<{
 // 섹션 03. 팀역할 타입
 export type TeamRoleFieldItem = {
 	role_field: string
+	label_en?: string
 	count: number
 }
 
@@ -399,6 +400,16 @@ export type RequestTeamRoleUpdateDto = {
 	custom_role_field_name?: string
 	required_count?: number
 }
+
+export type ResponseTeamRolesDto = CommonResponse<{
+	parts: {
+		id: number
+		role_field: string | null
+		custom_role_field_name: string | null
+		label: string
+		required_count: number
+	}
+}>
 
 export type ResponseTeamRoleUpdateDto = CommonResponse<{
 	user_team_role_id: number

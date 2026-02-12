@@ -29,6 +29,7 @@ import type {
 	RequestTeamRoleUpdateDto,
 	ResponseTeamRoleUpdateDto,
 	RequestProjectUsersReorderDto,
+	ResponseTeamRolesDto,
 } from '@/types/api/mypage'
 import { api } from '@/utils/AxiosInstance'
 
@@ -273,6 +274,12 @@ export const postTeamRoleCreate = async (
 	body: RequestTeamRoleCreateDto
 ): Promise<ResponseTeamRoleCreateDto> => {
 	const { data } = await api.post(`/api/v1/mypage/projects/${projectId}/team-roles`, body)
+
+	return data
+}
+
+export const getTeamRoles = async (projectId: string): Promise<ResponseTeamRolesDto> => {
+	const { data } = await api.get(`/api/v1/mypage/projects/${projectId}/team-roles`)
 
 	return data
 }

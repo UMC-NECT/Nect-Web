@@ -101,6 +101,7 @@ const AnalyzeReportPage = () => {
 										key={index}
 										roleId={index + 1}
 										roleName={r.role_field_display_name}
+										roleField={r.role_field}
 										state='default'
 										count={r.required_count}
 									/>

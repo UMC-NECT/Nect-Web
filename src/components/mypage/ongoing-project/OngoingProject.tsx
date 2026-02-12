@@ -26,7 +26,7 @@ import {
 	usePatchProjectsFunctions,
 	usePatchProjectsServiceUsersMutation,
 	usePatchProjectRecruitmentStatusMutation,
-	useMypageTeamRolesQuery,
+	useGetTeamRolesQuery,
 	useMypageProjectUsersQuery,
 	useProjectPurposesQuery,
 	useProjectFunctionsQuery,
@@ -220,8 +220,8 @@ const OngoingProject = () => {
 		}
 	}, [projectFieldData, purposesData, functionsData, serviceUsersData, reset, getValues])
 
-	// 섹션 03. 팀 구성 데이터 조회
-	const { data: teamRolesData } = useMypageTeamRolesQuery(projectId)
+	// 섹션 03. 팀 구성 데이터 조회 (getTeamRoles)
+	const { data: teamRolesData } = useGetTeamRolesQuery(projectId)
 
 	// 프로젝트 유저(멤버) 목록 조회
 	const { data: projectUsersData } = useMypageProjectUsersQuery(projectId)
@@ -231,68 +231,43 @@ const OngoingProject = () => {
 
 	useEffect(() => {
 		const users = projectUsersData?.body?.users ?? []
-		const roles = teamRolesData?.body?.roles ?? []
+		const rawParts = teamRolesData?.body?.parts
+		const parts = (Array.isArray(rawParts) ? rawParts : rawParts ? [rawParts] : []) as Array<{
+			id: number
+			role_field: string | null
+			custom_role_field_name: string | null
+			label: string
+			required_count: number
+		}>
 
-		console.log('=== 팀 데이터 로딩 시작 ===')
-		console.log('users:', users)
-		console.log('roles:', roles)
-
-		// 1. users를 part_label 기준으로 그룹화
-		const groupMap = new Map<
-			string,
-			{ roleField: string; customRoleFieldName: string | null; targetCount: number; members: typeof users }
-		>()
-
-		// role_fields에서 count 정보 추출
-		const roleFieldCountMap = new Map<string, number>()
-		for (const role of roles) {
-			for (const rf of role.role_fields) {
-				roleFieldCountMap.set(rf.role_field, rf.count)
-			}
-		}
-
-		// users를 part_label로 그룹화
-		for (const user of users) {
-			const key = user.part_label
-			if (!groupMap.has(key)) {
-				groupMap.set(key, {
-					roleField: user.role_field,
-					customRoleFieldName: user.custom_role_field_name,
-					targetCount: roleFieldCountMap.get(user.role_field) ?? 0,
-					members: [],
-				})
-			}
-			groupMap.get(key)!.members.push(user)
-		}
-
-		// 2. teamRoles에만 있고 users에는 없는 빈 파트 추가 (새로 생성된 파트)
-		// role_fields를 순회하면서 아직 groupMap에 없는 항목 찾기
-		for (const role of roles) {
-			for (const rf of role.role_fields) {
-				// CUSTOM 파트인 경우, part_label을 알 수 없으므로 users에서 찾아야 함
-				// 하지만 users가 없으면 role_field를 part_label로 사용
-				const hasUsersForThisRole = users.some(u => u.role_field === rf.role_field)
-
-				if (!hasUsersForThisRole) {
-					// 멤버가 없는 새 파트 (방금 생성된 파트일 가능성)
-					// CUSTOM role_field는 part_label을 알 수 없으므로 일단 건너뜀
-					// (실제로는 백엔드에서 custom_role_field_name을 반환해야 함)
-					if (rf.role_field !== 'CUSTOM') {
-						const partLabel = rf.role_field
-						if (!groupMap.has(partLabel)) {
-							groupMap.set(partLabel, {
-								roleField: rf.role_field,
-								customRoleFieldName: null,
-								targetCount: rf.count,
-								members: [],
-							})
-						}
-					}
+		// parts 기준으로 TeamMembersByRole 생성, users를 role_field 기준으로 매칭
+		const roleField = (p: (typeof parts)[0]) => p.role_field ?? p.custom_role_field_name ?? ''
+		const teamMembersByRoleFromApi = parts.map(p => {
+			const rf = roleField(p)
+			const partMembers = users.filter(u => {
+				if (p.role_field && p.role_field !== 'CUSTOM') {
+					return u.role_field === p.role_field
 				}
+				return u.role_field === 'CUSTOM' && (u.custom_role_field_name === p.custom_role_field_name || u.part_label === p.label)
+			})
+			return {
+				partId: p.id,
+				role: p.label,
+				roleField: rf,
+				customRoleFieldName: p.custom_role_field_name,
+				color: getRoleColorFromField(rf || 'OTHER') as ColorType,
+				targetCount: p.required_count,
+				members: partMembers.map(u => ({
+					id: String(u.user_id),
+					nickname: u.nickname || u.name || '이름없음',
+					part: u.part_label ?? u.custom_role_field_name ?? u.role_field ?? '',
+					introduction: u.bio ?? undefined,
+					profileImageUrl: u.profile_image_url ?? undefined,
+					isLeader: u.member_type === 'LEADER',
+				})),
 			}
-		}
+		})
 
-		// 3. memberApiDataMap 생성
 		const memberApiDataMap = new Map()
 		for (const user of users) {
 			memberApiDataMap.set(String(user.user_id), {
@@ -302,22 +277,6 @@ const OngoingProject = () => {
 				partLabel: user.part_label,
 			})
 		}
-
-		// 4. TeamMembersByRole 형태로 변환
-		const teamMembersByRoleFromApi = Array.from(groupMap.entries()).map(([partLabel, group]) => ({
-			role: partLabel,
-			color: getRoleColorFromField(group.roleField),
-			targetCount: group.targetCount || group.members.length,
-			members: group.members.map(user => ({
-				id: String(user.user_id),
-				nickname: user.nickname || user.name || '이름없음',
-				part: user.part_label,
-				introduction: user.bio ?? undefined,
-				isLeader: user.member_type === 'LEADER',
-			})),
-		}))
-
-		console.log('변환된 팀 데이터:', teamMembersByRoleFromApi)
 
 		setTeamMembersByRole(teamMembersByRoleFromApi)
 		setMemberApiDataMap(memberApiDataMap)
@@ -376,21 +335,20 @@ const OngoingProject = () => {
 			nickname: profile.nickname,
 			role: profile.role,
 			bio: profile.bio,
-			profileImageFileName: profile.profileImageFileName,
+			profileImageUrl: profile.profileImageUrl,
 		}
 	})()
 
-	// 팀 역할 데이터 변환 (projects API의 team_roles 기반)
-	const leaderProjectTeamRoles = leaderProject?.team_roles?.roles ?? []
-
-	// Section03 프로젝트 파트/팀원 구성 - role_fields를 개별 항목으로 펼침
-	const teamRolesForDisplay = leaderProjectTeamRoles.flatMap(role =>
-		role.role_fields.map(rf => ({
-			role: rf.role_field,
-			targetCount: rf.count,
-			members: [] as Array<{ id: number; name: string }>,
-		}))
-	)
+	// Section02 availableRoles - getTeamRoles parts의 role_field/label
+	const availableRoles = (() => {
+		const rawParts = teamRolesData?.body?.parts
+		const parts = (Array.isArray(rawParts) ? rawParts : rawParts ? [rawParts] : []) as Array<{
+			role_field: string | null
+			custom_role_field_name: string | null
+			label: string
+		}>
+		return parts.map(p => p.role_field ?? p.custom_role_field_name ?? p.label)
+	})()
 
 	const { mutate: mutateProjectField } = useMypageProjectFieldMutation()
 	const { mutate: postRecruitment } = usePostMypageRecruitmentsMutation()
@@ -691,7 +649,7 @@ const OngoingProject = () => {
 						projectId={projectId}
 						onRecruitmentDataChange={handleRecruitmentDataChange}
 						leaderInfo={leaderInfo}
-						teamRoles={teamRolesForDisplay}
+						availableRoles={availableRoles}
 					/>
 				)}
 

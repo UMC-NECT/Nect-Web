@@ -1,18 +1,24 @@
 import { cn } from '@/utils/cn'
 import { getRoleColorById } from '@/utils/roleColor'
+import { getRoleLabel } from '@/utils/enumUtils'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import XIcon from '@/assets/icons/common/X-small.svg?react'
 import DragIcon from '@/assets/icons/common/drag.svg?react'
 
 interface RoleTagChipProps {
 	roleId: number
 	roleName: string
+	/** role_field value (API enum). 있으면 useOnboardingEnums로 label·색상 결정 */
+	roleField?: string
 	state: 'default' | 'clear' | 'disabled' | 'edit'
 	onClick?: (e?: React.MouseEvent) => void
 	className?: string
 	count?: number
 }
 
-const RoleTagChip = ({ roleId, roleName, state, onClick, className, count }: RoleTagChipProps) => {
+const RoleTagChip = ({ roleId, roleName, roleField, state, onClick, className, count }: RoleTagChipProps) => {
+	const { roles, roleFields } = useOnboardingEnums()
+	const displayName = roleField ? getRoleLabel(roleField, roles, roleFields) || roleName : roleName
 	const roleColor = getRoleColorById(roleId)
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'
@@ -32,7 +38,7 @@ const RoleTagChip = ({ roleId, roleName, state, onClick, className, count }: Rol
 				onClick={!isDisabled && !isClear ? onClick : undefined}
 			>
 				<p className={cn('button-1 font-medium text-center whitespace-nowrap max-w-full', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
-					{roleName}
+					{displayName}
 				</p>
 				{count && <span className='button-1 text-neutral-700'>({count})</span>}
 				{isClear && !isDisabled && <XIcon className='cursor-pointer' onClick={onClick} />}

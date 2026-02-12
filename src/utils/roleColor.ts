@@ -1,3 +1,5 @@
+import type { EnumItem } from '@/types/api/enums'
+
 // Role ID에 따른 순환 색상 (1-7 순환)
 const ROLE_COLORS = [
 	'bg-roletag-purple', // 1, 8, 15...
@@ -12,6 +14,14 @@ const ROLE_COLORS = [
 export const getRoleColorById = (id: number): string => {
 	const index = (id - 1) % ROLE_COLORS.length
 	return ROLE_COLORS[index]
+}
+
+/** roleFields(useOnboardingEnums)에서 roleField value의 순서로 색상 반환 */
+export const getRoleColorByField = (roleField: string, roleFields: Record<string, EnumItem[]>): string => {
+	const flat = Object.values(roleFields).flat()
+	const idx = flat.findIndex(f => f.value === roleField)
+	if (idx < 0) return ROLE_COLORS[0]
+	return ROLE_COLORS[idx % ROLE_COLORS.length]
 }
 
 /**

@@ -2,31 +2,25 @@ import More from '@/assets/icons/common/chevron-right.svg?react';
 import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { Link } from 'react-router';
 import { useRecruitingProjects } from '@/hooks/queries/home';
-import { useFieldsQuery } from '@/hooks/useFieldsQuery';
 import RoleTagChip from '@/components/mission-modal/RoleTagChip';
 import type { ProjectCard, ProjectCardRoles, ProjectCardRoleItem } from '@/types/api/home/projects';
 
 const UrgentProjects = () => {
     const { data: projects, isLoading, isError } = useRecruitingProjects(4);
-    const { fieldLabelMap } = useFieldsQuery();
 
-    const getRoleFieldLabel = (value: string) =>
-        fieldLabelMap[value] ?? fieldLabelMap[value?.toUpperCase() ?? ''] ?? value ?? '';
-
-    // roles.roles[].role_fields[] 기준으로 라벨+count 태그 배열 (최대 4개)
-    const getRoleTags = (project: ProjectCard): { label: string; count: number }[] => {
+    // roles.roles[].role_fields[] 기준으로 roleField+count 태그 배열 (최대 4개)
+    const getRoleTags = (project: ProjectCard): { roleField: string; count: number }[] => {
         const rolesData = project.roles && 'roles' in project.roles ? (project.roles as ProjectCardRoles) : null;
         if (!rolesData?.roles?.length) return [];
         const map = new Map<string, number>();
         (rolesData.roles as ProjectCardRoleItem[]).forEach((role: ProjectCardRoleItem) => {
             (role.role_fields ?? []).forEach((rf) => {
-                const label = getRoleFieldLabel(rf.role_field);
-                if (!label) return;
-                map.set(label, (map.get(label) ?? 0) + rf.count);
+                if (!rf.role_field) return;
+                map.set(rf.role_field, (map.get(rf.role_field) ?? 0) + rf.count);
             });
         });
         return Array.from(map.entries())
-            .map(([label, count]) => ({ label, count }))
+            .map(([roleField, count]) => ({ roleField, count }))
             .slice(0, 4);
     };
 
@@ -102,9 +96,10 @@ const UrgentProjects = () => {
 								<div className='flex gap-2 flex-wrap'>
 									{getRoleTags(project).map((tag, index) => (
 										<RoleTagChip
-											key={`${tag.label}-${index}`}
+											key={`${tag.roleField}-${index}`}
 											roleId={index + 1}
-											roleName={tag.label}
+											roleName={tag.roleField}
+											roleField={tag.roleField}
 											state='default'
 											count={tag.count}
 										/>

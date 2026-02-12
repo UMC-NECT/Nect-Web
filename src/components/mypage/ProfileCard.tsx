@@ -1,5 +1,5 @@
 import ProfileImageIcon from '@/assets/icons/mypage/profile-image.svg?react'
-import ProfileSampleIcon from '@/assets/icons/mypage/profile-sample.svg?react'
+import ProfileSampleIcon from '@/assets/Default_Profile.svg?react'
 import BarIcon from '@/assets/icons/common/Bar.svg?react'
 
 interface IProfileCard {
@@ -46,11 +46,11 @@ const ProfileCard = ({
 					)}
 
 					{/* 닉네임 */}
-					<span className='title-3 font-semibold text-neutral-900'>{nickname}</span>
+					<span className='title-3 font-semibold text-neutral-900 max-w-[63px] whitespace-nowrap'>{nickname}</span>
 
 					{/* 파트 */}
 					<BarIcon className='w-0.5 h-3 text-neutral-300 ' />
-					{part && <span className='title-3 font-medium text-neutral-500'>{part}</span>}
+					{part && <span className='title-3 font-medium text-neutral-500 max-w-[122px] line-clamp-1'>{part}</span>}
 				</div>
 
 				{/* 소개글 */}

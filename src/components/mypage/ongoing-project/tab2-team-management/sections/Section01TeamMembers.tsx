@@ -26,11 +26,12 @@ const Section01TeamMembers = ({ data, handlePartSettings }: ISection01TeamMember
 
 			{/* 역할별 멤버 섹션 */}
 			<div className='flex flex-col gap-12 px-5'>
-				{data.map(({ role, color, members }) => (
+				{data.map(({ partId, role, roleField, members }) => (
 					<TeamMemberSection
 						key={role}
+						roleId={partId}
 						role={role}
-						roleColor={color}
+						roleField={roleField}
 						members={members}
 						onOpenPartSettings={handlePartSettings}
 					/>
