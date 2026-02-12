@@ -22,10 +22,10 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 	const [selectedRoom, setSelectedRoom] = useState<ChatRoomListDto | null>(null)
 	
 	// 프로젝트 목록 조회
-	const projectData = useGetProjectUsers()
-	
+	const { projectUsers } = useGetProjectUsers()
+
 	// 필터링된 프로젝트 목록 (최대 2개)
-	const filteredProjects = useFilteredWorkspaceItems(projectData, { maxCount: 2 })
+	const filteredProjects = useFilteredWorkspaceItems(projectUsers, { maxCount: 2 })
 	
 	// 선택된 프로젝트 ID (첫 번째 프로젝트를 기본값으로)
 	const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(undefined)

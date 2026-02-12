@@ -20,8 +20,8 @@ const AnalysisHeader = () => {
 	const navigate = useNavigate()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const isLoggedIn = getAccessToken()
-	const projectData = useGetProjectUsers()
-	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
+	const { projectUsers } = useGetProjectUsers()
+	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectUsers)
 
 	const [showNotifications, setShowNotifications] = useState(false)
 	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)

@@ -30,7 +30,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false)
 	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)
 	const navigate = useNavigate()
-	const projectData = useGetProjectUsers()
+	const { projectUsers } = useGetProjectUsers()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const location = useLocation()
 	const currentPath = location.pathname
@@ -58,7 +58,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
 	const subMenuItems = [{ name: '홈', href: '/' }, { name: '프로젝트 찾기', href: '/projectList' }, { name: '팀원 찾기', href: '/necterList' }]
-	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
+	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectUsers)
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {

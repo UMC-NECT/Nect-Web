@@ -348,7 +348,7 @@ export const ProfileSettings = () => {
 						message='{공개 매칭} 등록 하겠습니까?'
 						fixedHeight={true}
 						leftButtonMsg='돌아가기'
-						rightButtonMsg={isSaving ? '공개 매칭 등록중...' : '공개 매칭 등록'}
+						rightButtonMsg={'공개 매칭 등록'}
 						onLeftClick={close}
 						onRightClick={handleOpenMatchingRegister}
 					/>
@@ -375,7 +375,7 @@ export const ProfileSettings = () => {
 						fixedHeight={true}
 						subMessage='이제 공개 매칭에서 프로필이 내려갑니다.'
 						leftButtonMsg='돌아가기'
-						rightButtonMsg={isSaving ? '비공개 전환중...' : '비공개 전환'}
+						rightButtonMsg={'비공개 전환'}
 						onLeftClick={close}
 						onRightClick={handlePrivateMatching}
 					/>

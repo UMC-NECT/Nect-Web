@@ -7,7 +7,7 @@ const useGetProjectUsers = () => {
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const accessToken = getAccessToken()
 
-	const { data } = useQuery({
+	const { data, isLoading } = useQuery({
 		queryKey: [QUERY_KEY.PROJECT_USERS],
 		queryFn: () => getProjectUsers(),
 		staleTime: 1000 * 60 * 5,
@@ -15,7 +15,7 @@ const useGetProjectUsers = () => {
 		enabled: !!accessToken,
 	})
 
-	return data?.body
+	return { projectUsers: data?.body ?? [], isLoading }
 }
 
 export default useGetProjectUsers

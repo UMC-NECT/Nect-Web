@@ -33,9 +33,11 @@ import {
 	useProjectsServiceUsersQuery,
 	useDeleteProjectMutation,
 } from '@/hooks/mypage/useMypageApi'
+import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import type { RecruitmentLocalItem } from './tab1-project-setting/sections/Section02RecruitmentInfo'
 import { getProjectFieldValue } from '@/utils/projectField'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
+import NecttyIcon from '@/assets/icons/mypage/nectty.png'
 
 // role_field를 ColorType으로 변환
 const getRoleColorFromField = (roleField: string): ColorType => {
@@ -96,6 +98,10 @@ const toApiRecruitmentStatus = (status: RecruitType): string => {
 const OngoingProject = () => {
 	// 현재 탭
 	const [activeTab, setActiveTab] = useState<TabType>('프로젝트 설정')
+
+	// 프로젝트 유저 조회 - memberType이 LEADER인 프로젝트가 있는지 확인
+	const { projectUsers, isLoading: isProjectUsersLoading } = useGetProjectUsers()
+	const hasLeaderProject = projectUsers?.some((p) => p.memberType === 'LEADER')
 	// 모집 등록 완료 여부
 	const [isRecruitmentPublished, setIsRecruitmentPublished] = useState(false)
 	// 섹션 01. 프로젝트 분야
@@ -576,6 +582,26 @@ const OngoingProject = () => {
 		setActiveTab(tabName)
 	}, [])
 
+	// 리더인 프로젝트가 없으면 NoLeaderProjectView 렌더링
+	if (!isProjectUsersLoading && !hasLeaderProject) {
+		return (
+			<div className='ml-7 items-center flex flex-col'>
+				<MyPageHeader />
+				<div className='w-full bg-bg-gray px-[46px] py-[56px] rounded-12 border border-neutral-200 max-w-[916px]'>
+					<div className='flex flex-col items-center gap-5'>
+						<p className='title-3 font-semibold text-primary-600-normal'>NECT Project</p>
+						<div className='flex flex-col items-center gap-3'>
+							<p className='heading-3 font-bold text-neutral-900'>진행 중인 프로젝트가 없습니다.</p>
+							<p className='title-3 font-medium text-neutral-600'>아이디어를 등록하고 AI 분석을 받아보세요!</p>
+						</div>
+						<img src={NecttyIcon} className='w-[185px] h-[158px] mt-[53px] mb-[86px]' />
+						<Button color='primary' onClick={() => navigate('/idea-analyze')} size='xl' className='w-[320px]'>AI 아이디어 분석하기</Button>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
 	return (
 		<div className='ml-7 w-full flex flex-col items-center'>
 			{/* 브레드크럼 + 타이틀 */}
@@ -596,7 +622,7 @@ const OngoingProject = () => {
 			/>
 
 			{/* 컨텐츠 전체 컨테이너 */}
-			<div className='rounded-12 bg-neutral-000 border border-neutral-200 px-11.5 py-14'>
+			<div className='rounded-12 bg-neutral-000 border border-neutral-200 px-11.5 py-14 w-full'>
 				{/* 프로젝트명 + 저장/모집등록 버튼 */}
 				<div className='flex items-center justify-between mb-7'>
 					<h2 className='heading-2 font-bold text-neutral-900'>{projectData.name}</h2>

@@ -22,8 +22,8 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
 	const navigate = useNavigate()
 	const location = useLocation()
 	const params = useParams<{ projectId?: string }>()
-	const projectData = useGetProjectUsers()
-	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
+	const { projectUsers } = useGetProjectUsers()
+	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectUsers)
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const isLoggedIn = getAccessToken()
 
