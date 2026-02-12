@@ -1,8 +1,15 @@
-import { Outlet, useNavigate } from "react-router"
-import LogoIcon from '@/assets/icons/header/Logo.svg?react';
+import { useEffect } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router'
+import LogoIcon from '@/assets/icons/header/Logo.svg?react'
 
 const SplashLayout = () => {
 	const navigate = useNavigate()
+	const location = useLocation()
+
+	useEffect(() => {
+		window.scrollTo(0, 0)
+	}, [location.pathname])
+
 	return (
 		<>
             <header className="fixed top-0 left-0 right-0 bg-white z-50 shadow-[0px_4px_20px_0px_rgba(25,25,25,0.02)]">

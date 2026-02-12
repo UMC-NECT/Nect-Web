@@ -14,11 +14,15 @@ interface RoleTagChipProps {
 	onClick?: (e?: React.MouseEvent) => void
 	className?: string
 	count?: number
+	/** 직무 미선택 등 placeholder 상태일 때 텍스트를 neutral-300으로 표시 */
+	isPlaceholder?: boolean
 }
 
-const RoleTagChip = ({ roleId, roleName, roleField, state, onClick, className, count }: RoleTagChipProps) => {
+const RoleTagChip = ({ roleId, roleName, roleField, state, onClick, className, count, isPlaceholder }: RoleTagChipProps) => {
 	const { roles, roleFields } = useOnboardingEnums()
-	const displayName = roleField ? getRoleLabel(roleField, roles, roleFields) || roleName : roleName
+	// CUSTOM 파트는 parts.label(실제 파트명)을 roleName으로 전달받으므로 roleName 우선 사용
+	const displayName =
+		roleField === 'CUSTOM' ? roleName : roleField ? getRoleLabel(roleField, roles, roleFields) || roleName : roleName
 	const roleColor = getRoleColorById(roleId)
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'
@@ -37,7 +41,7 @@ const RoleTagChip = ({ roleId, roleName, roleField, state, onClick, className, c
 				)}
 				onClick={!isDisabled && !isClear ? onClick : undefined}
 			>
-				<p className={cn('button-1 font-medium text-center whitespace-nowrap max-w-full', isDisabled ? 'text-neutral-300' : 'text-neutral-700')}>
+				<p className={cn('button-1 font-medium text-center whitespace-nowrap max-w-full', isDisabled || isPlaceholder ? 'text-neutral-300' : 'text-neutral-700')}>
 					{displayName}
 				</p>
 				{count && <span className='button-1 text-neutral-700'>({count})</span>}

@@ -7,13 +7,14 @@ import CategoryDropdown from '@/components/main/CategoryDropdown';
 import RecommendationMemberCard from '@/components/common/RecommendationMemberCard';
 import { useMatchableMembers } from '@/hooks/queries/home';
 import { CATEGORIES, TABS, PART_MAP } from '@/constants/filters';
+import LoadingScreen from '@/components/splash/LoadingScreen';
 
 const NecterListPage = () => {
     const [selectedTab, setSelectedTab] = useState('전체');
     const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
 
     // API 호출 (100개 요청)
-    const { data: members, isLoading, error } = useMatchableMembers(100);
+    const { data: members, isLoading, error } = useMatchableMembers(50);
 
     // 탭에 따라 필터링
     const filteredMembers = members?.filter(member => {
@@ -35,6 +36,10 @@ const NecterListPage = () => {
             document.body.style.backgroundColor = '';
         };
     }, []);
+
+    if (isLoading) {
+        return <LoadingScreen/>
+    }
 
     return (
         <div className="pt-16">

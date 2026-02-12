@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import RecruitmentStatusChip from '@/components/common/RecruitmentStatusChip'
 import RecruitmentStatusModal from './RecruitmentStatusModal'
 import CloudIcon from '@/assets/icons/mypage/cloud.svg?react'
+import { usePostMypageProjectImageMutation } from '@/hooks/mypage/useMypageApi'
 import type { RecruitType } from '@/types/mypage/ongoindProject'
 
 interface ProjectData {
@@ -15,24 +16,56 @@ interface ProjectData {
 
 interface IProjectBasicInfo {
 	projectData: ProjectData
+	projectId: string
 	recruitStatus: RecruitType
 	onStatusChange?: (status: '모집 전' | '모집 중' | '모집 완료') => void
 }
 
-const ProjectBasicInfo = ({ projectData, recruitStatus, onStatusChange }: IProjectBasicInfo) => {
+const ProjectBasicInfo = ({ projectData, projectId, recruitStatus, onStatusChange }: IProjectBasicInfo) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [thumbnailUrl, setThumbnailUrl] = useState<string | undefined>(projectData.thumbnailUrl)
+	const fileInputRef = useRef<HTMLInputElement>(null)
+	const { mutate: postMypageProjectImageMutation } = usePostMypageProjectImageMutation()
 
-	// 썸네일 이미지 업로드
+	const displayThumbnailUrl = thumbnailUrl ?? projectData.thumbnailUrl
+
 	const handleThumbnail = () => {
-		alert('썸네일 이미지 업로드')
+		fileInputRef.current?.click()
+	}
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file || !projectId) return
+		if (!file.type.startsWith('image/')) return
+
+		postMypageProjectImageMutation({
+			projectId,
+			image: file,
+		})
+		setThumbnailUrl(URL.createObjectURL(file))
 	}
 
 	return (
 		<>
+			<input
+				ref={fileInputRef}
+				type='file'
+				accept='image/*'
+				className='hidden'
+				onChange={handleFileChange}
+			/>
 			<div className='flex items-start gap-7'>
 				{/* 썸네일 */}
 				<div className='relative group cursor-pointer' onClick={handleThumbnail}>
-					<div className='w-80 h-44.5 rounded-12 bg-neutral-400' />
+					<div className='w-80 h-44.5 rounded-12 bg-neutral-400 overflow-hidden'>
+						{displayThumbnailUrl ? (
+							<img
+								src={displayThumbnailUrl}
+								alt='프로젝트 썸네일'
+								className='w-full h-full object-cover'
+							/>
+						) : null}
+					</div>
 					<div className='absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 duration-300 rounded-12'>
 						<span className='body-1 text-white flex justify-center items-center gap-1.75'>
 							<CloudIcon className='w-5.5 h-4' /> 클릭 후 사진 업로드

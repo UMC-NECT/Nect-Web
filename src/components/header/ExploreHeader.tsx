@@ -30,7 +30,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false)
 	const [showNoWorkspaceModal, setShowNoWorkspaceModal] = useState(false)
 	const navigate = useNavigate()
-	const projectData = useGetProjectUsers()
+	const { projectUsers } = useGetProjectUsers()
 	const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
 	const location = useLocation()
 	const currentPath = location.pathname
@@ -58,7 +58,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 	useClickOutside(profileRef, () => setShowProfile(false), showProfile)
 
 	const subMenuItems = [{ name: '홈', href: '/' }, { name: '프로젝트 찾기', href: '/projectList' }, { name: '팀원 찾기', href: '/necterList' }]
-	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectData)
+	const filteredWorkspaceItems = useFilteredWorkspaceItems(projectUsers)
 
 	// 스크롤 이벤트 핸들러
 	useEffect(() => {
@@ -119,7 +119,7 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 										return
 									}
 									onNavigate?.()
-									const firstId = filteredWorkspaceItems[0]?.projectId ?? projectData?.[0]?.projectId
+									const firstId = filteredWorkspaceItems[0]?.projectId ?? projectUsers?.[0]?.projectId
 									navigate(firstId != null ? `/team-board/${firstId}` : '/team-board')
 								}}
 								onMouseEnter={() => setShowWorkspaceMenu(true)}
@@ -268,10 +268,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors' onClick={() => navigate('/idea-analyze')}>
 							AI 프로젝트 등록
 						</button>
-						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2'>
+						<Link to='/landing' className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2'>
 							<PortfolioIcon className='h-[14px] w-[14px] text-primary-800-dark' />
 							NECT 가이드
-						</button>
+						</Link>
 					</div>
 				</div>
 			</div>

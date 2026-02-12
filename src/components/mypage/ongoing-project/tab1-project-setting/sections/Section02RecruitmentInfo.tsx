@@ -161,13 +161,14 @@ const Section02RecruitmentInfo = ({ projectId, onDataChange, setValue, available
 					{/* 선택 직무 */}
 					<div className='relative shrink-0 mt-5 w-25'>
 						<RoleTagChip
-							roleId={getPartByRoleField(item.roleField, teamMembersByRole)?.partId ?? 1}
+							roleId={getPartByRoleField(item.roleField, teamMembersByRole)?.partId ?? 7}
 							roleName={item.roleField || '직무 선택'}
 							roleField={item.roleField}
 							state='default'
 							count={item.roleField ? (getPartByRoleField(item.roleField, teamMembersByRole)?.targetCount ?? item.capacity) : undefined}
 							onClick={() => setOpenModalIndex(index)}
-							className='cursor-pointer hover:opacity-80 transition-opacity'
+							className='cursor-pointer'
+							isPlaceholder={!item.roleField}
 						/>
 						<RoleSelectModal
 							isOpen={openModalIndex === index}

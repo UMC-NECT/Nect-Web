@@ -15,6 +15,7 @@ import MatchingCancelModal from '@/components/recruiting-projects/MatchingCancel
 import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlockedModal';
 import { useProjectDetail, useProjectRecruitments } from '@/hooks/queries/project';
 import { useMatchingUserToProjectMutation, useMatchingsSentQuery, useMatchingCancelMutation } from '@/hooks/mypage/useMatchingApi';
+import LoadingScreen from '@/components/splash/LoadingScreen';
 
 const RecruitingProjectsPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
@@ -45,13 +46,13 @@ const RecruitingProjectsPage = () => {
     }, [sentMatchings, projectId]);
 
     const isMatching = !!currentProjectMatching;
-    
+
     // localStorage에서 matchingId 가져오기
     const getStoredMatchingId = () => {
         const stored = localStorage.getItem(`matching_${projectId}`);
         return stored ? Number(stored) : null;
     };
-    
+
     const currentMatchingId = currentProjectMatching?.matchingId || getStoredMatchingId();
 
     // 포지션 색상 매핑
@@ -111,9 +112,7 @@ const RecruitingProjectsPage = () => {
     // 로딩 상태
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p className="text-neutral-500">로딩 중...</p>
-            </div>
+            <LoadingScreen/>
         );
     }
 
@@ -149,17 +148,17 @@ const RecruitingProjectsPage = () => {
 
                 <div className="w-[916px]">
                     <div className="mt-[36px]">
-                        <Breadcrumb 
+                        <Breadcrumb
                             items={[
                                 { label: '홈', path: '/' },
                                 { label: '모집 중인 프로젝트', path: '/projectList' },
                                 { label: projectData.defaultInfo.project_title }
-                            ]} 
+                            ]}
                         />
                     </div>
                     <div className=' mt-8 flex items-center justify-between'>
                         <h1 className="text-[28px] font-bold mt-1">모집 중인 프로젝트</h1>
-                        <Link 
+                        <Link
                             to="/projectList"
                             className="mt-4 text-xl font-semibold w-[135px] h-[48px] flex items-center justify-center gap-2.5 bg-neutral-100 border border-neutral-200 rounded-xl"
                         >
@@ -176,10 +175,10 @@ const RecruitingProjectsPage = () => {
                             <div className='flex gap-[10px] h-[48px] items-center'>
                                 {/* 메시지 버튼 */}
                                 <div className='relative group'>
-                                    <img 
-                                        src={chat} 
-                                        alt="Chat" 
-                                        className='w-[48px] h-[48px] p-[10px] cursor-pointer hover:bg-neutral-100 rounded-lg' 
+                                    <img
+                                        src={chat}
+                                        alt="Chat"
+                                        className='w-[48px] h-[48px] p-[10px] cursor-pointer hover:bg-neutral-100 rounded-lg'
                                     />
                                     {/* 호버시 툴팁 */}
                                     <div className='absolute top-[58px] right-[-68px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none'>
@@ -190,15 +189,15 @@ const RecruitingProjectsPage = () => {
                                         <div className='absolute top-[-5px] right-[85px] w-3 h-3 bg-neutral-500 transform rotate-45'></div>
                                     </div>
                                 </div>
-                                
-                                <button 
+
+                                <button
                                     onClick={handleMatchingButtonClick}
                                     onMouseEnter={() => setIsHovered(true)}
                                     onMouseLeave={() => setIsHovered(false)}
                                     className={`w-[130px] h-[48px] rounded-lg font-semibold text-[16px] transition-colors
                                         ${isMatching && isHovered
                                             ? 'bg-primary-300-light text-primary-500-normal hover:bg-primary-300-light'
-                                            : isMatching 
+                                            : isMatching
                                                 ? 'bg-primary-100-light text-primary-500-normal'
                                                 : 'bg-primary-400-normal text-neutral-50 hover:bg-primary-500-normal'
                                         }`}
@@ -242,7 +241,7 @@ const RecruitingProjectsPage = () => {
                     </div>
                 </div>
 
-                <MatchingRequestModal 
+                <MatchingRequestModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onMatchingComplete={(field: string) => {
@@ -254,7 +253,7 @@ const RecruitingProjectsPage = () => {
                     recruitments={recruitments || []}
                 />
 
-                <MatchingRequestConfirmModal 
+                <MatchingRequestConfirmModal
                     isOpen={isConfirmModalOpen}
                     onClose={() => setIsConfirmModalOpen(false)}
                     onConfirm={() => {
@@ -287,26 +286,26 @@ const RecruitingProjectsPage = () => {
                     position={selectedField}
                 />
 
-                <MatchingSuccessModal 
+                <MatchingSuccessModal
                     isOpen={isSuccessModalOpen}
                     onClose={() => {
                         setIsSuccessModalOpen(false);
                     }}
                 />
 
-                <MatchingCancelModal 
+                <MatchingCancelModal
                     isOpen={isCancelModalOpen}
                     onClose={() => setIsCancelModalOpen(false)}
                     onConfirm={handleCancelConfirm}
                     matchingId="" // 빌드 에러 수정을 위해 추가
                 />
 
-                <MatchingBlockedModal 
+                <MatchingBlockedModal
                     isOpen={isBlockedModalOpen}
                     onClose={() => setIsBlockedModalOpen(false)}
                 />
 
-                <MatchingLimitModal 
+                <MatchingLimitModal
                     isOpen={isLimitModalOpen}
                     onClose={() => setIsLimitModalOpen(false)}
                     onConfirm={() => setIsLimitModalOpen(false)}

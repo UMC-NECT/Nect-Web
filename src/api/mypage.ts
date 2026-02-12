@@ -224,6 +224,19 @@ export const deleteProject = async (projectId: string): Promise<CommonResponse> 
 	return data
 }
 
+// 프로젝트 썸네일 이미지 업로드
+export const postMypageProjectImage = async (
+	projectId: string,
+	image: File
+): Promise<CommonResponse> => {
+	const formData = new FormData()
+	formData.append('image', image)
+	const { data } = await api.post(`/api/v1/mypage/${projectId}/image`, formData, {
+		headers: { 'Content-Type': 'multipart/form-data' },
+	})
+	return data
+}
+
 // 섹션 08. 리더 프로필
 
 // === 진행중인 프로젝트 (팀원 관리) ==========================================================

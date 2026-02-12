@@ -29,6 +29,8 @@ export const MainLayout = () => {
 		return `w-full max-w-main mx-auto px-[72px] ${isWorkspace ? 'pt-[66px]' : 'pt-[132px]'}`
 	}
 
+	const isMainPage = location.pathname === '/'
+
 	return (
 		<OnboardingGuard>
 		<>
@@ -36,7 +38,7 @@ export const MainLayout = () => {
 			<div className={getContentClassName()}>
 				<Outlet />
 			</div>
-			<Footer type='Default' margin='196' className='bg-neutral-000' />
+			<Footer type='Default' margin='196' className={isMainPage ? 'bg-neutral-000' : ''} />
 
 			{/* CTA 모달 */}
 			{isCTAModalOpen && ctaModalConfig && (

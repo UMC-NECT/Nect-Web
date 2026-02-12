@@ -150,13 +150,13 @@ const ProfileBasicInfo = ({
 				{/* 우측 - 버튼 2개 */}
 				<div className='flex gap-4'>
 					<Button color='mypage1' className='w-32.5' onClick={onSave} disabled={isSaving}>
-						{isSaving ? '저장 중...' : '저장'}
+						 저장
 					</Button>
 
 					<Button
 						color='mypage2'
-						className={`w-32.5 px-2.5 hover:bg-primary-500 
-							${!isOpenRecruit ? 'hover:bg-primary-600-normal' : ''} 
+						className={`w-32.5 px-2.5 hover:bg-primary-500
+							${!isOpenRecruit ? 'hover:bg-primary-600-normal' : ''}
 							${isOpenRecruit && (isRecruitButtonHovered ? 'text-primary-500-normal bg-primary-300-light' : 'bg-primary-100-light text-primary-500-normal')}
 							`}
 						onClick={onRecruit}

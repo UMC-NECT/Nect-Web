@@ -61,7 +61,7 @@ const ProfileDropdown = ({ isOpen, onClose }: ProfileDropdownProps) => {
 						{/* 프로필 정보 영역 */}
 						<div className='self-stretch px-2 inline-flex justify-start items-center gap-5'>
 							<img
-								className='w-[68px] h-[68px] rounded-[28px]'
+								className='w-[68px] h-[68px] rounded-[28px] object-cover'
 								src={profileData?.body?.imageUrl || DefaultProfileImage}
 								alt='프로필'
 							/>

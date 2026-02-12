@@ -1,14 +1,21 @@
-import { Outlet } from "react-router"
-import ExploreHeader from "../header/ExploreHeader"
-import { useCTAModal } from "@/stores/useCTAModal"
-import CTAModal from "../common/CTAModal"
+import { useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router'
+import ExploreHeader from '../header/ExploreHeader'
+import { useCTAModal } from '@/stores/useCTAModal'
+import CTAModal from '../common/CTAModal'
 import Footer from './Footer'
-import ErrorModal from "../splash/ErrorModal"
-import { useErrorModal } from "@/stores/useErrorModal"
+import ErrorModal from '../splash/ErrorModal'
+import { useErrorModal } from '@/stores/useErrorModal'
 
 const MyPageLayout = () => {
+	const location = useLocation()
 	const { isOpen: isCTAModalOpen, config: ctaModalConfig } = useCTAModal()
 	const { isOpen: isErrorModalOpen } = useErrorModal()
+
+	useEffect(() => {
+		window.scrollTo(0, 0)
+	}, [location.pathname])
+
 	return (
 		<>
 			<ExploreHeader />
@@ -30,9 +37,7 @@ const MyPageLayout = () => {
 					onRightClick={ctaModalConfig.rightButton?.onClick}
 				/>
 			)}
-			{isErrorModalOpen && (
-				<ErrorModal />
-			)}
+			{isErrorModalOpen && <ErrorModal />}
 		</>
 	)
 }

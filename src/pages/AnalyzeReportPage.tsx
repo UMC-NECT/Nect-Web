@@ -9,6 +9,7 @@ import Button from '@/components/common/Button'
 import WeeklyRoadmapSection from '@/components/common/WeeklyRoadmapSection'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { useGetAnalysisQuery, usePostCreateProjectMutation } from '@/hooks/analysis/useAnalysisApi'
+import LoadingScreen from '@/components/splash/LoadingScreen'
 
 const AnalyzeReportPage = () => {
 	const navigate = useNavigate()
@@ -39,17 +40,16 @@ const AnalyzeReportPage = () => {
 		}))
 	}, [analysis])
 
-	if (isAnalysisLoading) {
-		return <div></div>
-	}
-	if (!analysis) {
-		return null
-	}
-
 	const handleCreateProject = () => {
 		const analysisId = analysis?.analysis_id
 		if (analysisId == null) return
 		createProject.mutate(String(analysisId))
+	}
+
+	if (isAnalysisLoading) {
+		return (
+			<LoadingScreen/>
+		)
 	}
 
 	return (

@@ -1,7 +1,7 @@
 import Button from '@/components/common/Button'
 import { MyPageHeader } from '../MyPageHeader'
 import { useNavigate } from 'react-router'
-import NecttyIcon from '@/assets/icons/mypage/nectty.png'
+import NecttyIcon from '@/assets/nectty.png'
 
 const EmptyProfileAnalysis = () => {
 	const navigate = useNavigate()

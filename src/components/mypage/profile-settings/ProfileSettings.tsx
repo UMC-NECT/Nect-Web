@@ -21,12 +21,13 @@ import Section07Portfolio from './sections/Section07Portfolio'
 import Section08ProjectHistory from './sections/Section08ProjectHistory'
 import { useErrorModal } from '@/stores/useErrorModal'
 import axios from 'axios'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 export const ProfileSettings = () => {
 	const [hasProfileKeyword] = useState(false) // 프로필 분석키워드 리포트 보유여부
 
 	// api - 프로필 조회
-	const { data: profileData } = useMypageProfileQuery()
+	const { data: profileData, isLoading } = useMypageProfileQuery()
 	const profile = profileData?.body
 
 	// api - 프로필 수정
@@ -72,7 +73,7 @@ export const ProfileSettings = () => {
 						try {
 							// 폼 데이터를 API request DTO로 변환
 							const requestBody = {
-								profileImageUrl: uploadedFileName ?? profile?.profileImageUrl ?? '',
+								profileImageFileName: uploadedFileName ?? profile?.profileImageUrl ?? '',
 								bio: data.introduction ?? '',
 								coreCompetencies: data.coreCompetency ?? '',
 								userStatus: data.userStatus ?? '',
@@ -103,13 +104,18 @@ export const ProfileSettings = () => {
 										fileUrl: serverFileUrl,
 									}
 								}),
-								projectHistories: (data.projectHistory ?? []).map(history => ({
-									projectName: history.title ?? '',
-									projectImage: null,
-									projectDescription: history.description ?? '',
-									startYearMonth: history.date?.split('~')[0] ?? '',
-									endYearMonth: history.date?.split('~')[1] ?? '',
-								})),
+								projectHistories: (data.projectHistory ?? []).map(history => {
+									const [start, end] = (history.date ?? '').split('~').map(s => s?.trim() ?? '')
+									// 무결성 에러 방지: 서버가 fileName만 허용하면 imageFileName만 전달 (URL 미전달)
+									const projectImage = history.imageFileName ?? history.imageUrl ?? null
+									return {
+										projectName: history.title ?? '',
+										projectImage,
+										projectDescription: history.description ?? '',
+										startYearMonth: start,
+										endYearMonth: end,
+									}
+								}),
 							}
 
 							await saveProfile(requestBody)
@@ -264,6 +270,7 @@ export const ProfileSettings = () => {
 
 	return (
 		<FormProvider {...methods}>
+			{isLoading && <LoadingModal />}
 			<div className='ml-7'>
 				<MyPageHeader />
 
@@ -348,7 +355,7 @@ export const ProfileSettings = () => {
 						message='{공개 매칭} 등록 하겠습니까?'
 						fixedHeight={true}
 						leftButtonMsg='돌아가기'
-						rightButtonMsg={isSaving ? '공개 매칭 등록중...' : '공개 매칭 등록'}
+						rightButtonMsg={'공개 매칭 등록'}
 						onLeftClick={close}
 						onRightClick={handleOpenMatchingRegister}
 					/>
@@ -375,7 +382,7 @@ export const ProfileSettings = () => {
 						fixedHeight={true}
 						subMessage='이제 공개 매칭에서 프로필이 내려갑니다.'
 						leftButtonMsg='돌아가기'
-						rightButtonMsg={isSaving ? '비공개 전환중...' : '비공개 전환'}
+						rightButtonMsg={'비공개 전환'}
 						onLeftClick={close}
 						onRightClick={handlePrivateMatching}
 					/>

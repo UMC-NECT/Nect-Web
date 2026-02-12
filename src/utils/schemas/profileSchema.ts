@@ -41,6 +41,10 @@ export const projectHistorySchema = z.object({
 	title: z.string(),
 	description: z.string(),
 	date: z.string(),
+	/** 표시용 (이미지 미리보기) */
+	imageUrl: z.string().nullable().optional(),
+	/** 프로필 저장 API projectImage에 넣을 파일명 */
+	imageFileName: z.string().nullable().optional(),
 })
 
 // 유저 상태 허용 값

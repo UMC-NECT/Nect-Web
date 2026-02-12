@@ -16,6 +16,7 @@ import {
 	useMatchingRejectMutation,
 } from '@/hooks/mypage/useMatchingApi'
 import { useMatchingTimer } from '@/hooks/mypage/useMatchingTimer'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 type TabType = 'received' | 'sent'
 
@@ -60,9 +61,9 @@ export const MatchingStatus = () => {
 	const [selectedMatchingId, setSelectedMatchingId] = useState<string | null>(null)
 
 	// API 훅
-	const { data: countData } = useMatchingCountQuery()
-	const { data: receivedData } = useMatchingsReceivedTotalQuery()
-	const { data: sentData } = useMatchingsSentTotalQuery()
+	const { data: countData, isLoading: isCountLoading } = useMatchingCountQuery()
+	const { data: receivedData, isLoading: isReceivedLoading } = useMatchingsReceivedTotalQuery()
+	const { data: sentData, isLoading: isSentLoading } = useMatchingsSentTotalQuery()
 
 	const acceptMutation = useMatchingAcceptMutation()
 	const cancelMutation = useMatchingCancelMutation()
@@ -130,10 +131,12 @@ export const MatchingStatus = () => {
 		navigate(`/matching-available/${userId}?from=matching`)
 	}
 
+	const isLoading = isCountLoading || isReceivedLoading || isSentLoading
+
 	return (
 		<div className='ml-7'>
 			<MyPageHeader />
-
+			{isLoading && <LoadingModal />}
 			{/* 전체 컨테이너 */}
 			<div className='w-[916px] px-11.5 py-11.5 rounded-12 bg-white border border-neutral-200'>
 				{/* 탭 영역 */}
@@ -157,7 +160,7 @@ export const MatchingStatus = () => {
 					{activeTab === 'received' && (
 						<>
 							{/* 프로젝트 섹션 */}
-							<div className='flex flex-col gap-3.5 items-start py-2.5 relative shrink-0 w-full'>
+							<div className='flex flex-col gap-3.5 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
 										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
@@ -166,6 +169,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
+									{receivedProjectMatchings.length && (
+										<div className='flex flex-col mr-auto'>
+										<p className='body-1 text-neutral-500 font-medium px-2'>받은 매칭 요청이 없습니다</p>
+									</div>
+									)}
 									{receivedProjectMatchings.map(project => (
 										<MatchingListItem
 											key={project.projectId}
@@ -191,6 +199,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
+									{receivedGrouped.length === 0 && (
+										<div className='flex flex-col items-center justify-center'>
+											<p className='body-1 text-neutral-500 font-medium px-2'>받은 매칭 요청이 없습니다</p>
+										</div>
+									)}
 									{receivedGrouped.map(group => (
 										<div
 											key={group.field}
@@ -249,6 +262,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
+									{sentProjectMatchings.length === 0 && (
+										<div className='flex flex-col mr-auto'>
+											<p className='body-1 text-neutral-500 font-medium px-2'>보낸 매칭 요청이 없습니다</p>
+										</div>
+									)}
 									{sentProjectMatchings.map(project => (
 										<MatchingListItem
 											key={project.projectId}
@@ -273,6 +291,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
+									{sentGrouped.length === 0 && (
+										<div className='flex flex-col items-center justify-center'>
+											<p className='body-1 text-neutral-500 font-medium px-2'>보낸 매칭 요청이 없습니다</p>
+										</div>
+									)}
 									{sentGrouped.map(group => (
 										<div
 											key={group.field}
