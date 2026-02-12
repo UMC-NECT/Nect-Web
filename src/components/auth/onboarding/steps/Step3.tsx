@@ -59,7 +59,7 @@ const Step3 = () => {
 		}
 		const customValues = selectedSkills.filter(v => !allPredefinedValues.has(v))
 		if (customValues.length > 0) {
-			acc['직접 입력'] = customValues.map(value => ({ value, label: value }))
+			acc['직접 입력'] = customValues.map(value => ({ value, label: value, labelEn: null }))
 		}
 		return acc
 	})()
