@@ -1,12 +1,18 @@
-import { Outlet } from "react-router"
-import WorkspaceHeader from "../header/WorkspaceHeader"
-import { Sidebar } from "./sidebar/Sidebar"
-import { useMissionModalStore } from "@/stores/mission-modal/missionModalStore"
-import MissionModal from "@/components/mission-modal/MissionModal"
-import Footer from "./Footer"
+import { useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router'
+import WorkspaceHeader from '../header/WorkspaceHeader'
+import { Sidebar } from './sidebar/Sidebar'
+import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
+import MissionModal from '@/components/mission-modal/MissionModal'
+import Footer from './Footer'
 
 const WorkspaceLayout = () => {
+	const location = useLocation()
 	const { isMissionModalOpen, closeMissionModal, editingSectionIndex } = useMissionModalStore()
+
+	useEffect(() => {
+		window.scrollTo(0, 0)
+	}, [location.pathname])
 	// sectionIndex가 0이면 리더형 모달
 	const modalVariant = editingSectionIndex === 0 ? 'leader' : 'default'
 

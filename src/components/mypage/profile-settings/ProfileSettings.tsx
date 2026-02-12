@@ -104,13 +104,18 @@ export const ProfileSettings = () => {
 										fileUrl: serverFileUrl,
 									}
 								}),
-								projectHistories: (data.projectHistory ?? []).map(history => ({
-									projectName: history.title ?? '',
-									projectImage: null,
-									projectDescription: history.description ?? '',
-									startYearMonth: history.date?.split('~')[0] ?? '',
-									endYearMonth: history.date?.split('~')[1] ?? '',
-								})),
+								projectHistories: (data.projectHistory ?? []).map(history => {
+									const [start, end] = (history.date ?? '').split('~').map(s => s?.trim() ?? '')
+									// 무결성 에러 방지: 서버가 fileName만 허용하면 imageFileName만 전달 (URL 미전달)
+									const projectImage = history.imageFileName ?? history.imageUrl ?? null
+									return {
+										projectName: history.title ?? '',
+										projectImage,
+										projectDescription: history.description ?? '',
+										startYearMonth: start,
+										endYearMonth: end,
+									}
+								}),
 							}
 
 							await saveProfile(requestBody)

@@ -39,15 +39,40 @@ const Section08ProjectHistory = ({ control }: ISection08ProjectHistory) => {
 	}
 
 	// 프로젝트 저장 (기존 폼 데이터를 저장할 때)
-	const saveProject = (index: number, data: { title: string; description: string; date: string }) => {
-		update(index, data)
+	const saveProject = (
+		index: number,
+		data: {
+			title: string
+			description: string
+			date: string
+			imageUrl?: string | null
+			imageFileName?: string | null
+		}
+	) => {
+		update(index, {
+			...projects[index],
+			title: data.title,
+			description: data.description,
+			date: data.date,
+			imageUrl: data.imageUrl ?? null,
+		})
 	}
 
 	// 새 프로젝트 저장 (폼에 없는 새로운 카드를 저장할 때)
-	const saveNewProject = (data: { title: string; description: string; date: string }) => {
-		const hasContent = data.title || data.description || data.date
+	const saveNewProject = (data: {
+		title: string
+		description: string
+		date: string
+		imageUrl?: string | null
+	}) => {
+		const hasContent = data.title || data.description || data.date || data.imageUrl
 		if (hasContent) {
-			appendProject(data)
+			appendProject({
+				title: data.title,
+				description: data.description,
+				date: data.date,
+				imageUrl: data.imageUrl ?? null,
+			})
 		}
 		setIsAddingNew(false)
 	}
@@ -88,6 +113,7 @@ const Section08ProjectHistory = ({ control }: ISection08ProjectHistory) => {
 				{projects.map((project, index) => (
 					<ProjectCard
 						key={project.id}
+						img={project.imageUrl ?? undefined}
 						title={project.title}
 						description={project.description}
 						date={project.date}

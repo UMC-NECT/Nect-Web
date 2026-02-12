@@ -58,6 +58,8 @@ export const mapProfileToFormData = (profile: ProfileBody): ProfileFormDataType 
 					title: history.projectName ?? '',
 					description: history.projectDescription ?? '',
 					date: `${history.startYearMonth ?? ''}~${history.endYearMonth ?? ''}`,
+					imageUrl: history.projectImage ?? null,
+					imageFileName: null,
 				}))
 			: [],
 })

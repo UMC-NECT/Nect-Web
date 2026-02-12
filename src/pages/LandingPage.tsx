@@ -10,6 +10,7 @@ import landingImage9 from '@/assets/images/landing/landing9.png'
 import landingImage10 from '@/assets/images/landing/landing10.png'
 import ExploreHeader from '@/components/header/ExploreHeader'
 import Button from '@/components/common/Button'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
@@ -17,6 +18,10 @@ import Footer from '@/components/layout/Footer'
 
 const LandingPage = () => {
     const navigate = useNavigate()
+
+    useEffect(() => {
+        window.scrollTo(0, 0)
+    }, [])
     const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
     const isLoggedIn = getAccessToken()
 

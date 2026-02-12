@@ -1,9 +1,14 @@
+import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import SignupHeader from '../header/SignupHeader'
 
 export const AuthLayout = () => {
 	const location = useLocation()
 	const showSignupHeader = location.pathname === '/signup'
+
+	useEffect(() => {
+		window.scrollTo(0, 0)
+	}, [location.pathname])
 
 	return (
 		<div className='h-screen overflow-hidden flex flex-col'>
