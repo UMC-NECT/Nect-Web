@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import LogoIcon from '@/assets/icons/header/Logo.svg?react'
 import BarIcon from '@/assets/icons/common/Bar.svg?react'
-import SearchIcon from '@/assets/icons/header/Search.svg?react'
 import { Link, useNavigate, useParams, useLocation } from 'react-router'
 import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
@@ -183,16 +182,6 @@ const WorkspaceHeader = ({ onNavigate }: WorkspaceHeaderProps) => {
                         </div>
                     </nav>
 
-                    {/* 오른쪽 공간 */}
-                    <div className="flex-1" />
-
-                    {/* 검색 아이콘 */}
-                    <button
-                        className="flex h-10 w-10 items-center justify-center"
-                        aria-label="검색"
-                    >
-                        <SearchIcon className="h-8 w-8 text-neutral-700" />
-                    </button>
                 </div>
             </div>
 
