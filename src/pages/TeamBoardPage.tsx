@@ -301,7 +301,12 @@ const TeamBoardPage = () => {
 			return []
 		}
 
-		return overview.members.members.map((member) => ({
+		// 현재 사용자는 메인 카드(TeamProfileCardMain)로만 보여주기 위해 목록에서는 제외
+		const membersForCards = overview.members.members.filter((member) =>
+			currentUserId ? member.user_id !== currentUserId : true
+		)
+
+		return membersForCards.map((member) => ({
 			name: member.nickname || member.name,
 			role: member.field.custom_name || member.field.type, // 백엔드 값 그대로 사용
 			contact: '',
@@ -314,7 +319,7 @@ const TeamBoardPage = () => {
 			},
 			isWorking: member.is_working || false,
 		}))
-	}, [overview])
+	}, [overview, currentUserId])
 
 	/**
 	 * 메인 프로필 (현재 사용자 또는 리더 또는 첫 번째 팀원)
