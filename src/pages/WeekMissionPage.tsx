@@ -13,9 +13,10 @@ import type { WeekMissionItem } from '@/types/api/process/weekMission'
 import type {
 	ProcessWeekProcessItem,
 	ProcessWeekWeekItem,
+	RequestProcessOrderPatchDto,
 } from '@/types/api/process/process'
 import { getMissionList } from '@/api/process/weekMission'
-import { useDeleteProcessMutation, usePatchProcessMutation, usePatchProcessStatusMutation } from '@/hooks/process/useProcessApi'
+import { useDeleteProcessMutation, usePatchProcessMutation, usePatchProcessOrderMutation, usePatchProcessStatusMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery, useUsersQuery } from '@/hooks/project/useProjectApi'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { useProjectLeaderStore } from '@/stores/projectLeaderStore'
@@ -152,6 +153,7 @@ const WeekMissionPage = () => {
 	const setIsLeader = useProjectLeaderStore(s => s.setIsLeader)
 	const patchProcessStatusMutation = usePatchProcessStatusMutation()
 	const patchProcessMutation = usePatchProcessMutation()
+	const patchProcessOrderMutation = usePatchProcessOrderMutation()
 	const deleteProcessMutation = useDeleteProcessMutation()
 
 	// 위크미션 API + 프로세스 week API 둘 다 반영해서 미션 보드 렌더링
@@ -236,19 +238,78 @@ const WeekMissionPage = () => {
 				)
 				return
 			}
-			// 드래그·리사이즈로 start_date / dead_line / sectionIndex(줄) 변경 시 PATCH — 변경된 필드만 전달
-			if (updates.start_date !== undefined || updates.dead_line !== undefined || updates.sectionIndex !== undefined) {
+			// 드래그(블록 이동) 시 order API 사용 — sectionIndex가 넘어오면 드래그로 간주
+			if (updates.sectionIndex !== undefined && (updates.start_date !== undefined || updates.dead_line !== undefined)) {
 				const mission = missions.find(m => m.process_id === missionId)
 				if (!mission) return
 
-				const body: { start_date?: string; dead_line?: string; role_fields?: string[]; custom_fields?: string[] } = {}
+				const destSectionIndex = updates.sectionIndex
+				const isSameLane = mission.sectionIndex === destSectionIndex
+
+				// lane_key = 드롭한 목적지 레인
+				const laneKey =
+					destSectionIndex === 0
+						? 'COMMON'
+						: roles[destSectionIndex - 1]?.role_field
+							? `ROLE:${roles[destSectionIndex - 1].role_field}`
+							: roles[destSectionIndex - 1]?.custom_role_field_name
+								? `CUSTOM:${roles[destSectionIndex - 1].custom_role_field_name}`
+								: 'COMMON'
+
+				const startDate = updates.start_date ?? mission.start_date
+				const deadLine = updates.dead_line ?? mission.dead_line
+
+				// ordered_process_ids = 목적지 레인 전체 리스트(이동한 카드 포함, start_date 기준 정렬)
+				const otherInSection = missions.filter(
+					m => m.sectionIndex === destSectionIndex && m.process_id !== missionId
+				)
+				const withMoved = [
+					...otherInSection.map(m => ({ process_id: m.process_id, start_date: m.start_date })),
+					{ process_id: missionId, start_date: startDate },
+				]
+				withMoved.sort((a, b) => (a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : 0))
+				const ordered_process_ids = withMoved.map(m => m.process_id)
+
+				const destPart = destSectionIndex >= 1 ? roles[destSectionIndex - 1] : null
+				const body: RequestProcessOrderPatchDto = {
+					status: mission.status,
+					lane_key: laneKey,
+					ordered_process_ids,
+					mission_number: mission.mission_number,
+					start_date: formatDateToApi(startDate),
+					dead_line: formatDateToApi(deadLine),
+				}
+				// B) 레인 간 이동 시에만 role_fields/custom_fields 목적지 레인에 맞게 전달. A) 같은 레인 내 순서만 변경 시 미전송
+				if (!isSameLane && destPart) {
+					body.role_fields = destPart.role_field != null && destPart.role_field !== '' ? [destPart.role_field] : []
+					body.custom_fields = destPart.custom_role_field_name != null && destPart.custom_role_field_name !== '' ? [destPart.custom_role_field_name] : []
+				}
+
+				patchProcessOrderMutation.mutate(
+					{
+						projectId: projectIdStr,
+						processId: String(missionId),
+						body,
+					},
+					{
+						onSuccess: () => {
+							queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.weekMission.all(projectIdStr) })
+							queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.list(projectIdStr) })
+							updateMission(missionId, updates)
+						},
+					}
+				)
+				return
+			}
+
+			// 리사이즈(기간만 변경) 시 기존 PATCH
+			if (updates.start_date !== undefined || updates.dead_line !== undefined) {
+				const mission = missions.find(m => m.process_id === missionId)
+				if (!mission) return
+
+				const body: { start_date?: string; dead_line?: string } = {}
 				if (updates.start_date !== undefined) body.start_date = formatDateToApi(updates.start_date)
 				if (updates.dead_line !== undefined) body.dead_line = formatDateToApi(updates.dead_line)
-				if (updates.sectionIndex !== undefined && updates.sectionIndex >= 1 && roles[updates.sectionIndex - 1]) {
-					const part = roles[updates.sectionIndex - 1]
-					body.role_fields = part.role_field != null && part.role_field !== '' ? [part.role_field] : []
-					body.custom_fields = part.custom_role_field_name != null && part.custom_role_field_name !== '' ? [part.custom_role_field_name] : []
-				}
 				if (Object.keys(body).length === 0) return
 
 				patchProcessMutation.mutate(
@@ -276,6 +337,7 @@ const WeekMissionPage = () => {
 			queryClient,
 			patchProcessStatusMutation,
 			patchProcessMutation,
+			patchProcessOrderMutation,
 			updateMission,
 		]
 	)

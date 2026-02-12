@@ -13,7 +13,6 @@ const AvatarGroup = ({ avatars = [], maxCount = 3, size = 22.533 }: AvatarGroupP
 	}
 
 	const displayAvatars = avatars.slice(0, maxCount)
-	const remainingCount = avatars.length - maxCount
 
 	return (
 		<div className="flex items-center justify-end -space-x-[8px]">
@@ -26,15 +25,6 @@ const AvatarGroup = ({ avatars = [], maxCount = 3, size = 22.533 }: AvatarGroupP
 					<img src={avatar ? avatar : DefaultAvatar} alt={`Participant ${index + 1}`} className="w-full h-full object-cover" />
 				</div>
 			))}
-			{/* 남은 개수 표시 (maxCount 초과 시) */}
-			{remainingCount > 0 && (
-				<div
-					className="rounded-full border-2 border-white bg-primary-400-normal shrink-0 flex items-center justify-center"
-					style={{ width: `${size}px`, height: `${size}px` }}
-				>
-					<span className="caption-3 text-white font-medium">+{remainingCount}</span>
-				</div>
-			)}
 		</div>
 	)
 }

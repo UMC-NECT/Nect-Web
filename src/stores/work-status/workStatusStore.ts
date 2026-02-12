@@ -13,6 +13,8 @@ export interface WorkStatusItem {
 		total: number
 	}
 	mission_number?: number
+	/** API start_date (YYYY.MM.DD). order API 요청 시 필요 */
+	startDate?: string
 	dueDate?: string // "2025.11.21" 형식
 	/** API 응답 left_day (D-day 표시용) */
 	leftDay?: number

@@ -200,9 +200,14 @@ export type ResponseProcessPatchDto = CommonResponse<{
 export type RequestProcessOrderPatchDto = {
     status: string
     ordered_process_ids: number[]
-    lane_key: string
+    /** 파트 API에서 오는 값 그대로. null이면 null 전송 */
+    lane_key: string | null
+    mission_number: number
     start_date: string
     dead_line: string
+    /** 레인 간 이동 시에만 목적지 레인에 맞게 전달. 같은 레인 내 순서만 변경 시 null/미전송 */
+    role_fields?: string[] | null
+    custom_fields?: string[] | null
 }
 
 export type ResponseProcessOrderPatchDto = CommonResponse<{

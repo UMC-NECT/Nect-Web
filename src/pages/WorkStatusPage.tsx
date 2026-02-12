@@ -20,14 +20,14 @@ import { useWorkStatusScroll } from '@/hooks/work-status/useWorkStatusScroll'
 import { useWorkStatusData } from '@/hooks/work-status/useWorkStatusData'
 import { useMissionModalStore } from '@/stores/mission-modal/missionModalStore'
 import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
-import { useProgressSummaryQuery, useProcessHistoryQuery, useProcessPartQuery, usePatchProcessStatusMutation } from '@/hooks/process/useProcessApi'
+import { useProgressSummaryQuery, useProcessHistoryQuery, useProcessPartQuery, usePatchProcessOrderMutation } from '@/hooks/process/useProcessApi'
 import { usePartsQuery } from '@/hooks/project/useProjectApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { getMissionList } from '@/api/process/weekMission'
 import { QUERY_KEY } from '@/constants/key'
 import type { Progress } from '@/types/progress'
 import { useWorkspaceProjectId } from '@/hooks/useWorkspaceProjectId'
-import type { ProcessPartProcessItem } from '@/types/api/process/process'
+import type { ProcessPartProcessItem, RequestProcessOrderPatchDto } from '@/types/api/process/process'
 import type { Part } from '@/types/part'
 import LoadingModal from '@/components/splash/LoadingModal'
 
@@ -81,6 +81,7 @@ const mapPartProcessToWorkStatusItem = (
 	status,
 	todo: { id: p.process_id, done: p.complete_check_list, total: p.whole_check_list },
 	mission_number: p.mission_number ?? undefined,
+	startDate: p.start_date ? p.start_date.replace(/-/g, '.') : undefined,
 	dueDate: p.dead_line ? p.dead_line.replace(/-/g, '.') : undefined,
 	leftDay: p.left_day,
 	participants: p.assignee?.map(a => ({
@@ -306,7 +307,7 @@ const WorkStatusPage = () => {
 		setDeltas(prev => [...prev, { team, prevStatus, newStatus }])
 	}, [])
 
-	const patchProcessStatusMutation = usePatchProcessStatusMutation()
+	const patchProcessOrderMutation = usePatchProcessOrderMutation()
 	const missionStatusToApi = useCallback((s: MissionStatus): string => {
 		const map: Record<MissionStatus, string> = {
 			planning: 'PLANNING',
@@ -317,22 +318,62 @@ const WorkStatusPage = () => {
 		return map[s]
 	}, [])
 
+	const laneKey = partData?.body?.lane_key ?? null
+
+	const buildOrderBody = useCallback(
+		(item: WorkStatusItem, status: MissionStatus, orderedProcessIds: number[]): RequestProcessOrderPatchDto | null => {
+			const startDate = item.startDate ?? item.dueDate
+			const deadLine = item.dueDate
+			if (!startDate || !deadLine) return null
+			return {
+				status: missionStatusToApi(status),
+				lane_key: laneKey,
+				ordered_process_ids: orderedProcessIds,
+				mission_number: item.mission_number ?? 0,
+				start_date: startDate.replace(/\./g, '-'),
+				dead_line: deadLine.replace(/\./g, '-'),
+			}
+		},
+		[laneKey, missionStatusToApi]
+	)
+
 	const { activeId, sensors, handleDragStart, handleDragEnd } = useWorkStatusDragAndDrop({
 		statuses,
 		getFilteredItemsByStatus,
-		onStatusChange: (activeId, prevStatus, newStatus) => {
+		onStatusChange: (activeId, prevStatus, newStatus, { orderedProcessIds }) => {
 			const item = workStatusItems.find(i => i.id === activeId)
-			if (item) updateProgressOnMove(item.team, prevStatus, newStatus)
-			patchProcessStatusMutation.mutate(
+			if (!item) return
+			updateProgressOnMove(item.team, prevStatus, newStatus)
+			const body = buildOrderBody(item, newStatus, orderedProcessIds)
+			if (!body) return
+			patchProcessOrderMutation.mutate(
 				{
 					projectId: projectIdStr,
 					processId: String(activeId),
-					body: { status: missionStatusToApi(newStatus) },
+					body,
 				},
 				{
 					onSuccess: () => {
 						queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.part(projectIdStr, fieldId) })
 						queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.progressSummary(projectIdStr) })
+					},
+				}
+			)
+		},
+		onOrderChange: (activeId, status, orderedProcessIds) => {
+			const item = workStatusItems.find(i => i.id === activeId)
+			if (!item) return
+			const body = buildOrderBody(item, status, orderedProcessIds)
+			if (!body) return
+			patchProcessOrderMutation.mutate(
+				{
+					projectId: projectIdStr,
+					processId: String(activeId),
+					body,
+				},
+				{
+					onSuccess: () => {
+						queryClient.invalidateQueries({ queryKey: QUERY_KEY.process.part(projectIdStr, fieldId) })
 					},
 				}
 			)
