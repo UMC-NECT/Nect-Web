@@ -73,10 +73,11 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
         DEVELOP: { label: 'Develop', styleKey: 'develop' },
     };
 
-    const formatRoleFieldLabel = (value: string) => {
-        const mapped = roleFieldLabelMap[value];
+    const formatRoleFieldLabel = (field: TeamRoleField) => {
+        if (field.label_en) return field.label_en;
+        const mapped = roleFieldLabelMap[field.role_field];
         if (mapped) return mapped.label;
-        return value
+        return field.role_field
             .toLowerCase()
             .replace(/_/g, ' ')
             .replace(/\b\w/g, (char) => char.toUpperCase());
@@ -123,12 +124,18 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                     <div className='mb-4 flex gap-[20px] items-start'>
                         <p className='text-neutral-600 mb-1 w-[100px] whitespace-nowrap'>모집 여부</p>
                         <p className='text-[16px] flex items-center gap-2'>
-                            <div className='bg-primary-100-light w-[74px] h-[26px] rounded-xl flex items-center gap-2 px-2'>
-                                <span className='inline-block w-[10px] h-[10px] bg-primary-500-normal rounded-full'></span>
-                                <span className='text-[14px]'>모집 중</span>
-                            </div>
-                            {daysLeft !== null && (
-                                <span className='text-primary-500-normal font-bold text-[18px] ml-[10px]'>D-{daysLeft}</span>
+                            {projectData.defaultInfo.recruitment_status === 'OPEN' ? (
+                                <>
+                                    <div className='bg-primary-100-light w-[74px] h-[26px] rounded-xl flex items-center gap-2 px-2'>
+                                        <span className='inline-block w-[10px] h-[10px] bg-primary-500-normal rounded-full'></span>
+                                        <span className='text-[14px]'>모집 중</span>
+                                    </div>
+                                    {daysLeft !== null && (
+                                        <span className='text-primary-500-normal font-bold text-[18px] ml-[10px]'>D-{daysLeft}</span>
+                                    )}
+                                </>
+                            ) : (
+                                <span className='text-neutral-600'>모집 마감</span>
                             )}
                         </p>
                     </div>
@@ -141,17 +148,20 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                     프로젝트 분야
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
-                {projectData.fields?.fields && projectData.fields.fields.length > 0 ? (
-                    <div className='flex gap-[10px] flex-wrap'>
-                        {projectData.fields.fields.map((field: { is_selected: boolean; field_name: string }, index: number) => (
-                            <p key={index} className='px-4 h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
-                                {field.field_name}
-                            </p>
-                        ))}
-                    </div>
-                ) : (
-                    <p className='text-[16px] text-neutral-500'>프로젝트 분야 정보가 없습니다.</p>
-                )}
+                {(() => {
+                    const selectedFields = projectData.fields?.fields?.filter((f) => f.is_selected) ?? [];
+                    return selectedFields.length > 0 ? (
+                        <div className='flex gap-[10px] flex-wrap'>
+                            {selectedFields.map((field: { field_name: string }, index: number) => (
+                                <p key={index} className='px-4 h-[36px] bg-primary-150-light border border-primary-400 rounded-2xl text-primary-500-normal font-semibold items-center flex justify-center'>
+                                    {field.field_name}
+                                </p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className='text-[16px] text-neutral-500'>프로젝트 분야 정보가 없습니다.</p>
+                    );
+                })()}
             </div>
 
             {/* 모집 정보 및 필수 스택 */}
@@ -213,7 +223,7 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                                                 key={`${role.role}-${field.role_field}`}
                                                 className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(getRoleFieldStyleKey(field.role_field))} text-neutral-700 rounded-[6px] text-[14px] font-medium`}
                                             >
-                                                {formatRoleFieldLabel(field.role_field)}
+                                                {formatRoleFieldLabel(field)}
                                             </span>
                                         ))}
                                 </div>

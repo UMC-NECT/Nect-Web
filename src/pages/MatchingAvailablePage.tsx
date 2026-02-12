@@ -263,8 +263,8 @@ const MatchingAvailablePage = () => {
 						<Breadcrumb
 							items={[
 								{ label: '홈', path: '/' },
-								{ label: '모집 중인 프로젝트', path: '/projectList' },
-								{ label: '넥트(NECT)' },
+								{ label: '지금 매칭 가능한 넥터', path: '/necterList' },
+								{ label: memberData.nickname || memberData.name },
 							]}
 						/>
 					</div>

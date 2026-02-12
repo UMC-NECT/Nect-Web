@@ -1,5 +1,6 @@
 export interface TeamRoleField {
     role_field: string;
+    label_en?: string;
     count: number;
 }
 
@@ -31,6 +32,7 @@ export interface DefaultInfo {
     planned_started_on: string | null;
     planned_ended_on: string | null;
     image_name: string | null;
+    recruitment_status?: string;
     team_roles: { roles: TeamRole[] } | TeamRole[];
     leader?: Leader;
     team_member_projects: TeamMemberProject[];

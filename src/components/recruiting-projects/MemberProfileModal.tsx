@@ -5,10 +5,11 @@ import type { MemberDetailDto } from '@/types/api/member/detail'
 interface MemberProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
-    member: MemberDetailDto;
+    member: MemberDetailDto | undefined;
+    isLoading?: boolean;
 }
 
-const MemberProfileModal = ({ isOpen, onClose, member }: MemberProfileModalProps) => {
+const MemberProfileModal = ({ isOpen, onClose, member, isLoading }: MemberProfileModalProps) => {
     if (!isOpen) return null;
 
     return (
@@ -21,10 +22,18 @@ const MemberProfileModal = ({ isOpen, onClose, member }: MemberProfileModalProps
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className='my-[56px] mx-[46px]'>
-                    <div className='mb-10'>
-                        <MemberProfileHeader member={member} />
-                    </div>
-                    <MemberProfileDetail memberData={member} />
+                    {isLoading ? (
+                        <p className='body-1 text-neutral-500'>프로필을 불러오는 중...</p>
+                    ) : member ? (
+                        <>
+                            <div className='mb-10'>
+                                <MemberProfileHeader member={member} />
+                            </div>
+                            <MemberProfileDetail memberData={member} />
+                        </>
+                    ) : (
+                        <p className='body-1 text-neutral-500'>프로필을 불러올 수 없습니다.</p>
+                    )}
                 </div>
             </div>
         </div>

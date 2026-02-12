@@ -24,17 +24,6 @@ const UrgentProjects = () => {
             .slice(0, 4);
     };
 
-    // authorPart 한글 변환
-    const getDisplayPart = (part: string) => {
-        const partMap: Record<string, string> = {
-            'DEVELOPER': '개발',
-            'DESIGNER': '디자인',
-            'PLANNER': '기획',
-            'OTHER': '기타',
-        };
-        return partMap[part] || part;
-    };
-
     return (
 		<div className='w-138 h-142.5'>
 			<div className='flex justify-between items-center mb-5 w-138 h-7.5'>
@@ -81,10 +70,10 @@ const UrgentProjects = () => {
 										</h3>
 										<BarIcon className='w-0.5 h-3 shrink-0' />
 										<span className='button-1 text-neutral-500 font-semibold whitespace-nowrap shrink-0'>
-											{project.authorName} · {getDisplayPart(project.authorPart)}
+											{project.interestField}
 										</span>
 									</div>
-									<p className='body-2 font-medium text-neutral-600 line-clamp-2 min-w-0'>{project.introduction}</p>
+									<p className='body-2 font-medium text-neutral-600 line-clamp-1 min-w-0'>{project.introduction}</p>
 								</div>
 								<span className='title-2 font-bold text-primary-500-normal whitespace-nowrap shrink-0'>
 									D-{project.leftDays}

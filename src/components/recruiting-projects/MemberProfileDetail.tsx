@@ -8,17 +8,15 @@ interface MemberProfileDetailProps {
 }
 
 const MemberProfileDetail = ({ memberData }: MemberProfileDetailProps) => {
-    // 스킬 카테고리별 정리
-    const getSkillsByCategory = (category: string) => {
-        const skillCategory = memberData.skills?.find(s => s.category === category);
-        return skillCategory?.skills
-            .filter(skill => skill.isSelected)
-            .map(skill => skill.skillLabel) || [];
-    };
-
-    const designTools = getSkillsByCategory('DESIGN');
-    const planningTools = getSkillsByCategory('PLANNING');
-    const etcTools = getSkillsByCategory('ETC');
+    // API 응답의 모든 카테고리(MARKETING, DESIGN, PLANNING 등)에 대해 동적으로 스킬 표시
+    const skillCategories = (memberData.skills || [])
+        .map(cat => ({
+            categoryLabel: cat.categoryLabel || cat.category,
+            tools: cat.skills
+                ?.filter(skill => skill.isSelected)
+                .map(skill => skill.skillLabel) || [],
+        }))
+        .filter(cat => cat.tools.length > 0);
 
     return (
         <>
@@ -103,11 +101,15 @@ const MemberProfileDetail = ({ memberData }: MemberProfileDetailProps) => {
             {/* 보유스킬 */}
             <div className='mb-8'>
                 <h3 className='text-[20px] font-bold mb-4'>보유스킬</h3>
-                {(designTools.length > 0 || planningTools.length > 0 || etcTools.length > 0) ? (
+                {skillCategories.length > 0 ? (
                     <>
-                        {designTools.length > 0 && <SkillCategory category="디자인" tools={designTools} />}
-                        {planningTools.length > 0 && <SkillCategory category="기획" tools={planningTools} />}
-                        {etcTools.length > 0 && <SkillCategory category="기타" tools={etcTools} />}
+                        {skillCategories.map((cat) => (
+                            <SkillCategory
+                                key={cat.categoryLabel}
+                                category={cat.categoryLabel}
+                                tools={cat.tools}
+                            />
+                        ))}
                     </>
                 ) : (
                     <p className='text-[16px] text-neutral-500 py-4'>보유스킬이 없습니다.</p>

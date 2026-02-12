@@ -49,7 +49,7 @@ const NecterListPage = () => {
                         ]}
                     />
 
-                    <h1 className="mt-7 text-[28px] font-bold">
+                    <h1 className="heading-2 font-bold mt-7">
                         지금 가능한 넥터
                     </h1>
                 </div>
@@ -94,13 +94,13 @@ const NecterListPage = () => {
                     {!isLoading && !error && filteredMembers.length > 0 && (
                         <div className="mt-6 mx-5 grid grid-cols-3 gap-x-[12px] gap-y-[14px]">
                             {filteredMembers.map(member => (
-                                <Link 
+                                <Link
                                     key={member.userId}
                                     to={`/matching-available/${member.userId}`}
                                 >
-                                    <RecommendationMemberCard 
+                                    <RecommendationMemberCard
                                         member={member}
-                                        variant="list" 
+                                        variant="list"
                                     />
                                 </Link>
                             ))}

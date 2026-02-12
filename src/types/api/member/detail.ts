@@ -16,8 +16,8 @@ export interface UserCareer {
 export interface UserPortfolio {
     userPortfolioId: number;
     title: string;
-    link: string;
-    fileUrl: string;
+    link: string | null;
+    fileUrl: string | null;
 }
 
 export interface UserProjectHistory {

@@ -21,6 +21,21 @@ const ProfileCard = ({
 	part,
 	introduction,
 }: IProfileCard) => {
+
+	const roleLabelMap: Record<string, string> = {
+		PLANNER: '기획자',
+		Planner: '기획자',
+		DESIGNER: '디자이너',
+		Designer: '디자이너',
+		Developer: '개발자',
+		DEVELOPER: '개발자',
+		MARKETER: '마케터',
+		Marketer: '마케터',
+		OTHER: '기타',
+		Other: '기타',
+	}
+	const partDisplay = part ? (roleLabelMap[part] ?? part) : ''
+
 	return (
 		<div
 			className={`flex items-start gap-4 p-4 rounded-12 w-96.5 h-28 border-[1.5px] ${
@@ -50,7 +65,9 @@ const ProfileCard = ({
 
 					{/* 파트 */}
 					<BarIcon className='w-0.5 h-3 text-neutral-300 ' />
-					{part && <span className='title-3 font-medium text-neutral-500 max-w-[122px] line-clamp-1'>{part}</span>}
+					{part && (
+						<span className='title-3 font-medium text-neutral-500 max-w-[122px] line-clamp-1'>{partDisplay}</span>
+					)}
 				</div>
 
 				{/* 소개글 */}

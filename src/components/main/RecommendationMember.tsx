@@ -112,7 +112,7 @@ const RecommendationMember = () => {
                     {members.map((member) => (
                         <SwiperSlide key={member.userId}>
                             <div onClick={() => handleCardClick(member.userId)}>
-                                <RecommendationMemberCard member={member} showRoles={false} />
+                                <RecommendationMemberCard member={member}/>
                             </div>
                         </SwiperSlide>
                     ))}

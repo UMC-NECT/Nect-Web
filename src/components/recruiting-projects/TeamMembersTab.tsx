@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import ProjectHistory from './ProjectHistory';
-import MemberCard from './MemberCard';
+import ProfileCard from '@/components/mypage/ProfileCard';
+import RoleTagChip from '@/components/mission-modal/RoleTagChip';
 import MemberProfileModal from './MemberProfileModal';
 import type { ProjectDetailDto } from '@/types/api/project';
 import type { ProjectMemberDto } from '@/types/api/project/members';
-import type { MemberDetailDto } from '@/types/api/member/detail';
 import { useProjectMembers } from '@/hooks/queries/project';
+import { useMemberDetail } from '@/hooks/queries/member/useMemberDetail';
 
 interface TeamMembersTabProps {
     projectData: ProjectDetailDto;
@@ -14,184 +15,118 @@ interface TeamMembersTabProps {
 }
 
 const TeamMembersTab = ({ projectData, getPositionStyle, projectId }: TeamMembersTabProps) => {
-    const [selectedMember, setSelectedMember] = useState<MemberDetailDto | null>(null);
+    const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
     const { data: membersData } = useProjectMembers(projectId);
+    const { data: memberDetail, isLoading: isMemberDetailLoading } = useMemberDetail(
+        selectedMemberId ?? 0,
+        { enabled: !!selectedMemberId }
+    );
 
-    // role_field별로 멤버 그룹화
-    const getMembersByField = (field: string) => {
-        return membersData?.users.filter(user => user.role_field === field) || [];
-    };
+    // role_field별로 멤버 그룹화 (API 응답의 role_field 기준 동적 그룹핑)
+    const membersByRoleField = (membersData?.users ?? []).reduce<Record<string, ProjectMemberDto[]>>((acc, user) => {
+        const key = user.role_field;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(user);
+        return acc;
+    }, {});
 
-    const pmMembers = getMembersByField('PM');
-    const designMembers = getMembersByField('DESIGN');
-    const frontendMembers = getMembersByField('FRONTEND');
-    const backendMembers = getMembersByField('BACKEND');
-
-    // API 데이터를 모달 형식으로 변환
-    const convertToMemberDetail = (member: ProjectMemberDto): MemberDetailDto => {
-        return {
-            userId: member.user_id,
-            name: member.name,
-            nickname: member.nickname,
-            email: '',
-            role: member.member_type === 'LEADER' ? 'Leader' : 'Member',
-            profileImageUrl: member.profile_image_url,
-            bio: member.bio,
-            coreCompetencies: null,
-            userStatus: 'ACTIVE',
-            isPublicMatching: false,
-            careerDuration: null,
-            interestedJob: member.custom_role_field_name,
-            interestedField: member.part_label,
-            careers: null,
-            portfolios: null,
-            projectHistories: null,
-            skills: null,
-            profileType: null,
-            tags: null,
-        };
-    };
+    // role_field 순서 (우선 표시할 파트 순)
+    const roleFieldOrder = ['PM', 'SERVICE', 'PLANNER', 'UI_UX', 'DESIGN', 'FRONTEND', 'BACKEND', 'SERVER', 'DATA', 'AI_MACHINE_LEARNING', 'MARKETER', 'MARKETING', 'OTHER'];
+    const sortedRoleFields = Object.keys(membersByRoleField).sort((a, b) => {
+        const aIdx = roleFieldOrder.indexOf(a);
+        const bIdx = roleFieldOrder.indexOf(b);
+        if (aIdx === -1 && bIdx === -1) return a.localeCompare(b);
+        if (aIdx === -1) return 1;
+        if (bIdx === -1) return -1;
+        return aIdx - bIdx;
+    });
 
     const handleMemberClick = (member: ProjectMemberDto) => {
-        setSelectedMember(convertToMemberDetail(member));
+        setSelectedMemberId(member.user_id);
+    };
+
+    const roleLabelMap: Record<string, string> = {
+        PLANNER: '기획자',
+        DESIGNER: '디자이너',
+        DEVELOPER: '개발자',
+        MARKETER: '마케터',
+        OTHER: '기타',
     };
 
     return (
-        <div className='ml-[10px]'>
-            <h2 className="font-bold text-[20px] mb-[24px]">파트별 팀원 프로필</h2>
-
-            {/* PM */}
-            <div className='flex flex-col mt-[24px]'>
-                <div className='mb-[12px]'>
-                    <span className={`inline-flex items-center justify-center w-[37px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('pm')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                        PM
-                    </span>
-                </div>
-                {pmMembers.map((member) => (
-                    <MemberCard 
-                        key={member.user_id} 
-                        member={{
-                            name: member.name,
-                            role: member.member_type === 'LEADER' ? 'Leader' : undefined,
-                            position: member.part_label,
-                            introduction: member.bio,
-                            profileImage: member.profile_image_url || undefined
-                        }} 
-                        onClick={() => handleMemberClick(member)} 
-                    />
-                ))}
+        <div className='flex flex-col gap-16 w-full ml-[10px] pb-[64px]'>
+            {/* 섹션 01. 파트별 팀원 프로필 */}
+            <div className='flex flex-col gap-6'>
+                <h3 className='title-2 font-bold text-neutral-900'>파트별 팀원 프로필</h3>
+                {sortedRoleFields.length === 0 ? (
+                    <p className='text-[16px] text-neutral-500'>팀원 정보가 없습니다.</p>
+                ) : (
+                    <div className='flex flex-col gap-12'>
+                        {sortedRoleFields.map((roleField) => {
+                            const members = membersByRoleField[roleField] ?? [];
+                            const sectionLabel = members[0]?.part_label ?? members[0]?.custom_role_field_name ?? roleField;
+                            return (
+                                <div key={roleField} className='flex flex-col gap-3'>
+                                    <RoleTagChip
+                                        roleId={Math.max(1, roleFieldOrder.indexOf(roleField) + 1)}
+                                        roleName={sectionLabel}
+                                        roleField={roleField}
+                                        state='default'
+                                        className='hover:cursor-default'
+                                    />
+                                    <div className='flex flex-wrap gap-3 w-full'>
+                                        {members.map((member) => {
+                                            const isSelected = selectedMemberId === member.user_id;
+                                            const roleFromDetail = isSelected && memberDetail?.role ? memberDetail.role : null;
+                                            const roleToShow = member.role ?? roleFromDetail;
+                                            const partDisplay = roleToShow
+                                                ? (roleLabelMap[roleToShow] ?? roleToShow)
+                                                : member.part_label || member.custom_role_field_name || member.role_field;
+                                            return (
+                                                <div
+                                                    key={member.user_id}
+                                                    className='cursor-pointer'
+                                                    onClick={() => handleMemberClick(member)}
+                                                >
+                                                    <ProfileCard
+                                                        profileImage={
+                                                            member.profile_image_url ? (
+                                                                <img
+                                                                    src={member.profile_image_url}
+                                                                    alt=''
+                                                                    className='w-20 h-20 rounded-full object-cover'
+                                                                />
+                                                            ) : undefined
+                                                        }
+                                                        isLeader={member.member_type === 'LEADER'}
+                                                        highlighted={member.member_type === 'LEADER'}
+                                                        nickname={member.nickname}
+                                                        part={partDisplay}
+                                                        introduction={member.bio ?? undefined}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
-            {/* Design */}
-            <div className='mt-[24px]'>
-                <div className='mb-[12px]'>
-                    <span className={`inline-flex items-center justify-center w-[61px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('design')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                        Design
-                    </span>
-                </div>
-                <div className='flex gap-6'>
-                    {designMembers.map((member) => (
-                        <MemberCard 
-                            key={member.user_id} 
-                            member={{
-                                name: member.name,
-                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
-                                position: member.part_label,
-                                introduction: member.bio,
-                                profileImage: member.profile_image_url || undefined
-                            }} 
-                            onClick={() => handleMemberClick(member)} 
-                        />
-                    ))}
-                </div>
+            {/* 섹션 02. 팀원들의 프로젝트 히스토리 */}
+            <div className='flex flex-col gap-5'>
+                <ProjectHistory projectData={projectData} getPositionStyle={getPositionStyle} noTopMargin />
             </div>
-
-            {/* Frontend */}
-            <div className='mt-[24px]'>
-                <div className='mb-[12px]'>
-                    <span className={`inline-flex items-center justify-center w-[74px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('frontend')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                        Frontend
-                    </span>
-                </div>
-                <div className='flex gap-6'>
-                    {frontendMembers.slice(0, 2).map((member) => (
-                        <MemberCard 
-                            key={member.user_id} 
-                            member={{
-                                name: member.name,
-                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
-                                position: member.part_label,
-                                introduction: member.bio,
-                                profileImage: member.profile_image_url || undefined
-                            }} 
-                            onClick={() => handleMemberClick(member)} 
-                        />
-                    ))}
-                </div>
-                <div className='flex gap-6 mt-[12px]'>
-                    {frontendMembers.slice(2, 4).map((member) => (
-                        <MemberCard 
-                            key={member.user_id} 
-                            member={{
-                                name: member.name,
-                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
-                                position: member.part_label,
-                                introduction: member.bio,
-                                profileImage: member.profile_image_url || undefined
-                            }} 
-                            onClick={() => handleMemberClick(member)} 
-                        />
-                    ))}
-                </div>
-            </div>
-
-            {/* Backend */}
-            <div className='mt-[24px] mb-[64px]'>
-                <div className='mb-[12px]'>
-                    <span className={`inline-flex items-center justify-center w-[72px] h-[24px] px-[8px] py-[2px] ${getPositionStyle('backend')} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                        Backend
-                    </span>
-                </div>
-                <div className='flex gap-6'>
-                    {backendMembers.slice(0, 2).map((member) => (
-                        <MemberCard 
-                            key={member.user_id} 
-                            member={{
-                                name: member.name,
-                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
-                                position: member.part_label,
-                                introduction: member.bio,
-                                profileImage: member.profile_image_url || undefined
-                            }} 
-                            onClick={() => handleMemberClick(member)} 
-                        />
-                    ))}
-                </div>
-                <div className='flex gap-6 mt-[12px]'>
-                    {backendMembers.slice(2, 4).map((member) => (
-                        <MemberCard 
-                            key={member.user_id} 
-                            member={{
-                                name: member.name,
-                                role: member.member_type === 'LEADER' ? 'Leader' : undefined,
-                                position: member.part_label,
-                                introduction: member.bio,
-                                profileImage: member.profile_image_url || undefined
-                            }} 
-                            onClick={() => handleMemberClick(member)} 
-                        />
-                    ))}
-                </div>
-            </div>
-
-            <ProjectHistory projectData={projectData} getPositionStyle={getPositionStyle} />
 
             {/* 모달 */}
-            {selectedMember && (
-                <MemberProfileModal 
+            {selectedMemberId && (
+                <MemberProfileModal
                     isOpen={true}
-                    onClose={() => setSelectedMember(null)}
-                    member={selectedMember}
+                    onClose={() => setSelectedMemberId(null)}
+                    member={memberDetail}
+                    isLoading={isMemberDetailLoading}
                 />
             )}
         </div>
