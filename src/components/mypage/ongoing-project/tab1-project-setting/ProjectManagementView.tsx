@@ -1,6 +1,7 @@
 import { type Control, type UseFormSetValue, type UseFormWatch } from 'react-hook-form'
 import { useCallback } from 'react'
 
+import { useMypageProjectUsersQuery } from '@/hooks/mypage/useMypageApi'
 import { type ProjectData } from '@/mocks/ongoingProjectData'
 import { usePartSettingsModal } from '@/stores/usePartSettingsModal'
 import { useTeamMembersStore } from '@/stores/useTeamMembersStore'
@@ -48,6 +49,11 @@ const ProjectManagementView = ({
 }: IProjectManagementView) => {
 	const recruitStatus = watch('recruitmentStatus') ?? '모집 전'
 	const openPartSettings = usePartSettingsModal(state => state.open)
+
+	// /api/v1/mypage/projects/:id/users 조회 → LEADER 멤버의 part_label 사용
+	const { data: projectUsersData } = useMypageProjectUsersQuery(projectId)
+	const leaderPartLabel =
+		projectUsersData?.body?.users?.find((u) => u.member_type === 'LEADER')?.part_label ?? null
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
 	const memberApiDataMap = useTeamMembersStore(state => state.memberApiDataMap)
 
@@ -126,9 +132,9 @@ const ProjectManagementView = ({
 				<Section07ProjectFiles control={control} setValue={setValue} watch={watch} projectId={projectId} />
 			</div>
 
-			{/* 섹션 08. 리더 프로필 (읽기전용) */}
+			{/* 섹션 08. 리더 프로필 (읽기전용) - part는 프로젝트 users API LEADER의 part_label 사용 */}
 			<div id='section-08'>
-				<Section08LeaderProfile leaderInfo={leaderInfo} hasTag={false} />
+				<Section08LeaderProfile leaderInfo={leaderInfo} hasTag={false} partLabel={leaderPartLabel} />
 			</div>
 		</div>
 	)

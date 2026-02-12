@@ -166,6 +166,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
+									{receivedProjectMatchings.length === 0 && (
+										<div className='flex flex-col items-center justify-center'>
+										<p className='body-1 text-neutral-500 font-medium px-2'>받은 매칭 요청이 없습니다</p>
+									</div>
+									)}
 									{receivedProjectMatchings.map(project => (
 										<MatchingListItem
 											key={project.projectId}
@@ -191,6 +196,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
+									{receivedGrouped.length === 0 && (
+										<div className='flex flex-col items-center justify-center'>
+											<p className='body-1 text-neutral-500 font-medium px-2'>받은 매칭 요청이 없습니다</p>
+										</div>
+									)}
 									{receivedGrouped.map(group => (
 										<div
 											key={group.field}
@@ -249,6 +259,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
+									{sentProjectMatchings.length === 0 && (
+										<div className='flex flex-col items-center justify-center'>
+											<p className='body-1 text-neutral-500 font-medium px-2'>보낸 매칭 요청이 없습니다</p>
+										</div>
+									)}
 									{sentProjectMatchings.map(project => (
 										<MatchingListItem
 											key={project.projectId}
@@ -273,6 +288,11 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-10 items-start px-5 relative shrink-0 w-full'>
+									{sentGrouped.length === 0 && (
+										<div className='flex flex-col items-center justify-center'>
+											<p className='body-1 text-neutral-500 font-medium px-2'>보낸 매칭 요청이 없습니다</p>
+										</div>
+									)}
 									{sentGrouped.map(group => (
 										<div
 											key={group.field}

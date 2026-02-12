@@ -13,9 +13,11 @@ interface LeaderInfo {
 interface ISection08LeaderProfile {
 	leaderInfo: LeaderInfo | null
 	hasTag: boolean
+	/** LEADER 멤버의 part_label (API /mypage/projects/:id/users 응답에서 추출) */
+	partLabel?: string | null
 }
 
-const Section08LeaderProfile = ({ leaderInfo, hasTag }: ISection08LeaderProfile) => {
+const Section08LeaderProfile = ({ leaderInfo, hasTag, partLabel }: ISection08LeaderProfile) => {
 	if (!leaderInfo) {
 		return (
 			<div className='flex flex-col gap-6 ml-5'>
@@ -43,7 +45,7 @@ const Section08LeaderProfile = ({ leaderInfo, hasTag }: ISection08LeaderProfile)
 				<ProfileCard
 					isLeader
 					nickname={leaderInfo.nickname}
-					part={formatRoleName(leaderInfo.role)}
+					part={partLabel ?? formatRoleName(leaderInfo.role)}
 					introduction={leaderInfo.bio}
 					highlighted={true}
 					profileImage={

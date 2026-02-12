@@ -20,7 +20,9 @@ interface RoleTagChipProps {
 
 const RoleTagChip = ({ roleId, roleName, roleField, state, onClick, className, count, isPlaceholder }: RoleTagChipProps) => {
 	const { roles, roleFields } = useOnboardingEnums()
-	const displayName = roleField ? getRoleLabel(roleField, roles, roleFields) || roleName : roleName
+	// CUSTOM 파트는 parts.label(실제 파트명)을 roleName으로 전달받으므로 roleName 우선 사용
+	const displayName =
+		roleField === 'CUSTOM' ? roleName : roleField ? getRoleLabel(roleField, roles, roleFields) || roleName : roleName
 	const roleColor = getRoleColorById(roleId)
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'
