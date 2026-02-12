@@ -22,6 +22,7 @@ export const useWorkStatusDragAndDrop = ({
 	statuses,
 	getFilteredItemsByStatus,
 	onStatusChange,
+	onOrderChange,
 }: UseWorkStatusDragAndDropProps) => {
 	const [activeId, setActiveId] = useState<number | null>(null)
 	const { moveWorkStatusItem } = useWorkStatusStore()
