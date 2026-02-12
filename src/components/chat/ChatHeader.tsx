@@ -172,13 +172,7 @@ const ChatHeader = ({
 				{/* 오른쪽: 검색 + 새 메시지 버튼 */}
 				{showActions && (
 					<div className="flex justify-start items-center gap-1">
-						{/* 검색 버튼 */}
-						<button
-							onClick={onSearchClick}
-							className="relative w-7 h-7 rounded-lg shadow-inner-neutral-2 flex justify-center items-center overflow-hidden"
-						>
-							<SearchIcon className="w-7 h-7 text-neutral-700" />
-						</button>
+						
 						{/* 새 메시지 버튼 */}
 						<button
 							onClick={onNewMessage}
