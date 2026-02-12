@@ -23,7 +23,6 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick, project
 	const displayParticipants = Array.from({ length: displayCount }, (_, index) => 
 		participants[index] || defaultImage
 	)
-	const profileImage = message.profileImage || defaultImage
 
 	// 현재 사용자 ID 가져오기
 	const { data: profileData } = useGetProfileQuery()
@@ -163,11 +162,19 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick, project
 					) : (
 						// 개인 채팅: 하나의 큰 프로필 이미지
 				<div className='w-11 h-11 relative shrink-0'>
-					<img
-								className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover'
-								src={profileImage}
-						alt={message.senderName}
-					/>
+					{message.profileImage && message.profileImage !== defaultImage ? (
+						<img
+							className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover z-10'
+							src={message.profileImage}
+							alt={message.senderName}
+							onError={(e) => {
+								const target = e.target as HTMLImageElement
+								target.style.display = 'none'
+							}}
+						/>
+					) : null}
+					{/* Fallback 이미지 (항상 배경으로 표시) */}
+					<div className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 bg-neutral-200' />
 				</div>
 			)}
 

@@ -10,6 +10,22 @@ import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import useFilteredWorkspaceItems from '@/hooks/project-users/useFilteredWorkspaceItems'
 import type { ChatRoomListDto } from '@/types/api/chat'
 
+// 프로필 이미지 파일명을 전체 URL로 변환하는 함수
+const getProfileImageUrl = (profileImage: string | null | undefined): string | undefined => {
+	if (!profileImage || profileImage.trim() === '') return undefined
+	
+	const trimmed = profileImage.trim()
+	
+	// 이미 전체 URL인 경우 그대로 반환
+	if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+		return trimmed
+	}
+	
+	// 파일명만 있는 경우 전체 URL로 변환
+	const baseUrl = 'https://76122aff7b2ca633a0966c21a51c956d.r2.cloudflarestorage.com/nect-server/nect-server'
+	return `${baseUrl}/${encodeURIComponent(trimmed)}`
+}
+
 interface MessageDropdownProps {
 	defaultTab?: 'matching' | 'team'
 }
@@ -64,7 +80,7 @@ const MessageDropdown = ({ defaultTab = 'team' }: MessageDropdownProps) => {
 			content: dm.last_message || '',
 			time: dm.last_message_at || '',
 			isRead: dm.is_read,
-			profileImage: dm.other_user_image_url || undefined,
+			profileImage: getProfileImageUrl(dm.other_user_image_url),
 			role: dm.other_user_role_field || undefined,
 			isGroup: false,
 		}))

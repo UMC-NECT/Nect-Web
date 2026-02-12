@@ -20,11 +20,19 @@ export const OtherMessage = ({
 			{/* 프로필 이미지 */}
 			<div className="relative w-[30px] h-[30px] shrink-0">
 				{profileImage ? (
-					<img
-						src={profileImage}
-						alt={senderName}
-						className="w-[30px] h-[30px] rounded-full object-cover"
-					/>
+					<>
+						<img
+							src={profileImage}
+							alt={senderName}
+							className="w-[30px] h-[30px] rounded-full object-cover relative z-10"
+							onError={(e) => {
+								const target = e.target as HTMLImageElement
+								target.style.display = 'none'
+							}}
+						/>
+						{/* Fallback 이미지 (항상 배경으로 표시) */}
+						<div className="w-[30px] h-[30px] rounded-full bg-neutral-200 absolute inset-0" />
+					</>
 				) : (
 					<div className="w-[30px] h-[30px] rounded-full bg-neutral-200" />
 				)}

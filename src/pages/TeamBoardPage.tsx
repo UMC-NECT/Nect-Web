@@ -17,6 +17,7 @@ import { useStartWorkMutation } from '@/hooks/team-board/useStartWork'
 import { useStopWorkMutation } from '@/hooks/team-board/useStopWork'
 import { useUpdateTeamBoardBasicInfoMutation } from '@/hooks/team-board/useUpdateTeamBoardBasicInfo'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
+import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import type { FieldType } from '@/types/api/team-board/overview'
 
 const TeamBoardPage = () => {
@@ -52,6 +53,10 @@ const TeamBoardPage = () => {
 	const [calendarYear, setCalendarYear] = useState(today.getFullYear())
 	const [calendarMonth, setCalendarMonth] = useState(today.getMonth() + 1)
 	const [selectedDate, setSelectedDate] = useState<number | null>(null)
+
+	// 현재 사용자 프로필 정보
+	const { data: profileData } = useGetProfileQuery()
+	const currentUserId = profileData?.body?.userId
 
 	// API 호출 (projectId가 있을 때만)
 	const { data: overviewResponse, isLoading } = useTeamBoardOverview(projectId, {
@@ -312,15 +317,22 @@ const TeamBoardPage = () => {
 	}, [overview])
 
 	/**
-	 * 메인 프로필 (리더 또는 첫 번째 팀원)
+	 * 메인 프로필 (현재 사용자 또는 리더 또는 첫 번째 팀원)
 	 */
 	const mainProfile = useMemo(() => {
 		if (!overview?.members?.members || overview.members.members.length === 0) {
 			return undefined
 		}
 
-		const leader = overview.members.members.find((m) => m.member_type === 'LEADER')
-		const targetMember = leader || overview.members.members[0]
+		// 현재 사용자를 먼저 찾기
+		const currentUser = currentUserId 
+			? overview.members.members.find((m) => m.user_id === currentUserId)
+			: null
+		
+		// 현재 사용자가 있으면 현재 사용자, 없으면 리더, 그것도 없으면 첫 번째 팀원
+		const targetMember = currentUser || 
+			overview.members.members.find((m) => m.member_type === 'LEADER') || 
+			overview.members.members[0]
 
 		return {
 			name: targetMember.nickname || targetMember.name,
@@ -343,7 +355,7 @@ const TeamBoardPage = () => {
 				}
 			},
 		}
-	}, [overview, startWorkMutation, stopWorkMutation])
+	}, [overview, currentUserId, startWorkMutation, stopWorkMutation])
 
 	// 헤더 데이터
 	const headerData = useMemo(() => {

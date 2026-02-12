@@ -6,6 +6,24 @@ import ChatModal from '@/components/chat/ChatModal'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useNavigate, useParams, useLocation } from 'react-router'
 import { useNotificationList } from '@/hooks/notification/useNotificationList'
+import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
+import DefaultProfileImage from '@/assets/Default_Profile.svg'
+
+// 프로필 이미지 파일명을 전체 URL로 변환하는 함수
+const getProfileImageUrl = (profileImage: string | null | undefined): string | undefined => {
+	if (!profileImage || profileImage.trim() === '') return undefined
+	
+	const trimmed = profileImage.trim()
+	
+	// 이미 전체 URL인 경우 그대로 반환
+	if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+		return trimmed
+	}
+	
+	// 파일명만 있는 경우 전체 URL로 변환
+	const baseUrl = 'https://76122aff7b2ca633a0966c21a51c956d.r2.cloudflarestorage.com/nect-server/nect-server'
+	return `${baseUrl}/${encodeURIComponent(trimmed)}`
+}
 
 export const Sidebar = () => {
 	const [activeTopMenu, setActiveTopMenu] = useState<TopMenuId | null>(null)
@@ -16,6 +34,13 @@ export const Sidebar = () => {
 	const location = useLocation()
 	const params = useParams<{ projectId?: string }>()
 	const projectId = params.projectId ? parseInt(params.projectId, 10) : undefined
+
+	// 프로필 정보 조회
+	const { data: profileData } = useGetProfileQuery()
+	const profileImageUrl = useMemo(() => {
+		const imageUrl = profileData?.body?.imageUrl
+		return getProfileImageUrl(imageUrl) || DefaultProfileImage
+	}, [profileData?.body?.imageUrl])
 
 	// URL과 동기화해 하단 메뉴 활성 표시 (새로고침/직접 URL 시)
 	useEffect(() => {
@@ -86,9 +111,13 @@ export const Sidebar = () => {
 				<div className='w-14 inline-flex flex-col justify-start items-center gap-5'>
 					<div className='w-10 h-10 relative'>
 						<img
-							className='w-10 h-10 left-0 top-0 absolute rounded-full outline outline-neutral-200'
-							src='https://placehold.co/40x40'
+							className='w-10 h-10 left-0 top-0 absolute rounded-full outline outline-neutral-200 object-cover'
+							src={profileImageUrl}
 							alt='프로필'
+							onError={(e) => {
+								const target = e.target as HTMLImageElement
+								target.src = DefaultProfileImage
+							}}
 						/>
 					</div>
 
