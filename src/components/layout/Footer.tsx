@@ -5,9 +5,10 @@ import BarIcon from '@/assets/icons/common/Bar.svg?react';
 type FooterProps = {
     type: 'Default' | 'Mini'
     margin: '196' | '234' | '152' | '144'
+    className?: string
 }
 
-const Footer = ({ type, margin }: FooterProps) => {
+const Footer = ({ type, margin, className }: FooterProps) => {
     const marginClassName: Record<string, string> = {
         196: 'px-[196px] pt-[144px] pb-[72px]',
         234: 'px-[234px] pt-[144px] pb-[72px]',
@@ -25,7 +26,7 @@ const Footer = ({ type, margin }: FooterProps) => {
 	return (
 		<>
             {type === 'Default' && (
-                <footer className={cn('w-full', marginClassName[margin])}>
+                <footer className={cn('w-full', marginClassName[margin], className)}>
                 <div className="w-282 mx-auto gap-[50px]">
                 {/* 로고 */}
                 <img src={logo} alt="NECT Logo" className="w-28.25 h-5 mb-[50px]" />
