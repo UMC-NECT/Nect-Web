@@ -46,6 +46,7 @@ type DisplayMessage = {
 	role?: string
 	profileImage?: string
 	fileId?: number // 파일 메시지의 file_id (공유 문서함 등록용)
+	imageUrl?: string // 이미지 메시지의 이미지 URL
 	fileAttachment?: {
 		fileName: string
 		fileSize: string
@@ -199,10 +200,19 @@ const ChatRoom = ({
 				if (msg.file_info) {
 					const fileName = msg.file_info.file_name || '파일'
 					baseMessage.fileId = msg.file_info.file_id // 공유 문서함 등록용 file_id 저장
-					baseMessage.fileAttachment = {
-						fileName,
-						fileSize: formatFileSize(msg.file_info.file_size),
-						fileType: getFileType(fileName),
+					
+					// 이미지 메시지인 경우 이미지 URL 저장
+					if (msg.message_type === 'IMAGE' && msg.file_info.file_url) {
+						baseMessage.imageUrl = msg.file_info.file_url
+					}
+					
+					// 파일 메시지인 경우 파일 첨부 정보 저장
+					if (msg.message_type === 'FILE') {
+						baseMessage.fileAttachment = {
+							fileName,
+							fileSize: formatFileSize(msg.file_info.file_size),
+							fileType: getFileType(fileName),
+						}
 					}
 				}
 			} else {
@@ -508,6 +518,7 @@ const ChatRoom = ({
 								role={message.role}
 								profileImage={message.profileImage}
 								fileId={message.fileId}
+								imageUrl={message.imageUrl}
 								fileAttachment={message.fileAttachment}
 								onRegisterToSharedDocs={
 									message.fileId && projectId

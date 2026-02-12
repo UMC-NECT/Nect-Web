@@ -1,10 +1,11 @@
 interface OtherMessageProps {
 	senderName: string
-	content: string
+	content?: string
 	time: string
 	role?: string
 	profileImage?: string
 	readCount?: number
+	imageUrl?: string // 이미지 메시지의 이미지 URL
 }
 
 export const OtherMessage = ({
@@ -14,6 +15,7 @@ export const OtherMessage = ({
 	role,
 	profileImage,
 	readCount,
+	imageUrl,
 }: OtherMessageProps) => {
 	return (
 		<div className="flex gap-2 items-start justify-start pt-2.5">
@@ -54,11 +56,27 @@ export const OtherMessage = ({
 
 				{/* 메시지 버블 */}
 				<div className="flex gap-1.5 items-end w-full">
-					<div className="px-3 py-1.5 flex items-center bg-white rounded-bl-[6px] rounded-br-[6px] rounded-tr-[6px]">
-						<div className="flex-1 max-w-[248px] text-neutral-900 label font-medium tracking-[-0.26px] leading-[1.4]">
-							{content}
+					{imageUrl ? (
+						// 이미지 메시지
+						<div className="rounded-md overflow-hidden max-w-[248px]">
+							<img
+								src={imageUrl}
+								alt=""
+								className="max-w-full h-auto object-cover"
+								onError={(e) => {
+									const target = e.target as HTMLImageElement
+									target.style.display = 'none'
+								}}
+							/>
 						</div>
-					</div>
+					) : (
+						// 텍스트 메시지
+						<div className="px-3 py-1.5 flex items-center bg-white rounded-bl-[6px] rounded-br-[6px] rounded-tr-[6px]">
+							<div className="flex-1 max-w-[248px] text-neutral-900 label font-medium tracking-[-0.26px] leading-[1.4]">
+								{content}
+							</div>
+						</div>
+					)}
 
 					{/* 시간 및 읽음 수 */}
 					<div className="flex flex-col h-[30px] items-start justify-end py-0.5">
