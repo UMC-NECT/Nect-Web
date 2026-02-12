@@ -3,62 +3,84 @@ import SkillSection from '@/components/profile-analysis/SkillSection'
 import RoleRecommend from '@/components/profile-analysis/RoleRecommend'
 import GrowGuideSection from '@/components/profile-analysis/GrowGuideSection'
 import { MyPageHeader } from '../MyPageHeader'
-import { useProfileAnalysis, useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
-import { formatRoleName } from '@/utils/roleColor'
-import { translateSkillCategory } from '@/utils/skillCategory'
+import { useGetProfileAnalysisQuery, useGetProfileQuery } from '@/hooks/auth/useUsersApi'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import type { RadarDataItem } from '@/stores/profileAnalysisStore'
 import MypageContentSection from './MypageContentSection'
 import MypageProfileRadarChart from './MypageProfileRadarChart'
+import NecttyIcon from '@/assets/icons/mypage/nectty.png'
+import { useErrorModal } from '@/stores/useErrorModal'
+
+const COLLABO_LABELS: Record<string, string> = {
+	planning: '계획형',
+	logic: '논리형',
+	supporter: '서포터형',
+	execution: '실행형',
+	empathy: '공감형',
+	leadership: '리더형',
+}
 
 const ProfileAnalysis = () => {
-	// API - AI 프로필 분석
-	const { data: profileAnalysisData, isLoading, isError } = useProfileAnalysis()
-	const { data: profileData } = useMypageProfileQuery()
+	const { data: analysisRes, isLoading, isError } = useGetProfileAnalysisQuery()
+	const { data: profileData } = useGetProfileQuery()
+	const { skillCategories, skillsByCategory, roles } = useOnboardingEnums()
+	const { setErrorModal } = useErrorModal()
 
-	const analysisResult = profileAnalysisData?.body
+	const body = analysisRes?.body
 	const profile = profileData?.body
 
-	// API 데이터를 컴포넌트 형식에 맞게 변환
-	const radarData: RadarDataItem[] = analysisResult?.collaborationStyle
-		? [
-				{ subject: '계획형', value: analysisResult.collaborationStyle.planning },
-				{ subject: '논리형', value: analysisResult.collaborationStyle.logic },
-				{ subject: '리더형', value: analysisResult.collaborationStyle.leadership },
-				{ subject: '공감형', value: analysisResult.collaborationStyle.empathy },
-				{ subject: '실행형', value: analysisResult.collaborationStyle.execution },
-			]
-		: []
+	if (isError) {
+		setErrorModal('', '데이터를 불러오는데 실패했습니다.')
+	}
 
+	const type = body?.profileType ?? ''
+	const tags = body?.tags ?? []
+	const radarData: RadarDataItem[] = body?.collaborationStyle
+		? (['planning', 'logic', 'supporter', 'execution', 'empathy', 'leadership'] as const).map(key => ({
+				subject: COLLABO_LABELS[key],
+				value: body.collaborationStyle[key],
+		  }))
+		: []
 	const skills =
-		analysisResult?.skills?.map(skill => ({
-			skillName: translateSkillCategory(skill.category),
-			skillList: skill.skill_names,
-		})) || []
+		body?.skills?.map(s => {
+			const categoryLabel = skillCategories.find(c => c.value === s.category)?.label ?? s.category
+			const categorySkills = skillsByCategory[s.category] ?? []
+			const skillList = (s.skill_names ?? [])
+				.map(x => x.trim())
+				.filter(Boolean)
+				.map(value => categorySkills.find(sk => sk.value === value)?.label ?? value)
+			return { skillName: categoryLabel, skillList }
+		}) ?? []
+	const roleRecommend =
+		body?.roleRecommendation != null
+			? [
+					{ role: '리더', title: '다음과 같은 성격의 팀원과 함께하세요!', description: body.roleRecommendation.leader ?? '' },
+					{ role: '팀원', title: '현재 모집중인 프로젝트를 추천할게요!', description: body.roleRecommendation.team_member ?? '' },
+			  ]
+			: []
+	const growGuide =
+		body?.growthGuide?.map(g => ({
+			tipText: g.tip,
+			title: g.title,
+			description: g.content,
+		})) ?? []
 
-	const roleRecommend = analysisResult?.roleRecommendation
-		? [
-				{
-					role: '리더',
-					title: '다음과 같은 성격의 팀원과 함께하세요!',
-					description: analysisResult.roleRecommendation.leader,
-				},
-				{
-					role: '팀원',
-					title: '현재 모집중인 프로젝트를 추천할게요!',
-					description: analysisResult.roleRecommendation.team_member,
-				},
-			]
-		: []
+	const roleValue = profile?.role ?? ''
+	const roleLabel = roles.find(r => r.value === roleValue)?.label ?? roleValue
 
-	const hasReport = !!analysisResult
+	const hasReport = !!body
 
 	if (isLoading) {
 		return (
-			<div className='ml-7 w-full flex items-center justify-center min-h-screen'>
-				<p className='body-1 text-neutral-500'>
-					<span className='text-primary-500-normal font-semibold'>{profile?.name}</span>님의 프로필 분석내역을
-					불러오는중...
-				</p>
+			<div className='ml-7 w-full flex flex-col justify-center'>
+				<MyPageHeader />
+				<div className='body-1 text-neutral-500 flex flex-col justify-center items-center'>
+					<img src={NecttyIcon} className='w-58.25 h-58.25 px-[22.25px] py-[37.5px] mt-4 mb-12' />
+					<p>
+						<span className='text-primary-500-normal font-semibold'>{profile?.name}</span>님의 프로필 분석내역을
+						불러오는중...
+					</p>
+				</div>
 			</div>
 		)
 	}
@@ -92,19 +114,19 @@ const ProfileAnalysis = () => {
 
 									{/* 메인 타이틀 */}
 									<h2 className='heading-2 font-bold text-neutral-900 text-center'>
-										{profile?.nickname}님은 [{analysisResult.profileType}] 타입이시네요!
+										{profile?.name ?? ''}님은 [{type}] 타입이시네요!
 									</h2>
 
 									{/* 태그 섹션 */}
 									<div className='flex items-center gap-3'>
 										{/* 직무 태그 */}
 										<span className='title-3 px-2.5 py-1 bg-roletag-purple text-neutral-700 font-semibold rounded-md'>
-											{formatRoleName(profile?.role)}
+											{roleLabel}
 										</span>
 
 										{/* 해시태그들 */}
 										<div className='flex items-center gap-2.5 body-2'>
-											{analysisResult.tags.map(tag => (
+											{tags.map(tag => (
 												<span className='title-3 font-medium text-neutral-900' key={tag}>
 													{tag}
 												</span>
@@ -151,28 +173,14 @@ const ProfileAnalysis = () => {
 								{/* 성장 가이드 */}
 								<MypageContentSection title='성장 가이드'>
 									<div className='flex flex-col gap-6'>
-										{analysisResult.growthGuide
-											.sort((a, b) => a.order - b.order)
-											.map(guide => {
-												// order에 따라 tipText 고정
-												const tipText =
-													guide.order === 1
-														? '앞으로 이런 활동을 하면 좋아요 !'
-														: '확장 가능한 스킬 추천'
-
-												// tip 필드 파싱
-												const title = '포트폴리오 제작을 위한 ‘실무 프로세스 경험'
-												const description = guide.tip
-
-												return (
-													<GrowGuideSection
-														key={guide.order}
-														tipText={tipText}
-														title={title}
-														description={description}
-													/>
-												)
-											})}
+										{growGuide.map((g, index) => (
+											<GrowGuideSection
+												key={index}
+												tipText={g.tipText}
+												title={g.title}
+												description={g.description}
+											/>
+										))}
 									</div>
 								</MypageContentSection>
 							</div>
