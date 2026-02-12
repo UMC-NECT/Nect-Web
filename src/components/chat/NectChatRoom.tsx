@@ -63,6 +63,22 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 		}
 	}
 
+	// 프로필 이미지 파일명을 전체 URL로 변환하는 함수
+	const getProfileImageUrl = (profileImage: string | null | undefined): string | undefined => {
+		if (!profileImage || profileImage.trim() === '') return undefined
+		
+		const trimmed = profileImage.trim()
+		
+		// 이미 전체 URL인 경우 그대로 반환
+		if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+			return trimmed
+		}
+		
+		// 파일명만 있는 경우 전체 URL로 변환
+		const baseUrl = 'https://76122aff7b2ca633a0966c21a51c956d.r2.cloudflarestorage.com/nect-server/nect-server'
+		return `${baseUrl}/${encodeURIComponent(trimmed)}`
+	}
+
 	// DM 메시지를 DisplayMessage 형식으로 변환
 	const convertToDisplayMessages = useCallback(
 		(messages: DMMessageDto[], currentUserId?: number): DisplayMessage[] => {
@@ -100,13 +116,16 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 					? (msg.is_read ? 1 : undefined) // 내 메시지: 읽었으면 1, 아니면 표시 안 함
 					: undefined // 상대방 메시지는 readCount 없음
 				
+				// 프로필 이미지 URL 변환 (디버깅용 로그 제거 가능)
+				const profileImageUrl = getProfileImageUrl(msg.sender_profile_image)
+				
 				const baseMessage: DisplayMessage = {
 					id: msg.message_id,
 					senderName: msg.sender_name,
 					content: msg.content || '',
 					time: formatTime(msg.created_at),
 					isMine,
-					profileImage: msg.sender_profile_image || undefined,
+					profileImage: profileImageUrl,
 					readCount,
 				}
 
@@ -193,7 +212,7 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 						content: dmMessage.content || '',
 						time: formatTime(dmMessage.created_at),
 						isMine,
-						profileImage: dmMessage.sender_profile_image || undefined,
+						profileImage: getProfileImageUrl(dmMessage.sender_profile_image),
 						readCount,
 					}
 					

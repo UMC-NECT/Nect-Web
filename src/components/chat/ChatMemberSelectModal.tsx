@@ -18,6 +18,8 @@ interface ChatMemberSelectModalProps {
 	onClose: () => void
 	onConfirm: (selectedContacts: Contact[]) => void
 	existingMemberIds?: number[]
+	hideSidebar?: boolean // 사이드바 숨김 여부
+	height?: string // 커스텀 높이
 }
 
 const ChatMemberSelectModal = ({
@@ -25,6 +27,8 @@ const ChatMemberSelectModal = ({
 	onClose,
 	onConfirm,
 	existingMemberIds = [],
+	hideSidebar = false,
+	height,
 }: ChatMemberSelectModalProps) => {
 	const [selectedContacts, setSelectedContacts] = useState<number[]>([])
 	const [searchQuery, setSearchQuery] = useState('')
@@ -41,12 +45,18 @@ const ChatMemberSelectModal = ({
 	// API 멤버를 Contact 형식으로 변환
 	const allMembers: Contact[] = useMemo(
 		() =>
-			apiMembers.map((member) => ({
-				id: member.user_id, // API에서 user_id로 오는 값 사용
-				name: member.name,
-				role: member.role,
-				profileImage: member.profile_image_url || undefined,
-			})),
+			apiMembers.map((member) => {
+				// API 응답에서 프로필 이미지 URL 가져오기 (실제 응답은 profile_image로 옴)
+				const profileImageUrl = (member as any).profile_image || (member as any).profile_image_url || (member as any).profileImageUrl || (member as any).imageUrl || null
+				// API 응답에서 role 가져오기 (없으면 기본값)
+				const role = (member as any).role || '기타'
+				return {
+					id: member.user_id, // API에서 user_id로 오는 값 사용
+					name: member.name || (member as any).nickname || '',
+					role: role,
+					profileImage: profileImageUrl && profileImageUrl.trim() !== '' ? profileImageUrl : undefined, // null이거나 빈 문자열이면 undefined로 변환
+				}
+			}),
 		[apiMembers]
 	)
 
@@ -86,19 +96,27 @@ const ChatMemberSelectModal = ({
 	}
 
 
+	// 사이드바 숨김 여부에 따른 컨테이너 클래스
+	const containerHeight = height || 'h-full'
+	const containerClass = hideSidebar
+		? `w-[380px] ${containerHeight} bg-[#f7f7fa] rounded-2xl border border-neutral-200 z-50 overflow-hidden relative flex flex-col`
+		: `w-[380px] ${containerHeight} bg-[#f7f7fa] rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col`
+
 	return (
-		<div className='flex items-start h-full'>
+		<div className={`flex items-start ${containerHeight}`}>
 			{/* 사이드바 */}
-			<ChatSidebar
-				unreadCount={0}
-				onMessageClick={() => {}}
-				onCloudClick={() => {}}
-				onSettingsClick={() => {}}
-			/>
+			{!hideSidebar && (
+				<ChatSidebar
+					unreadCount={0}
+					onMessageClick={() => {}}
+					onCloudClick={() => {}}
+					onSettingsClick={() => {}}
+				/>
+			)}
 			{/* 메인 컨텐츠 */}
-			<div className='w-[380px] h-full bg-[#f7f7fa] rounded-2xl rounded-l-none border-l-0 border border-neutral-200 z-50 overflow-hidden relative flex flex-col'>
+			<div className={containerClass}>
 				{/* 헤더 */}
-				<div className='bg-white border-b border-[#f0f0f6] h-[50px] px-[22px] py-[11px] flex items-center justify-center shrink-0'>
+				<div className='bg-white border-b border-status-info-cool-gray-50 h-[50px] px-[22px] py-[11px] flex items-center justify-center shrink-0'>
 					<div className='flex gap-1.5 items-center'>
 						<div className='max-w-[172px] text-neutral-900 title-3 font-semibold leading-[1.4] truncate'>
 							대화 상대 선택
@@ -112,7 +130,7 @@ const ChatMemberSelectModal = ({
 				</div>
 
 				{/* 검색 바 */}
-				<div className='bg-white border-b border-[#f0f0f6] h-[50px] px-3 py-2.5 flex items-center shrink-0'>
+				<div className='bg-white border-b border-status-info-cool-gray-50 h-[50px] px-3 py-2.5 flex items-center shrink-0'>
 					<div className='w-full h-[34px] px-2 bg-neutral-50 border border-neutral-100 rounded-md flex items-center gap-2'>
 						<SearchIcon className='w-7 h-7 text-neutral-300 shrink-0' />
 							<input
@@ -236,7 +254,7 @@ const ChatMemberSelectModal = ({
 
 				{/* 선택된 멤버 태그 영역 */}
 				{(selectedMembers.length > 0 || existingMemberIds.length > 0) && (
-					<div className='bg-white border border-[#f0f0f6] px-[12px] py-[10px] h-[82px] flex flex-col gap-[6px] shrink-0 shadow-drop-neutral-3 overflow-hidden'>
+					<div className='bg-white border border-status-info-cool-gray-50 px-[12px] py-[10px] h-[82px] flex flex-col gap-[6px] shrink-0 shadow-drop-neutral-3 overflow-hidden'>
 						<div className='flex flex-wrap gap-[6px] overflow-y-auto notification-scrollbar'>
 							{/* 이미 있는 멤버 */}
 							{allMembers
