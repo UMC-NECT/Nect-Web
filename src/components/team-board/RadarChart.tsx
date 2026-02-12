@@ -397,7 +397,9 @@ const RadarChart = ({ data, totalScore, className = '' }: RadarChartProps) => {
 								transform: 'translate(-50%, -50%)',
 							}}
 						>
-							<span className="text-neutral-700 body-1 font-medium">{item.label}</span>
+							<span className="block w-[52px] text-center text-neutral-700 body-1 font-medium wrap-break-word">
+								{item.label}
+							</span>
 						</div>
 
 						{/* 점수 */}
