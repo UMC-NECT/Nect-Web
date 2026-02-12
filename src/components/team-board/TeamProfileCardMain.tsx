@@ -1,6 +1,23 @@
 import { useState, useEffect, useRef } from 'react'
 import { WORK_STATUS_CONFIG } from '@/constants/workStatus'
 import PlayIcon from '@/assets/icons/common/play.svg?react'
+import DefaultProfileImage from '@/assets/Default_Profile.svg'
+
+// 프로필 이미지 파일명을 전체 URL로 변환하는 함수
+const getProfileImageUrl = (profileImage: string | null | undefined): string | undefined => {
+	if (!profileImage || profileImage.trim() === '') return undefined
+	
+	const trimmed = profileImage.trim()
+	
+	// 이미 전체 URL인 경우 그대로 반환
+	if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+		return trimmed
+	}
+	
+	// 파일명만 있는 경우 전체 URL로 변환
+	const baseUrl = 'https://76122aff7b2ca633a0966c21a51c956d.r2.cloudflarestorage.com/nect-server/nect-server'
+	return `${baseUrl}/${encodeURIComponent(trimmed)}`
+}
 
 interface WorkStatus {
 	beforeProgress: number // 진행 전
@@ -42,12 +59,14 @@ const TeamProfileCardMain = ({
 	name,
 	role,
 	time,
-	avatarUrl = 'https://placehold.co/68x68',
+	avatarUrl,
 	status,
 	isWorking: initialIsWorking = false,
 	onStartWork,
 	className = '',
 }: TeamProfileCardMainProps) => {
+	// 프로필 이미지 URL 처리
+	const profileImageUrl = avatarUrl ? getProfileImageUrl(avatarUrl) || DefaultProfileImage : DefaultProfileImage
 	const [isWorking, setIsWorking] = useState(initialIsWorking)
 	const [displayTime, setDisplayTime] = useState(time)
 	const initialSecondsRef = useRef<number>(parseTimeToSeconds(time))
@@ -116,8 +135,12 @@ const TeamProfileCardMain = ({
 						<div className="flex justify-start items-center gap-[18px]">
 							<img
 								className="w-[68px] h-[68px] rounded-full outline-1 outline-neutral-000 object-cover"
-								src={avatarUrl}
+								src={profileImageUrl}
 								alt={name}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement
+									target.src = DefaultProfileImage
+								}}
 							/>
 							<div className="inline-flex flex-col justify-center items-start gap-1">
 								<div className="justify-center text-neutral-900 heading-3 font-bold">{name}</div>
