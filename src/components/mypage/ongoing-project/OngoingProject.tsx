@@ -329,6 +329,7 @@ const OngoingProject = () => {
 			endDate: formatDate(leaderProject.planned_ended_on),
 			recruitmentStatus: watch('recruitmentStatus') ?? '모집 전',
 			selectedFields: watch('selectedFields') || [],
+			thumbnailUrl: leaderProject.image_name || undefined,
 		}
 	})()
 

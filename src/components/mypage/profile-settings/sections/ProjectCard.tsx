@@ -64,44 +64,47 @@ const ProjectCard = ({ img, title, description, date, onSave, onCancel, onContex
 					)}
 				</div>
 
-				{/* 프로젝트 정보 */}
+				{/* 프로젝트 정보 - input 기준 고정 높이 (24+6+36+6+20+14+16=122) */}
 				<div
-					className='flex flex-col gap-1.5 px-5 pt-3.5 pb-4 cursor-pointer'
+					className='flex flex-col gap-1.5 px-5 pt-3.5 pb-4 cursor-pointer h-[122px]'
 					onClick={() => !isEditing && setIsEditing(true)}
 				>
 					{isEditing ? (
 						<>
 							<input
 								type='text'
-								className='title-3 font-semibold text-neutral-900 bg-transparent focus:outline-none placeholder:text-neutral-300'
+								className='w-full h-6 title-3 font-semibold text-neutral-900 bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-neutral-300 p-0 m-0'
 								placeholder='프로젝트 이름'
 								value={localTitle}
 								onChange={e => setLocalTitle(e.target.value)}
+								onClick={e => e.stopPropagation()}
 							/>
 							<textarea
-								className='body-2 text-neutral-600 bg-transparent focus:outline-none placeholder:text-neutral-300 resize-none'
+								className='w-full h-9 body-2 text-neutral-600 bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-neutral-300 resize-none overflow-hidden p-0 m-0'
 								placeholder='프로젝트 설명 (2줄까지 보여짐)'
 								value={localDescription}
 								onChange={e => setLocalDescription(e.target.value)}
 								rows={2}
+								onClick={e => e.stopPropagation()}
 							/>
 							<input
 								type='text'
-								className='body-2 text-neutral-400 bg-transparent focus:outline-none placeholder:text-neutral-300'
+								className='w-full h-5 body-2 text-neutral-400 bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-neutral-300 p-0 m-0'
 								placeholder='0000.00~0000.00'
 								value={localDate}
 								onChange={e => setLocalDate(e.target.value)}
+								onClick={e => e.stopPropagation()}
 							/>
 						</>
 					) : (
 						<>
-							<h3 className={`title-3 font-semibold ${localTitle ? 'text-neutral-900' : 'text-neutral-300'}`}>
+							<h3 className={`h-6 title-3 font-semibold leading-6 ${localTitle ? 'text-neutral-900' : 'text-neutral-300'}`}>
 								{localTitle || '프로젝트 이름'}
 							</h3>
-							<p className={`body-2 line-clamp-2 ${localDescription ? 'text-neutral-600' : 'text-neutral-300'}`}>
+							<p className={`h-9 body-2 line-clamp-2 leading-[18px] ${localDescription ? 'text-neutral-600' : 'text-neutral-300'}`}>
 								{localDescription || '프로젝트 설명 (2줄까지 보여짐)'}
 							</p>
-							<span className={`body-2 ${localDate ? 'text-neutral-400' : 'text-neutral-300'}`}>
+							<span className={`h-5 body-2 leading-5 ${localDate ? 'text-neutral-400' : 'text-neutral-300'}`}>
 								{localDate || '0000.00~0000.00'}
 							</span>
 						</>

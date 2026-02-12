@@ -72,7 +72,7 @@ export const ProfileSettings = () => {
 						try {
 							// 폼 데이터를 API request DTO로 변환
 							const requestBody = {
-								profileImageUrl: uploadedFileName ?? profile?.profileImageUrl ?? '',
+								profileImageFileName: uploadedFileName ?? profile?.profileImageUrl ?? '',
 								bio: data.introduction ?? '',
 								coreCompetencies: data.coreCompetency ?? '',
 								userStatus: data.userStatus ?? '',

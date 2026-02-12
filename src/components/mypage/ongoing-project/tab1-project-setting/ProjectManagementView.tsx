@@ -71,7 +71,9 @@ const ProjectManagementView = ({
 			{/* 썸네일 + 기본 정보  */}
 			<div id='project-basic-info'>
 				<ProjectBasicInfo
+					key={projectId}
 					projectData={projectData}
+					projectId={projectId}
 					recruitStatus={recruitStatus}
 					onStatusChange={handleRecruitmentStatusChange}
 				/>
