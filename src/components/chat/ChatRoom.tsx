@@ -145,6 +145,22 @@ const ChatRoom = ({
 		return `${mb.toFixed(1)}MB`
 	}
 
+	// 프로필 이미지 파일명을 전체 URL로 변환하는 함수
+	const getProfileImageUrl = (profileImage: string | null | undefined): string | undefined => {
+		if (!profileImage) return undefined
+		
+		// 이미 전체 URL인 경우 그대로 반환
+		if (profileImage.startsWith('http://') || profileImage.startsWith('https://')) {
+			return profileImage
+		}
+		
+		// 파일명만 있는 경우 전체 URL로 변환
+		// 멤버 선택 모달의 API 응답에서 전체 URL 패턴을 참고
+		// 예: https://76122aff7b2ca633a0966c21a51c956d.r2.cloudflarestorage.com/nect-server/nect-server/{filename}
+		const baseUrl = 'https://76122aff7b2ca633a0966c21a51c956d.r2.cloudflarestorage.com/nect-server/nect-server'
+		return `${baseUrl}/${encodeURIComponent(profileImage)}`
+	}
+
 	// API 메시지를 DisplayMessage로 변환
 	const convertToDisplayMessages = (apiMessages: ChatMessageDto[], currentUserId?: number): DisplayMessage[] => {
 		const displayMessages: DisplayMessage[] = []
@@ -175,7 +191,7 @@ const ChatRoom = ({
 				senderName: msg.user_name,
 				time: formatTime(msg.created_at),
 				isMine,
-				profileImage: msg.profile_image || undefined,
+				profileImage: getProfileImageUrl(msg.profile_image),
 				readCount,
 			}
 
@@ -397,6 +413,8 @@ const ChatRoom = ({
 					handleInviteMembers(memberIds)
 				}}
 				existingMemberIds={[]}
+				hideSidebar={hideSidebar}
+				height={height}
 			/>
 		)
 	}

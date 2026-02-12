@@ -110,8 +110,10 @@ export type ChatNoticeResponseDto = CommonResponse<{
 export type ProjectMemberDto = {
 	user_id: number
 	name: string
-	profile_image_url: string | null
-	role: string
+	nickname?: string
+	profile_image?: string | null // 실제 API 응답 필드명
+	profile_image_url?: string | null // 하위 호환성
+	role?: string // 선택적 필드
 }
 
 export type ResponseGetProjectMembersDto = CommonResponse<ProjectMemberDto[]>
