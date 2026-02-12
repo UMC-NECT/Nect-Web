@@ -6,6 +6,7 @@ import CategoryDropdown from '@/components/main/CategoryDropdown';
 import RecommendationProjectCard from '@/components/common/RecommendationProjectCard';
 import { useRecruitingProjects } from '@/hooks/queries/home';
 import { CATEGORIES, TABS, PART_MAP } from '@/constants/filters';
+import LoadingScreen from '@/components/splash/LoadingScreen';
 
 const ProjectListPage = () => {
     const [selectedTab, setSelectedTab] = useState('전체');
@@ -34,6 +35,10 @@ const ProjectListPage = () => {
             document.body.style.backgroundColor = '';
         };
     }, []);
+
+    if (isLoading) {
+        return <LoadingScreen/>
+    }
 
     return (
         <div className="pt-16">

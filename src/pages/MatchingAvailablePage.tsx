@@ -23,6 +23,7 @@ import MemberProfileDetail from '@/components/recruiting-projects/MemberProfileD
 import { useMemberDetail } from '@/hooks/queries/member/useMemberDetail'
 import { useMatchingsSentQuery, useMatchingCancelMutation, useMatchingProjectToUserMutation } from '@/hooks/mypage/useMatchingApi'
 import { useProjectRecruitments } from '@/hooks/queries/project'
+import LoadingScreen from '@/components/splash/LoadingScreen'
 
 const MatchingAvailablePage = () => {
 	const { userId } = useParams<{ userId: string }>()
@@ -196,9 +197,7 @@ const MatchingAvailablePage = () => {
 
 	if (isLoading) {
 		return (
-			<div className='flex items-center justify-center min-h-screen'>
-				<p className='text-neutral-500'>로딩 중...</p>
-			</div>
+			<LoadingScreen/>
 		)
 	}
 

@@ -19,6 +19,7 @@ import { useUpdateTeamBoardBasicInfoMutation } from '@/hooks/team-board/useUpdat
 import { getProjectUsers } from '@/api/project-users/projectUsers'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import type { FieldType } from '@/types/api/team-board/overview'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 const TeamBoardPage = () => {
 	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
@@ -325,13 +326,13 @@ const TeamBoardPage = () => {
 		}
 
 		// 현재 사용자를 먼저 찾기
-		const currentUser = currentUserId 
+		const currentUser = currentUserId
 			? overview.members.members.find((m) => m.user_id === currentUserId)
 			: null
-		
+
 		// 현재 사용자가 있으면 현재 사용자, 없으면 리더, 그것도 없으면 첫 번째 팀원
-		const targetMember = currentUser || 
-			overview.members.members.find((m) => m.member_type === 'LEADER') || 
+		const targetMember = currentUser ||
+			overview.members.members.find((m) => m.member_type === 'LEADER') ||
 			overview.members.members[0]
 
 		return {
@@ -479,10 +480,11 @@ const TeamBoardPage = () => {
 
 	return (
 		<div className="flex flex-col w-full max-w-main mx-auto px-[72px] py-16 gap-7">
+			{isLoading && <LoadingModal />}
 			{/* 상단 헤더 영역 (1224x180) */}
 			<div className="w-[1224px] h-[180px]">
 				{isLoading ? (
-					<div className="flex items-center justify-center h-full">로딩 중...</div>
+					<div className="flex items-center justify-center h-full"></div>
 				) : (
 					<TeamBoardHeader
 						title={headerData.title}

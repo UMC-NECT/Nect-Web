@@ -15,6 +15,7 @@ import type { FileItem as FileItemData } from '@/stores/mission-modal/missionMod
 import type { SortOption as APISortOption } from '@/types/api/team-board/sharedDocuments'
 import LinkIcon from '@/assets/icons/team-board/link.svg?react'
 import PlusIcon from '@/assets/icons/common/plus.svg?react'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 const SharedDocumentsPage = () => {
 	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
@@ -252,6 +253,7 @@ const SharedDocumentsPage = () => {
 
 	return (
 		<div className="flex flex-col w-full mx-auto px-[72px] pt-[64px] gap-[30px]">
+			{isLoading && <LoadingModal />}
 			<ContentHeader
 				title="공유 문서함"
 				description="프로젝트 자료를 한곳에 모으는 공유 문서 클라우드"
@@ -274,7 +276,7 @@ const SharedDocumentsPage = () => {
 					onDrop={handleDrop}
 				>
 					{isLoading ? (
-						<div className="flex items-center justify-center h-full">로딩 중...</div>
+						<div className="flex items-center justify-center h-full"></div>
 					) : files.length === 0 && !isUploading ? (
 						// 빈 상태: 업로드 플레이스홀더
 						<div className="bg-neutral-50 border border-neutral-100 rounded-md flex gap-2.5 h-[46px] items-center pl-2 pr-2.5 py-1.5 w-[284px]">

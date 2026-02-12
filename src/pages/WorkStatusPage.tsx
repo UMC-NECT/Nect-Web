@@ -29,6 +29,7 @@ import type { Progress } from '@/types/progress'
 import { useWorkspaceProjectId } from '@/hooks/useWorkspaceProjectId'
 import type { ProcessPartProcessItem } from '@/types/api/process/process'
 import type { Part } from '@/types/part'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 // Droppable 컬럼 컴포넌트
 interface DroppableColumnProps {
@@ -219,8 +220,8 @@ const WorkStatusPage = () => {
 	const { isScrolling, scrollContainerRef } = useWorkStatusScroll()
 	const { statusCounts } = useWorkStatusData()
 	const { projectIdStr } = useWorkspaceProjectId({ redirectIfMissing: true })
-	const { data: progressSummaryData } = useProgressSummaryQuery(projectIdStr)
-	const { data: historyData } = useProcessHistoryQuery(projectIdStr)
+	const { data: progressSummaryData, isLoading: isProgressSummaryLoading } = useProgressSummaryQuery(projectIdStr)
+	const { data: historyData, isLoading: isHistoryLoading } = useProcessHistoryQuery(projectIdStr)
 
 	// 파트(분야)별 작업 현황 API: 팀 탭은 fieldId 없음, 역할 선택 시 해당 role_field 전달
 	const fieldId = useMemo(() => {
@@ -228,8 +229,8 @@ const WorkStatusPage = () => {
 		const role = roles.find(r => getRoleDisplayName(r) === selectedSegment)
 		return role?.role_field ?? undefined
 	}, [selectedSegment, roles])
-	const { data: partData } = useProcessPartQuery(projectIdStr, fieldId)
-	const { data: partsData } = usePartsQuery(projectIdStr)
+	const { data: partData, isLoading: isPartLoading } = useProcessPartQuery(projectIdStr, fieldId)
+	const { data: partsData, isLoading: isPartsLoading } = usePartsQuery(projectIdStr)
 	const setWorkStatusItems = useWorkStatusStore(s => s.setWorkStatusItems)
 	const parts = useMemo(() => partsData?.body?.parts ?? [], [partsData?.body?.parts])
 
@@ -341,8 +342,11 @@ const WorkStatusPage = () => {
 	// 드래그 중인 아이템 찾기 (필터링 없이 전체 아이템에서 찾음)
 	const activeItem = activeId ? workStatusItems.find(item => item.id === activeId) : undefined
 
+	const isLoading = isProgressSummaryLoading || isHistoryLoading || isPartLoading || isPartsLoading
+
 	return (
 		<div className='relative flex pt-16 h-[calc(100vh-66px-64px)] w-full ml-[72px] overflow-hidden'>
+			{isLoading && <LoadingModal />}
 			{/* 메인 콘텐츠 영역 */}
 			<div
 				ref={scrollContainerRef}

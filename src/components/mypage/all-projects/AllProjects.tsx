@@ -5,13 +5,14 @@ import { useMypageProjectsQuery, useMypageProfileQuery } from '@/hooks/mypage/us
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import Button from '@/components/common/Button'
 import NecttyIcon from '@/assets/nectty.png'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 const AllProjects = () => {
 	const navigate = useNavigate()
 	const { setProjectId } = useProjectIdStore()
 
 	// api - 현재 참여중인 프로젝트 조회
-	const { data } = useMypageProjectsQuery()
+	const { data, isLoading } = useMypageProjectsQuery()
 	const { data: profileData } = useMypageProfileQuery()
 	const projects = data?.body?.projects.flat()
 	const userId = profileData?.body?.userId
@@ -45,7 +46,7 @@ const AllProjects = () => {
 	return (
 		<div className='min-h-50 flex flex-col ml-7 items-center'>
 			<MyPageHeader />
-
+			{isLoading && <LoadingModal />}
 			<div className='grid grid-cols-2 gap-4 justify-items-center bg-neutral-000 border border-neutral-200 rounded-12 p-11.5 w-[916px]'>
 				{projects?.map(project => (
 					<HistoryCard key={project.project_id} {...project} onClick={() => handleProjectClick(project.project_id)} />

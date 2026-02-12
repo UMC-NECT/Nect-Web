@@ -21,12 +21,13 @@ import Section07Portfolio from './sections/Section07Portfolio'
 import Section08ProjectHistory from './sections/Section08ProjectHistory'
 import { useErrorModal } from '@/stores/useErrorModal'
 import axios from 'axios'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 export const ProfileSettings = () => {
 	const [hasProfileKeyword] = useState(false) // 프로필 분석키워드 리포트 보유여부
 
 	// api - 프로필 조회
-	const { data: profileData } = useMypageProfileQuery()
+	const { data: profileData, isLoading } = useMypageProfileQuery()
 	const profile = profileData?.body
 
 	// api - 프로필 수정
@@ -264,6 +265,7 @@ export const ProfileSettings = () => {
 
 	return (
 		<FormProvider {...methods}>
+			{isLoading && <LoadingModal />}
 			<div className='ml-7'>
 				<MyPageHeader />
 

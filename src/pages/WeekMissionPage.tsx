@@ -25,6 +25,7 @@ import type { Mission } from '@/types/mission'
 import type { Assignees } from '@/types/api/assignees'
 import type { StatusType } from '@/types/api/status'
 import { QUERY_KEY } from '@/constants/key'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 /** API 날짜(YYYY-MM-DD) → 보드 표시(YYYY.MM.DD) */
 const formatDateForBoard = (dateStr: string) => (dateStr ? dateStr.replace(/-/g, '.') : '')
@@ -125,12 +126,12 @@ const WeekMissionPage = () => {
 	baseDate.setDate(baseDate.getDate() - 14)
 	const processWeekStartDate = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}-${String(baseDate.getDate()).padStart(2, '0')}`
 
-	const { data: processWeekData } = useProcessWeekQuery(
+	const { data: processWeekData, isLoading: isProcessWeekLoading } = useProcessWeekQuery(
 		projectIdStr,
 		processWeekStartDate,
 		'6'
 	)
-	const { data: weekMissionData } = useWeekMissionQuery(
+	const { data: weekMissionData, isLoading: isWeekMissionLoading } = useWeekMissionQuery(
 		projectIdStr,
 		'6',
 		processWeekStartDate
@@ -294,9 +295,11 @@ const WeekMissionPage = () => {
 		},
 		[projectIdStr, deleteProcessMutation, queryClient, removeMission]
 	)
+	const isLoading = isProcessWeekLoading || isWeekMissionLoading
 
 	return (
 		<div className='flex flex-col pt-16 px-13.5'>
+			{isLoading && <LoadingModal />}
 			{/* 페이지 타이틀 영역 */}
 			<StudioTitle title='위크 미션 (Week Misson)' description='주간 미션을 설정하고 프로젝트 완주를 돕는 팀 스페이스' />
 

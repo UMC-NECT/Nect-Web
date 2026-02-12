@@ -15,6 +15,7 @@ import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { uploadPostFile } from '@/api/team-board/boards'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
 import type { PostAttachment } from '@/components/team-board/WritePostModalContent'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 const BoardPage = () => {
 	const { projectId: projectIdParam } = useParams<{ projectId?: string }>()
@@ -226,6 +227,7 @@ const BoardPage = () => {
 
 	return (
 		<div className="flex flex-col w-full mx-auto px-[72px] pt-[64px] gap-[30px]">
+			{isLoading && <LoadingModal />}
 			<ContentHeader
 				title="게시판"
 				description="팀 전용 게시판입니다. 공지사항, 회의록, 업무 보고 등을 공유할 수 있습니다."
@@ -236,7 +238,7 @@ const BoardPage = () => {
 			{/* 게시판 리스트 컨테이너 */}
 			<div className="w-[1224px] h-[596px] bg-neutral-000 rounded-xl border border-neutral-200 shadow-drop-neutral-2 flex flex-col overflow-hidden">
 				{isLoading ? (
-					<div className="flex items-center justify-center h-full text-neutral-500">게시글 로딩 중...</div>
+					<div className="flex items-center justify-center h-full text-neutral-500"><LoadingModal /></div>
 				) : currentItems.length === 0 ? (
 					<div className="flex items-center justify-center h-full text-neutral-500">게시글이 없습니다.</div>
 				) : (

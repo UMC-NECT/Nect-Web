@@ -70,18 +70,38 @@ const ProfileAnalysis = () => {
 
 	const hasReport = !!body
 
+	const floatStyles = `
+@keyframes float {
+    0%, 100% {
+        transform: translateY(-30px);
+    }
+    50% {
+        transform: translateY(-47px);
+    }
+}
+.animate-float {
+    animation: float 1.7s ease-in-out infinite;
+}
+`
+
 	if (isLoading) {
 		return (
-			<div className='ml-7 w-full flex flex-col justify-center'>
-				<MyPageHeader />
-				<div className='body-1 text-neutral-500 flex flex-col justify-center items-center'>
-					<img src={NecttyIcon} className='w-58.25 h-58.25 px-[22.25px] py-[37.5px] mt-4 mb-12' />
-					<p>
-						<span className='text-primary-500-normal font-semibold'>{profile?.name}</span>님의 프로필 분석내역을
-						불러오는중...
-					</p>
+			<div className='flex flex-col min-w-229 w-full'>
+				<style>{floatStyles}</style>
+			{/* 브레드크럼 + 타이틀 */}
+			<MyPageHeader />
+
+			{/* 컨텐츠 컨테이너 */}
+			<div className='w-full flex items-center justify-center bg-bg-gray border border-neutral-200 rounded-12 h-[581px] px-11.5 py-14'>
+				<div className='flex flex-col items-center w-full'>
+					{/* 썸네일 이미지 */}
+					<img src={NecttyIcon} className='animate-float w-58.25 h-58.25 px-[22.25px] py-[37.5px] mb-4' />
+
+					<span className='title-3 font-semibold text-neutral-500'>프로필 분석내역을 불러오는중...</span>
+
 				</div>
 			</div>
+		</div>
 		)
 	}
 

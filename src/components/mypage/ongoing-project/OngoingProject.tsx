@@ -38,6 +38,7 @@ import type { RecruitmentLocalItem } from './tab1-project-setting/sections/Secti
 import { getProjectFieldValue } from '@/utils/projectField'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import NecttyIcon from '@/assets/nectty.png'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 // role_field를 ColorType으로 변환
 const getRoleColorFromField = (roleField: string): ColorType => {
@@ -117,8 +118,8 @@ const OngoingProject = () => {
 
 	// 프로젝트 ID (Zustand persist 스토어에서 관리)
 	const { projectId: storedProjectId, userId: storedUserId, setProjectId: setStoredProjectId } = useProjectIdStore()
-	const { data: profileData } = useMypageProfileQuery()
-	const { data: projectsData } = useMypageProjectsQuery()
+	const { data: profileData, isLoading: isProfileLoading } = useMypageProfileQuery()
+	const { data: projectsData, isLoading: isProjectsLoading } = useMypageProjectsQuery()
 
 	// 현재 로그인한 userId와 저장된 userId가 다르면 projectId 초기화 후 재설정
 	useEffect(() => {
@@ -605,6 +606,7 @@ const OngoingProject = () => {
 
 	return (
 		<div className='ml-7 w-full flex flex-col items-center'>
+			{isProjectsLoading || isProfileLoading && <LoadingModal />}
 			{/* 브레드크럼 + 타이틀 */}
 			<MyPageHeader
 				action={
