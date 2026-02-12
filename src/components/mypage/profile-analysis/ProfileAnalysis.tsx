@@ -8,7 +8,7 @@ import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import type { RadarDataItem } from '@/stores/profileAnalysisStore'
 import MypageContentSection from './MypageContentSection'
 import MypageProfileRadarChart from './MypageProfileRadarChart'
-import NecttyIcon from '@/assets/icons/mypage/nectty.png'
+import NecttyIcon from '@/assets/nectty.png'
 import { useErrorModal } from '@/stores/useErrorModal'
 
 const COLLABO_LABELS: Record<string, string> = {

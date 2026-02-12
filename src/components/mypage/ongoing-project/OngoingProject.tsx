@@ -37,7 +37,7 @@ import useGetProjectUsers from '@/hooks/project-users/useGetProjectUsers'
 import type { RecruitmentLocalItem } from './tab1-project-setting/sections/Section02RecruitmentInfo'
 import { getProjectFieldValue } from '@/utils/projectField'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
-import NecttyIcon from '@/assets/icons/mypage/nectty.png'
+import NecttyIcon from '@/assets/nectty.png'
 
 // role_field를 ColorType으로 변환
 const getRoleColorFromField = (roleField: string): ColorType => {

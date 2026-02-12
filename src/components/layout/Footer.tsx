@@ -27,7 +27,7 @@ const Footer = ({ type, margin, className }: FooterProps) => {
 		<>
             {type === 'Default' && (
                 <footer className={cn('w-full', marginClassName[margin], className)}>
-                <div className="w-282 mx-auto gap-[50px]">
+                <div className="w-282 gap-[50px]">
                 {/* 로고 */}
                 <img src={logo} alt="NECT Logo" className="w-28.25 h-5 mb-[50px]" />
 

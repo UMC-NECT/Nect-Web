@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router'
 import Button from '@/components/common/Button'
 import CheckIcon from '@/assets/icons/auth/check-icon.svg?react'
 import CheckboxIcon from '@/assets/icons/auth/checkbox.svg?react'
@@ -11,8 +10,11 @@ import FormField from '../common/FormField'
 import FieldMessage from '../common/FieldMessage'
 import Input from '@/components/common/Input'
 
-const AgreeStep = () => {
-	const navigate = useNavigate()
+interface AgreeStepProps {
+	setIsComplete?: (isComplete: boolean) => void
+}
+
+const AgreeStep = ({ setIsComplete }: AgreeStepProps) => {
 	const { signupData } = useSignup()
 	const { setCurrentStep } = useSignupStep()
 	const [errorMessage, setErrorMessage] = useState('')
@@ -77,7 +79,7 @@ const AgreeStep = () => {
 					email: socialEmail?.trim(),
 				})
 				localStorage.removeItem('isSocial')
-				navigate('/onboarding', { replace: true })
+				setIsComplete?.(true)
 			} else {
 				const signupResponse = await signupMutation.mutateAsync({
 					email: signupData.email,
@@ -228,7 +230,7 @@ const AgreeStep = () => {
 				</div>
 
 				<Button onClick={handleSubmit(onSubmit)} disabled={isSubmitDisabled} fullWidth className='h-14'>
-					{isSubmitting ? (isSocial ? '처리 중...' : '가입 중...') : isSocial ? '동의하고 계속하기' : '가입하기'}
+					가입하기
 				</Button>
 			</div>
 		</div>

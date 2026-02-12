@@ -4,7 +4,7 @@ import { MyPageHeader } from '../MyPageHeader'
 import { useMypageProjectsQuery, useMypageProfileQuery } from '@/hooks/mypage/useMypageApi'
 import { useProjectIdStore } from '@/stores/useProjectIdStroe'
 import Button from '@/components/common/Button'
-import NecttyIcon from '@/assets/icons/mypage/nectty.png'
+import NecttyIcon from '@/assets/nectty.png'
 
 const AllProjects = () => {
 	const navigate = useNavigate()
