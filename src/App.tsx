@@ -34,6 +34,7 @@ import WorkspaceLayout from './components/layout/WorkSpaceLayout'
 import MyPageLayout from './components/layout/MyPageLayout'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
 import SocialAgreePage from './pages/auth/SocialAgreePage'
+import LandingPage from './pages/LandingPage'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
 			{ path: '/projectList', element: <ProjectListPage /> },
 			{ path: '/necterList', element: <NecterListPage /> },
 		],
+	},
+	{
+		element: <LandingPage />,
+		path: '/landing',
 	},
 	{
 		element: (
