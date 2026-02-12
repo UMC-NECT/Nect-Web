@@ -3,10 +3,18 @@ import BarIcon from '@/assets/icons/common/Bar.svg?react';
 import { Link } from 'react-router';
 import { useRecruitingProjects } from '@/hooks/queries/home';
 import RoleTagChip from '@/components/mission-modal/RoleTagChip';
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums';
 import type { ProjectCard, ProjectCardRoles, ProjectCardRoleItem } from '@/types/api/home/projects';
 
 const UrgentProjects = () => {
     const { data: projects, isLoading, isError } = useRecruitingProjects(4);
+    const { interestFields } = useOnboardingEnums();
+
+    const getInterestFieldLabel = (value: string | null | undefined) => {
+        if (!value) return '';
+        const found = interestFields.find((item) => item.value === value);
+        return found?.label ?? value;
+    };
 
     // roles.roles[].role_fields[] 기준으로 roleField+count 태그 배열 (최대 4개)
     const getRoleTags = (project: ProjectCard): { roleField: string; count: number }[] => {
@@ -70,7 +78,7 @@ const UrgentProjects = () => {
 										</h3>
 										<BarIcon className='w-0.5 h-3 shrink-0' />
 										<span className='button-1 text-neutral-500 font-semibold whitespace-nowrap shrink-0'>
-											{project.interestField}
+											{getInterestFieldLabel(project.interestField)}
 										</span>
 									</div>
 									<p className='body-2 font-medium text-neutral-600 line-clamp-1 min-w-0'>{project.introduction}</p>
