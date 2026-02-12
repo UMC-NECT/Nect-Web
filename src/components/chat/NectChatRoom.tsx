@@ -111,9 +111,9 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 				}
 
 				// 메시지 추가
-				// readCount는 양수일 때만 표시되도록 undefined 또는 양수로 설정
+				// DM에서는 is_read로 읽음 상태 관리: 읽지 않았으면 1 표시, 읽었으면 표시 안 함
 				const readCount = isMine 
-					? (msg.is_read ? 1 : undefined) // 내 메시지: 읽었으면 1, 아니면 표시 안 함
+					? (msg.is_read ? undefined : 1) // 내 메시지: 읽지 않았으면 1, 읽었으면 표시 안 함
 					: undefined // 상대방 메시지는 readCount 없음
 				
 				// 프로필 이미지 URL 변환 (디버깅용 로그 제거 가능)
@@ -200,10 +200,9 @@ const NectChatRoom = ({ roomName = 'Nect 전체', memberCount = 20, onClose, tar
 					
 					// WebSocket으로 받은 메시지는 날짜 구분선 없이 직접 변환
 					const isMine = dmMessage.sender_id === currentUserId
-					// 내가 보낸 메시지는 읽음 처리, 상대방이 보낸 메시지는 읽지 않음으로 처리
-					// readCount는 양수일 때만 표시되도록 undefined 또는 양수로 설정
+					// DM에서는 is_read로 읽음 상태 관리: 읽지 않았으면 1 표시, 읽었으면 표시 안 함
 					const readCount = isMine 
-						? (dmMessage.is_read ? 1 : undefined) // 내 메시지: 읽었으면 1, 아니면 표시 안 함
+						? (dmMessage.is_read ? undefined : 1) // 내 메시지: 읽지 않았으면 1, 읽었으면 표시 안 함
 						: undefined // 상대방 메시지는 readCount 없음
 					
 					const newMessage: DisplayMessage = {

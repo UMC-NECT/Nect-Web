@@ -164,7 +164,7 @@ export const ChatMessageItem = ({ message, showDivider = false, onClick, project
 				<div className='w-11 h-11 relative shrink-0'>
 					{message.profileImage && message.profileImage !== defaultImage ? (
 						<img
-							className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover z-10'
+							className='w-11 h-11 absolute inset-0 rounded-full outline-1 outline-neutral-000 object-cover relative z-10'
 							src={message.profileImage}
 							alt={message.senderName}
 							onError={(e) => {

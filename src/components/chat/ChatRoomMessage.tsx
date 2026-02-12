@@ -11,6 +11,7 @@ interface ChatRoomMessageProps {
 	role?: string
 	profileImage?: string
 	fileId?: number
+	imageUrl?: string // 이미지 메시지의 이미지 URL
 	fileAttachment?: {
 		fileName: string
 		fileSize: string
@@ -29,6 +30,7 @@ export const ChatRoomMessage = ({
 	role,
 	profileImage,
 	fileId,
+	imageUrl,
 	fileAttachment,
 	onRegisterToSharedDocs,
 	onDeleteFile,
@@ -52,6 +54,25 @@ export const ChatRoomMessage = ({
 				onDelete={onDeleteFile}
 			/>
 		)
+	}
+
+	// 이미지 메시지
+	if (imageUrl) {
+		if (isMine) {
+			return <MyMessage content={content} time={time} readCount={readCount} imageUrl={imageUrl} />
+		} else {
+			return (
+				<OtherMessage
+					senderName={senderName || ''}
+					content={content}
+					time={time}
+					role={role}
+					profileImage={profileImage}
+					readCount={readCount}
+					imageUrl={imageUrl}
+				/>
+			)
+		}
 	}
 
 	// 내 메시지

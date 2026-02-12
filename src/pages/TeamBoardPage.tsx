@@ -302,7 +302,12 @@ const TeamBoardPage = () => {
 			return []
 		}
 
-		return overview.members.members.map((member) => ({
+		// 현재 사용자는 메인 카드(TeamProfileCardMain)로만 보여주기 위해 목록에서는 제외
+		const membersForCards = overview.members.members.filter((member) =>
+			currentUserId ? member.user_id !== currentUserId : true
+		)
+
+		return membersForCards.map((member) => ({
 			name: member.nickname || member.name,
 			role: member.field.custom_name || member.field.type, // 백엔드 값 그대로 사용
 			contact: '',
@@ -315,7 +320,7 @@ const TeamBoardPage = () => {
 			},
 			isWorking: member.is_working || false,
 		}))
-	}, [overview])
+	}, [overview, currentUserId])
 
 	/**
 	 * 메인 프로필 (현재 사용자 또는 리더 또는 첫 번째 팀원)
@@ -399,6 +404,9 @@ const TeamBoardPage = () => {
 		const daysInMonth = lastDayOfMonth.getDate()
 		const startingDayOfWeek = firstDayOfMonth.getDay() // 0 = 일요일, 6 = 토요일
 
+		// 이전 달 마지막 날짜 (이전/다음 달 날짜 채우기용)
+		const lastDayOfPrevMonth = new Date(calendarYear, calendarMonth - 1, 0).getDate()
+
 		// 오늘 날짜 확인
 		const todayDate = new Date()
 		const isCurrentMonth = todayDate.getFullYear() === calendarYear && todayDate.getMonth() + 1 === calendarMonth
@@ -407,14 +415,29 @@ const TeamBoardPage = () => {
 		const daysGrid: Array<Array<{ date: number; isActive: boolean; isToday: boolean; isSelected: boolean; hasTasks: boolean }>> = Array.from({ length: 7 }, () => [])
 
 		let dayCounter = 1
+		let nextMonthDayCounter = 1
 		for (let week = 0; week < 6; week++) {
 			for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
 				if (week === 0 && dayOfWeek < startingDayOfWeek) {
-					// 이전 달의 날짜 (표시하지 않음)
-					daysGrid[dayOfWeek].push({ date: 0, isActive: false, isToday: false, isSelected: false, hasTasks: false })
+					// 이전 달의 날짜를 실제 날짜로 표시 (비활성 스타일 유지)
+					const prevMonthDate = lastDayOfPrevMonth - (startingDayOfWeek - dayOfWeek - 1)
+					daysGrid[dayOfWeek].push({
+						date: prevMonthDate,
+						isActive: false,
+						isToday: false,
+						isSelected: false,
+						hasTasks: false,
+					})
 				} else if (dayCounter > daysInMonth) {
-					// 다음 달의 날짜 (표시하지 않음)
-					daysGrid[dayOfWeek].push({ date: 0, isActive: false, isToday: false, isSelected: false, hasTasks: false })
+					// 다음 달의 날짜를 실제 날짜로 표시 (비활성 스타일 유지)
+					daysGrid[dayOfWeek].push({
+						date: nextMonthDayCounter,
+						isActive: false,
+						isToday: false,
+						isSelected: false,
+						hasTasks: false,
+					})
+					nextMonthDayCounter++
 				} else {
 					// 현재 달의 날짜
 					const dateString = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`

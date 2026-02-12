@@ -130,6 +130,9 @@ const SharedDocumentsPage = () => {
 
 	const handleFileAdd = async (data: Omit<FileItemData, 'id'>, file?: File) => {
 		if (!projectId) return
+		
+		// 이미 업로드 중이면 중복 요청 방지
+		if (uploadFileMutation.isPending || createLinkMutation.isPending) return
 
 		try {
 			if (data.type === 'file' && file) {
@@ -145,6 +148,7 @@ const SharedDocumentsPage = () => {
 			setIsUploading(false)
 		} catch (error) {
 			console.error('문서 추가 실패:', error)
+			setIsUploading(false)
 			// TODO: 에러 처리 (토스트 메시지 등)
 		}
 	}

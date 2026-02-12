@@ -86,7 +86,7 @@ const BoardPagination = ({ currentPage, totalPages, onPageChange }: BoardPaginat
 						{page}
 						{/* 모든 페이지 번호에 inner shadow 적용 */}
 						{page !== currentPage && (
-							<div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-inner-neutral-2" />
+							<div className="absolute inset-0 pointer-events-none rounded-[inherit]" />
 						)}
 					</button>
 				))}

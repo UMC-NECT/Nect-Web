@@ -47,6 +47,12 @@ const Calendar = ({
 
 	const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+	// 행 개수(주 수)에 따라 레이아웃/간격 조정
+	const rowCount = days[0]?.length ?? 0
+	const dayGapClass = rowCount >= 6 ? 'gap-2.5' : 'gap-3'
+	const columnJustifyClass = rowCount >= 6 ? 'justify-between' : 'justify-start'
+	const weekdayMarginClass = rowCount >= 6 ? '' : 'mb-5' // 6줄이 아닐 때 요일과 날짜 사이 20px (mb-5)
+
 	return (
 		<div className={`w-[392px] h-[374px] px-5 py-6 bg-neutral-000 rounded-xl outline-1 -outline-offset-1 outline-neutral-100 inline-flex flex-col justify-start items-end gap-6 ${className}`}>
 			{/* 헤더: 월/년도 + 네비게이션 */}
@@ -74,12 +80,15 @@ const Calendar = ({
 			</div>
 
 			{/* 캘린더 그리드 */}
-			<div className="self-stretch h-64 inline-flex justify-between items-center">
+			<div className="self-stretch h-70 inline-flex justify-between items-center">
 				{days.map((week, weekIndex) => (
-					<div key={weekIndex} className="w-9 self-stretch inline-flex flex-col justify-between items-center">
+					<div
+						key={weekIndex}
+						className={`w-9 self-stretch inline-flex flex-col ${columnJustifyClass} items-center`}
+					>
 						{/* 요일 레이블 */}
 						<div
-							className={`w-9 h-6 text-center justify-start title-3 font-medium ${
+							className={`w-9 h-6 text-center justify-start title-3 font-medium ${weekdayMarginClass} ${
 								weekIndex === 0
 									? 'text-danger-600'
 									: weekIndex === 6
@@ -90,7 +99,7 @@ const Calendar = ({
 							{dayLabels[weekIndex]}
 						</div>
 						{/* 날짜 셀들 */}
-						<div className="flex flex-col justify-start items-start gap-3 title-3 font-medium">
+						<div className={`flex flex-col justify-start items-start ${dayGapClass} title-3 font-medium`}>
 							{week.map((day, dayIndex) => {
 								const bgColor = day.isToday
 									? 'bg-primary-500-normal'
