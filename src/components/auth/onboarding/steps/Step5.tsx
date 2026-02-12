@@ -1,0 +1,46 @@
+import ChipButton from '@/components/common/ChipButton'
+import type { OnboardingFormType } from '@/utils/validate'
+import { useFormContext } from 'react-hook-form'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+
+const Step5 = () => {
+	const { setValue, watch } = useFormContext<OnboardingFormType>()
+	const { goals } = useOnboardingEnums()
+
+	const selectedGoals = watch('goal') || []
+
+	const handleSelectGoal = (value: string) => {
+		if (selectedGoals.includes(value)) {
+			setValue('goal', [], { shouldValidate: true })
+		} else {
+			setValue('goal', [value], { shouldValidate: true })
+		}
+	}
+
+	return (
+		<div className='flex flex-col justify-center items-center mb-17'>
+			{/* 타이틀 */}
+			<div className='flex flex-col justify-center items-center gap-3 mb-17.5'>
+				<div className='heading-3 text-neutral-900'>
+					넥트를 통해 이루고 싶은 <span className='text-primary-500-normal'>첫번째 목표</span>를 알려주세요 !
+				</div>
+				<div className='title-2 text-neutral-500'>넥트가 함께 도와드릴게요</div>
+			</div>
+
+			{/* 컨텐츠 */}
+			<div className='flex flex-col justify-center items-center w-98 gap-3'>
+				{goals.map(item => (
+					<ChipButton
+						key={item.value}
+						text={item.label}
+						isChecked={selectedGoals.includes(item.value)}
+						className='title-3 w-full'
+						onClick={() => handleSelectGoal(item.value)}
+					/>
+				))}
+			</div>
+		</div>
+	)
+}
+
+export default Step5
