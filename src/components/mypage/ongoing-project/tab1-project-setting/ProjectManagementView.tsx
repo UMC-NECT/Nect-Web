@@ -50,10 +50,21 @@ const ProjectManagementView = ({
 	const recruitStatus = watch('recruitmentStatus') ?? '모집 전'
 	const openPartSettings = usePartSettingsModal(state => state.open)
 
-	// /api/v1/mypage/projects/:id/users 조회 → LEADER 멤버의 part_label 사용
+	// /api/v1/mypage/projects/:id/users 조회 → LEADER 멤버 정보/part_label 사용
 	const { data: projectUsersData } = useMypageProjectUsersQuery(projectId)
-	const leaderPartLabel =
-		projectUsersData?.body?.users?.find((u) => u.member_type === 'LEADER')?.part_label ?? null
+	const leaderUser = projectUsersData?.body?.users?.find(u => u.member_type === 'LEADER')
+	const leaderPartLabel = leaderUser?.part_label ?? null
+
+	// leaderInfo(프로필) + 프로젝트 users API 응답을 합쳐서 표시
+	const effectiveLeaderInfo: LeaderInfo | null =
+		leaderInfo && leaderUser
+			? {
+					...leaderInfo,
+					nickname: leaderUser.nickname || leaderInfo.nickname,
+					bio: leaderUser.bio ?? leaderInfo.bio,
+					profileImageUrl: leaderUser.profile_image_url ?? leaderInfo.profileImageUrl,
+				}
+			: leaderInfo
 	const teamMembersByRole = useTeamMembersStore(state => state.teamMembersByRole)
 	const memberApiDataMap = useTeamMembersStore(state => state.memberApiDataMap)
 
@@ -134,9 +145,9 @@ const ProjectManagementView = ({
 				<Section07ProjectFiles control={control} setValue={setValue} watch={watch} projectId={projectId} />
 			</div>
 
-			{/* 섹션 08. 리더 프로필 (읽기전용) - part는 프로젝트 users API LEADER의 part_label 사용 */}
+			{/* 섹션 08. 리더 프로필 (읽기전용) - nickname/part는 프로젝트 users API LEADER 기준 */}
 			<div id='section-08'>
-				<Section08LeaderProfile leaderInfo={leaderInfo} hasTag={false} partLabel={leaderPartLabel} />
+				<Section08LeaderProfile leaderInfo={effectiveLeaderInfo} hasTag={false} partLabel={leaderPartLabel} />
 			</div>
 		</div>
 	)

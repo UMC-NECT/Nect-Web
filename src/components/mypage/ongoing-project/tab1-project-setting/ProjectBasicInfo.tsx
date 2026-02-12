@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import RecruitmentStatusChip from '@/components/common/RecruitmentStatusChip'
 import RecruitmentStatusModal from './RecruitmentStatusModal'
 import CloudIcon from '@/assets/icons/mypage/cloud.svg?react'
-import { usePatchProjectImageMutation } from '@/hooks/mypage/useMypageApi'
+import { usePostMypageProjectImageMutation } from '@/hooks/mypage/useMypageApi'
 import type { RecruitType } from '@/types/mypage/ongoindProject'
 
 interface ProjectData {
@@ -25,7 +25,7 @@ const ProjectBasicInfo = ({ projectData, projectId, recruitStatus, onStatusChang
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [thumbnailUrl, setThumbnailUrl] = useState<string | undefined>(projectData.thumbnailUrl)
 	const fileInputRef = useRef<HTMLInputElement>(null)
-	const patchProjectImageMutation = usePatchProjectImageMutation()
+	const { mutate: postMypageProjectImageMutation } = usePostMypageProjectImageMutation()
 
 	const displayThumbnailUrl = thumbnailUrl ?? projectData.thumbnailUrl
 
@@ -38,15 +38,11 @@ const ProjectBasicInfo = ({ projectData, projectId, recruitStatus, onStatusChang
 		if (!file || !projectId) return
 		if (!file.type.startsWith('image/')) return
 
-		patchProjectImageMutation.mutate(
-			{ projectId, image: file },
-			{
-				onSuccess: data => {
-					if (data?.body) setThumbnailUrl(data.body)
-				},
-			}
-		)
-		e.target.value = ''
+		postMypageProjectImageMutation({
+			projectId,
+			image: file,
+		})
+		setThumbnailUrl(URL.createObjectURL(file))
 	}
 
 	return (

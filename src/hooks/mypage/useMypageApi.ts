@@ -22,7 +22,7 @@ import {
 	patchProjectPlanFile,
 	deleteProjectPlanFile,
 	deleteProject,
-	patchMypageProjectImage,
+	postMypageProjectImage,
 	getMypageProjectUsers,
 	postMypageTeamRoleEdit,
 	patchMemberField,
@@ -348,12 +348,12 @@ export const useDeleteProjectMutation = () => {
 }
 
 // 프로젝트 썸네일 이미지 업로드
-export const usePatchProjectImageMutation = () => {
+export const usePostMypageProjectImageMutation = () => {
 	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: ({ projectId, image }: { projectId: string; image: File }) =>
-			patchMypageProjectImage(projectId, image),
+			postMypageProjectImage(projectId, image),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.mypage.project() })
 		},
