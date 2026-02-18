@@ -18,7 +18,11 @@ import { useStopWorkMutation } from '@/hooks/team-board/useStopWork'
 import { useUpdateTeamBoardBasicInfoMutation } from '@/hooks/team-board/useUpdateTeamBoardBasicInfo'
 import { getProjectUsers } from '@/api/project-users/projectUsers'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { usePartsQuery } from '@/hooks/project/useProjectApi'
+import { getRoleColorVarById } from '@/utils/roleColor'
 import type { FieldType } from '@/types/api/team-board/overview'
+import type { EnumItem } from '@/types/api/enums'
 import LoadingModal from '@/components/splash/LoadingModal'
 
 const TeamBoardPage = () => {
@@ -59,6 +63,21 @@ const TeamBoardPage = () => {
 	const { data: profileData } = useGetProfileQuery()
 	const currentUserId = profileData?.body?.userId
 
+	// role/field 라벨 표시용 (labelEn 사용)
+	const { roleFields } = useOnboardingEnums()
+
+	/** field type 또는 custom_name → 표시 문자열 (enum이면 labelEn, 없으면 custom_name → type) */
+	const getFieldDisplayLabel = (
+		fieldType: string,
+		customName: string | null,
+		roleFieldsMap: Record<string, EnumItem[]>
+	): string => {
+		if (customName?.trim()) return customName
+		const flat = Object.values(roleFieldsMap).flat()
+		const item = flat.find((f) => f.value === fieldType)
+		return item?.labelEn ?? item?.label ?? fieldType
+	}
+
 	// API 호출 (projectId가 있을 때만)
 	const { data: overviewResponse, isLoading } = useTeamBoardOverview(projectId, {
 		docsLimit: 4,
@@ -66,6 +85,9 @@ const TeamBoardPage = () => {
 		scheduleLimit: 6,
 	})
 	const overview = overviewResponse?.body
+
+	// 파트 목록 (역할 태그 색상은 part_id 기준으로 적용)
+	const { data: partsResponse } = usePartsQuery(projectId != null ? String(projectId) : '')
 
 	// 캘린더 월간 인디케이터 API 호출
 	const { data: calendarResponse } = useCalendarMonth(projectId, calendarYear, calendarMonth)
@@ -122,23 +144,25 @@ const TeamBoardPage = () => {
 	}
 
 	/**
-	 * 미션 진행도 데이터를 RadarChart 형식으로 변환
+	 * 미션 진행도 데이터를 RadarChart 형식으로 변환. 색상은 parts API의 part_id 기준(getRoleColorVarById) 적용
 	 */
 	const radarChartData = useMemo(() => {
 		if (!overview?.mission_progress?.teams || overview.mission_progress.teams.length === 0) {
 			return []
 		}
 
+		const parts = partsResponse?.body?.parts ?? []
 		const angleStep = 360 / overview.mission_progress.teams.length
 
 		return overview.mission_progress.teams.map((team, index) => {
-			const fieldColor = getFieldColor(team.field.type, index)
-			// completed_count를 score로, total_count를 maxScore로 사용
+			const part = parts[index]
+			const fieldColor =
+				part != null ? getRoleColorVarById(part.part_id) : getFieldColor(team.field.type, index)
 			const score = team.completed_count
 			const maxScore = team.total_count
 
 			return {
-				label: team.field.custom_name || team.field.type, // 프로필 보드와 동일하게 처리
+				label: getFieldDisplayLabel(team.field.type, team.field.custom_name, roleFields),
 				score,
 				maxScore,
 				color: fieldColor,
@@ -146,7 +170,7 @@ const TeamBoardPage = () => {
 				angle: index * angleStep,
 			}
 		})
-	}, [overview])
+	}, [overview, roleFields, partsResponse?.body?.parts])
 
 	/**
 	 * 전체 미션 완료 개수 (Total completed count)
@@ -309,7 +333,7 @@ const TeamBoardPage = () => {
 
 		return membersForCards.map((member) => ({
 			name: member.nickname || member.name,
-			role: member.field.custom_name || member.field.type, // 백엔드 값 그대로 사용
+			role: getFieldDisplayLabel(member.field.type, member.field.custom_name, roleFields),
 			contact: '',
 			time: formatWorkTime(member.today_work_seconds),
 			avatarUrl: member.profile_image_url || undefined,
@@ -320,7 +344,7 @@ const TeamBoardPage = () => {
 			},
 			isWorking: member.is_working || false,
 		}))
-	}, [overview, currentUserId])
+	}, [overview, currentUserId, roleFields])
 
 	/**
 	 * 메인 프로필 (현재 사용자 또는 리더 또는 첫 번째 팀원)
@@ -342,7 +366,7 @@ const TeamBoardPage = () => {
 
 		return {
 			name: targetMember.nickname || targetMember.name,
-			role: targetMember.field.custom_name || targetMember.field.type, // 백엔드 값 그대로 사용
+			role: getFieldDisplayLabel(targetMember.field.type, targetMember.field.custom_name, roleFields),
 			time: formatWorkTime(targetMember.today_work_seconds),
 			avatarUrl: targetMember.profile_image_url || undefined,
 			status: {
@@ -361,7 +385,7 @@ const TeamBoardPage = () => {
 				}
 			},
 		}
-	}, [overview, currentUserId, startWorkMutation, stopWorkMutation])
+	}, [overview, currentUserId, roleFields, startWorkMutation, stopWorkMutation])
 
 	// 헤더 데이터
 	const headerData = useMemo(() => {

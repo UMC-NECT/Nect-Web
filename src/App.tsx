@@ -33,6 +33,7 @@ import SplashLayout from './components/layout/SplashLayout'
 import WorkspaceLayout from './components/layout/WorkSpaceLayout'
 import MyPageLayout from './components/layout/MyPageLayout'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
+import { OnboardingEnumsLoader } from './components/layout/OnboardingEnumsLoader'
 import SocialAgreePage from './pages/auth/SocialAgreePage'
 import LandingPage from './pages/LandingPage'
 
@@ -200,6 +201,7 @@ const router = createBrowserRouter([
 function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
+			<OnboardingEnumsLoader />
 			<RouterProvider router={router} />
 			{import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
 		</QueryClientProvider>

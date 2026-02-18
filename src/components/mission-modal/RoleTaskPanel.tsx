@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useTeamStore, getRoleDisplayName } from '@/stores/teamStore'
+import { useTeamStore } from '@/stores/teamStore'
 import { useMissionModalStore, type RoleTask } from '@/stores/mission-modal/missionModalStore'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { getRoleLabelEn } from '@/utils/enumUtils'
 import RoleTagChip from './RoleTagChip'
 import TaskItem from './TaskItem'
 
@@ -191,6 +193,7 @@ export interface RoleTaskPanelProps {
 
 const RoleTaskPanel = ({ readOnly = false, onAddTask, onToggleTask, onUpdateTask, onReorderTask }: RoleTaskPanelProps = {}) => {
 	const { roles } = useTeamStore()
+	const { roles: enumRoles, roleFields } = useOnboardingEnums()
 	const { roleTasks, toggleRoleTask, updateRoleTask, addRoleTask } = useMissionModalStore()
 
 	const handleAddTask = (roleId: number, content: string) => {
@@ -234,7 +237,7 @@ const RoleTaskPanel = ({ readOnly = false, onAddTask, onToggleTask, onUpdateTask
 				<RoleTaskSection
 					key={role.part_id}
 					roleId={role.part_id}
-					roleName={getRoleDisplayName(role)}
+					roleName={getRoleLabelEn(role.role_field ?? '', role.custom_role_field_name, enumRoles, roleFields)}
 					tasks={tasks}
 					readOnly={readOnly}
 					onToggleTask={handleToggleTask}

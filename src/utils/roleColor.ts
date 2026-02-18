@@ -16,6 +16,12 @@ export const getRoleColorById = (id: number): string => {
 	return ROLE_COLORS[index]
 }
 
+/** part_id 등 id 기준으로 차트/태그용 CSS 변수(var(--color-roletag-*)) 반환 */
+export const getRoleColorVarById = (id: number): string => {
+	const cls = getRoleColorById(id)
+	return 'var(--color-' + cls.replace('bg-', '') + ')'
+}
+
 /** roleFields(useOnboardingEnums)에서 roleField value의 순서로 색상 반환 */
 export const getRoleColorByField = (roleField: string, roleFields: Record<string, EnumItem[]>): string => {
 	const flat = Object.values(roleFields).flat()

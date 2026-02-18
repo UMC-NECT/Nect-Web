@@ -1,6 +1,6 @@
 import { cn } from '@/utils/cn'
 import { getRoleColorById } from '@/utils/roleColor'
-import { getRoleLabel } from '@/utils/enumUtils'
+import { getRoleLabelEn } from '@/utils/enumUtils'
 import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import XIcon from '@/assets/icons/common/X-small.svg?react'
 import DragIcon from '@/assets/icons/common/drag.svg?react'
@@ -20,9 +20,9 @@ interface RoleTagChipProps {
 
 const RoleTagChip = ({ roleId, roleName, roleField, state, onClick, className, count, isPlaceholder }: RoleTagChipProps) => {
 	const { roles, roleFields } = useOnboardingEnums()
-	// CUSTOM 파트는 parts.label(실제 파트명)을 roleName으로 전달받으므로 roleName 우선 사용
+	// CUSTOM 파트는 parts.label(실제 파트명)을 roleName으로 전달받으므로 roleName 우선, 그 외는 labelEn
 	const displayName =
-		roleField === 'CUSTOM' ? roleName : roleField ? getRoleLabel(roleField, roles, roleFields) || roleName : roleName
+		roleField === 'CUSTOM' ? roleName : roleField ? getRoleLabelEn(roleField, null, roles, roleFields) || roleName : roleName
 	const roleColor = getRoleColorById(roleId)
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'

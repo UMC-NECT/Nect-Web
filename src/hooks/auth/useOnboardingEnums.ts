@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import type { EnumItem } from '@/types/api/enums'
 import {
 	getJobs,
@@ -9,9 +8,11 @@ import {
 	getInterestFields,
 	getGoals,
 } from '@/api/enums'
-import { QUERY_KEY } from '@/constants/key'
+import { useShallow } from 'zustand/react/shallow'
+import { useOnboardingEnumsStore } from '@/stores/onboardingEnumsStore'
 
-const fetchOnboardingEnums = async () => {
+/** 앱 진입 시 한 번만 호출하여 스토어에 저장. OnboardingEnumsLoader에서 사용 */
+export const fetchOnboardingEnums = async () => {
 	const [jobsRes, rolesRes, skillCategoriesRes, interestRes, goalsRes] = await Promise.all([
 		getJobs(),
 		getRoles(),
@@ -53,23 +54,18 @@ const fetchOnboardingEnums = async () => {
 	}
 }
 
-export const useOnboardingEnums = () => {
-	const { data, isLoading, error } = useQuery({
-		queryKey: QUERY_KEY.onboardingEnums,
-		queryFn: fetchOnboardingEnums,
-		staleTime: Infinity,
-		gcTime: Infinity,
-	})
-
-	return {
-		jobs: data?.jobs ?? [],
-		roles: data?.roles ?? [],
-		roleFields: data?.roleFields ?? {},
-		skillCategories: data?.skillCategories ?? [],
-		skillsByCategory: data?.skillsByCategory ?? {},
-		interestFields: data?.interestFields ?? [],
-		goals: data?.goals ?? [],
-		isLoading,
-		error: error ? (error instanceof Error ? error.message : 'enum 목록을 불러오지 못했습니다.') : null,
-	}
-}
+/** 스토어에 저장된 온보딩 enum 사용. useShallow로 참조만 바뀌고 내용 동일 시 리렌더 방지(무한 루프 방지) */
+export const useOnboardingEnums = () =>
+	useOnboardingEnumsStore(
+		useShallow(state => ({
+			jobs: state.jobs,
+			roles: state.roles,
+			roleFields: state.roleFields,
+			skillCategories: state.skillCategories,
+			skillsByCategory: state.skillsByCategory,
+			interestFields: state.interestFields,
+			goals: state.goals,
+			isLoading: state.isLoading,
+			error: state.error,
+		}))
+	)
