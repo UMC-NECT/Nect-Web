@@ -20,7 +20,7 @@ export const newsItems: NewsItem[] = [
         image: Matching,
         isActive: false,
         bgColor: '#FFF8E7',
-        borderColor: '#E7E7E7'
+        borderColor: '#F5F5F5'
     },
     {
         id: 2,
@@ -29,7 +29,7 @@ export const newsItems: NewsItem[] = [
         image: Nect_Guide,
         isActive: true,
         bgColor: '#FFFFFF',
-        borderColor: '#E7E7E7'
+        borderColor: '#F5F5F5'
     },
     {
         id: 3,
@@ -38,6 +38,6 @@ export const newsItems: NewsItem[] = [
         image: Guide,
         isActive: true,
         bgColor: '#EDF4FD',
-        borderColor: '#E7E7E7'
+        borderColor: '#F5F5F5'
     },
 ];
