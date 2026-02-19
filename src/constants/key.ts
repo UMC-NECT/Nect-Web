@@ -4,6 +4,11 @@ export const LOCAL_STORAGE_KEY = {
 	ONBOARDING_COMPLETED: 'onboardingCompleted',
 }
 
+/** 세션 스토리지 키 (탭/창 닫으면 초기화, 새로고침 시에는 유지) */
+export const SESSION_STORAGE_KEY = {
+	LANDING_SPLASH_SEEN: 'landingSplashSeen',
+}
+
 export const QUERY_KEY = {
 	PROJECT_USERS: 'projectUsers',
 	users: {
