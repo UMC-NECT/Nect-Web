@@ -22,4 +22,7 @@ export interface Mission {
 export interface Section {
     id: number
     title: string
+    /** CUSTOM인 경우 파트명 수정 가능 */
+    role_field?: string | null
+    required_count?: number
 }

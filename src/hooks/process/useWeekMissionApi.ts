@@ -11,12 +11,13 @@ import {
 import type { RequestStatusPatchDto, RequestTaskPatchDto, RequestTaskItemsReorderPatchDto } from '@/types/api/process/weekMission'
 import { QUERY_KEY } from '@/constants/key'
 
-/** start_date 기준 위크미션 주차 목록 조회 */
+/** start_date 기준 위크미션 주차 목록 조회 (날짜 변경 시 이전 데이터 유지해 깜빡임 방지) */
 export const useWeekMissionQuery = (projectId: string, weeks: string, startDate?: string) => {
 	return useQuery({
 		queryKey: QUERY_KEY.process.weekMission.week(projectId, startDate, weeks),
 		queryFn: () => getWeekMission(projectId, weeks, startDate),
 		enabled: !!projectId,
+		placeholderData: (previousData) => previousData,
 	})
 }
 

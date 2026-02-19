@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router'
 import { MainLayout } from './components/layout/MainLayout'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -33,6 +34,8 @@ import SplashLayout from './components/layout/SplashLayout'
 import WorkspaceLayout from './components/layout/WorkSpaceLayout'
 import MyPageLayout from './components/layout/MyPageLayout'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
+import { OnboardingEnumsLoader } from './components/layout/OnboardingEnumsLoader'
+import LandingSplash from './components/splash/LandingSplash'
 import SocialAgreePage from './pages/auth/SocialAgreePage'
 import LandingPage from './pages/LandingPage'
 
@@ -198,8 +201,18 @@ const router = createBrowserRouter([
 ])
 
 function App() {
+	// 부스 시연: 매 로드/새로고침마다 스플래시 표시 (세션 저장 안 함)
+	const [showLandingSplash, setShowLandingSplash] = useState(true)
+
+	const handleLandingSplashDone = useCallback(() => {
+		// 부스 시연: 세션에 저장하지 않아 새로고침해도 매번 스플래시 표시
+		setShowLandingSplash(false)
+	}, [])
+
 	return (
 		<QueryClientProvider client={queryClient}>
+			<OnboardingEnumsLoader />
+			{showLandingSplash && <LandingSplash onDone={handleLandingSplashDone} />}
 			<RouterProvider router={router} />
 			{import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
 		</QueryClientProvider>

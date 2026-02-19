@@ -15,14 +15,14 @@ const MatchingCancelModal = ({ isOpen, onClose, onConfirm }: MatchingCancelModal
 
     const handleConfirm = async () => {
         let matchingId = null;
-        
+
         // 매칭 ID 찾기
         if (sentMatchingsData?.body) {
             const body = sentMatchingsData.body as unknown;
-            
+
             if (body && typeof body === 'object') {
                 const bodyObj = body as Record<string, unknown>;
-                
+
                 if ('projectMatchings' in bodyObj) {
                     const projectMatchings = bodyObj.projectMatchings;
                     if (Array.isArray(projectMatchings) && projectMatchings.length > 0) {
@@ -35,25 +35,25 @@ const MatchingCancelModal = ({ isOpen, onClose, onConfirm }: MatchingCancelModal
                 }
             }
         }
-        
+
         if (!matchingId) {
             alert('❌ 매칭 ID를 찾을 수 없습니다.');
             return;
         }
-        
+
         try {
             await cancelMutation.mutateAsync(String(matchingId));
-            
+
             onConfirm();
             onClose();
-            
+
         } catch (error) {
             // 400 에러는 실제로는 성공일 가능성이 높음
             if (error && typeof error === 'object' && 'response' in error) {
                 const axiosError = error as {
                     response?: { status?: number };
                 };
-                
+
                 if (axiosError.response?.status === 400) {
                     alert(
                         '✅ 매칭 취소가 처리되었습니다!\n\n' +
@@ -64,32 +64,32 @@ const MatchingCancelModal = ({ isOpen, onClose, onConfirm }: MatchingCancelModal
                     return;
                 }
             }
-            
+
             alert('❌ 매칭 취소에 실패했습니다.');
         }
     };
 
     return (
         <div className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'>
-            <div className='w-[600px] h-[376px] bg-white rounded-3xl p-12 flex flex-col border-neutral-200'>
+            <div className='w-[480px] h-[376px] bg-white rounded-3xl p-12 flex flex-col border-neutral-200'>
                 <h2 className='text-[28px] font-bold text-center mb-[18px]'>
                     매칭 신청을 취소 하시겠습니까?
                 </h2>
-                
+
                 <p className='text-[16px] text-neutral-600 text-center mb-auto'>
                     취소 후 24시간 동안 해당 프로젝트에<br />
                     매칭 신청이 제한됩니다.
                 </p>
 
                 <div className='flex gap-3 justify-center'>
-                    <button 
+                    <button
                         onClick={onClose}
                         disabled={cancelMutation.isPending}
                         className='w-[160px] h-[48px] border border-neutral-200 rounded-2xl text-[18px] font-semibold text-neutral-900 hover:bg-neutral-50 transition-colors disabled:opacity-50'
                     >
                         돌아가기
                     </button>
-                    <button 
+                    <button
                         onClick={handleConfirm}
                         disabled={cancelMutation.isPending}
                         className='w-[160px] h-[48px] rounded-2xl text-[18px] font-semibold bg-primary-400-normal text-white hover:bg-primary-500-normal transition-colors disabled:opacity-50'

@@ -2,14 +2,16 @@ import type { ProjectDetailDto } from '@/types/api/project';
 import type { TeamRole, TeamRoleField } from '@/types/api/project/detail';
 import type { RecruitmentDto } from '@/types/api/project/recruitment';
 import { useProjectRecruitments } from '@/hooks/queries/project';
+import RoleTagChip from '@/components/mission-modal/RoleTagChip';
 
 interface ProjectBasicInfoProps {
     projectData: ProjectDetailDto;
     projectId: number;
-    getPositionStyle: (position: string) => string;
+    /** 레거시: 칩 스타일은 RoleTagChip + roleColor 사용으로 미사용. 상위 호환용 */
+    getPositionStyle?: (position: string) => string;
 }
 
-const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectBasicInfoProps) => {
+const ProjectBasicInfo = ({ projectData, projectId }: ProjectBasicInfoProps) => {
     // 모집 정보 API 호출
     const { data: recruitments } = useProjectRecruitments(projectId);
 
@@ -83,10 +85,6 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
             .replace(/\b\w/g, (char) => char.toUpperCase());
     };
 
-    const getRoleFieldStyleKey = (value: string) => {
-        return roleFieldLabelMap[value]?.styleKey ?? value.toLowerCase();
-    };
-
     const teamRoleRows = [...teamRoleList]
         .filter((role) => role.count > 0)
         .sort((a, b) => {
@@ -101,8 +99,8 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
             <div className='flex h-[178px] text-[16px]'>
                 <div className='w-[320px] h-[178px] bg-neutral-200 rounded-lg mr-[28px]'>
                     {projectData.defaultInfo.image_name && (
-                        <img 
-                            src={projectData.defaultInfo.image_name} 
+                        <img
+                            src={projectData.defaultInfo.image_name}
                             alt={projectData.defaultInfo.project_title}
                             className='w-full h-full object-cover rounded-lg'
                         />
@@ -170,16 +168,20 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                     모집 정보 및 필수 스택
                     <span className='text-red-500 text-[16px] ml-1'>*</span>
                 </h2>
-                
+
                 {recruitments && recruitments.length > 0 ? (
                     <div className='space-y-6'>
                         {recruitments.map((recruitment: RecruitmentDto) => (
                             <div key={recruitment.recruitmentId}>
-                                <div className='mb-3'>
-                                    <span className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(recruitment.roleField.toLowerCase())} text-neutral-700 rounded-[6px] text-[14px] font-medium`}>
-                                        {recruitment.customField || recruitment.roleField}
-                                    </span>
-                                    <span className='ml-2 text-[16px] text-neutral-600'>
+                                <div className='mb-3 flex items-center gap-2'>
+                                    <RoleTagChip
+                                        roleId={recruitment.recruitmentId}
+                                        roleField={recruitment.roleField}
+                                        roleName={recruitment.customField || recruitment.roleField}
+                                        state='default'
+                                        className='hover:cursor-default'
+                                    />
+                                    <span className='text-[16px] text-neutral-600'>
                                         {recruitment.description || '설명이 없습니다.'}
                                     </span>
                                 </div>
@@ -219,12 +221,13 @@ const ProjectBasicInfo = ({ projectData, projectId, getPositionStyle }: ProjectB
                                     {(role.role_fields || [])
                                         .filter((field: TeamRoleField) => field.count > 0)
                                         .map((field: TeamRoleField) => (
-                                            <span
+                                            <RoleTagChip
                                                 key={`${role.role}-${field.role_field}`}
-                                                className={`inline-flex items-center justify-center px-[8px] py-[2px] ${getPositionStyle(getRoleFieldStyleKey(field.role_field))} text-neutral-700 rounded-[6px] text-[14px] font-medium`}
-                                            >
-                                                {formatRoleFieldLabel(field)}
-                                            </span>
+                                                roleField={field.role_field}
+                                                roleName={formatRoleFieldLabel(field)}
+                                                state='default'
+                                                className='hover:cursor-default'
+                                            />
                                         ))}
                                 </div>
                             </div>

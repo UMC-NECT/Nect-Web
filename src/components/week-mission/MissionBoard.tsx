@@ -280,10 +280,17 @@ const MissionBoard = ({ missions, sections = [], projectId, onMissionUpdate, onD
 					<MissonPart_Title title='위크미션 Task' task />
 					{/* 나머지 줄들: 파트 API로 조회한 섹션 제목들 (없으면 sections 폴백) */}
 					{sections.map(section => (
-						<MissonPart_Title key={section.id} title={section.title} />
+						<MissonPart_Title
+							key={section.id}
+							title={section.title}
+							partId={section.id}
+							roleField={section.role_field}
+							requiredCount={section.required_count}
+							projectId={projectId}
+						/>
 					))}
 					{/* 맨 아래줄: 팀 추가 */}
-					<MissionPart_Add />
+					<MissionPart_Add projectId={projectId} />
 				</div>
 				<div className='flex-1 relative overflow-hidden'>
 					<div

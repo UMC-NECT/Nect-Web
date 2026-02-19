@@ -169,7 +169,7 @@ export const MatchingStatus = () => {
 									</div>
 								</div>
 								<div className='flex flex-col gap-1 items-center px-5 relative shrink-0 w-full'>
-									{receivedProjectMatchings.length && (
+									{receivedProjectMatchings.length === 0 && (
 										<div className='flex flex-col mr-auto'>
 										<p className='body-1 text-neutral-500 font-medium px-2'>받은 매칭 요청이 없습니다</p>
 									</div>
@@ -190,7 +190,7 @@ export const MatchingStatus = () => {
 							</div>
 
 							{/* 넥트 팀원 섹션 */}
-							<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
+							<div className='flex flex-col gap-3.5 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
 										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
@@ -253,7 +253,7 @@ export const MatchingStatus = () => {
 					{activeTab === 'sent' && (
 						<>
 							{/* 프로젝트 섹션 */}
-							<div className='flex flex-col gap-3.5 items-start py-2.5 relative shrink-0 w-full'>
+							<div className='flex flex-col gap-3.5 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
 										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>
@@ -282,7 +282,7 @@ export const MatchingStatus = () => {
 							</div>
 
 							{/* 넥트 팀원 섹션 */}
-							<div className='flex flex-col gap-6 items-start relative shrink-0 w-full'>
+							<div className='flex flex-col gap-3.5 items-start relative shrink-0 w-full'>
 								<div className='flex items-center justify-between pl-2.5 pr-5 relative shrink-0 w-full'>
 									<div className='flex h-[26px] items-center justify-center px-2.5 relative shrink-0'>
 										<p className='title-2 font-bold text-neutral-900 whitespace-nowrap leading-[1.4]'>

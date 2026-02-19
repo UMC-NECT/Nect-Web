@@ -51,6 +51,8 @@ import {
 	useDeleteAttachmentFileMutation,
 	useDeleteAttachmentLinkMutation,
 } from '@/hooks/process/useAttachmentApi'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { getRoleLabelEn } from '@/utils/enumUtils'
 import type { RequestProcessPostDto, RequestProcessPatchDto } from '@/types/api/process/process'
 
 interface MissionModalProps {
@@ -114,6 +116,7 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 	const isLeaderVariant = variant === 'leader'
 	const isProjectLeader = useProjectLeaderStore(s => s.isLeader)
 	const { roles, persons } = useTeamStore()
+	const { roles: enumRoles, roleFields } = useOnboardingEnums()
 	const {
 		editingMissionId,
 		projectId,
@@ -134,7 +137,6 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setTitle,
 		setSelectedParts,
 		setSelectedAssignees,
-		addSelectedPart,
 		removeSelectedPart,
 		addSelectedAssignee,
 		removeSelectedAssignee,
@@ -244,7 +246,12 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 
 		const feedbackList = (body.feedbacks ?? []).map(f => ({
 			id: f.feedback_id,
-			partName: f.created_by?.role_fields?.[0] ?? '',
+			partName: getRoleLabelEn(
+				f.created_by?.role_fields?.[0] ?? '',
+				(f.created_by as { custom_role_field_name?: string } | undefined)?.custom_role_field_name ?? null,
+				enumRoles,
+				roleFields
+			),
 			authorName: f.created_by?.nickname ?? f.created_by?.user_name ?? '',
 			content: f.content,
 			timestamp: formatTimestampDisplay(f.created_at),
@@ -294,6 +301,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		setMentionedPersons,
 		roles,
 		persons,
+		enumRoles,
+		roleFields,
 	])
 
 	// 위크미션(task) task_groups 보관 - 선택된 파트에 따라 해당 그룹의 items만 표시
@@ -828,7 +837,12 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 							const b = res.body
 							addFeedback({
 								id: b.feedback_id,
-								partName: b.created_by?.role_fields?.[0] ?? '',
+								partName: getRoleLabelEn(
+									b.created_by?.role_fields?.[0] ?? '',
+									(b.created_by as { custom_role_field_name?: string } | undefined)?.custom_role_field_name ?? null,
+									enumRoles,
+									roleFields
+								),
 								authorName: b.created_by?.nickname ?? b.created_by?.user_name ?? '',
 								content: b.content,
 								timestamp: formatTimestampDisplay(b.created_at),
@@ -1019,10 +1033,15 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 		}
 	}
 
-	// 프로세스 상세 작성자/담당파트/시간 (last_edited_by 우선, 없으면 writer) - WorkContentInput 표시용
+	// 프로세스 상세 작성자/담당파트/시간 (last_edited_by 우선, 없으면 writer) - WorkContentInput 표시용 (labelEn)
 	const contentAuthor = processDetail?.body?.last_edited_by ?? processDetail?.body?.writer
 	const workContentPartName = contentAuthor
-		? (contentAuthor.role_field?.trim() ? contentAuthor.role_field : (contentAuthor.custom_role_field_name ?? ''))
+		? getRoleLabelEn(
+				contentAuthor.role_field ?? '',
+				contentAuthor.custom_role_field_name,
+				enumRoles,
+				roleFields
+			)
 		: undefined
 	const workContentAuthorName = contentAuthor?.nickname
 	const workContentTimestamp = processDetail?.body
@@ -1425,7 +1444,8 @@ const MissionModal = ({ className, variant = 'default' }: MissionModalProps) => 
 														title='파트 선택'
 														disabledRoleIds={selectedParts.map(p => p.part_id)}
 														onRoleSelect={role => {
-															addSelectedPart(role)
+															setSelectedParts([role])
+															setOpenDropdown(null)
 														}}
 													/>
 												</div>

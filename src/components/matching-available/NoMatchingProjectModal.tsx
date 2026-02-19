@@ -7,12 +7,12 @@ const NoMatchingProjectModal = ({ isOpen, onClose }: NoMatchingProjectModalProps
     if (!isOpen) return null;
 
     return (
-        <div 
+        <div
             className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'
             onClick={onClose}
         >
-            <div 
-                className='w-[600px] h-[376px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col items-center justify-center border border-neutral-200'
+            <div
+                className='w-[480px] min-h-[310px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col items-center justify-center border border-neutral-200'
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className='text-[20px] font-semibold text-center mb-6'>

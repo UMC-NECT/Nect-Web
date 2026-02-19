@@ -88,7 +88,7 @@ const AvailableNecters = () => {
 									<div className='flex justify-between items-end'>
 										<img
 											src={member.imageUrl || DefaultProfile}
-											alt={member.name}
+											alt={member.name ?? ''}
 											className='w-20 h-20 border-neutral-100 border rounded-full object-cover'
 										/>
 

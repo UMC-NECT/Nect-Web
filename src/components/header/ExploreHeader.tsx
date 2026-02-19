@@ -265,10 +265,10 @@ const ExploreHeader = ({ onNavigate }: ExploreHeaderProps) => {
 
 					{/* 오른쪽 버튼들 */}
 					<div className='flex items-center gap-3'>
-						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors' onClick={() => navigate('/idea-analyze')}>
+						<button className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors whitespace-nowrap' onClick={() => navigate('/idea-analyze')}>
 							AI 프로젝트 등록
 						</button>
-						<Link to='/landing' className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2'>
+						<Link to='/landing' className='px-4 py-2 text-[16px] font-semibold text-primary-800-dark bg-primary-50-light border border-primary-200-light hover:bg-primary-100-light hover:border-primary-100-light rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap'>
 							<PortfolioIcon className='h-[14px] w-[14px] text-primary-800-dark' />
 							NECT 가이드
 						</Link>

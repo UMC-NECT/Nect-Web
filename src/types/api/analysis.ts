@@ -59,6 +59,7 @@ export type ResponsePostAnalysisDto = CommonResponse<{
 export type ResponseGetAnalysisDto = CommonResponse<{
     analysis: {
         analysis_id: number
+        description: string
         recommended_project_names: string[]
         project_duration: ProjectDuration
         team_composition: TeamComposition[]

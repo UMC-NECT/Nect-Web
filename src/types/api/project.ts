@@ -55,3 +55,30 @@ export type ResponseUsersDto = CommonResponse<{
         bio: string | null
     }[]
 }>
+
+export type RequestPostProjectPartDto = {
+    role_field: string
+	custom_role_field_name: string | null
+	required_count: number
+}
+
+export type ResponsePostProjectPartDto = CommonResponse<{
+    part_id: number
+    role_field: string
+	custom_role_field_name: string | null
+	part_label: string | null
+	required_count: number
+}>
+
+export type RequestPatchProjectPartDto = {
+	custom_role_field_name: string | null
+	required_count: number | null
+}
+
+export type ResponsePatchProjectPartDto = CommonResponse<{
+    part_id: number
+    role_field: string
+	custom_role_field_name: string | null
+	part_label: string | null
+	required_count: number
+}>

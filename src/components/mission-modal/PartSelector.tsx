@@ -1,6 +1,8 @@
 import { cn } from '@/utils/cn'
 import RoleTagChip from './RoleTagChip'
 import PersonTagChip from './PersonTagChip'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { getRoleLabelEn } from '@/utils/enumUtils'
 import type { Role, Person } from '@/stores/teamStore'
 
 type PartSelectorVariant = 'role' | 'person'
@@ -26,6 +28,7 @@ const PartSelector = ({
 	onClick,
 	className,
 }: PartSelectorProps) => {
+	const { roles: enumRoles, roleFields } = useOnboardingEnums()
 	const hasSelection = variant === 'role' ? selectedRoles.length > 0 : selectedPersons.length > 0
 
 	return (
@@ -51,7 +54,13 @@ const PartSelector = ({
 						>
 							<RoleTagChip
 								roleId={role.part_id}
-								roleName={role.part_label ?? role.custom_role_field_name ?? ''}
+								roleName={getRoleLabelEn(
+									role.role_field ?? '',
+									role.custom_role_field_name,
+									enumRoles,
+									roleFields
+								)}
+								roleField={role.role_field ?? undefined}
 								state='clear'
 							/>
 						</div>

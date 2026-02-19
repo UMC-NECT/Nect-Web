@@ -36,11 +36,11 @@ const SelectProjectModal = ({ isOpen, onClose, onConfirm, onNoProject }: SelectP
     };
 
     return (
-        <div 
+        <div
             className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'
             onClick={handleClose}
         >
-            <div 
+            <div
                 className='w-[600px] h-[376px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col border border-neutral-200'
                 onClick={(e) => e.stopPropagation()}
             >
@@ -49,7 +49,7 @@ const SelectProjectModal = ({ isOpen, onClose, onConfirm, onNoProject }: SelectP
                 </h2>
 
                 {/* 프로젝트 선택 버튼 */}
-                <div className='mb-[30px] h-[186px] flex items-center justify-center'>
+                <div className='mb-auto pt-[26px] px-5 flex items-center justify-center'>
                     {isLoading ? (
                         <div className='text-center py-8 text-neutral-500'>로딩 중...</div>
                     ) : visibleProjects.length === 0 ? (

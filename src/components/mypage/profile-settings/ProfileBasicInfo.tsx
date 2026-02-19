@@ -191,7 +191,7 @@ const ProfileBasicInfo = ({
 					render={({ field }) => (
 						<input
 							{...field}
-							placeholder='관심 직종을 작성해세요.'
+							placeholder='관심 직종을 작성해주세요.'
 							className='body-1 text-neutral-900 focus:outline-none placeholder:text-neutral-300'
 						/>
 					)}
@@ -205,7 +205,7 @@ const ProfileBasicInfo = ({
 					render={({ field }) => (
 						<input
 							{...field}
-							placeholder='경력 기간을 작성해세요.'
+							placeholder='경력 기간을 작성해주세요.'
 							className='body-1 text-neutral-900 focus:outline-none placeholder:text-neutral-300'
 						/>
 					)}

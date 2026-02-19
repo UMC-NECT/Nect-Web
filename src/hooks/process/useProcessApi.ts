@@ -29,12 +29,13 @@ export const useProcessPartQuery = (projectId: string, fieldId?: string) => {
 	})
 }
 
-/** 주차 기준 프로세스 조회 */
+/** 주차 기준 프로세스 조회 (날짜 변경 시 이전 데이터 유지해 깜빡임 방지) */
 export const useProcessWeekQuery = (projectId: string, startDate?: string, weeks?: string) => {
 	return useQuery({
 		queryKey: QUERY_KEY.process.week(projectId, startDate, weeks),
 		queryFn: () => getProcessWeek(projectId, startDate, weeks),
 		enabled: !!projectId,
+		placeholderData: (previousData) => previousData,
 	})
 }
 

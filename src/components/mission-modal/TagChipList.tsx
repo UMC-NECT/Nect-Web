@@ -1,7 +1,9 @@
 
 import { cn } from '@/utils/cn'
 import { useMissionModalStore, type Mission } from '@/stores/mission-modal/missionModalStore'
-import { useTeamStore, getRoleDisplayName, type Person, type Role } from '@/stores/teamStore'
+import { useTeamStore, type Person, type Role } from '@/stores/teamStore'
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
+import { getRoleLabelEn } from '@/utils/enumUtils'
 import PersonTagChip from './PersonTagChip'
 import RoleTagChip from './RoleTagChip'
 import MissionTagChip from './MissionTagChip'
@@ -52,6 +54,7 @@ const TagChipList = ({
 	filteredPersonIds,
 }: TagChipListProps) => {
 	const { persons, roles } = useTeamStore()
+	const { roles: enumRoles, roleFields } = useOnboardingEnums()
 	const {
 		missions,
 		selectedPersons,
@@ -178,7 +181,8 @@ const TagChipList = ({
 				<RoleTagChip
 					key={role.part_id}
 					roleId={role.part_id}
-					roleName={getRoleDisplayName(role)}
+					roleName={getRoleLabelEn(role.role_field ?? '', role.custom_role_field_name, enumRoles, roleFields)}
+					roleField={role.role_field ?? undefined}
 					state={getRoleState(role)}
 					onClick={() => handleRoleClick(role)}
 				/>

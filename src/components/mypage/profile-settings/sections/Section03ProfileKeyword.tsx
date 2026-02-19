@@ -4,9 +4,20 @@ import RefreshIcon from '@/assets/icons/mypage/refresh.svg?react'
 interface ISection03ProfileKeyword {
 	hasProfileKeyword: boolean
 	onRefresh: () => void
+	/** /api/v1/mypage/profile 응답 body.profileType */
+	profileType?: string
+	/** /api/v1/mypage/profile 응답 body.tags */
+	tags?: string[]
 }
 
-const Section03ProfileKeyword = ({ hasProfileKeyword, onRefresh }: ISection03ProfileKeyword) => {
+const Section03ProfileKeyword = ({
+	hasProfileKeyword,
+	onRefresh,
+	profileType = '',
+	tags = [],
+}: ISection03ProfileKeyword) => {
+	const hasContent = hasProfileKeyword || !!profileType || tags.length > 0
+
 	return (
 		<section className='my-2.5'>
 			<div className='flex items-center justify-between'>
@@ -22,17 +33,21 @@ const Section03ProfileKeyword = ({ hasProfileKeyword, onRefresh }: ISection03Pro
 
 			{/* 검사 결과 */}
 			<div className='px-5 py-4'>
-				{hasProfileKeyword ? (
+				{hasContent ? (
 					<>
-						<p className='text-[16px] leading-[180%] tracking-[-0.5px] text-primary-500-normal font-medium'>
-							[섬세한 서포터형] 타입
-						</p>
-						<p className='text-[16px] leading-[180%] tracking-[-0.5px] text-neutral-600'>
-							#포트폴리오 집중 #신중한 설계자 #비주얼 전문가
-						</p>
+						{profileType && (
+							<p className='font-semibold text-[16px] leading-[180%] text-primary-500-normal'>
+								[{profileType}] 타입
+							</p>
+						)}
+						{tags.length > 0 && (
+							<p className='font-medium text-[16px] leading-[180%] text-neutral-600'>
+								{tags.map(tag => (tag.startsWith('#') ? tag : `#${tag}`)).join(' ')}
+							</p>
+						)}
 					</>
 				) : (
-					<div className='text-neutral-300 text-[16px] tracking-[180%]'>나의 프로필 분석 시 채워집니다.</div>
+					<div className='text-neutral-300 text-[16px]'>나의 프로필 분석 시 채워집니다.</div>
 				)}
 			</div>
 		</section>

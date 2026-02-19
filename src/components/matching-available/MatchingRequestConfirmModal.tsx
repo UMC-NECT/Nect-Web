@@ -10,12 +10,12 @@ const MatchingRequestConfirmModal = ({ isOpen, onClose, onConfirm, position }: M
     if (!isOpen) return null;
 
     return (
-        <div 
+        <div
             className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'
             onClick={onClose}
         >
-            <div 
-                className='w-[600px] h-[376px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col border border-neutral-200'
+            <div
+                className='w-[480px] min-h-[310px] bg-white rounded-3xl px-[47px] py-[56px] flex flex-col border border-neutral-200'
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 제목 */}
@@ -24,7 +24,7 @@ const MatchingRequestConfirmModal = ({ isOpen, onClose, onConfirm, position }: M
                         <span className='text-primary-500-normal'>{position}</span> 매칭을 요청 할까요?
                     </h2>
                 </div>
-                
+
                 {/* 설명 */}
                 <p className='text-[16px] text-neutral-600 text-center mb-3'>
                     유의사항을 확인해주세요.

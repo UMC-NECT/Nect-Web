@@ -10,12 +10,13 @@ import WeeklyRoadmapSection from '@/components/common/WeeklyRoadmapSection'
 import { useGetProfileQuery } from '@/hooks/auth/useUsersApi'
 import { useGetAnalysisQuery, usePostCreateProjectMutation } from '@/hooks/analysis/useAnalysisApi'
 import LoadingScreen from '@/components/splash/LoadingScreen'
+import LoadingModal from '@/components/splash/LoadingModal'
 
 const AnalyzeReportPage = () => {
 	const navigate = useNavigate()
 	const { data: profileData } = useGetProfileQuery()
 	const { data: analysisData, isLoading: isAnalysisLoading } = useGetAnalysisQuery('0')
-    const createProject = usePostCreateProjectMutation()
+    const { mutate: createProject, isPending: isCreateProjectPending } = usePostCreateProjectMutation()
 
 	const analysis = analysisData?.body?.analysis
 
@@ -43,7 +44,7 @@ const AnalyzeReportPage = () => {
 	const handleCreateProject = () => {
 		const analysisId = analysis?.analysis_id
 		if (analysisId == null) return
-		createProject.mutate(String(analysisId))
+		createProject(String(analysisId))
 	}
 
 	if (isAnalysisLoading) {
@@ -54,19 +55,20 @@ const AnalyzeReportPage = () => {
 
 	return (
 		<div className='flex flex-col justify-center pt-32'>
+			{isCreateProjectPending ? <LoadingModal /> : <></>}
 			<div className='flex flex-col items-center px-4 mb-4'>
 				<img src={logo} alt='NECT Logo' className='w-[226px] h-[40px] mb-[26px]' />
 				<h1 className='heading-1 font-bold text-primary-800-dark text-center'>프로젝트 아이디어 분석 리포트</h1>
 			</div>
 
-			<div className='bg-bg-gray w-full rounded-100 mt-16 pt-20 pb-24 px-12 shadow-inner-neutral-1'>
+			<div className='bg-bg-gray w-full rounded-100 mt-16 pt-20 pb-24 px-[250px] shadow-inner-neutral-1'>
 				<h2 className='title-3 font-semibold text-center text-primary-600-normal mb-4.5'>NECT Analyze Report</h2>
 				<div className='flex flex-col gap-3 mb-28'>
 					<p className='heading-2 font-bold text-neutral-900 text-center'>
 						{profileData?.body?.name}님의 프로젝트 [{analysis?.recommended_project_names?.[0]}]
 					</p>
 					<p className='title-2 font-medium text-neutral-900 text-center'>
-						아이디어 분석과 팀원 매칭부터 협업 보드까지, 사이드 프로젝트 웹사이트 개발 아이디어를 가지고 계시군요 !
+						{analysis?.description}
 					</p>
 				</div>
 

@@ -8,25 +8,23 @@ export interface RecommendationMemberCardProps {
 	variant?: 'default' | 'list'
 }
 
+/** part 첫 글자만 대문자로 (예: "MARKETER" → "Marketer") */
+const formatPart = (part: string | null | undefined): string => {
+	if (!part?.trim()) return '-'
+	return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+}
+
 const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, variant = 'default' }) => {
-	// status 변환: "JOB_SEEKING" → "매칭 가능", "EMPLOYED" → "재직 중"
 	const statusMap: Record<string, string> = {
 		JOB_SEEKING: '구직 중',
 		EMPLOYED: '재직 중',
 		ENROLLED: '재학 중',
 	}
 
-	// part 변환: "DESIGNER" → "디자인", "DEVELOPER" → "개발" 등
-	const partMap: Record<string, string> = {
-		DESIGNER: 'Design',
-		DEVELOPER: 'Develop',
-		PLANNER: 'PM',
-		OTHER: '기타',
-	}
-
 	const displayStatus = member.status ? statusMap[member.status] || member.status : '매칭 가능'
-	const displayPart = member.part ? partMap[member.part] || member.part : '기타'
+	const displayPart = formatPart(member.part)
 	const displayIntroduction = member.introduction || '자기소개가 없습니다.'
+	const displayName = member.name ?? '-'
 
 	// variant에 따른 스타일 설정
 	const sizeStyles = {
@@ -75,7 +73,7 @@ const RecommendationMemberCard: FC<RecommendationMemberCardProps> = ({ member, v
 			{/* 하단: 텍스트 정보 영역 */}
 			<div className='flex flex-col px-5'>
 				<div className='flex items-center gap-1.5 mb-1.5'>
-					<span className='title-3 font-semibold text-neutral-900'>{member.name}</span>
+					<span className='title-3 font-semibold text-neutral-900'>{displayName}</span>
 					<BarIcon className='w-0.5 h-3' />
 					<span className='title-3 font-medium text-neutral-500'>{displayPart}</span>
 				</div>

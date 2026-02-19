@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 interface FeaturesInputProps {
     features: string[]
@@ -8,6 +8,14 @@ interface FeaturesInputProps {
 
 const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
     const inputRefs = useRef<HTMLInputElement[]>([])
+    const [blurredWithError, setBlurredWithError] = useState(false)
+
+    const isAllFilled = features.every(f => f.trim().length > 0)
+
+    const handleBlur = () => {
+        if (!isAllFilled) setBlurredWithError(true)
+        else setBlurredWithError(false)
+    }
 
     const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
         if (e.key === 'Enter') {
@@ -20,6 +28,8 @@ const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
         }
     }
 
+    const showError = error || blurredWithError
+
     return (
         <div className='mb-6'>
             <label className='block mb-2'>
@@ -27,7 +37,7 @@ const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
                 <span className='text-red-500 ml-1'>*</span>
             </label>
             <div className={`w-[864px] h-[164px] px-4 py-4 border rounded-lg bg-neutral-000 flex flex-col justify-between transition-colors ${
-                error ? 'border-danger-500 border-[1.5px]' : 'border-neutral-000'
+                showError ? 'border-danger-500 border-[1.5px]' : 'border-neutral-000'
             } focus-within:border-primary-500-normal focus-within:border-[1.5px]`}>
                 {features.map((feature, index) => (
                     <div key={index} className='flex items-center gap-2'>
@@ -41,7 +51,13 @@ const FeaturesInput = ({ features, onChange, error }: FeaturesInputProps) => {
                             type='text'
                             maxLength={1000}
                             value={feature}
-                            onChange={e => onChange(index, e.target.value)}
+                            onChange={e => {
+                                const value = e.target.value
+                                onChange(index, value)
+                                const nextFeatures = features.map((f, i) => (i === index ? value : f))
+                                if (nextFeatures.every(f => f.trim().length > 0)) setBlurredWithError(false)
+                            }}
+                            onBlur={handleBlur}
                             onKeyUp={e => handleKeyUp(e, index)}
                             placeholder={index === 0 ? '꼭 들어갔으면 하는 기능 위주로 작성해주세요' : ''}
                             className='flex-1 outline-none text-[16px] placeholder:text-neutral-400 placeholder:text-[16px] bg-transparent'
