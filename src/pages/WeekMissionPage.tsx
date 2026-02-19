@@ -127,12 +127,12 @@ const WeekMissionPage = () => {
 	baseDate.setDate(baseDate.getDate() - 14)
 	const processWeekStartDate = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}-${String(baseDate.getDate()).padStart(2, '0')}`
 
-	const { data: processWeekData, isLoading: isProcessWeekLoading } = useProcessWeekQuery(
+	const { data: processWeekData, isLoading: isProcessWeekLoading, isFetching: isProcessWeekFetching } = useProcessWeekQuery(
 		projectIdStr,
 		processWeekStartDate,
 		'6'
 	)
-	const { data: weekMissionData, isLoading: isWeekMissionLoading } = useWeekMissionQuery(
+	const { data: weekMissionData, isLoading: isWeekMissionLoading, isFetching: isWeekMissionFetching } = useWeekMissionQuery(
 		projectIdStr,
 		'6',
 		processWeekStartDate
@@ -358,6 +358,7 @@ const WeekMissionPage = () => {
 		[projectIdStr, deleteProcessMutation, queryClient, removeMission]
 	)
 	const isLoading = isProcessWeekLoading || isWeekMissionLoading
+	const isFetchingWeek = isProcessWeekFetching || isWeekMissionFetching
 
 	return (
 		<div className='flex flex-col pt-16 px-13.5'>
@@ -367,7 +368,12 @@ const WeekMissionPage = () => {
 
 			{/* 주차 선택 및 뷰 타입 선택 영역 */}
 			<div className='flex items-center justify-between pl-[72px] mt-[31px]'>
-				<WeekSelector />
+				<div className='flex items-center gap-2'>
+					<WeekSelector />
+					{isFetchingWeek && !isLoading && (
+						<span className='inline-block w-4 h-4 border-2 border-neutral-300 border-t-primary-500-normal rounded-full animate-spin' aria-hidden />
+					)}
+				</div>
 				<div className='flex items-center gap-4'>
 					{/* 일정 추가 버튼 (리더만 표시) */}
 					{isLeader && (
