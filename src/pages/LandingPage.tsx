@@ -1,4 +1,4 @@
-import landingImage1 from '@/assets/images/landing/landing.png'
+import landingImage1 from '@/assets/images/landing/landing1.png'
 import landingImage2 from '@/assets/images/landing/landing2.png'
 import landingImage3 from '@/assets/images/landing/landing3.png'
 import landingImage4 from '@/assets/images/landing/landing4.png'
@@ -8,19 +8,40 @@ import landingImage7 from '@/assets/images/landing/landing7.png'
 import landingImage8 from '@/assets/images/landing/landing8.png'
 import landingImage9 from '@/assets/images/landing/landing9.png'
 import landingImage10 from '@/assets/images/landing/landing10.png'
-import ExploreHeader from '@/components/header/ExploreHeader'
 import Button from '@/components/common/Button'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LOCAL_STORAGE_KEY } from '@/constants/key'
 import Footer from '@/components/layout/Footer'
+import AnalysisHeader from '@/components/header/AnalysisHeader'
+import { cn } from '@/utils/cn'
+
+const SCROLL_THRESHOLD = 10
 
 const LandingPage = () => {
     const navigate = useNavigate()
+    const [headerVisible, setHeaderVisible] = useState(true)
+    const lastScrollY = useRef(0)
 
     useEffect(() => {
         window.scrollTo(0, 0)
+    }, [])
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const y = window.scrollY
+            if (y <= SCROLL_THRESHOLD) {
+                setHeaderVisible(true)
+            } else if (y > lastScrollY.current) {
+                setHeaderVisible(false)
+            } else {
+                setHeaderVisible(true)
+            }
+            lastScrollY.current = y
+        }
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => window.removeEventListener('scroll', handleScroll)
     }, [])
     const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
     const isLoggedIn = getAccessToken()
@@ -34,9 +55,16 @@ const LandingPage = () => {
     }
 
 	return (
-		<div className='bg-neutral-900'>
-            <ExploreHeader />
-            <section className='pt-[132px]'>
+		<>
+            <div
+                className={cn(
+                    'fixed top-0 left-0 right-0 z-50 bg-white transition-transform duration-300 ease-out',
+                    !headerVisible && '-translate-y-full'
+                )}
+            >
+                <AnalysisHeader />
+            </div>
+            <section className='pt-[66px]'>
                 <img src={landingImage1} alt="landingImage1" className='w-full h-full' />
                 <img src={landingImage2} alt="landingImage2" className='w-full h-full' />
                 <img src={landingImage3} alt="landingImage3" className='w-full h-full' />
@@ -58,7 +86,7 @@ const LandingPage = () => {
                 </div>
             </section>
             <Footer type='Default' margin='196' className='bg-bg-gray' />
-		</div>
+		</>
 	)
 }
 
