@@ -217,6 +217,8 @@ const WeekMissionPage = () => {
 	const sections = roles.map(role => ({
 		id: role.part_id,
 		title: getRoleDisplayName(role),
+		role_field: role.role_field ?? null,
+		required_count: role.required_count ?? 0,
 	}))
 
 	// 상태 변경 / 드래그·리사이즈(날짜 변경) 시 API 호출 후 로컬 반영
