@@ -17,9 +17,10 @@ interface RoleTagChipProps {
 	count?: number
 	/** 직무 미선택 등 placeholder 상태일 때 텍스트를 neutral-300으로 표시 */
 	isPlaceholder?: boolean
+	isLarge?: boolean
 }
 
-const RoleTagChip = ({ roleId = 0, roleName, roleField, state, onClick, className, count, isPlaceholder }: RoleTagChipProps) => {
+const RoleTagChip = ({ roleId = 0, roleName, roleField, state, onClick, className, count, isPlaceholder, isLarge }: RoleTagChipProps) => {
 	const { roles, roleFields } = useOnboardingEnums()
 	// CUSTOM 파트는 parts.label(실제 파트명)을 roleName으로 전달받으므로 roleName 우선, 그 외는 labelEn
 	const displayName =
@@ -35,7 +36,7 @@ const RoleTagChip = ({ roleId = 0, roleName, roleField, state, onClick, classNam
 			{isEdit && <DragIcon />}
 			<div
 				className={cn(
-					'rounded-md py-0.5 w-fit h-6 flex items-center gap-1',
+					'rounded-md py-0.5 w-fit min-h-6 flex items-center gap-1',
 					isClear ? 'pl-2 pr-1' : 'px-2',
 					isDisabled
 						? cn(roleColor, 'bg-[linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5))]', 'cursor-default')
@@ -43,7 +44,7 @@ const RoleTagChip = ({ roleId = 0, roleName, roleField, state, onClick, classNam
 				)}
 				onClick={!isDisabled && !isClear ? onClick : undefined}
 			>
-				<p className={cn('button-1 font-medium text-center whitespace-nowrap max-w-full', isDisabled || isPlaceholder ? 'text-neutral-300' : 'text-neutral-700')}>
+				<p className={cn('font-medium text-center whitespace-nowrap max-w-full', isDisabled || isPlaceholder ? 'text-neutral-300' : 'text-neutral-700', isLarge ? 'title-2' : 'button-1')}>
 					{displayName}
 				</p>
 				{count && <span className='button-1 text-neutral-700'>({count})</span>}

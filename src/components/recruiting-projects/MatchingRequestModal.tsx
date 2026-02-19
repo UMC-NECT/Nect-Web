@@ -44,7 +44,7 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, recruitment
 
     return (
         <div className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'>
-            <div className='w-[480px] min-h-[310px] bg-white rounded-xl p-12 flex flex-col border-neutral-200'>
+            <div className='w-[600px] h-[376px] bg-white rounded-xl px-[47px] py-[56px] flex flex-col border border-neutral-200'>
                 {/* 제목 */}
                 <h2 className='text-[20px] font-semibold text-center mb-[18px]'>
                     매칭할 파트를 선택해주세요
@@ -80,7 +80,8 @@ const MatchingRequestModal = ({ isOpen, onClose, onMatchingComplete, recruitment
                                     roleField={part.field}
                                     roleName={part.name}
                                     state={!isSelected && selectedParts.length >= 1 ? 'disabled' : 'default'}
-                                    className='text-[20px] text-neutral-700'
+                                    isLarge={true}
+                                    className='text-neutral-700'
                                 />
                             </button>
                         );
