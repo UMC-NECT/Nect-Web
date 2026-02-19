@@ -65,16 +65,16 @@ const LandingPage = () => {
                 <AnalysisHeader />
             </div>
             <section className='pt-[66px]'>
-                <img src={landingImage1} alt="landingImage1" className='w-full h-full' />
-                <img src={landingImage2} alt="landingImage2" className='w-full h-full' />
-                <img src={landingImage3} alt="landingImage3" className='w-full h-full' />
-                <img src={landingImage4} alt="landingImage4" className='w-full h-full' />
-                <img src={landingImage5} alt="landingImage5" className='w-full h-full' />
-                <img src={landingImage6} alt="landingImage6" className='w-full h-full' />
-                <img src={landingImage7} alt="landingImage7" className='w-full h-full' />
-                <img src={landingImage8} alt="landingImage8" className='w-full h-full' />
-                <img src={landingImage9} alt="landingImage9" className='w-full h-full' />
-                <img src={landingImage10} alt="landingImage10" className='w-full h-full' />
+                <img src={landingImage1} alt="landingImage1" className='w-full h-full' decoding="async" />
+                <img src={landingImage2} alt="landingImage2" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage3} alt="landingImage3" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage4} alt="landingImage4" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage5} alt="landingImage5" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage6} alt="landingImage6" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage7} alt="landingImage7" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage8} alt="landingImage8" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage9} alt="landingImage9" className='w-full h-full' loading="lazy" decoding="async" />
+                <img src={landingImage10} alt="landingImage10" className='w-full h-full' loading="lazy" decoding="async" />
             </section>
 
             <section className='bg-bg-gray'>

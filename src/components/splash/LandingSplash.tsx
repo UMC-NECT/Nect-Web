@@ -59,7 +59,7 @@ const LandingSplash = ({ onDone }: LandingSplashProps) => {
 
 			<section className='flex flex-col items-center justify-center h-full gap-[73px] pb-[112px]'>
 				<Logo className='w-[228px] h-auto' />
-				<img className='animate-float w-[242px] h-[207px]' src={Character} alt="Character" />
+				<img className='animate-float w-[242px] h-[207px]' src={Character} alt="Character" decoding="async" />
 			</section>
 		</div>
 	)
