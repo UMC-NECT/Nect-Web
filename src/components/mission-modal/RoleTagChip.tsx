@@ -1,12 +1,13 @@
 import { cn } from '@/utils/cn'
-import { getRoleColorById } from '@/utils/roleColor'
+import { getRoleColorById, getRoleColorByField } from '@/utils/roleColor'
 import { getRoleLabelEn } from '@/utils/enumUtils'
 import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums'
 import XIcon from '@/assets/icons/common/X-small.svg?react'
 import DragIcon from '@/assets/icons/common/drag.svg?react'
 
 interface RoleTagChipProps {
-	roleId: number
+	/** part_id 등. 0이거나 없으면 roleField 기준 getRoleColorByField 사용 */
+	roleId?: number
 	roleName: string
 	/** role_field value (API enum). 있으면 useOnboardingEnums로 label·색상 결정 */
 	roleField?: string
@@ -18,12 +19,13 @@ interface RoleTagChipProps {
 	isPlaceholder?: boolean
 }
 
-const RoleTagChip = ({ roleId, roleName, roleField, state, onClick, className, count, isPlaceholder }: RoleTagChipProps) => {
+const RoleTagChip = ({ roleId = 0, roleName, roleField, state, onClick, className, count, isPlaceholder }: RoleTagChipProps) => {
 	const { roles, roleFields } = useOnboardingEnums()
 	// CUSTOM 파트는 parts.label(실제 파트명)을 roleName으로 전달받으므로 roleName 우선, 그 외는 labelEn
 	const displayName =
 		roleField === 'CUSTOM' ? roleName : roleField ? getRoleLabelEn(roleField, null, roles, roleFields) || roleName : roleName
-	const roleColor = getRoleColorById(roleId)
+	const roleColor =
+		roleId != null && roleId > 0 ? getRoleColorById(roleId) : (roleField ? getRoleColorByField(roleField, roleFields) : 'bg-roletag-gray')
 	const isDisabled = state === 'disabled'
 	const isClear = state === 'clear'
 	const isEdit = state === 'edit'

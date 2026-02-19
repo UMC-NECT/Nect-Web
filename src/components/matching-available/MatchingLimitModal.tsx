@@ -13,19 +13,19 @@ const MatchingLimitModal = ({ isOpen, onClose, onConfirm }: MatchingLimitModalPr
     if (!isOpen) return null;
 
     return (
-        <div 
+        <div
             className='fixed inset-0 bg-neutral-50/70 flex items-center justify-center z-50'
             onClick={onClose}
         >
-            <div 
-                className='w-[600px] h-[376px] bg-white rounded-3xl p-12 flex flex-col border border-neutral-200'
+            <div
+                className='w-[480px] min-h-[310px] bg-white rounded-3xl p-12 flex flex-col border border-neutral-200'
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 제목 */}
                 <h2 className='text-[20px] font-bold text-primary-500-normal text-center mb-[18px]'>
                     해당 파트의 매칭 요청 인원을 초과하였습니다!
                 </h2>
-                
+
                 {/* 설명 */}
                 <p className='text-[16px] text-neutral-600 text-center mb-6'>
                     24시간 동안 같은 파트로는 최대 3명까지만 신청 가능합니다.
@@ -41,13 +41,13 @@ const MatchingLimitModal = ({ isOpen, onClose, onConfirm }: MatchingLimitModalPr
 
                 {/* 버튼 */}
                 <div className='flex gap-3 justify-center'>
-                    <button 
+                    <button
                         onClick={onClose}
                         className='w-[160px] h-[48px] border border-neutral-200 rounded-2xl text-[18px] font-semibold text-neutral-900 hover:bg-neutral-50 transition-colors'
                     >
                         돌아가기
                     </button>
-                    <button 
+                    <button
                         onClick={handleConfirm}
                         className='w-[160px] h-[48px] rounded-2xl text-[18px] font-semibold bg-primary-400-normal text-white hover:bg-primary-500-normal transition-colors'
                     >

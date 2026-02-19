@@ -45,7 +45,7 @@ const MemberProfileDetail = ({ memberData }: MemberProfileDetailProps) => {
             {/* 자기소개 */}
             <div className='mb-[64px]'>
                 <h3 className='text-[20px] font-bold mb-4'>자기소개</h3>
-                <p className='text-[16px] text-neutral-900 leading-relaxed whitespace-pre-line py-4'>
+                <p className={`text-[16px] leading-relaxed whitespace-pre-line py-4 ${memberData.bio ? 'text-neutral-900' : 'text-neutral-500'}`}>
                     {memberData.bio || '자기소개가 없습니다.'}
                 </p>
             </div>
@@ -54,13 +54,13 @@ const MemberProfileDetail = ({ memberData }: MemberProfileDetailProps) => {
             <div className='mb-[64px]'>
                 <h3 className='text-[20px] font-bold mb-4'>핵심역량</h3>
                 {memberData.coreCompetencies && (
-                    Array.isArray(memberData.coreCompetencies) ? 
-                        memberData.coreCompetencies.length > 0 : 
+                    Array.isArray(memberData.coreCompetencies) ?
+                        memberData.coreCompetencies.length > 0 :
                         memberData.coreCompetencies.trim()
                 ) ? (
                     <ul className='space-y-2 list-disc list-outside text-[16px] font-medium text-neutral-900 pl-5'>
-                        {(Array.isArray(memberData.coreCompetencies) 
-                            ? memberData.coreCompetencies 
+                        {(Array.isArray(memberData.coreCompetencies)
+                            ? memberData.coreCompetencies
                             : memberData.coreCompetencies.split('\n')
                         ).map((competency, index) => (
                             <li key={index}>{competency}</li>
@@ -209,8 +209,8 @@ const MemberProfileDetail = ({ memberData }: MemberProfileDetailProps) => {
                             <div key={project.userProjectHistoryId} className='w-[386px] border border-neutral-200 rounded-xl overflow-hidden pb-4'>
                                 <div className='w-full h-[211px] bg-neutral-200 rounded-xl overflow-hidden'>
                                     {project.projectImage && (
-                                        <img 
-                                            src={project.projectImage} 
+                                        <img
+                                            src={project.projectImage}
                                             alt={project.projectName}
                                             className='w-full h-full object-cover'
                                         />

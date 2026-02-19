@@ -52,7 +52,7 @@ const LandingPage = () => {
             <section className='bg-bg-gray'>
                 <div className='flex flex-row gap-4 justify-center pt-[76px]    '>
                     <Button color='secondary' size='xl' className='w-[300px] h-[60px]' onClick={handleAIProfileAnalysis}>
-                        {isLoggedIn ? 'AI 아이디어 분석하러 가기' : 'AI 프로필 분석하러 가기'}
+                        {isLoggedIn ? 'AI 아이디어 분석하러 가기' : '회원가입 후 시작하기'}
                         </Button>
                     <Button color='primary' size='xl' className='w-[300px] h-[60px]' onClick={() => navigate('/')}>홈 둘러보기</Button>
                 </div>

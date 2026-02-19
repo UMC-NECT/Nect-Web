@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
 import hamburger from '@/assets/icons/common/hamburger-bar.svg';
 import chat from '@/assets/icons/common/message.svg';
@@ -16,6 +16,8 @@ import MatchingBlockedModal from '@/components/recruiting-projects/MatchingBlock
 import { useProjectDetail, useProjectRecruitments } from '@/hooks/queries/project';
 import { useMatchingUserToProjectMutation, useMatchingsSentQuery, useMatchingCancelMutation } from '@/hooks/mypage/useMatchingApi';
 import LoadingScreen from '@/components/splash/LoadingScreen';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { LOCAL_STORAGE_KEY } from '@/constants/key';
 
 const RecruitingProjectsPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
@@ -34,7 +36,9 @@ const RecruitingProjectsPage = () => {
     const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [selectedField, setSelectedField] = useState<string>('');
-
+    const { getItem: getAccessToken } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+    const navigate = useNavigate()
+    
     // 보낸 매칭 요청에서 현재 프로젝트에 대한 매칭 정보 계산
     const currentProjectMatching = useMemo(() => {
         if (sentMatchings?.body?.projectMatchings && projectId) {
@@ -80,6 +84,10 @@ const RecruitingProjectsPage = () => {
     };
 
     const handleMatchingButtonClick = () => {
+        if (!getAccessToken()) {
+            navigate('/login', { replace: true })
+        }
+
         if (isMatching) {
             setIsCancelModalOpen(true);
         } else {
@@ -249,7 +257,6 @@ const RecruitingProjectsPage = () => {
                         setIsModalOpen(false);
                         setIsConfirmModalOpen(true);
                     }}
-                    getPositionStyle={getPositionStyle}
                     recruitments={recruitments || []}
                 />
 

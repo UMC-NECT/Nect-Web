@@ -306,7 +306,12 @@ export const ProfileSettings = () => {
 						</div>
 
 						{/* 섹션 03. 프로필 분석 키워드 (읽기전용) */}
-						<Section03ProfileKeyword hasProfileKeyword={hasProfileKeyword} onRefresh={handleProfileKeywordRefresh} />
+						<Section03ProfileKeyword
+							hasProfileKeyword={hasProfileKeyword}
+							onRefresh={handleProfileKeywordRefresh}
+							profileType={profile?.profileType}
+							tags={profile?.tags}
+						/>
 
 						{/* 섹션 04. 관심분야 */}
 						<div id='section-04'>

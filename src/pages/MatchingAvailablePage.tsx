@@ -69,21 +69,6 @@ const MatchingAvailablePage = () => {
 
 	const isMatching = !!currentMatchingId
 
-	// Helper: Position Styles
-	const getPositionStyle = (position: string) => {
-		const positionName = position.toLowerCase()
-		const styles: Record<string, string> = {
-			pm: 'bg-tag-purple',
-			design: 'bg-tag-pink',
-			frontend: 'bg-tag-green',
-			backend: 'bg-tag-blue',
-			develop: 'bg-tag-blue',
-			server: 'bg-tag-orange',
-			data: 'bg-tag-yellow',
-		}
-		return styles[positionName] || 'bg-tag-yellow'
-	}
-
 	// Helper: Error Checking
 	const isMatchingLimitError = (error: unknown) => {
 		const err = error as { response?: { data?: { status?: { message?: string; description?: string } } } }
@@ -315,7 +300,6 @@ const MatchingAvailablePage = () => {
 					isOpen={isRequestModalOpen}
 					onClose={() => setIsRequestModalOpen(false)}
 					onMatchingComplete={handleFieldSelect}
-					getPositionStyle={getPositionStyle}
 					recruitments={recruitments || []}
 				/>
 
