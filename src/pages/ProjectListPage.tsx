@@ -1,32 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import ContentBox from '@/components/main/ContentBox';
 import TabGroup from '@/components/main/TabGroup';
 import CategoryDropdown from '@/components/main/CategoryDropdown';
 import RecommendationProjectCard from '@/components/common/RecommendationProjectCard';
 import { useRecruitingProjects } from '@/hooks/queries/home';
-import { CATEGORIES, TABS, PART_MAP } from '@/constants/filters';
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums';
+import { TABS, PART_MAP } from '@/constants/filters';
 import LoadingScreen from '@/components/splash/LoadingScreen';
 
 const ProjectListPage = () => {
     const [selectedTab, setSelectedTab] = useState('전체');
-    const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
-
-    // API 호출 (100개 요청)
     const { data: projects, isLoading, error } = useRecruitingProjects(100);
+    const { interestFields } = useOnboardingEnums();
 
-    // 탭에 따라 필터링
-    const filteredProjects = projects?.filter(project => {
-        if (selectedTab === '전체') return true;
+    const categories = useMemo(
+        () => ['전체', ...interestFields.map(i => i.label), '기타'],
+        [interestFields]
+    );
+    const [selectedCategory, setSelectedCategory] = useState('전체');
 
-        // authorPart가 null이면 '기타'로 처리
-        if (!project.authorPart) {
-            return selectedTab === '기타';
-        }
+    const interestFieldValueByLabel = useMemo(() => {
+        const map: Record<string, string> = {}
+        interestFields.forEach(item => { map[item.label] = item.value })
+        return map
+    }, [interestFields])
 
-        const projectPart = PART_MAP[project.authorPart] || '기타';
-        return projectPart === selectedTab;
-    }) || [];
+    const categoryEnumValue = interestFieldValueByLabel[selectedCategory] ?? null
+
+    const filteredProjects = useMemo(() => {
+        if (!projects) return []
+        return projects.filter(project => {
+            if (selectedTab !== '전체') {
+                if (!project.authorPart) {
+                    if (selectedTab !== '기타') return false
+                } else {
+                    const projectPart = PART_MAP[project.authorPart] || '기타'
+                    if (projectPart !== selectedTab) return false
+                }
+            }
+            if (selectedCategory === '전체') return true
+            if (selectedCategory === '기타') {
+                if (categoryEnumValue) return project.interestField === categoryEnumValue
+                return !project.interestField
+            }
+            return project.interestField === categoryEnumValue
+        })
+    }, [projects, selectedTab, selectedCategory, categoryEnumValue])
 
     useEffect(() => {
         document.body.style.backgroundColor = '#FAFAFA';
@@ -69,7 +89,7 @@ const ProjectListPage = () => {
                     {/* 드롭다운 영역 */}
                     <div className="mt-[44px] mx-5">
                         <CategoryDropdown
-                            categories={[...CATEGORIES]}
+                            categories={categories}
                             selectedCategory={selectedCategory}
                             onCategoryChange={setSelectedCategory}
                         />

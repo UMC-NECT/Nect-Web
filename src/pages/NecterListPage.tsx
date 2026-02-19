@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import ContentBox from '@/components/main/ContentBox';
@@ -6,28 +6,50 @@ import TabGroup from '@/components/main/TabGroup';
 import CategoryDropdown from '@/components/main/CategoryDropdown';
 import RecommendationMemberCard from '@/components/common/RecommendationMemberCard';
 import { useMatchableMembers } from '@/hooks/queries/home';
-import { CATEGORIES, TABS, PART_MAP } from '@/constants/filters';
+import { useOnboardingEnums } from '@/hooks/auth/useOnboardingEnums';
+import { TABS, PART_MAP } from '@/constants/filters';
 import LoadingScreen from '@/components/splash/LoadingScreen';
 
 const NecterListPage = () => {
     const [selectedTab, setSelectedTab] = useState('전체');
-    const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
-
-    // API 호출 (100개 요청)
     const { data: members, isLoading, error } = useMatchableMembers(50);
+    const { interestFields } = useOnboardingEnums();
 
-    // 탭에 따라 필터링
-    const filteredMembers = members?.filter(member => {
-        if (selectedTab === '전체') return true;
+    // enum 기준 카테고리 목록 (라벨 ↔ value 정확 매칭)
+    const categories = useMemo(
+        () => ['전체', ...interestFields.map(i => i.label), '기타'],
+        [interestFields]
+    );
+    const [selectedCategory, setSelectedCategory] = useState('전체');
 
-        // part가 null이면 '기타'로 처리
-        if (!member.part) {
-            return selectedTab === '기타';
-        }
+    const interestFieldValueByLabel = useMemo(() => {
+        const map: Record<string, string> = {}
+        interestFields.forEach(item => { map[item.label] = item.value })
+        return map
+    }, [interestFields])
 
-        const memberPart = PART_MAP[member.part] || '기타';
-        return memberPart === selectedTab;
-    }) || [];
+    const categoryEnumValue = interestFieldValueByLabel[selectedCategory] ?? null
+
+    // 탭 + 카테고리(interestField) 필터링
+    const filteredMembers = useMemo(() => {
+        if (!members) return []
+        return members.filter(member => {
+            if (selectedTab !== '전체') {
+                if (!member.part) {
+                    if (selectedTab !== '기타') return false
+                } else {
+                    const memberPart = PART_MAP[member.part] || '기타'
+                    if (memberPart !== selectedTab) return false
+                }
+            }
+            if (selectedCategory === '전체') return true
+            if (selectedCategory === '기타') {
+                if (categoryEnumValue) return member.interestField === categoryEnumValue
+                return !member.interestField
+            }
+            return member.interestField === categoryEnumValue
+        })
+    }, [members, selectedTab, selectedCategory, categoryEnumValue])
 
     useEffect(() => {
         document.body.style.backgroundColor = '#FAFAFA';
@@ -70,7 +92,7 @@ const NecterListPage = () => {
                     {/* 드롭다운 영역 */}
                     <div className="mt-[44px] mx-5">
                         <CategoryDropdown
-                            categories={[...CATEGORIES]}
+                            categories={categories}
                             selectedCategory={selectedCategory}
                             onCategoryChange={setSelectedCategory}
                         />
